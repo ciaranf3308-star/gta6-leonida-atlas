@@ -1,5 +1,9 @@
 import type { Place } from '../../domain/types';
 import { NEAR_DISTANCE_UNITS, normalizeAsk } from './retrieval';
+import {
+  aiCategoryDisplay,
+  type AiCategoryRecord,
+} from '../categorise/categories';
 
 /**
  * Ask Nylah — OpenAI client, using the user's own key.
@@ -83,6 +87,8 @@ export interface FormatRecordsOptions {
   anchorName?: string | null;
   /** Distance in map units from the anchor, by place id. */
   distances?: ReadonlyMap<string, number>;
+  /** AI-suggested types (on-device only) — the model must label these as AI-suggested, never as facts. */
+  aiCategories?: Readonly<Record<string, AiCategoryRecord>>;
 }
 
 export function formatRecordsForPrompt(
@@ -99,7 +105,11 @@ export function formatRecordsForPrompt(
           : options.anchorName
             ? ` About ${Math.round(distance)} map units from ${options.anchorName} — ${distance <= NEAR_DISTANCE_UNITS ? 'near' : 'far'}.`
             : ` About ${Math.round(distance)} map units from the place asked about.`;
-      return `- ${place.title} [${place.layerId}] — ${place.region || 'Leonida'}. ${place.description.slice(0, 240)}${place.position ? ` Position: ${place.position.x}, ${place.position.y}.` : ' No verified position.'}${distanceText}`;
+      const aiDisplay = aiCategoryDisplay(options.aiCategories?.[place.id]);
+      const aiText = aiDisplay
+        ? ` AI-suggested type (NOT verified): ${aiDisplay.label}, ${Math.round(aiDisplay.confidence * 100)}% sure — say so if you mention it.`
+        : '';
+      return `- ${place.title} [${place.layerId}] — ${place.region || 'Leonida'}. ${place.description.slice(0, 240)}${place.position ? ` Position: ${place.position.x}, ${place.position.y}.` : ' No verified position.'}${distanceText}${aiText}`;
     })
     .join('\n');
 }
@@ -117,6 +127,8 @@ export interface AskOpenAiInput {
   anchorName?: string | null;
   /** Distance in map units from the anchor, by place id. */
   distances?: ReadonlyMap<string, number>;
+  /** AI-suggested types, so the answer can label them as AI-suggested. */
+  aiCategories?: Readonly<Record<string, AiCategoryRecord>>;
 }
 
 export async function askOpenAi(input: AskOpenAiInput): Promise<string> {
@@ -133,7 +145,7 @@ export async function askOpenAi(input: AskOpenAiInput): Promise<string> {
         { role: 'system', content: buildAskSystemPrompt(input.requestedLayerNames) },
         {
           role: 'user',
-          content: `Question: ${input.question}\n\nMap records you may use (and nothing else):\n${formatRecordsForPrompt(input.records, { anchorName: input.anchorName, distances: input.distances })}${input.proximitySummary ? `\n\nMap facts — say these first, in your own words, before naming any place:\n${input.proximitySummary}` : ''}`,
+          content: `Question: ${input.question}\n\nMap records you may use (and nothing else):\n${formatRecordsForPrompt(input.records, { anchorName: input.anchorName, distances: input.distances, aiCategories: input.aiCategories })}${input.proximitySummary ? `\n\nMap facts — say these first, in your own words, before naming any place:\n${input.proximitySummary}` : ''}`,
         },
       ],
       temperature: 0.2,

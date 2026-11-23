@@ -13,12 +13,16 @@ import {
   X,
 } from 'lucide-react';
 import type { Category, Place } from '../domain/types';
-import { useDomainStore, useMapStore, useUiStore } from '../stores/atlas';
+import { isUnnamedPlace } from '../domain/types';
+import { useDomainStore, useMapStore, usePersistenceStore, useUiStore } from '../stores/atlas';
 import { COUNTIES, COUNTY_EXTENT_NOTE } from '../data/counties';
 import { INITIAL_BOUNDS } from '../features/map/coordinates';
 import { SavedPlaces } from '../features/library/SavedPlaces';
 import { Status } from './Status';
 import { setAccountEntryTarget } from '../capabilities/extension-host';
+import IndexPanel from '../features/categorise/IndexPanel';
+import { aiCategoryDisplay, aiCategoryShortLabel, effectiveAiCategory } from '../features/categorise/categories';
+import { useAiIndexStore } from '../features/categorise/store';
 
 export const CATEGORIES: { id: Category | 'all'; name: string }[] = [
   { id: 'all', name: 'All places' },
@@ -79,8 +83,9 @@ function CountyPicker() {
   );
 }
 
-function LayerManager({ progress }: { progress: LayerProgress[] }) {
+function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allPlaces: Place[] }) {
   const layers = useMapStore((s) => s.layers);
+  const offline = usePersistenceStore((s) => s.offline);
   const totalById = new Map(progress.map((entry) => [entry.layerId, entry.total]));
   const ordered = [...layers].sort((a, b) => b.order - a.order);
   function move(id: string, direction: number) {
@@ -161,7 +166,6 @@ function LayerManager({ progress }: { progress: LayerProgress[] }) {
   );
   return (
     <div className="layer-manager">
-      <CountyPicker />
       <p className="panel-intro">
         Your map starts blank on purpose — nothing is shown until you choose it. Turn a layer
         on only when you want to see those places. Layers at the top draw above the others.
@@ -185,6 +189,15 @@ function LayerManager({ progress }: { progress: LayerProgress[] }) {
             pin yet — they are hidden until a card in the set gets a verified spot.
           </p>
         )}
+      </details>
+      <IndexPanel
+        places={allPlaces}
+        offline={offline}
+        onOpenSettings={() => useUiStore.getState().setDialog('settings')}
+      />
+      <details className="layer-group">
+        <summary>Counties — isolate one county</summary>
+        <CountyPicker />
       </details>
       <p className="empty-state">
         The basemap is the GTADB in-game map (map artwork © Rockstar Games, CC BY 4.0). Place
@@ -213,6 +226,7 @@ function Results({
   const filters = useUiStore((s) => s.filters);
   const selectedId = useMapStore((s) => s.selectedId);
   const status = useDomainStore((s) => s.status);
+  const aiCategories = useAiIndexStore((s) => s.categories);
   const [limit, setLimit] = useState(50);
   useEffect(() => setLimit(50), [filters]);
   function select(place: Place) {
@@ -316,7 +330,15 @@ function Results({
         <p className="empty-state">Loading the public catalogue…</p>
       ) : places.length ? (
         <div className="place-results" aria-label="Search results">
-          {places.slice(0, limit).map((place) => (
+          {places.slice(0, limit).map((place) => {
+            const aiDisplay = aiCategoryDisplay(aiCategories[place.id]);
+            const aiCategory = effectiveAiCategory(aiCategories[place.id]);
+            // A categorised "?" shows as "?" + its AI type — the name stays "?".
+            const displayTitle =
+              isUnnamedPlace(place) && aiCategory
+                ? `? · ${aiCategoryShortLabel(aiCategory)}`
+                : place.title;
+            return (
             <button
               className={`place-result ${selectedId === place.id ? 'active' : ''}`}
               key={place.id}
@@ -324,7 +346,7 @@ function Results({
             >
               <MapPin size={19} />
               <span>
-                <strong>{place.title || 'Unnamed entry'}</strong>
+                <strong>{displayTitle || 'Unnamed entry'}</strong>
                 <small>
                   {!place.position
                     ? 'Unpositioned'
@@ -335,11 +357,13 @@ function Results({
                         : place.evidence === 'uncertain'
                           ? 'Unverified · position not confirmed'
                           : `${place.category} · approximate`}
+                  {aiDisplay ? ` · AI suggested: ${aiDisplay.label}` : ''}
                 </small>
               </span>
               <ChevronRight size={16} />
             </button>
-          ))}
+            );
+          })}
         </div>
       ) : !anyPublicLayerVisible ? (
         <p className="empty-state">
@@ -363,10 +387,12 @@ function Results({
 
 export function Sidebar({
   places,
+  allPlaces,
   progress,
   anyPublicLayerVisible,
 }: {
   places: Place[];
+  allPlaces: Place[];
   progress: LayerProgress[];
   anyPublicLayerVisible: boolean;
 }) {
@@ -427,7 +453,7 @@ export function Sidebar({
         {tab === 'explore' ? (
           <Results places={places} anyPublicLayerVisible={anyPublicLayerVisible} />
         ) : tab === 'layers' ? (
-          <LayerManager progress={progress} />
+          <LayerManager progress={progress} allPlaces={allPlaces} />
         ) : (
           <SavedPlaces progress={progress} />
         )}

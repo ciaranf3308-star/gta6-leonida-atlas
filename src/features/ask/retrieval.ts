@@ -2,6 +2,10 @@ import type { Filters, LayerDefinition, Place } from '../../domain/types';
 import { isUnnamedPlace } from '../../domain/types';
 import { COUNTIES, countyForPlace, countyIdFromText } from '../../data/counties';
 import { ROBBABLE_SHOP_TAGS, SHOP_TAGS } from '../../data/catalogue';
+import {
+  aiCategoryMatchesLayer,
+  type AiCategoryRecord,
+} from '../categorise/categories';
 
 /**
  * Ask Nylah retrieval — the spoiler rule, in code.
@@ -36,6 +40,13 @@ export interface AskRetrievalInput {
   layers: readonly LayerDefinition[];
   filters: Pick<Filters, 'hideFound' | 'remainingOnly' | 'countyId'>;
   visitedIds?: readonly string[];
+  /**
+   * AI-suggested types for unnamed places (on-device only). A confident
+   * AI gym answers a gym question exactly like a gym tag does — labelled
+   * "AI suggested" in the results, never as a verified fact. Low
+   * confidence / "not sure" records never match.
+   */
+  aiCategories?: Readonly<Record<string, AiCategoryRecord>>;
   /**
    * Earlier user questions in this conversation, oldest first. Only used to
    * recover the place a follow-up is about ("is there nowhere else I can
@@ -370,7 +381,13 @@ export function retrieveForAsk(input: AskRetrievalInput): AskRetrievalResult {
         // Tag evidence: a "?" place whose tags say it is the thing asked
         // for counts, whatever layer it sits in (see tagMatchesLayer).
         (requestedLayerIds.length > 0 &&
-          requestedLayerIds.some((id) => tagMatchesLayer(place, id)))) &&
+          requestedLayerIds.some((id) => tagMatchesLayer(place, id))) ||
+        // AI evidence: a confident AI type counts the same way — a gym
+        // the AI suggested for a "?" near Capri answers a gym question.
+        (requestedLayerIds.length > 0 &&
+          requestedLayerIds.some((id) =>
+            aiCategoryMatchesLayer(input.aiCategories?.[place.id], place, id),
+          ))) &&
       !(hideFound && visited.has(place.id)) &&
       // A workout question only takes workout markers from My markers.
       !(asksWorkout && place.layerId === 'personal' && !isWorkoutMarker(place)),

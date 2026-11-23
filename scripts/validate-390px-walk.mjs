@@ -91,6 +91,79 @@ console.log('08 overflow:', await overflow());
 await page.getByText('What we know').waitFor({ timeout: 10000 });
 console.log('08 "What we know" shown for the ? place');
 
+// AI categorisation — Layers tab: the index panel with real counts and
+// the plain-words no-key state (this browser has no key saved).
+await page.getByRole('button', { name: 'Close place details' }).click();
+await page.getByRole('button', { name: 'Open sidebar', exact: true }).click();
+await page.getByRole('button', { name: 'Layers', exact: true }).click();
+await page.getByText('Sort the unnamed places').waitFor({ timeout: 10000 });
+await page.getByText('Indexing needs your OpenAI key').waitFor({ timeout: 10000 });
+await page.waitForTimeout(800);
+await shot('09-index-panel');
+console.log('09 overflow:', await overflow());
+const indexCount = await page.getByText(/of 2,732 indexed/).textContent();
+console.log('09 index counts:', indexCount);
+await page.getByRole('button', { name: 'Close sidebar', exact: true }).click();
+
+// AI categorisation — seeded on-device results only (walk-only test data,
+// NOT a real OpenAI call): L818 as a house, L939 as a gym near Capri.
+// The detail sheet must show "?" + its AI type, labelled AI suggested,
+// with a one-tap confirm — and Ask must answer a gym question from it.
+await page.evaluate(() => {
+  globalThis.localStorage.setItem(
+    'leonida-ai-categories-v1',
+    JSON.stringify({
+      L818: {
+        placeId: 'L818',
+        aiCategory: 'house',
+        confidence: 0.9,
+        reason: 'Analogue address is an apartment tower; tagged residential.',
+        model: 'gpt-4o-mini',
+        indexedAt: '2026-11-23T00:00:00.000Z',
+        status: 'suggested',
+      },
+      L939: {
+        placeId: 'L939',
+        aiCategory: 'gym',
+        confidence: 0.82,
+        reason: 'Seeded for the walk only — test data, not a real categorisation.',
+        model: 'gpt-4o-mini',
+        indexedAt: '2026-11-23T00:00:00.000Z',
+        status: 'suggested',
+      },
+    }),
+  );
+  globalThis.localStorage.setItem(
+    'leonida-ai-index-job-v1',
+    JSON.stringify({
+      status: 'paused',
+      attemptedPlaceIds: ['L818', 'L939'],
+      updatedAt: '2026-11-23T00:00:00.000Z',
+    }),
+  );
+});
+await page.goto(`${base}?place=L818`, { waitUntil: 'networkidle' });
+await page.waitForTimeout(2500);
+await page.getByText('AI suggested: House / residential').first().waitFor({ timeout: 10000 });
+await page.getByText('What the AI suggests').waitFor({ timeout: 10000 });
+await page.getByRole('button', { name: /That looks right/ }).waitFor({ timeout: 10000 });
+await shot('10-ai-suggested-detail');
+console.log('10 overflow:', await overflow());
+console.log('10 AI-suggested detail shown for L818, with confirm');
+await page.getByRole('button', { name: 'Close place details' }).click();
+
+// Ask with the seeded AI gym: "gym near Capri" must answer from the
+// AI-suggested "?" — nearest first, labelled AI suggested.
+await page.getByRole('button', { name: 'Ask Nylah', exact: true }).click();
+await page.locator('#ask-nylah-input').fill('Show me a gym near Capri');
+await page.getByRole('button', { name: 'Send', exact: true }).click();
+await page.getByText(/AI suggested: Gym/i).first().waitFor({ timeout: 10000 });
+await page.waitForTimeout(1000);
+await shot('11-ask-ai-gym-capri');
+console.log('11 overflow:', await overflow());
+console.log('11 Ask answered a gym question from the AI-suggested "?" near Capri');
+await page.getByRole('button', { name: 'Close Ask Nylah' }).click();
+
 await browser.close();
 console.log('console errors:', errors.length ? errors : 'none');
 if (errors.length > 0) process.exit(1);

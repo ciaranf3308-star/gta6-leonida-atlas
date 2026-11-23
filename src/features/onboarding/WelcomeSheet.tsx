@@ -79,7 +79,8 @@ export default function WelcomeSheet(props: WelcomeSheetProps) {
         <p className="help-text">
           {unnamed.toLocaleString()} places are still “?” with no name yet — many already say
           what kind of place they are (house, shop, petrol station). Turn on Unverified places
-          in Layers to see them.
+          in Layers to see them. Layers can also ask the AI to suggest a type for each
+          unnamed place, on this device only, using your OpenAI key.
         </p>
       </section>
       <section className="detail-section">

@@ -1,5 +1,9 @@
 import type { Collection, Filters, Place, PlaceNote } from './types';
 import { countyForPlace } from '../data/counties';
+import {
+  aiCategorySearchWords,
+  type AiCategoryRecord,
+} from '../features/categorise/categories';
 
 export function normalizeSearch(text: string): string {
   return text
@@ -17,6 +21,12 @@ export function filterPlaces(
   notes: PlaceNote[],
   collections: Collection[],
   visitedIds: string[] = [],
+  /**
+   * AI-suggested types (on-device only). A search for "gym" finds a "?"
+   * the AI suggested is a gym; "house" finds an AI-suggested house.
+   * Low-confidence / "not sure" records never match.
+   */
+  aiCategories?: Readonly<Record<string, AiCategoryRecord>>,
 ): Place[] {
   const favorites = new Set(favoriteIds);
   const visited = new Set(visitedIds);
@@ -45,6 +55,7 @@ export function filterPlaces(
         place.region,
         place.description,
         ...place.tags,
+        ...aiCategorySearchWords(aiCategories?.[place.id]),
         noteIndex.get(place.id) ?? '',
       ].join(' '),
     );

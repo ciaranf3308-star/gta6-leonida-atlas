@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Bookmark, Check, ExternalLink, MapPin, Move, Pencil, Star, X } from 'lucide-react';
+import { Bookmark, Check, ExternalLink, MapPin, Move, Pencil, Sparkles, Star, X } from 'lucide-react';
 import type { Place, Position } from '../../domain/types';
 import { isUnnamedPlace } from '../../domain/types';
 import {
@@ -8,6 +8,14 @@ import {
   placeStatusLine,
   placeTypeLine,
 } from '../../domain/tags';
+import {
+  AI_CATEGORIES,
+  AI_CATEGORY_LABELS,
+  aiCategoryDisplay,
+  effectiveAiCategory,
+  type AiCategoryId,
+} from '../categorise/categories';
+import { useAiIndexStore } from '../categorise/store';
 import { atlasRepository, ConflictError } from '../../db/repository';
 import {
   saveLocal,
@@ -52,6 +60,15 @@ export default function PlaceDetails({
   const [copied, setCopied] = useState(false);
   const isPersonal = place.evidence === 'personal';
   const research = getResearchForPlace(place);
+  // AI-suggested type for this place (on-device only). Never a verified
+  // fact — the sheet says so, with the confidence, and one tap confirms
+  // it or picks the right type instead.
+  const aiRecord = useAiIndexStore((s) => s.categories[place.id]);
+  const aiDisplay = aiCategoryDisplay(aiRecord);
+  const aiCategory = effectiveAiCategory(aiRecord);
+  const [correcting, setCorrecting] = useState(false);
+  const [correctChoice, setCorrectChoice] = useState<AiCategoryId>('house');
+  const [correctShopType, setCorrectShopType] = useState('');
   async function saveNote() {
     if (saving.current || !draft.dirty || draft.conflict) return;
     saving.current = true;
@@ -122,6 +139,18 @@ export default function PlaceDetails({
                 ? 'Unverified place · position not confirmed'
                 : 'Community placement · approximate'}
         </p>
+        {aiDisplay && aiCategory && (
+          <p className="ai-chip" role="status">
+            <Sparkles size={13} /> AI suggested: {aiDisplay.label} ·{' '}
+            {Math.round(aiDisplay.confidence * 100)}% sure
+          </p>
+        )}
+        {aiRecord && aiRecord.status === 'unsure' && (
+          <p className="ai-chip is-unsure" role="status">
+            <Sparkles size={13} /> The AI was not sure what this is yet — it stays
+            uncategorised.
+          </p>
+        )}
         {isUnnamedPlace(place) && (
           <section className="detail-section" aria-label="What is known about this place">
             <h3>What we know</h3>
@@ -168,22 +197,136 @@ export default function PlaceDetails({
             )}
           </section>
         )}
-        <button
-          disabled={!ready}
-          className={`button ${favorite ? 'selected' : ''}`}
-          onClick={() => void saveLocal(() => atlasRepository.toggleFavorite(place.id))}
-        >
-          <Star size={18} fill={favorite ? 'currentColor' : 'none'} />
-          {favorite ? 'Saved to favorites' : 'Add to favorites'}
-        </button>
-        <button
-          disabled={!ready}
-          className={`button ${found ? 'selected' : ''}`}
-          onClick={() => void saveLocal(() => atlasRepository.toggleVisited(place.id))}
-        >
-          <Check size={18} />
-          {found ? 'Found ✓ — tap to undo' : 'Mark as found'}
-        </button>
+        {aiRecord && (
+          <section className="detail-section ai-suggestion" aria-label="AI-suggested type">
+            <h3>
+              <Sparkles size={15} /> What the AI suggests
+            </h3>
+            {aiDisplay && aiCategory ? (
+              <>
+                <p className="help-text">
+                  <strong>
+                    {aiDisplay.label} — {Math.round(aiDisplay.confidence * 100)}% sure.
+                  </strong>{' '}
+                  {aiRecord.reason}
+                </p>
+                <p className="help-text">
+                  AI suggested, not a verified fact. The name stays “?” — only the type is
+                  suggested, and only from what the map already knows.
+                </p>
+                {aiRecord.status === 'suggested' && (
+                  <button
+                    type="button"
+                    className="button"
+                    onClick={() => useAiIndexStore.getState().confirmCategory(place.id)}
+                  >
+                    <Check size={16} /> That looks right — confirm
+                  </button>
+                )}
+                {aiRecord.status === 'confirmed' && (
+                  <p className="success-message" role="status">
+                    You confirmed this is a {aiDisplay.label.toLowerCase()}.
+                  </p>
+                )}
+                {aiRecord.status === 'corrected' && (
+                  <p className="success-message" role="status">
+                    You corrected this to {aiDisplay.label.toLowerCase()}.
+                  </p>
+                )}
+              </>
+            ) : (
+              <p className="help-text">
+                The AI was not sure what this is yet, so it stays uncategorised rather than
+                guessing. If you know what it is, pick the type below.
+              </p>
+            )}
+            {!correcting ? (
+              <button
+                type="button"
+                className="text-button"
+                onClick={() => {
+                  setCorrectChoice(aiCategory ?? 'house');
+                  setCorrecting(true);
+                }}
+              >
+                Not right? Choose the type
+              </button>
+            ) : (
+              <div className="ai-correct">
+                <label htmlFor="ai-correct-type">What kind of place is this?</label>
+                <select
+                  id="ai-correct-type"
+                  value={correctChoice}
+                  onChange={(e) => setCorrectChoice(e.target.value as AiCategoryId)}
+                >
+                  {AI_CATEGORIES.map((category) => (
+                    <option key={category} value={category}>
+                      {AI_CATEGORY_LABELS[category]}
+                    </option>
+                  ))}
+                </select>
+                {correctChoice === 'shop' && (
+                  <>
+                    <label htmlFor="ai-correct-shop-type">What kind of shop? (optional)</label>
+                    <input
+                      id="ai-correct-shop-type"
+                      type="text"
+                      maxLength={30}
+                      placeholder="e.g. supermarket"
+                      value={correctShopType}
+                      onChange={(e) => setCorrectShopType(e.target.value)}
+                    />
+                  </>
+                )}
+                <div className="button-row">
+                  <button
+                    type="button"
+                    className="button primary"
+                    onClick={() => {
+                      useAiIndexStore
+                        .getState()
+                        .correctCategory(
+                          place.id,
+                          correctChoice,
+                          correctChoice === 'shop'
+                            ? correctShopType.trim() || undefined
+                            : undefined,
+                        );
+                      setCorrecting(false);
+                    }}
+                  >
+                    Save my type
+                  </button>
+                  <button
+                    type="button"
+                    className="button"
+                    onClick={() => setCorrecting(false)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+        <div className="detail-actions">
+          <button
+            disabled={!ready}
+            className={`button ${favorite ? 'selected' : ''}`}
+            onClick={() => void saveLocal(() => atlasRepository.toggleFavorite(place.id))}
+          >
+            <Star size={18} fill={favorite ? 'currentColor' : 'none'} />
+            {favorite ? 'Saved to favorites' : 'Add to favorites'}
+          </button>
+          <button
+            disabled={!ready}
+            className={`button ${found ? 'selected' : ''}`}
+            onClick={() => void saveLocal(() => atlasRepository.toggleVisited(place.id))}
+          >
+            <Check size={18} />
+            {found ? 'Found ✓ — tap to undo' : 'Mark as found'}
+          </button>
+        </div>
         {place.description && <p className="description">{place.description}</p>}
         <dl className="place-meta">
           <div>
@@ -205,9 +348,16 @@ export default function PlaceDetails({
             </div>
           )}
         </dl>
-        {place.tags.length > 0 && (
-          <p className="tags">{displayTagsFor(place).join(' · ') || place.tags.join(' · ')}</p>
-        )}
+        {place.tags.length > 0 &&
+          (displayTagsFor(place).length > 0 ? (
+            <p className="detail-tags" aria-label="What this place is">
+              {displayTagsFor(place).map((label) => (
+                <span key={label}>{label}</span>
+              ))}
+            </p>
+          ) : (
+            <p className="tags">{place.tags.join(' · ')}</p>
+          ))}
         {place.source.url && (
           <a className="source-link" href={place.source.url} target="_blank" rel="noreferrer">
             {place.source.title}

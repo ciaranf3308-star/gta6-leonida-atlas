@@ -245,7 +245,8 @@ h3 {
   text-align: left;
 }
 .place-results {
-  border-top: 1px solid var(--border);
+  display: grid;
+  gap: 8px;
 }
 .place-result {
   display: flex;
@@ -253,11 +254,12 @@ h3 {
   gap: 12px;
   width: 100%;
   text-align: left;
-  background: none;
-  border: 0;
-  border-bottom: 1px solid var(--border);
-  padding: 15px 9px;
-  min-height: 65px;
+  background: #122d39;
+  border: 1px solid #2c4a55;
+  border-radius: 12px;
+  padding: 13px 12px;
+  min-height: 64px;
+  box-shadow: 0 1px 6px #00101830;
 }
 .place-result > svg:first-child {
   color: var(--accent);
@@ -281,11 +283,13 @@ h3 {
 }
 .place-result.active {
   background: #183c45;
-  outline: 1px solid var(--accent);
-  outline-offset: -1px;
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 1px var(--accent);
 }
 .place-result:hover {
-  background: var(--surface-raised);
+  background: #173b43;
+  border-color: #41606a;
 }
 .place-result > svg:last-child {
   color: var(--muted);
@@ -574,12 +578,15 @@ h3 {
   padding: 18px 0;
 }
 .layer-row {
-  padding: 17px 0;
-  border-bottom: 1px solid var(--border);
+  padding: 13px 12px;
+  border: 1px solid #2c4a55;
+  border-radius: 12px;
+  background: #122d39;
   display: flex;
   align-items: flex-start;
   gap: 4px;
   min-height: 48px;
+  margin-bottom: 8px;
 }
 .layer-row label {
   display: flex;
@@ -1331,17 +1338,20 @@ h3 {
   }
 }
 
-/* First-run welcome sheet: counts + quick starts + API key onboarding. */
+/* First-run welcome sheet: counts as stat cards, not a flat list. */
 .welcome-counts {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 .welcome-counts li {
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 10px;
+  border: 1px solid #2c4a55;
+  border-radius: 12px;
+  background: #122d39;
+  padding: 12px 14px;
+  border-left: 3px solid var(--accent);
 }
 .welcome-counts strong {
   display: block;
@@ -1551,4 +1561,228 @@ h3 {
   background: #73cbbb;
   border-color: #73cbbb;
   color: #0b202c;
+}
+
+/* ---- Visual polish pass (phone-first companion app) ---- */
+
+/* Buttons: the primary action reads as the action. */
+.button.primary {
+  box-shadow: 0 4px 14px #73cbbb30;
+}
+
+/* Place detail sheet: a real bottom sheet — grabber, actions side by
+   side, meta as a card, tags as chips. */
+.detail-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 4px;
+}
+.detail-actions .button {
+  min-height: 46px;
+  padding: 10px 8px;
+  font-size: 12px;
+}
+.place-meta {
+  background: #122d39;
+  border: 1px solid #2c4a55;
+  border-radius: 12px;
+  padding: 6px 14px;
+}
+.detail-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 16px 0;
+}
+.detail-tags span {
+  border: 1px solid #41606a;
+  border-radius: 999px;
+  background: #173b43;
+  color: #d6e9e5;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 10px;
+}
+.detail-section h3 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+/* AI-suggested type: gold, so it never reads as a verified fact. */
+.ai-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #8a6d2f;
+  border-radius: 999px;
+  background: #3a2f14;
+  color: #f2d897;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+  padding: 6px 11px;
+  margin: 0 0 14px;
+}
+.ai-chip.is-unsure {
+  border-color: #57707a;
+  background: #173b43;
+  color: #c9d5d7;
+}
+.ai-suggestion {
+  border: 1px solid #8a6d2f;
+  border-radius: 12px;
+  background: #231f10;
+  padding: 16px;
+  margin-top: 24px;
+}
+.ai-suggestion.detail-section {
+  border-top: 1px solid #8a6d2f;
+  padding-top: 16px;
+}
+.ai-correct {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+.ai-correct > label {
+  margin-bottom: 0;
+}
+
+/* Index panel (Layers): a card with a real progress bar. */
+.index-panel {
+  border: 1px solid #41606a;
+  border-radius: 14px;
+  background: #122d39;
+  padding: 16px;
+  margin-top: 16px;
+}
+.index-panel > h3 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 8px;
+}
+.index-progress {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0;
+}
+.index-counts strong {
+  display: block;
+  font-size: 13px;
+}
+.index-counts span {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+.index-progress .progress-bar {
+  width: 100%;
+  height: 10px;
+}
+.index-progress .progress-bar::after {
+  background: #f2d897;
+}
+.index-no-key {
+  display: grid;
+  gap: 10px;
+  border: 1px solid #73cbbb;
+  border-radius: 10px;
+  background: #173b43;
+  padding: 12px;
+  margin-top: 12px;
+}
+.index-no-key p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.index-done {
+  display: grid;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+/* Ask panel: glass, softer bubbles, room to read. */
+.ask-panel {
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 16px;
+}
+.ask-message {
+  border-radius: 12px;
+}
+.ask-message.is-user {
+  background: #1d414b;
+  border-color: #3d6b73;
+}
+.ask-form input {
+  border-radius: 10px;
+}
+.ask-form button[type='submit'] {
+  border-radius: 10px;
+}
+
+/* Map chips: a fade on the right edge says the row scrolls. */
+.map-chips {
+  -webkit-mask-image: linear-gradient(to right, #000 88%, transparent 100%);
+  mask-image: linear-gradient(to right, #000 88%, transparent 100%);
+}
+.map-chip {
+  min-height: 40px;
+  padding: 9px 12px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.map-count-pill,
+.map-county-picker select {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+@media (max-width: 599px) {
+  /* The detail sheet owns the bottom of the screen: dock the Ask button
+     on the left, just above the sheet, instead of letting it cover the
+     place label (labels render to the right of their pin). */
+  .atlas-app[data-details='true'] .ask-fab {
+    right: auto;
+    left: 12px;
+    bottom: calc(52dvh + 12px);
+  }
+  /* Bottom-sheet grabber. */
+  .detail-panel::before {
+    content: '';
+    display: block;
+    width: 44px;
+    height: 4px;
+    border-radius: 999px;
+    background: #57707a;
+    margin: 10px auto 0;
+    flex-shrink: 0;
+  }
+  .detail-panel {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .ask-panel {
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  }
+  /* Top bar: "Add marker" goes icon-only so Explore + actions fit. */
+  .map-actions .button:nth-child(1) > span {
+    display: none;
+  }
+  .map-actions .button:nth-child(1) {
+    width: 39px;
+    padding: 9px;
+  }
+  /* Sidebar footer: tighter on a phone. */
+  .sidebar-footer {
+    padding-top: 10px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  }
+  .save-status {
+    margin-bottom: 10px;
+  }
 }

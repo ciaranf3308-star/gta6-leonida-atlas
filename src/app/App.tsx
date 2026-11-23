@@ -12,6 +12,7 @@ import {
 } from '../features/map/view-persistence';
 import { COUNTIES } from '../data/counties';
 import AskPanel from '../features/ask/AskPanel';
+import { useAiIndexStore } from '../features/categorise/store';
 import WelcomeSheet from '../features/onboarding/WelcomeSheet';
 import { hasSeenWelcome, markWelcomeSeen } from '../features/onboarding/onboarding';
 import { explorerPath } from '../features/explorer/public-path';
@@ -66,6 +67,7 @@ export default function App() {
   const highlightIds = useMapStore((s) => s.highlightIds);
   const highlightSet = useMemo(() => new Set(highlightIds), [highlightIds]);
   const offline = usePersistenceStore((s) => s.offline);
+  const aiCategories = useAiIndexStore((s) => s.categories);
   const focus = useMapStore((s) => s.focus);
   const boundsFocus = useMapStore((s) => s.boundsFocus);
   const editorMode = useMapStore((s) => s.editorMode);
@@ -113,12 +115,13 @@ export default function App() {
           notes,
           collections,
           visited.map((v) => v.placeId),
+          aiCategories,
         ).filter((place) =>
           [...atlasRegistry.filters.values()].every((filter) => filter.matches(place)),
         ),
         layers,
       ),
-    [allPlaces, filters, deferredQuery, favorites, notes, collections, visited, layers],
+    [allPlaces, filters, deferredQuery, favorites, notes, collections, visited, layers, aiCategories],
   );
   /** Per-layer found/total for the Progress section. Counts every place in the layer. */
   const progress = useMemo(() => {
@@ -218,6 +221,7 @@ export default function App() {
     if (window.innerWidth < 1000) useUiStore.getState().setSidebar(false);
   }, []);
   useEffect(() => {
+    useAiIndexStore.getState().load();
     useMapStore.getState().setLayers([...atlasRegistry.layers.values()]);
     // Restore the saved map view (layers, county, filters) from the last
     // visit — first launch has no saved view and stays blank on purpose.
@@ -349,7 +353,7 @@ export default function App() {
       <a className="skip-link" href="#atlas-map-region">
         Skip to map
       </a>
-      <Sidebar places={filtered} progress={progress} anyPublicLayerVisible={anyPublicLayerVisible} />
+      <Sidebar places={filtered} allPlaces={allPlaces} progress={progress} anyPublicLayerVisible={anyPublicLayerVisible} />
       <section className="map-workspace" id="atlas-map-region" aria-label="Interactive Leonida map">
         <MapView
           places={mapPlaces}
@@ -376,6 +380,7 @@ export default function App() {
           places={allPlaces}
           layers={layers}
           filters={filters}
+          aiCategories={aiCategories}
           visitedIds={visited.map((v) => v.placeId)}
           offline={offline}
           onSelect={select}

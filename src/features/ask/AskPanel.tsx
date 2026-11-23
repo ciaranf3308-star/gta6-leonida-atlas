@@ -12,11 +12,17 @@ import {
   parsePlaceMentions,
   setAskApiKey,
 } from './openai';
+import {
+  aiCategoryDisplay,
+  type AiCategoryRecord,
+} from '../categorise/categories';
 
 export interface AskPanelProps {
   places: Place[];
   layers: LayerDefinition[];
   filters: Filters;
+  /** AI-suggested types for unnamed places (on-device only). */
+  aiCategories: Readonly<Record<string, AiCategoryRecord>>;
   visitedIds: string[];
   offline: boolean;
   onSelect: (id: string) => void;
@@ -93,6 +99,7 @@ export default function AskPanel(props: AskPanelProps) {
         places: props.places,
         layers: props.layers,
         filters: props.filters,
+        aiCategories: props.aiCategories,
         visitedIds: props.visitedIds,
         // Follow-ups ("is there nowhere else?") inherit the place from the
         // earlier question in this conversation — the layers asked for
@@ -144,6 +151,7 @@ export default function AskPanel(props: AskPanelProps) {
         proximitySummary: result.proximitySummary,
         anchorName: result.anchorPlace?.title ?? result.areaLabel,
         distances: result.anchorDistances,
+        aiCategories: props.aiCategories,
       });
       const mentioned = parsePlaceMentions(answer, result.records);
       const highlight = mentioned.length > 0 ? mentioned : result.records;
@@ -227,6 +235,7 @@ export default function AskPanel(props: AskPanelProps) {
                 {message.placeIds.slice(0, 10).map((id) => {
                   const place = placeById.get(id);
                   if (!place) return null;
+                  const aiDisplay = aiCategoryDisplay(props.aiCategories[id]);
                   return (
                     <li key={id}>
                       <button type="button" onClick={() => props.onSelect(id)}>
@@ -236,6 +245,7 @@ export default function AskPanel(props: AskPanelProps) {
                           {isUnnamedPlace(place) && displayTagsFor(place).length > 0
                             ? ` · ${displayTagsFor(place).join(' · ')}`
                             : ''}
+                          {aiDisplay ? ` · AI suggested: ${aiDisplay.label}` : ''}
                         </small>
                       </button>
                     </li>
@@ -256,18 +266,20 @@ export default function AskPanel(props: AskPanelProps) {
           </p>
         )}
       </div>
-      <div className="ask-suggestions">
-        {SUGGESTED_PROMPTS.map((prompt) => (
-          <button
-            key={prompt}
-            type="button"
-            disabled={busy || props.offline}
-            onClick={() => void submit(prompt)}
-          >
-            {prompt}
-          </button>
-        ))}
-      </div>
+      {messages.length === 0 && (
+        <div className="ask-suggestions">
+          {SUGGESTED_PROMPTS.map((prompt) => (
+            <button
+              key={prompt}
+              type="button"
+              disabled={busy || props.offline}
+              onClick={() => void submit(prompt)}
+            >
+              {prompt}
+            </button>
+          ))}
+        </div>
+      )}
       <form
         className="ask-form"
         onSubmit={(event) => {
@@ -290,7 +302,7 @@ export default function AskPanel(props: AskPanelProps) {
           <Send size={18} />
         </button>
       </form>
-      {!hasKey && (
+      {!hasKey && messages.length === 0 && (
         <div className="ask-key-onboarding">
           <p>
             For written answers, Ask needs your OpenAI key. Paste it here — it stays only on
@@ -321,6 +333,14 @@ export default function AskPanel(props: AskPanelProps) {
             </button>
           </p>
         </div>
+      )}
+      {!hasKey && messages.length > 0 && (
+        <p className="help-text">
+          Written answers need your OpenAI key.{' '}
+          <button type="button" className="text-button" onClick={props.onOpenSettings}>
+            Add it in Settings
+          </button>
+        </p>
       )}
       {hasKey && (
         <p className="help-text">
