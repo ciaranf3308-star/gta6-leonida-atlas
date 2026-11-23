@@ -12,6 +12,16 @@ GTADB data CC BY 4.0). Personal use. Live at
   Strength, Free outdoor equipment, Uncertain records, and one layer per
   trading-card set (18). First load shows only the blank Leonida basemap —
   no pins, no labels.
+- First launch shows a welcome sheet saying the map starts blank on purpose,
+  with the real counts per layer (3,775 places mapped: interiors 81, shops
+  39, lootable 52, gyms 8 + 2 free outdoor, community 680, uncertain 2,902,
+  regions 6, cards 5 verified pins of 480) and one-tap quick starts — "Show
+  gyms", "Show lootable", "Show interiors", "Show shops" — that turn on just
+  that layer. Reopen it any time from the ? button on the map. The Layers
+  button in the top bar opens the layer toggles, which now show their counts.
+- The welcome sheet also onboards the Ask Nylah OpenAI key in place (same
+  inline key field in the Ask panel when no key is set): the key stays only
+  on the device, in localStorage, sent only to api.openai.com when asking.
 - "My markers" (your own notes) stays on; those can never spoil anything.
 - Search and the results list only return places from layers you turned on.
   With everything off, Explore says so and points at Layers.

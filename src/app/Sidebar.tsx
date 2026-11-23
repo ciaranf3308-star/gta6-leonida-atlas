@@ -79,8 +79,9 @@ function CountyPicker() {
   );
 }
 
-function LayerManager() {
+function LayerManager({ progress }: { progress: LayerProgress[] }) {
   const layers = useMapStore((s) => s.layers);
+  const totalById = new Map(progress.map((entry) => [entry.layerId, entry.total]));
   const ordered = [...layers].sort((a, b) => b.order - a.order);
   function move(id: string, direction: number) {
     const index = ordered.findIndex((l) => l.id === id);
@@ -126,6 +127,9 @@ function LayerManager() {
             <span className="layer-dot" style={{ background: layer.style.color }} />
             <span>
               {layer.name}
+              {totalById.has(layer.id) && (
+                <> · {(totalById.get(layer.id) ?? 0).toLocaleString()} places</>
+              )}
               <small>{layer.description}</small>
             </span>
           </label>
@@ -359,7 +363,7 @@ export function Sidebar({
         {tab === 'explore' ? (
           <Results places={places} anyPublicLayerVisible={anyPublicLayerVisible} />
         ) : tab === 'layers' ? (
-          <LayerManager />
+          <LayerManager progress={progress} />
         ) : (
           <SavedPlaces progress={progress} />
         )}

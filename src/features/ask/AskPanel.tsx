@@ -1,9 +1,15 @@
 import { useState } from 'react';
-import { Send, Sparkles, X } from 'lucide-react';
+import { KeyRound, Send, Sparkles, X } from 'lucide-react';
 import type { Filters, LayerDefinition, Place } from '../../domain/types';
 import { useMapStore } from '../../stores/atlas';
 import { retrieveForAsk } from './retrieval';
-import { askOpenAi, getAskApiKey, getAskModel, parsePlaceMentions } from './openai';
+import {
+  askOpenAi,
+  getAskApiKey,
+  getAskModel,
+  parsePlaceMentions,
+  setAskApiKey,
+} from './openai';
 
 export interface AskPanelProps {
   places: Place[];
@@ -34,6 +40,15 @@ export default function AskPanel(props: AskPanelProps) {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<AskMessage[]>([]);
   const [busy, setBusy] = useState(false);
+  const [keyInput, setKeyInput] = useState('');
+  const [hasKey, setHasKey] = useState(() => getAskApiKey().length > 0);
+
+  function saveKey() {
+    if (!keyInput.trim()) return;
+    setAskApiKey(keyInput.trim());
+    setKeyInput('');
+    setHasKey(true);
+  }
 
   const placeById = new Map(props.places.map((place) => [place.id, place]));
 
@@ -202,7 +217,7 @@ export default function AskPanel(props: AskPanelProps) {
                 })}
               </ul>
             )}
-            {message.role === 'assistant' && message.placeIds.length === 0 && !getAskApiKey() && (
+            {message.role === 'assistant' && message.placeIds.length === 0 && !hasKey && (
               <button type="button" className="text-button" onClick={props.onOpenSettings}>
                 Add your OpenAI key in Settings
               </button>
@@ -249,10 +264,41 @@ export default function AskPanel(props: AskPanelProps) {
           <Send size={18} />
         </button>
       </form>
-      {!getAskApiKey() && (
+      {!hasKey && (
+        <div className="ask-key-onboarding">
+          <p>
+            For written answers, Ask needs your OpenAI key. Paste it here — it stays only on
+            this phone, and is sent nowhere except OpenAI when you ask. Without a key, matching
+            places still show on the map.
+          </p>
+          <div className="ask-key-row">
+            <label className="map-sr-only" htmlFor="ask-api-key-inline">
+              OpenAI API key
+            </label>
+            <input
+              id="ask-api-key-inline"
+              type="password"
+              autoComplete="off"
+              autoCapitalize="off"
+              spellCheck={false}
+              placeholder="Paste your OpenAI key (sk-…)"
+              value={keyInput}
+              onChange={(event) => setKeyInput(event.target.value)}
+            />
+            <button type="button" className="button" disabled={!keyInput.trim()} onClick={saveKey}>
+              <KeyRound size={16} /> Save key
+            </button>
+          </div>
+          <p>
+            <button type="button" className="text-button" onClick={props.onOpenSettings}>
+              Or add it in Settings instead
+            </button>
+          </p>
+        </div>
+      )}
+      {hasKey && (
         <p className="help-text">
-          No API key yet — matching places still show, written answers need your OpenAI key in
-          Settings. The key stays on this device only.
+          Key saved on this device — you can change or remove it in Settings.
         </p>
       )}
     </section>

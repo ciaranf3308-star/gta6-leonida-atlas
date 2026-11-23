@@ -19,6 +19,31 @@ const overflow = await page
 console.log('tiles loaded in view:', tiles);
 console.log('horizontal overflow px:', overflow);
 
+// First launch: the welcome sheet must say the map starts blank on purpose
+// and prove the places are mapped, with real counts.
+await page.getByText('Welcome to Leonida').waitFor({ timeout: 30000 });
+console.log('welcome sheet shown on first launch');
+for (const countText of ['3,775 places', 'Lootable buildings', 'Interiors / Enterable']) {
+  if (!(await page.getByText(countText).first().isVisible()))
+    throw new Error(`welcome sheet missing: ${countText}`);
+}
+const welcomeOverflow = await page
+  .locator('html')
+  .evaluate((el) => el.scrollWidth - el.clientWidth);
+console.log('welcome sheet horizontal overflow px:', welcomeOverflow);
+if (welcomeOverflow > 0) process.exit(1);
+// Quick start: "Show lootable" turns on just that layer and its pins render.
+await page.getByRole('button', { name: /^Show lootable/ }).click();
+await page.waitForTimeout(2000);
+const lootableMarkers = await page.locator('.atlas-map-marker').count();
+console.log('markers on map after Show lootable:', lootableMarkers);
+if (lootableMarkers === 0) process.exit(1);
+// Reopen the welcome sheet from the ? button, then close it.
+await page.getByRole('button', { name: /Welcome — what is mapped/ }).click();
+await page.getByText('Welcome to Leonida').waitFor({ timeout: 10000 });
+await page.getByRole('button', { name: 'Close dialog' }).click();
+console.log('welcome sheet reopens from the ? button');
+
 // Open Layers, check new layers exist and are off by default
 await page.getByRole('button', { name: 'Open sidebar', exact: true }).click();
 await page.getByRole('button', { name: 'Layers', exact: true }).click();
@@ -79,6 +104,14 @@ const highlighted = await page.locator('.atlas-map-marker.is-highlighted').count
 console.log('Ask highlights on map:', highlighted);
 console.log('Ask overflow px:', askOverflow);
 if (askOverflow > 0 || highlighted === 0) process.exit(1);
+// Ask API-key onboarding: inline key field, paste + save right there.
+const keyField = page.locator('#ask-api-key-inline');
+console.log('Ask inline key field present:', (await keyField.count()) > 0);
+if ((await keyField.count()) === 0) process.exit(1);
+await keyField.fill('sk-test-fake-key');
+await page.getByRole('button', { name: /Save key/ }).click();
+await page.getByText('Key saved on this device').waitFor({ timeout: 10000 });
+console.log('Ask inline key onboarding: key saved in panel');
 await page.getByRole('button', { name: 'Close Ask Nylah' }).click();
 // Settings: API key field is masked (password type), never plain text.
 await page.getByRole('button', { name: 'Open sidebar', exact: true }).click();

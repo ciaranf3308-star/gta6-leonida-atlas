@@ -1061,6 +1061,10 @@ h3 {
     width: 34px;
     min-width: 34px;
   }
+  .map-actions .icon-button {
+    width: 34px;
+    min-width: 34px;
+  }
   .sidebar-toggle {
     font-size: 11px;
     gap: 6px;
@@ -1317,4 +1321,89 @@ h3 {
     bottom: calc(52dvh + 12px);
     max-height: 44dvh;
   }
+}
+
+/* First-run welcome sheet: counts + quick starts + API key onboarding. */
+.welcome-counts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.welcome-counts li {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+}
+.welcome-counts strong {
+  display: block;
+  font-size: 13px;
+}
+.welcome-counts small {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+.welcome-quick-starts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.welcome-quick-starts .button {
+  display: grid;
+  gap: 2px;
+  text-align: left;
+  padding: 10px 12px;
+}
+.welcome-quick-starts .button small {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--muted);
+}
+.welcome-key-row {
+  display: flex;
+  gap: 8px;
+}
+.welcome-key-row input {
+  flex: 1;
+  min-width: 0;
+}
+.welcome-key-row .button {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Ask Nylah — inline API key onboarding when no key is set. */
+.ask-key-onboarding {
+  border: 1px solid #73cbbb;
+  border-radius: 8px;
+  padding: 10px;
+  background: #122d39;
+}
+.ask-key-onboarding p {
+  margin: 0 0 8px;
+  font-size: 12px;
+  line-height: 1.55;
+}
+.ask-key-row {
+  display: flex;
+  gap: 8px;
+}
+.ask-key-row input {
+  flex: 1;
+  min-width: 0;
+}
+.ask-key-row .button {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #73cbbb;
+  border-radius: 4px;
+  color: #0b202c;
+  background: #73cbbb;
+  font-weight: 700;
 }

@@ -1,10 +1,12 @@
 import { lazy, Suspense, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
-import { Box, Info, MapPinPlus, Menu, X } from 'lucide-react';
+import { Box, HelpCircle, Info, Layers, MapPinPlus, Menu, X } from 'lucide-react';
 import { loadCatalogue, markerToPlace } from '../data/catalogue';
 import { filterPlaces } from '../domain/filter';
 import { DEFAULT_LAYERS, filterByVisibleLayers } from '../features/map/layers';
 import MapView from '../features/map/MapView';
 import AskPanel from '../features/ask/AskPanel';
+import WelcomeSheet from '../features/onboarding/WelcomeSheet';
+import { hasSeenWelcome, markWelcomeSeen } from '../features/onboarding/onboarding';
 import { explorerPath } from '../features/explorer/public-path';
 import { atlasRegistry } from '../plugins/registry';
 import {
@@ -62,6 +64,30 @@ export default function App() {
   const editorMode = useMapStore((s) => s.editorMode);
   const draftPosition = useMapStore((s) => s.draftPosition);
   const ready = usePersistenceStore((s) => s.ready);
+  const [welcomeOpen, setWelcomeOpen] = useState(false);
+  /** First run: once the catalogue is loaded, say the map starts blank on
+   * purpose and show what is mapped — otherwise the user sees nothing and
+   * reasonably thinks nothing is mapped. */
+  useEffect(() => {
+    if (status === 'ready' && !hasSeenWelcome()) setWelcomeOpen(true);
+  }, [status]);
+  function closeWelcome() {
+    markWelcomeSeen();
+    setWelcomeOpen(false);
+  }
+  function quickStart(layerId: string) {
+    useMapStore
+      .getState()
+      .setLayers(
+        useMapStore
+          .getState()
+          .layers.map((layer) =>
+            layer.id === layerId ? { ...layer, visible: true } : layer,
+          ),
+      );
+    markWelcomeSeen();
+    setWelcomeOpen(false);
+  }
   const persistenceLoading = usePersistenceStore((s) => s.status === 'loading');
   const workspaceRevision = useWorkspaceStore((s) => s.revision);
   const allPlaces = useMemo(() => [...places, ...markers.map(markerToPlace)], [places, markers]);
@@ -308,6 +334,23 @@ export default function App() {
               <span>3D explorer</span>
             </button>
             <button
+              className="icon-button"
+              aria-label="Layers — turn places on and off"
+              onClick={() => {
+                useUiStore.getState().setTab('layers');
+                useUiStore.getState().setSidebar(true);
+              }}
+            >
+              <Layers size={19} />
+            </button>
+            <button
+              className="icon-button"
+              aria-label="Welcome — what is mapped and how to show it"
+              onClick={() => setWelcomeOpen(true)}
+            >
+              <HelpCircle size={19} />
+            </button>
+            <button
               className="icon-button map-about"
               aria-label="About this atlas"
               onClick={() => navigate('about')}
@@ -356,6 +399,9 @@ export default function App() {
         {dialog === 'backup' && <BackupDialog onClose={closeDialog} />}
         {dialog === 'settings' && <SettingsDialog onClose={closeDialog} />}
       </Suspense>
+      {welcomeOpen && (
+        <WelcomeSheet places={allPlaces} layers={layers} onQuickStart={quickStart} onClose={closeWelcome} />
+      )}
     </main>
   );
 }
