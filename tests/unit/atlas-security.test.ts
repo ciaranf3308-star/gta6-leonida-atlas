@@ -37,7 +37,7 @@ async function fixture() {
     'assets/app-test.css': 'body{color:black}',
     'assets/walk-world-test.js': 'console.log("optional 3D")',
     'assets/gta6-leonida-atlas/basemap.svg': '<svg><title>Original</title></svg>',
-    'assets/street-leonida/maps/gtadb-landmarks-5c1d69f.json': '{"landmarks":[]}',
+    'assets/street-leonida/maps/gtadb-landmarks-d406fea.json': '{"landmarks":[]}',
   };
   for (const [path, contents] of Object.entries(files)) {
     const destination = join(directory, 'dist', path);

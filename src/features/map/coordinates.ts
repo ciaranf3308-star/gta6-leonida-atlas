@@ -12,8 +12,12 @@ export interface MapBounds {
 export const BASEMAP_BOUNDS: MapBounds = CANONICAL_BOUNDS;
 /** Fits the source's occupied extent, including the Keys and northern community coverage. */
 export const INITIAL_BOUNDS: MapBounds = { west: -10000, east: 3300, south: -8000, north: 9200 };
-export const MIN_ZOOM = -7;
-export const MAX_ZOOM = 3;
+/**
+ * Leaflet zoom range, mapped 1:1 onto GTADB In-Game Day tile zooms 0-6
+ * (see gtadb-tiles.ts): -5 is the whole map, 1 is native max detail.
+ */
+export const MIN_ZOOM = -5;
+export const MAX_ZOOM = 1;
 
 /** Leaflet calls the tuple lat/lng; CRS.Simple treats it as raw y/x, without projection. */
 export function toMapCoordinate(position: Position): [number, number] {

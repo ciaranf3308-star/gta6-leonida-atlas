@@ -1,4 +1,5 @@
 import type { Collection, Filters, Place, PlaceNote } from './types';
+import { countyForPlace } from '../data/counties';
 
 export function normalizeSearch(text: string): string {
   return text
@@ -27,6 +28,10 @@ export function filterPlaces(
   const hideFound = filters.hideFound || filters.remainingOnly;
   return places.filter((place) => {
     if (hideFound && visited.has(place.id)) return false;
+    if (filters.countyId) {
+      if (!place.position) return false;
+      if (countyForPlace(place) !== filters.countyId) return false;
+    }
     if (filters.category !== 'all' && filters.category !== place.category) return false;
     if (filters.favoritesOnly && !favorites.has(place.id)) return false;
     if (filters.personalOnly && place.evidence !== 'personal') return false;

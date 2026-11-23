@@ -3,7 +3,8 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { catalogueFromSnapshot } from "../../src/data/catalogue";
-import { GYM_PLACES } from "../../src/data/gyms";
+import { COLLECTABLE_CARD_PLACES } from "../../src/data/collectables";
+import { GYM_PLACES, OUTDOOR_GYM_PLACES } from "../../src/data/gyms";
 import { filterPlaces } from "../../src/domain/filter";
 import ExplorerView from "../../src/features/explorer/ExplorerView";
 import RegionalResearch from "../../src/features/library/RegionalResearch";
@@ -16,7 +17,7 @@ import {
 const snapshot = JSON.parse(
   readFileSync(
     new URL(
-      "../../public/assets/street-leonida/maps/gtadb-landmarks-5c1d69f.json",
+      "../../public/assets/street-leonida/maps/gtadb-landmarks-d406fea.json",
       import.meta.url,
     ),
     "utf8",
@@ -108,7 +109,13 @@ describe("regional source discoveries", () => {
 
   it("adds source context without changing any source coordinate or introducing discovery pins", () => {
     const catalogue = catalogueFromSnapshot(snapshot);
-    expect(catalogue.length).toBe(snapshot.landmarks.length + 6 + GYM_PLACES.length);
+    expect(catalogue.length).toBe(
+      snapshot.landmarks.length +
+        6 +
+        GYM_PLACES.length +
+        OUTDOOR_GYM_PLACES.length +
+        COLLECTABLE_CARD_PLACES.length,
+    );
     const raw = snapshot.landmarks.find(
       (place: { id: string }) => place.id === "L399",
     );
@@ -133,6 +140,7 @@ describe("regional source discoveries", () => {
           personalOnly: false,
           evidence: "all",
           collectionId: null,
+          countyId: null,
           hideFound: false,
           remainingOnly: false,
         },

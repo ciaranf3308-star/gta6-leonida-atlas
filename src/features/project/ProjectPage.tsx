@@ -175,15 +175,17 @@ function Documentation() {
       </Section>
       <Section title="Cartography">
         <p>
-          The basemap derives from pinned Yanis v16 GTADB raster tiles. Land, water, vegetation,
-          roads and building marks are generalized and recolored. Landmark proximity is never used
-          to invent roads. The coastline halo is decorative, not bathymetry, and land shading is not
-          a validated elevation measurement.
+          The 2D basemap is GTADB&apos;s In-Game Day map — the real in-game map tiles
+          (map artwork © Rockstar Games), served as tiles so it stays sharp at full zoom.
+          Place positions on it are approximate community data, never official coordinates.
+          The 3D explorer still uses the earlier Yanis v16-derived raster; its land, water,
+          vegetation, roads and building marks are generalized and recolored, and its coastline
+          halo is decorative, not bathymetry.
         </p>
         <p>
-          Legend and screenshot columns are excluded. Unmapped margins represent absent source
-          coverage, not evidence of sea. Source annotations may leave residual marks where their
-          colors cannot be separated reliably from road detail.
+          Unmapped margins represent absent source coverage, not evidence of sea. County
+          extents in the county picker are estimates from GTADB records that name the county;
+          no official boundary lines are published.
         </p>
       </Section>
       <Section title="Local data and backups">
@@ -227,11 +229,13 @@ function Credits() {
           <a href={GTADB_PREFERRED_SOURCE} target="_blank" rel="noreferrer">
             GTADB / Map GTA
           </a>{' '}
-          and its contributors. Community map artwork is Yanis v16, distributed through GTADB.
+          and its contributors. The 2D basemap is GTADB&apos;s In-Game Day map tiles (map
+          artwork © Rockstar Games); the 3D explorer uses the Yanis v16-derived raster,
+          distributed through GTADB.
         </p>
         <p>
           The pinned revision is <code className="project-revision">{GTADB_REVISION}</code>. The
-          catalogue contains 3,431 records: 3,340 positioned records and 91 without coordinates.
+          catalogue contains 3,754 records: 3,663 positioned records and 91 without coordinates.
         </p>
         <p>
           <a href={`${GTADB_SOURCE}/tree/${GTADB_BASEMAP_REVISION}/maps`} target="_blank" rel="noreferrer">
@@ -397,7 +401,7 @@ function Licenses() {
       </Section>
       <Section title="GTADB-derived data and cartography">
         <p>
-          GTADB landmark data and Yanis v16 cartographic source material remain under{' '}
+          GTADB landmark data and In-Game Day map tiles remain under{' '}
           <a href={GTADB_LICENSE_URL} rel="license noreferrer" target="_blank">
             Creative Commons Attribution 4.0 International
           </a>

@@ -28,7 +28,7 @@ function AtlasIntroduction() {
           <p className="project-lead">{ATLAS_ENTRY_META.description}</p>
           <h2>Sources and approximate geography</h2>
           <p>
-            The map uses Yanis v16 cartography and GTADB landmark records.
+            The map uses GTADB In-Game Day map tiles and GTADB landmark records.
             Community-estimated positions are distinct from official Rockstar
             location evidence. This is not an official map, and absent coverage
             remains unknown.

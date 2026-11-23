@@ -10,16 +10,16 @@ export const ATLAS_PROJECT_META: Record<
       "Understand the independent Leonida Atlas project, its approximate community geography, local data and public source release history.",
   },
   documentation: {
-    title: "GTA 6 Map Guide: Yanis v16, Sources & Atlas Controls",
+    title: "GTA 6 Map Guide: GTADB In-Game Map, Sources & Atlas Controls",
     heading: "How to Use the GTA 6 Leonida Atlas",
     description:
-      "Learn how to explore the Leonida Atlas, use the Yanis v16 basemap and distinguish confirmed evidence from approximate community mapping.",
+      "Learn how to explore the Leonida Atlas, use the GTADB in-game basemap and distinguish confirmed evidence from approximate community mapping.",
   },
   credits: {
-    title: "Leonida Atlas Credits: Yanis v16, GTADB & Map Sources",
-    heading: "Yanis v16 and Leonida Atlas Credits",
+    title: "Leonida Atlas Credits: GTADB In-Game Map & Map Sources",
+    heading: "GTADB In-Game Map and Leonida Atlas Credits",
     description:
-      "Find the Yanis v16 and GTADB map attribution, pinned landmark sources, Rockstar references and rights notices behind the Leonida Atlas.",
+      "Find the GTADB in-game map and landmark attribution, pinned sources, Rockstar references and rights notices behind the Leonida Atlas.",
   },
   contributing: {
     title: "Contribute to Leonida Atlas: Evidence & Source Corrections",

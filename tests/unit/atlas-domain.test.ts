@@ -10,6 +10,7 @@ const filters: Filters = {
   personalOnly: false,
   evidence: 'all',
   collectionId: null,
+  countyId: null,
   hideFound: false,
   remainingOnly: false,
 };

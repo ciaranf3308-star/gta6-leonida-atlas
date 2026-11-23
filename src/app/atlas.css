@@ -624,6 +624,43 @@ h3 {
   width: 27px;
   min-width: 27px;
 }
+.county-picker {
+  padding: 4px 0 8px;
+  border-bottom: 1px solid var(--border);
+}
+.county-picker h3 {
+  font-size: 13px;
+  margin: 8px 0 0;
+}
+.county-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 10px 0 4px;
+}
+.county-buttons button {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.county-buttons button small {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--muted);
+  margin-top: 3px;
+}
+.county-buttons button.active {
+  border-color: var(--accent);
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
 .library-row {
   display: flex;
   align-items: center;

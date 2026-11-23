@@ -4,18 +4,18 @@ import path from 'node:path';
 import { fileURLToPath, URL } from 'node:url';
 
 const GTADB_SOURCE = 'https://github.com/rolux/gtadb.org';
-const GTADB_REVISION = '5c1d69ff864623d181da5457afaacd00b623e1a4';
+const GTADB_REVISION = 'd406fea099e1df2bce42fd6b87eed04bce646629';
 const GTADB_LICENSE = 'CC BY 4.0';
 const GTADB_PREFERRED_SOURCE = 'https://map.gtadb.org';
 const GTADB_LICENSE_URL = 'https://creativecommons.org/licenses/by/4.0/';
 const GTADB_PRESENTATION_NOTICE =
   'transformed presentation · deterministic, pixel-aligned transform · community placement APPROXIMATE · approximate visualization scale';
 const GTADB_ATTRIBUTION = `GTADB / Map GTA community reconstruction · preferred source ${GTADB_PREFERRED_SOURCE} · ${GTADB_LICENSE} ${GTADB_LICENSE_URL} · pinned revision ${GTADB_REVISION} · ${GTADB_PRESENTATION_NOTICE} · not an official Rockstar map`;
-const GTADB_SNAPSHOT_SHA256 = '2209a4ff385815cad4d1f217248daaae3e29d029c34c137ce870eee1e8181083';
+const GTADB_SNAPSHOT_SHA256 = 'e251f3e6ad89834959340d5408c51118f68b36c3d9c7801cfa34bcc745993ae8';
 const GTADB_SOURCE_PATH = 'map/data/6/landmarks.json';
 const GTADB_RAW_URL = `https://raw.githubusercontent.com/rolux/gtadb.org/${GTADB_REVISION}/${GTADB_SOURCE_PATH}`;
 const OUTPUT_PATH = fileURLToPath(
-  new URL('../public/assets/street-leonida/maps/gtadb-landmarks-5c1d69f.json', import.meta.url),
+  new URL('../public/assets/street-leonida/maps/gtadb-landmarks-d406fea.json', import.meta.url),
 );
 const UNKNOWN_NAME = /\?/;
 const GTADB_LEVEL_TAG = /^l([1-5])$/i;

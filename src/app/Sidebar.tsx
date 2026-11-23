@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import type { Category, Place } from '../domain/types';
 import { useDomainStore, useMapStore, useUiStore } from '../stores/atlas';
+import { COUNTIES, COUNTY_EXTENT_NOTE } from '../data/counties';
+import { INITIAL_BOUNDS } from '../features/map/coordinates';
 import { SavedPlaces } from '../features/library/SavedPlaces';
 import { Status } from './Status';
 import { setAccountEntryTarget } from '../capabilities/extension-host';
@@ -33,6 +35,48 @@ export interface LayerProgress {
   name: string;
   total: number;
   found: number;
+}
+
+function CountyPicker() {
+  const countyId = useUiStore((s) => s.filters.countyId);
+  function choose(id: string | null) {
+    useUiStore.getState().setFilters({ countyId: id });
+    const county = COUNTIES.find((c) => c.id === id);
+    useMapStore
+      .getState()
+      .setBoundsFocus(county ? county.bounds : INITIAL_BOUNDS);
+  }
+  return (
+    <div className="county-picker">
+      <h3>Counties</h3>
+      <p className="panel-intro">
+        Isolate one county — the map zooms to it and the list shows only places in it.
+      </p>
+      <div className="county-buttons">
+        <button
+          type="button"
+          className={countyId === null ? 'active' : ''}
+          aria-pressed={countyId === null}
+          onClick={() => choose(null)}
+        >
+          All Leonida
+        </button>
+        {COUNTIES.map((county) => (
+          <button
+            type="button"
+            key={county.id}
+            className={countyId === county.id ? 'active' : ''}
+            aria-pressed={countyId === county.id}
+            onClick={() => choose(county.id)}
+          >
+            {county.name}
+            <small>{county.area}</small>
+          </button>
+        ))}
+      </div>
+      <p className="empty-state">{COUNTY_EXTENT_NOTE}</p>
+    </div>
+  );
 }
 
 function LayerManager() {
@@ -57,6 +101,7 @@ function LayerManager() {
   }
   return (
     <div className="layer-manager">
+      <CountyPicker />
       <p className="panel-intro">
         Spoiler-free mode: every location layer starts off. Turn a layer on only when you want
         to see those places — nothing is shown until you choose it. Layers at the top draw above
@@ -105,8 +150,8 @@ function LayerManager() {
         </div>
       ))}
       <p className="empty-state">
-        The basemap is a community reconstruction. Unmapped areas remain unknown; positions are
-        approximate.
+        The basemap is the GTADB in-game map (map artwork © Rockstar Games, CC BY 4.0). Place
+        positions are approximate community data.
       </p>
     </div>
   );

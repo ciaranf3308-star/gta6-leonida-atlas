@@ -1,5 +1,6 @@
 import type { Category, PersonalMarker, Place } from '../domain/types';
-import { GYM_PLACES } from './gyms';
+import { COLLECTABLE_CARD_PLACES } from './collectables';
+import { GYM_PLACES, OUTDOOR_GYM_PLACES } from './gyms';
 import { getLocalStreetPlaces } from '../features/street-leonida/page-data';
 import {
   GTADB_LICENSE,
@@ -10,6 +11,56 @@ import {
   type GtadbLandmark,
 } from '../features/street-leonida/gtadb';
 
+/**
+ * Shop / service tags in the GTADB catalogue. `#`-prefixed tags are the
+ * community's shop-type markers; the plain ones are building-type tags.
+ */
+export const SHOP_TAGS: readonly string[] = [
+  'retail',
+  'restaurant',
+  '#gas',
+  '#supermarket',
+  '#clothes',
+  '#hair',
+  '#guns',
+  '#food',
+  '#vendor',
+  '#electronics',
+  '#shoes',
+  '#tattoos',
+  '#fastfood',
+  '#bar',
+  '#stripclub',
+  '#nightclub',
+  '#modshop',
+  "#pay'n'spray",
+  '#drinks',
+  '#carwash',
+  '#bikeshop',
+  '#liquor',
+  '#pharmacy',
+];
+
+/**
+ * Shop types the released game lets you hold up, per post-launch guides
+ * (The Games Wiki's Enterable Buildings page; Rockstar previews): small
+ * stores, gas station shops, food and drink spots. Ammu-Nation (#guns) is
+ * explicitly excluded — it cannot be robbed. A lootable pin is an enterable
+ * shop of one of these types; per-store safes, alarms and CCTV vary, and
+ * this is not a per-store confirmed robbery list.
+ */
+export const ROBBABLE_SHOP_TAGS: readonly string[] = [
+  'retail',
+  '#supermarket',
+  '#gas',
+  '#food',
+  '#vendor',
+  'restaurant',
+  '#bar',
+  '#liquor',
+  '#pharmacy',
+];
+
 function categoryFor(tags: readonly string[]): Category {
   if (tags.some((tag) => ['natural', 'agriculture'].includes(tag))) return 'nature';
   if (tags.some((tag) => ['transportation', 'infrastructure', 'infr'].includes(tag)))
@@ -17,15 +68,48 @@ function categoryFor(tags: readonly string[]): Category {
   if (
     tags.some((tag) =>
       ['hotel', 'restaurant', 'retail', 'service', 'office', 'industrial'].includes(tag),
-    )
+    ) ||
+    tags.some((tag) => SHOP_TAGS.includes(tag))
   )
     return 'business';
   return 'landmark';
 }
 
+/**
+ * Layer precedence for a GTADB record. Uncertain records stay in
+ * 'uncertain' whatever their tags say — an unknown name is not a shop.
+ * Otherwise a robbable enterable shop is 'lootable', any other shop is
+ * 'shops', any other enterable building is 'interiors', the rest is
+ * 'community'.
+ */
+export function layerForGtadbLandmark(
+  landmark: GtadbLandmark,
+  uncertain: boolean,
+): string {
+  if (uncertain) return 'uncertain';
+  const tags = landmark.tags;
+  if (
+    tags.includes('enterable') &&
+    ROBBABLE_SHOP_TAGS.some((tag) => tags.includes(tag))
+  )
+    return 'lootable';
+  if (SHOP_TAGS.some((tag) => tags.includes(tag))) return 'shops';
+  if (tags.includes('enterable')) return 'interiors';
+  return 'community';
+}
+
 function landmarkToPlace(landmark: GtadbLandmark): Place {
   const reasons = classifyGtadbUncertaintyReasons(landmark.inGameAddress, landmark.tags);
   const uncertain = reasons.length > 0;
+  const layerId = layerForGtadbLandmark(landmark, uncertain);
+  const layerNote =
+    layerId === 'lootable'
+      ? 'Enterable shop — most small stores can be held up; safes and alarms vary by store.'
+      : layerId === 'shops'
+        ? 'Shop / service — enterable business.'
+        : layerId === 'interiors'
+          ? 'Enterable building — has an interior.'
+          : '';
   return {
     id: landmark.id,
     title: landmark.inGameAddress.trim() || `Unnamed community place (${landmark.id})`,
@@ -34,6 +118,7 @@ function landmarkToPlace(landmark: GtadbLandmark): Place {
         ? 'Approximate community-mapped position.'
         : 'No game position supplied; this record is searchable only.',
       uncertain ? `Source uncertainty: ${reasons.join(', ').replaceAll('-', ' ')}.` : '',
+      layerNote,
       landmark.realWorldAddress
         ? `Real-world reference (analogue only): ${landmark.realWorldAddress}`
         : '',
@@ -44,7 +129,7 @@ function landmarkToPlace(landmark: GtadbLandmark): Place {
     position: landmark.inGameCoordinates
       ? { x: landmark.inGameCoordinates[0], y: landmark.inGameCoordinates[1] }
       : null,
-    layerId: uncertain ? 'uncertain' : 'community',
+    layerId,
     tags: [...landmark.tags],
     region: landmark.inGameAddress.split(',').slice(1).join(',').trim(),
     source: {
@@ -110,6 +195,8 @@ export function catalogueFromSnapshot(input: unknown): Place[] {
     ...regions,
     ...normalizeGtadbCatalogue(tuples).map(landmarkToPlace),
     ...GYM_PLACES,
+    ...OUTDOOR_GYM_PLACES,
+    ...COLLECTABLE_CARD_PLACES,
   ];
 }
 
@@ -120,7 +207,7 @@ export function loadCatalogue(): Promise<Place[]> {
   if (!catalogueRequest) {
     const base = import.meta.env.BASE_URL ?? '/';
     catalogueRequest = fetch(
-      `${base.endsWith('/') ? base : `${base}/`}assets/street-leonida/maps/gtadb-landmarks-5c1d69f.json`,
+      `${base.endsWith('/') ? base : `${base}/`}assets/street-leonida/maps/gtadb-landmarks-d406fea.json`,
     )
       .then(async (response) => {
         if (!response.ok)

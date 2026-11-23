@@ -207,7 +207,7 @@ const precache = [
   `${base}icons/icon-512.png`,
   ...assets.filter((url) => !threeDimensionalAssets.includes(url)),
   `${base}assets/gta6-leonida-atlas/basemap.svg`,
-  `${base}assets/street-leonida/maps/gtadb-landmarks-5c1d69f.json`,
+  `${base}assets/street-leonida/maps/gtadb-landmarks-d406fea.json`,
 ];
 const contentHash = createHash("sha256").update(
   html + JSON.stringify([precache, threeDimensionalAssets]),
@@ -229,7 +229,7 @@ self.addEventListener('fetch',event=>{
   if(request.method!=='GET'||url.origin!==self.location.origin||!url.pathname.startsWith(BASE))return;
   if(url.pathname===BASE+'analytics.html'||url.pathname===BASE+'analytics-bootstrap.js')return;
   const navigation=request.mode==='navigate';
-  const publicOptional=url.pathname.startsWith(BASE+'assets/street-leonida/')&&/\\.(?:webp|jpg|png|svg|json)$/.test(url.pathname);
+  const publicOptional=(url.pathname.startsWith(BASE+'assets/street-leonida/')||url.pathname.startsWith(BASE+'assets/gta6-leonida-atlas/tiles/'))&&/\\.(?:webp|jpg|png|svg|json)$/.test(url.pathname);
   const asset=APP_FILES.includes(url.pathname)||publicOptional;
   if(request.headers.has('authorization')||(!navigation&&url.search))return;
   if(!navigation&&!asset)return;
@@ -238,11 +238,12 @@ self.addEventListener('fetch',event=>{
     const cached=await cache.match(request);if(cached)return cached;
     const response=await fetch(request);
     if(response.ok&&response.type==='basic'&&!/private|no-store/i.test(response.headers.get('cache-control')||'')){
-      // Bound optional 3D asset caching; the app shell and public data remain pinned.
+      // Bound optional asset caching (3D assets and map tiles visited);
+      // the app shell and public data remain pinned.
       try {
         if(publicOptional&&!APP_FILES.includes(url.pathname)){
           const keys=await cache.keys();const extras=keys.filter(key=>!APP_FILES.includes(new URL(key.url).pathname));
-          if(extras.length>=200)await cache.delete(extras[0]);
+          if(extras.length>=1500)await cache.delete(extras[0]);
         }
         await cache.put(request,response.clone());
       } catch { /* Cache quota must not discard a successful network response. */ }

@@ -12,6 +12,7 @@ import {
   toMapCoordinate,
   type MapBounds,
 } from './coordinates';
+import { GTADB_TILE_BOUNDS, gtadbTileUrl } from './gtadb-tiles';
 import { buildSpatialIndex, clusterPlaces, querySpatialIndex, type PlaceCluster } from './spatial';
 import 'leaflet/dist/leaflet.css';
 import './map.css';
@@ -21,6 +22,8 @@ export interface MapViewProps {
   layers: LayerDefinition[];
   selectedId: string | null;
   focus: { position: Position; requestId: number } | null;
+  /** Fit the map to these bounds (county picker). */
+  boundsFocus: { bounds: MapBounds; requestId: number } | null;
   editorMode: 'none' | 'create' | 'move';
   preferences: Preferences;
   foundIds: ReadonlySet<string>;
@@ -124,21 +127,29 @@ export default function MapView(props: MapViewProps) {
       const activeMap = instance;
       activeMap.fitBounds(leafletBounds(INITIAL_BOUNDS), { padding: [24, 24], animate: false });
       const base = import.meta.env.BASE_URL ?? '/';
-      const overlay = L.imageOverlay(
-        `${base.endsWith('/') ? base : `${base}/`}assets/gta6-leonida-atlas/basemap.svg`,
-        leafletBounds(BASEMAP_BOUNDS),
-        {
-          interactive: false,
-          alt: 'Approximate GTADB community reconstruction of Leonida',
-          className: 'atlas-source-basemap',
-        },
-      ).addTo(activeMap);
-      overlay.on('error', () =>
-        setMapError(
-          'The local basemap could not be loaded. Your saved places are still available.',
-        ),
-      );
-      overlay.on('load', () => setMapError(null));
+      // GTADB In-Game Day tiles — the real in-game map, sharp at max zoom.
+      // Leaflet zoom -5..1 maps onto tile zooms 0..6 inside gtadbTileUrl
+      // (coords.z is the Leaflet zoom). The layer MUST declare
+      // minZoom/maxZoom in Leaflet zoom: GridLayer defaults minZoom 0,
+      // which sets _tileZoom undefined and loads nothing below zoom 0.
+      // No zoomOffset / minNativeZoom / maxNativeZoom: those clamp the
+      // tile zoom Leaflet computes, which would break the mapping.
+      const tiles = L.tileLayer('', {
+        tileSize: 256,
+        minZoom: MIN_ZOOM,
+        maxZoom: MAX_ZOOM,
+        bounds: leafletBounds(GTADB_TILE_BOUNDS),
+        errorTileUrl: `${base.endsWith('/') ? base : `${base}/`}assets/gta6-leonida-atlas/tiles/ocean.jpg`,
+        noWrap: true,
+        keepBuffer: 1,
+      });
+      tiles.getTileUrl = (coords: L.Coords) =>
+        gtadbTileUrl(base, coords.x, coords.y, coords.z);
+      tiles.addTo(activeMap);
+      tiles.on('tileerror', () => {
+        // Missing tiles are ocean the source never drew; the ocean tile
+        // above covers them. Only a wholesale failure is worth surfacing.
+      });
       const reportViewport = () => {
         setZoom(activeMap.getZoom());
         callbacks.current.onViewport?.({
@@ -187,7 +198,8 @@ export default function MapView(props: MapViewProps) {
       return () => {
         observer?.disconnect();
         cancelAnimationFrame(resizeFrame);
-        overlay.off();
+        tiles.off();
+        tiles.remove();
         activeMap.off('moveend zoomend', reportViewport);
         // Leaflet 1.9's uncancellable 250ms zoom fallback can outlive remove().
         // Clear its guard before the map pane is deleted; preserve internal unload cleanup.
@@ -417,6 +429,15 @@ export default function MapView(props: MapViewProps) {
     };
   }, [map, props.focus, props.preferences.reducedMotion]);
 
+  // County picker: fit the map to the chosen county's estimated bounds.
+  useEffect(() => {
+    if (!map || !props.boundsFocus) return;
+    map.fitBounds(leafletBounds(props.boundsFocus.bounds), {
+      padding: [24, 24],
+      animate: !callbacks.current.preferences.reducedMotion,
+    });
+  }, [map, props.boundsFocus]);
+
   useEffect(() => {
     if (props.editorMode === 'none') {
       setPreviewPosition(null);
@@ -468,8 +489,9 @@ export default function MapView(props: MapViewProps) {
   return (
     <div className={`atlas-map-view ${props.editorMode !== 'none' ? 'is-editing' : ''}`}>
       <p id={descriptionId} className="map-sr-only">
-        Interactive map using approximate game coordinates. Use arrow keys to pan and plus or minus
-        to zoom. Select a map marker or use the searchable place list.
+        Interactive map using the GTADB in-game map of Leonida, with approximate game
+        coordinates. Use arrow keys to pan and plus or minus to zoom. Select a map marker or use
+        the searchable place list.
       </p>
       <div
         ref={hostRef}
@@ -543,7 +565,7 @@ export default function MapView(props: MapViewProps) {
         <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">
           CC BY 4.0
         </a>
-        <span> · Approximate community map</span>
+        <span> · In-game map © Rockstar Games · Places approximate</span>
       </div>
       {mapError ? (
         <div className="atlas-map-error" role="alert">

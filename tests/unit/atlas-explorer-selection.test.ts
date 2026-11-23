@@ -12,7 +12,7 @@ import { parseInitialWalkDestination } from '../../src/features/street-leonida/w
 const snapshot = JSON.parse(
   readFileSync(
     new URL(
-      '../../public/assets/street-leonida/maps/gtadb-landmarks-5c1d69f.json',
+      '../../public/assets/street-leonida/maps/gtadb-landmarks-d406fea.json',
       import.meta.url,
     ),
     'utf8',

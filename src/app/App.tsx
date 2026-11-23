@@ -54,6 +54,7 @@ export default function App() {
   const selectedId = useMapStore((s) => s.selectedId);
   const layers = useMapStore((s) => s.layers);
   const focus = useMapStore((s) => s.focus);
+  const boundsFocus = useMapStore((s) => s.boundsFocus);
   const editorMode = useMapStore((s) => s.editorMode);
   const draftPosition = useMapStore((s) => s.draftPosition);
   const ready = usePersistenceStore((s) => s.ready);
@@ -254,6 +255,7 @@ export default function App() {
           layers={layers}
           selectedId={selectedId}
           focus={focus}
+          boundsFocus={boundsFocus}
           editorMode={editorMode}
           preferences={preferences}
           foundIds={new Set(visited.map((v) => v.placeId))}

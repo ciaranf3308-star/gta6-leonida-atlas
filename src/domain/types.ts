@@ -89,6 +89,8 @@ export interface Filters {
   personalOnly: boolean;
   evidence: 'all' | 'approximate' | 'uncertain';
   collectionId: string | null;
+  /** Isolate one county (estimated extents, see src/data/counties.ts). */
+  countyId: string | null;
   /** Hide places already marked as found. */
   hideFound: boolean;
   /** Show only places not yet marked as found (the 99% case). Implies hideFound. */

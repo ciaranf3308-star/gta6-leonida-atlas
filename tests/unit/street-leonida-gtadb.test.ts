@@ -200,21 +200,21 @@ describe('GTADB catalogue normalization', () => {
       GTADB_SOURCE: 'https://github.com/rolux/gtadb.org',
       GTADB_PREFERRED_SOURCE: 'https://map.gtadb.org',
       GTADB_PINNED_DATA_URL:
-        'https://github.com/rolux/gtadb.org/blob/5c1d69ff864623d181da5457afaacd00b623e1a4/map/data/6/landmarks.json',
-      GTADB_REVISION: '5c1d69ff864623d181da5457afaacd00b623e1a4',
+        'https://github.com/rolux/gtadb.org/blob/d406fea099e1df2bce42fd6b87eed04bce646629/map/data/6/landmarks.json',
+      GTADB_REVISION: 'd406fea099e1df2bce42fd6b87eed04bce646629',
       GTADB_LICENSE: 'CC BY 4.0',
       GTADB_LICENSE_URL: 'https://creativecommons.org/licenses/by/4.0/',
       GTADB_PRESENTATION_NOTICE:
         'transformed presentation · deterministic, pixel-aligned transform · community placement APPROXIMATE · approximate visualization scale',
       GTADB_ATTRIBUTION:
-        'GTADB / Map GTA community reconstruction · preferred source https://map.gtadb.org · CC BY 4.0 https://creativecommons.org/licenses/by/4.0/ · pinned revision 5c1d69ff864623d181da5457afaacd00b623e1a4 · transformed presentation · deterministic, pixel-aligned transform · community placement APPROXIMATE · approximate visualization scale · not an official Rockstar map',
-      GTADB_SNAPSHOT_SHA256: '2209a4ff385815cad4d1f217248daaae3e29d029c34c137ce870eee1e8181083',
+        'GTADB / Map GTA community reconstruction · preferred source https://map.gtadb.org · CC BY 4.0 https://creativecommons.org/licenses/by/4.0/ · pinned revision d406fea099e1df2bce42fd6b87eed04bce646629 · transformed presentation · deterministic, pixel-aligned transform · community placement APPROXIMATE · approximate visualization scale · not an official Rockstar map',
+      GTADB_SNAPSHOT_SHA256: 'e251f3e6ad89834959340d5408c51118f68b36c3d9c7801cfa34bcc745993ae8',
     });
   });
 
   it('ships the complete, attributed normalized snapshot (catches partial or unpinned sync output)', () => {
     const snapshotPath = new URL(
-      '../../public/assets/street-leonida/maps/gtadb-landmarks-5c1d69f.json',
+      '../../public/assets/street-leonida/maps/gtadb-landmarks-d406fea.json',
       import.meta.url,
     );
     const snapshot = JSON.parse(readFileSync(snapshotPath, 'utf8')) as {
@@ -234,26 +234,34 @@ describe('GTADB catalogue normalization', () => {
       attribution: GTADB_ATTRIBUTION,
     });
     expect(snapshot.counts).toEqual({
-      recordCount: 3_431,
-      positionedCount: 3_340,
+      recordCount: 3_754,
+      positionedCount: 3_663,
       unpositionedCount: 91,
-      knownNameCount: 948,
-      unknownNameCount: 2_483,
+      knownNameCount: 986,
+      unknownNameCount: 2_768,
     });
-    expect(snapshot.landmarks).toHaveLength(3_431);
+    expect(snapshot.landmarks).toHaveLength(3_754);
 
     expect(
       snapshot.landmarks
         .filter(({ inGameAddress }) => !inGameAddress.trim())
         .map(({ id, confidence, evidence }) => ({ id, confidence, name: evidence.name })),
     ).toEqual([]);
+    // L1 was renamed upstream between revisions (was "?", now "Vice Regal").
     expect(snapshot.landmarks.find(({ id }) => id === 'L1')).toMatchObject({
-      confidence: 'UNKNOWN',
+      confidence: 'SUPPORTED',
       evidence: {
-        name: 'UNKNOWN',
+        name: 'KNOWN',
         placement: 'APPROXIMATE',
         tagSignals: { levelTags: [], unconfirmed: false, demolished: false },
       },
+    });
+    const unknownRecord = snapshot.landmarks.find(
+      ({ evidence }) => evidence.name === 'UNKNOWN',
+    )!;
+    expect(unknownRecord).toMatchObject({
+      confidence: 'UNKNOWN',
+      evidence: { name: 'UNKNOWN', placement: 'APPROXIMATE' },
     });
     expect(snapshot.landmarks.find(({ id }) => id === 'L130')).toMatchObject({
       confidence: 'SUPPORTED',
@@ -302,7 +310,7 @@ describe('GTADB catalogue normalization', () => {
       )
       .digest('hex');
     expect(sourceValueDigest).toBe(
-      '934abed19ca0883dcb2483a04c68af8924db5404858fde943d9c5b7f0e735aa3',
+      '76dbfbac1e82ac8a15bd8da80c909e5c479cbfe94cae0b8baaec7ea6d607100e',
     );
   });
 });

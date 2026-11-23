@@ -17,8 +17,8 @@ import {
 /** @deprecated Compatibility metadata; new code should consume the pinned GTADB snapshot. */
 export const STATE_OF_LEONIDA_COMMUNITY_MAP = {
   sourceUrl: GTADB_SOURCE,
-  localSource: 'gtadb-landmarks-5c1d69f.json',
-  assetUrl: publicPath('assets/street-leonida/maps/gtadb-landmarks-5c1d69f.json'),
+  localSource: 'gtadb-landmarks-d406fea.json',
+  assetUrl: publicPath('assets/street-leonida/maps/gtadb-landmarks-d406fea.json'),
   version: GTADB_REVISION,
   versionDate: '2026-11-17',
   markerCount: 3431,

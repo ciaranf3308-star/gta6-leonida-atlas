@@ -13,7 +13,7 @@ GTA6 Leonida Atlas separates visual references, community-estimated data and loc
 The public basemap is a generalized, recolored presentation derived from pinned GTADB / Map GTA community source material. It is not an official Rockstar map.
 
 The landmark catalogue and basemap have separate pins. The November 17, 2026
-landmark refresh uses GTADB commit `5c1d69ff864623d181da5457afaacd00b623e1a4` and keeps
+landmark refresh uses GTADB commit `d406fea099e1df2bce42fd6b87eed04bce646629` and keeps
 all 2,198 previous identifiers. It adds 1,233 records, with 3,340 positioned and
 91 unpositioned records in total. The Yanis v16 raster keeps its original pin,
 coordinate frame and provenance. Existing saved places still refer to the same

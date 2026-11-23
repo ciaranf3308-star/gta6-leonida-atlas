@@ -14,20 +14,23 @@ async function openSidebar(page: Page): Promise<void> {
   await expect(sidebar(page)).toBeVisible();
 }
 
+async function expectTilesLoaded(page: Page): Promise<void> {
+  // GTADB In-Game Day tiles: at least one loaded tile from the bundled set.
+  const tile = page.locator('.leaflet-tile-loaded[src*="tiles/day/"]').first();
+  await expect(tile).toBeVisible();
+  await expect(tile).toHaveJSProperty('complete', true);
+  expect(
+    await tile.evaluate((image) => (image as HTMLImageElement).naturalWidth),
+  ).toBeGreaterThan(0);
+}
+
 async function openAtlas(page: Page): Promise<void> {
   await page.goto('/');
   await expect(page).toHaveTitle(/Leonida Atlas/);
   await expect(
     page.getByRole('region', { name: 'Leonida interactive map', exact: true }),
   ).toBeVisible();
-  const basemap = page.getByRole('img', {
-    name: 'Approximate GTADB community reconstruction of Leonida',
-  });
-  await expect(basemap).toBeVisible();
-  await expect(basemap).toHaveJSProperty('complete', true);
-  expect(
-    await basemap.evaluate((image) => (image as HTMLImageElement).naturalWidth),
-  ).toBeGreaterThan(0);
+  await expectTilesLoaded(page);
   await expect(page.getByRole('button', { name: 'Add marker', exact: true })).toBeEnabled();
 }
 
@@ -393,13 +396,7 @@ test('the installed app reloads offline with its saved preferences and personal 
       }
       throw error;
     }
-    const basemap = page.getByRole('img', {
-      name: 'Approximate GTADB community reconstruction of Leonida',
-    });
-    await expect(basemap).toHaveJSProperty('complete', true);
-    expect(
-      await basemap.evaluate((image) => (image as HTMLImageElement).naturalWidth),
-    ).toBeGreaterThan(0);
+    await expectTilesLoaded(page);
     // Playwright 1.62 can incorrectly expose navigator.onLine=true after an offline reload.
     // Prove the network is actually unavailable instead of using that emulated flag.
     // https://github.com/microsoft/playwright/issues/42174

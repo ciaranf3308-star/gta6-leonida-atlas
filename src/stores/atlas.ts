@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { Filters, LayerDefinition, Place, Position, UserData } from '../domain/types';
+import type { MapBounds } from '../features/map/coordinates';
 import { EMPTY_USER_DATA } from '../domain/types';
 import {
   AtlasDatabase,
@@ -18,6 +19,7 @@ export const DEFAULT_FILTERS: Filters = {
   personalOnly: false,
   evidence: 'all',
   collectionId: null,
+  countyId: null,
   hideFound: false,
   remainingOnly: false,
 };
@@ -37,6 +39,8 @@ export const useDomainStore = create<{
 export const useMapStore = create<{
   selectedId: string | null;
   focus: { position: Position; requestId: number } | null;
+  /** Fit the map to these bounds (county picker, "show all"). */
+  boundsFocus: { bounds: MapBounds; requestId: number } | null;
   layers: LayerDefinition[];
   editorMode: 'none' | 'create' | 'move';
   draftPosition: Position | null;
@@ -44,9 +48,11 @@ export const useMapStore = create<{
   select: (place: Place | null) => void;
   setEditor: (mode: 'none' | 'create' | 'move') => void;
   setPosition: (position: Position) => void;
+  setBoundsFocus: (bounds: MapBounds) => void;
 }>((set) => ({
   selectedId: null,
   focus: null,
+  boundsFocus: null,
   layers: [],
   editorMode: 'none',
   draftPosition: null,
@@ -64,6 +70,10 @@ export const useMapStore = create<{
   },
   setEditor: (editorMode) => set({ editorMode, draftPosition: null }),
   setPosition: (draftPosition) => set({ draftPosition }),
+  setBoundsFocus: (bounds) =>
+    set((state) => ({
+      boundsFocus: { bounds, requestId: (state.boundsFocus?.requestId ?? 0) + 1 },
+    })),
 }));
 export type SidebarTab = 'explore' | 'layers' | 'saved';
 export const useUiStore = create<{
@@ -164,7 +174,7 @@ export function switchLocalWorkspace(workspaceId: string | null): Promise<void> 
     filters: DEFAULT_FILTERS,
     tab: 'explore',
   });
-  useMapStore.setState({ selectedId: null, focus: null, editorMode: 'none', draftPosition: null });
+  useMapStore.setState({ selectedId: null, focus: null, boundsFocus: null, editorMode: 'none', draftPosition: null });
   const operation = writeQueue.then(async () => {
     const previous = atlasRepository;
     const repository = previous.name === name ? previous : new AtlasDatabase(name);

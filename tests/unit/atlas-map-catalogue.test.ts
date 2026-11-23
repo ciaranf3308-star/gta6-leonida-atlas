@@ -2,16 +2,18 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { catalogueFromSnapshot, markerToPlace } from '../../src/data/catalogue';
 
-const snapshot = JSON.parse(readFileSync(new URL('../../public/assets/street-leonida/maps/gtadb-landmarks-5c1d69f.json', import.meta.url), 'utf8'));
+const snapshot = JSON.parse(readFileSync(new URL('../../public/assets/street-leonida/maps/gtadb-landmarks-d406fea.json', import.meta.url), 'utf8'));
 
 describe('Atlas searchable catalogue', () => {
-  it('retains all 3,431 community records, six regions and nine gyms, including 93 unpositioned records', () => {
+  it('retains all 3,754 community records, six regions, eight member gyms, two outdoor spots and five cards, including 93 unpositioned records', () => {
     const places = catalogueFromSnapshot(snapshot);
-    expect(places).toHaveLength(3446);
+    expect(places).toHaveLength(3775);
     expect(places.filter(p => p.position === null)).toHaveLength(93);
     expect(places.filter(p => p.layerId === 'regions')).toHaveLength(6);
-    expect(places.filter(p => p.layerId === 'gyms')).toHaveLength(9);
-    expect(new Set(places.map(p => p.id)).size).toBe(3446);
+    expect(places.filter(p => p.layerId === 'gyms')).toHaveLength(8);
+    expect(places.filter(p => p.layerId === 'gyms-outdoor')).toHaveLength(2);
+    expect(places.filter(p => p.layerId.startsWith('cards:'))).toHaveLength(5);
+    expect(new Set(places.map(p => p.id)).size).toBe(3775);
   });
   it('uses only source game coordinates and keeps approximate and uncertain evidence explicit', () => {
     const places = catalogueFromSnapshot(snapshot);
@@ -21,7 +23,9 @@ describe('Atlas searchable catalogue', () => {
       expect(result.source.license).toBe('CC BY 4.0');
       expect(result.evidence).not.toBe('personal');
     }
-    expect(places.find(p => p.id === 'L1')).toMatchObject({ evidence: 'uncertain', layerId: 'uncertain' });
+    expect(places.find(p => p.id === 'L1')).toMatchObject({ evidence: 'approximate', layerId: 'community' });
+    const uncertainRecord = snapshot.landmarks.find((record: { inGameAddress: string }) => record.inGameAddress.includes('?'))!;
+    expect(places.find(p => p.id === uncertainRecord.id)).toMatchObject({ evidence: 'uncertain', layerId: 'uncertain' });
     expect(places.find(p => p.id === 'region:vice-city')).toMatchObject({ title: 'Vice City', evidence: 'approximate' });
   });
   it('rejects malformed or duplicate source records instead of manufacturing empty data', () => {
