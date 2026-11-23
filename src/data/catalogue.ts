@@ -1,4 +1,5 @@
 import type { Category, PersonalMarker, Place } from '../domain/types';
+import { GYM_PLACES } from './gyms';
 import { getLocalStreetPlaces } from '../features/street-leonida/page-data';
 import {
   GTADB_LICENSE,
@@ -105,7 +106,11 @@ export function catalogueFromSnapshot(input: unknown): Place[] {
     },
     evidence: 'approximate',
   }));
-  return [...regions, ...normalizeGtadbCatalogue(tuples).map(landmarkToPlace)];
+  return [
+    ...regions,
+    ...normalizeGtadbCatalogue(tuples).map(landmarkToPlace),
+    ...GYM_PLACES,
+  ];
 }
 
 let catalogueRequest: Promise<Place[]> | undefined;
@@ -138,7 +143,7 @@ export function markerToPlace(marker: PersonalMarker): Place {
     category: marker.category,
     position: marker.position,
     layerId: 'personal',
-    tags: [marker.icon],
+    tags: [marker.icon, ...(marker.color ? [`color:${marker.color}`] : [])],
     region: 'My markers',
     source: { title: 'Your local atlas', url: '' },
     evidence: 'personal',

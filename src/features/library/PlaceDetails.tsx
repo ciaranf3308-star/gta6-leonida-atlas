@@ -15,6 +15,7 @@ import RegionalResearch from './RegionalResearch';
 
 export default function PlaceDetails({ place }: { place: Place }) {
   const favorite = useUserStore((s) => s.favorites.some((f) => f.placeId === place.id));
+  const found = useUserStore((s) => s.visited.some((v) => v.placeId === place.id));
   const savedNote = useUserStore((s) => s.notes.find((n) => n.placeId === place.id)?.text ?? '');
   const savedRevision = useUserStore(
     (s) => s.notes.find((n) => n.placeId === place.id)?.updatedAt ?? null,
@@ -114,6 +115,14 @@ export default function PlaceDetails({ place }: { place: Place }) {
         >
           <Star size={18} fill={favorite ? 'currentColor' : 'none'} />
           {favorite ? 'Saved to favorites' : 'Add to favorites'}
+        </button>
+        <button
+          disabled={!ready}
+          className={`button ${found ? 'selected' : ''}`}
+          onClick={() => void saveLocal(() => atlasRepository.toggleVisited(place.id))}
+        >
+          <Check size={18} />
+          {found ? 'Found ✓ — tap to undo' : 'Mark as found'}
         </button>
         {place.description && <p className="description">{place.description}</p>}
         <dl className="place-meta">

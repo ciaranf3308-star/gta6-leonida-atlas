@@ -15,14 +15,18 @@ export function filterPlaces(
   favoriteIds: string[],
   notes: PlaceNote[],
   collections: Collection[],
+  visitedIds: string[] = [],
 ): Place[] {
   const favorites = new Set(favoriteIds);
+  const visited = new Set(visitedIds);
   const members = filters.collectionId
     ? new Set(collections.find((c) => c.id === filters.collectionId)?.placeIds ?? [])
     : null;
   const noteIndex = new Map(notes.map((n) => [n.placeId, n.text]));
   const terms = normalizeSearch(filters.query).split(/\s+/).filter(Boolean);
+  const hideFound = filters.hideFound || filters.remainingOnly;
   return places.filter((place) => {
+    if (hideFound && visited.has(place.id)) return false;
     if (filters.category !== 'all' && filters.category !== place.category) return false;
     if (filters.favoritesOnly && !favorites.has(place.id)) return false;
     if (filters.personalOnly && place.evidence !== 'personal') return false;

@@ -3,6 +3,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { catalogueFromSnapshot } from "../../src/data/catalogue";
+import { GYM_PLACES } from "../../src/data/gyms";
 import { filterPlaces } from "../../src/domain/filter";
 import ExplorerView from "../../src/features/explorer/ExplorerView";
 import RegionalResearch from "../../src/features/library/RegionalResearch";
@@ -107,7 +108,7 @@ describe("regional source discoveries", () => {
 
   it("adds source context without changing any source coordinate or introducing discovery pins", () => {
     const catalogue = catalogueFromSnapshot(snapshot);
-    expect(catalogue.length).toBe(snapshot.landmarks.length + 6);
+    expect(catalogue.length).toBe(snapshot.landmarks.length + 6 + GYM_PLACES.length);
     const raw = snapshot.landmarks.find(
       (place: { id: string }) => place.id === "L399",
     );
@@ -132,6 +133,8 @@ describe("regional source discoveries", () => {
           personalOnly: false,
           evidence: "all",
           collectionId: null,
+          hideFound: false,
+          remainingOnly: false,
         },
         [],
         [],

@@ -1,13 +1,24 @@
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { Bookmark, Check, Pencil, Plus, Star, Trash2 } from 'lucide-react';
 import { atlasRepository } from '../../db/repository';
-import { saveLocal, usePersistenceStore, useUiStore, useUserStore } from '../../stores/atlas';
+import {
+  saveLocal,
+  useMapStore,
+  usePersistenceStore,
+  useUiStore,
+  useUserStore,
+} from '../../stores/atlas';
 import type { Collection } from '../../domain/types';
 
-export function SavedPlaces() {
+export function SavedPlaces({
+  progress,
+}: {
+  progress: { layerId: string; name: string; total: number; found: number }[];
+}) {
   const collections = useUserStore((s) => s.collections);
   const favorites = useUserStore((s) => s.favorites);
   const markers = useUserStore((s) => s.markers);
+  const visited = useUserStore((s) => s.visited);
   const ready = usePersistenceStore((s) => s.ready);
   const filters = useUiStore((s) => s.filters);
   const [name, setName] = useState('');
@@ -58,6 +69,51 @@ export function SavedPlaces() {
         <span>Personal markers</span>
         <span>{markers.length}</span>
       </button>
+      <div className="section-label">
+        Progress <span>{visited.length}</span>
+      </div>
+      <p className="empty-state">
+        Mark places as found from their details. Progress is per layer — turn a layer on, then
+        use “Remaining only” to chase the last ones.
+      </p>
+      {progress
+        .filter((row) => row.total > 0)
+        .map((row) => {
+          const percent = row.total ? Math.round((row.found / row.total) * 100) : 0;
+          return (
+            <button
+              className="library-row"
+              key={row.layerId}
+              onClick={() => {
+                useMapStore.getState().setLayers(
+                  useMapStore
+                    .getState()
+                    .layers.map((layer) =>
+                      layer.id === row.layerId ? { ...layer, visible: true } : layer,
+                    ),
+                );
+                useUiStore.getState().resetFilters();
+                useUiStore
+                  .getState()
+                  .setFilters({ remainingOnly: true, collectionId: null });
+                useUiStore.getState().setTab('explore');
+              }}
+            >
+              <span className="progress-name">
+                {row.name}
+                <small>
+                  {row.found} of {row.total} found · {percent}%
+                </small>
+              </span>
+              <span className="progress-wrap" aria-hidden="true">
+                <span
+                  className="progress-bar"
+                  style={{ '--progress': `${percent}%` } as CSSProperties}
+                />
+              </span>
+            </button>
+          );
+        })}
       <div className="section-label">
         Collections <span>{collections.length}</span>
       </div>
@@ -110,7 +166,10 @@ export function SavedPlaces() {
             <Bookmark size={17} />
             <span>
               {c.name}
-              <small>{c.placeIds.length} places</small>
+              <small>
+                {c.placeIds.length} places ·{' '}
+                {c.placeIds.filter((id) => visited.some((v) => v.placeId === id)).length} found
+              </small>
             </span>
           </button>
           <button

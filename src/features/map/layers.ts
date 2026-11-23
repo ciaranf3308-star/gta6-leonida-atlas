@@ -1,12 +1,17 @@
 import type { LayerDefinition, Place } from '../../domain/types';
 
+/**
+ * Spoiler-free fork: every public layer starts OFF. The map opens as a blank
+ * Leonida basemap; nothing is shown until the user turns a layer on.
+ * "My markers" stays on — those are the user's own notes, never spoilers.
+ */
 export const DEFAULT_LAYERS: LayerDefinition[] = [
   {
     id: 'regions',
     name: 'Named regions',
     description: 'Official names with approximate community positions.',
     category: 'reference',
-    visible: true,
+    visible: false,
     order: 0,
     source: 'Rockstar Games / GTADB',
     style: { color: '#f2d897', radius: 9 },
@@ -18,7 +23,7 @@ export const DEFAULT_LAYERS: LayerDefinition[] = [
     name: 'Community places',
     description: 'Named community records; placement remains approximate.',
     category: 'community',
-    visible: true,
+    visible: false,
     order: 10,
     source: 'GTADB / Map GTA · CC BY 4.0',
     style: { color: '#73cbbb', radius: 6 },
@@ -26,11 +31,23 @@ export const DEFAULT_LAYERS: LayerDefinition[] = [
     interactive: true,
   },
   {
+    id: 'gyms',
+    name: 'Gyms / Strength',
+    description: 'Where to work out in Leonida. 9 gyms; 2 have no verified coordinates yet.',
+    category: 'activity',
+    visible: false,
+    order: 15,
+    source: 'GTA6 GPS / PowerPyx · approximate',
+    style: { color: '#ff8a5c', radius: 7 },
+    icon: 'gym',
+    interactive: true,
+  },
+  {
     id: 'uncertain',
     name: 'Uncertain records',
     description: 'Unknown names or explicit uncertainty signals in the source.',
     category: 'community',
-    visible: true,
+    visible: false,
     order: 20,
     source: 'GTADB / Map GTA · CC BY 4.0',
     style: { color: '#cba980', radius: 5 },
@@ -50,6 +67,23 @@ export const DEFAULT_LAYERS: LayerDefinition[] = [
     interactive: true,
   },
 ];
+
+/**
+ * Spoiler gate for search and results: a public place is only listed when its
+ * layer is turned on. Personal markers are always listed — they are the
+ * user's own notes.
+ */
+export function filterByVisibleLayers(
+  places: readonly Place[],
+  layers: readonly LayerDefinition[],
+): Place[] {
+  const visible = new Set(
+    layers.filter((layer) => layer.visible).map((layer) => layer.id),
+  );
+  return places.filter(
+    (place) => place.layerId === 'personal' || visible.has(place.layerId),
+  );
+}
 
 /** Unpositioned records remain available to the catalogue; the spatial index omits them. */
 export function getVisiblePlaces(

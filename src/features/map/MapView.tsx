@@ -23,8 +23,11 @@ export interface MapViewProps {
   focus: { position: Position; requestId: number } | null;
   editorMode: 'none' | 'create' | 'move';
   preferences: Preferences;
+  foundIds: ReadonlySet<string>;
   onSelect: (id: string) => void;
   onPlacePosition: (position: Position) => void;
+  /** Long-press / right-click on empty map: start a marker at that point. */
+  onAddMarkerAt: (position: Position) => void;
   onViewport?: (viewport: { center: Position; zoom: number }) => void;
 }
 
@@ -39,30 +42,39 @@ function markerIcon(
   group: PlaceCluster,
   layer: LayerDefinition | undefined,
   selected: boolean,
+  color?: string,
+  found?: boolean,
 ): L.DivIcon {
   const cluster = group.places.length > 1;
   const content = document.createElement('span');
   content.className = cluster ? 'atlas-cluster-face' : 'atlas-pin-face';
-  content.style.setProperty('--pin-color', layer?.style.color ?? '#73cbbb');
+  content.style.setProperty('--pin-color', color ?? layer?.style.color ?? '#73cbbb');
   content.setAttribute('aria-hidden', 'true');
   content.textContent = cluster
     ? group.places.length.toLocaleString()
-    : group.places[0]?.layerId === 'personal'
-      ? group.places[0].tags.includes('star')
-        ? '★'
-        : group.places[0].tags.includes('flag')
-          ? '⚑'
-          : '•'
-      : group.places[0]?.layerId === 'uncertain'
-        ? '?'
-        : '•';
+    : found
+      ? '✓'
+      : group.places[0]?.layerId === 'personal'
+        ? group.places[0].tags.includes('star')
+          ? '★'
+          : group.places[0].tags.includes('flag')
+            ? '⚑'
+            : '•'
+        : group.places[0]?.layerId === 'uncertain'
+          ? '?'
+          : '•';
   const size = cluster ? 38 : Math.max(24, (layer?.style.radius ?? 6) * 2 + 10);
   return L.divIcon({
     html: content,
-    className: `atlas-map-marker ${cluster ? 'is-cluster' : ''} ${selected ? 'is-selected' : ''} ${group.places[0]?.layerId === 'regions' ? 'is-region' : ''}`,
+    className: `atlas-map-marker ${cluster ? 'is-cluster' : ''} ${selected ? 'is-selected' : ''} ${found && !cluster ? 'is-found' : ''} ${group.places[0]?.layerId === 'regions' ? 'is-region' : ''}`,
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
   });
+}
+
+function markerColor(place: Place): string | undefined {
+  const tag = place.tags.find((tag) => tag.startsWith('color:'));
+  return tag?.slice('color:'.length);
 }
 
 export default function MapView(props: MapViewProps) {
@@ -140,6 +152,22 @@ export default function MapView(props: MapViewProps) {
         const position = fromMapCoordinate(event.latlng);
         if (!isValidPosition(position)) {
           setPlacementMessage('Choose a point inside the source map.');
+          return;
+        }
+        setPreviewPosition(position);
+        setPlacementMessage('Position chosen. Complete the marker details to save.');
+        callbacks.current.onPlacePosition(position);
+      });
+      // Right-click on desktop, long-press on touch: drop a marker here.
+      // In placement mode it behaves like a click; otherwise it opens the editor.
+      activeMap.on('contextmenu', (event: L.LeafletMouseEvent) => {
+        const position = fromMapCoordinate(event.latlng);
+        if (!isValidPosition(position)) {
+          setPlacementMessage('Choose a point inside the source map.');
+          return;
+        }
+        if (callbacks.current.editorMode === 'none') {
+          callbacks.current.onAddMarkerAt(position);
           return;
         }
         setPreviewPosition(position);
@@ -234,7 +262,13 @@ export default function MapView(props: MapViewProps) {
           ? `Explore ${group.places.length.toLocaleString()} places`
           : `${place.title}${selected ? ', selected' : ''}`;
         const marker = L.marker(toMapCoordinate(group.position), {
-          icon: markerIcon(group, layer, selected),
+          icon: markerIcon(
+            group,
+            layer,
+            selected,
+            markerColor(place),
+            props.foundIds.has(place.id),
+          ),
           title,
           alt: title,
           keyboard: interactive,
@@ -353,6 +387,7 @@ export default function MapView(props: MapViewProps) {
     props.layers,
     props.selectedId,
     props.editorMode,
+    props.foundIds,
     props.preferences.clusterMarkers,
     props.preferences.showLabels,
   ]);

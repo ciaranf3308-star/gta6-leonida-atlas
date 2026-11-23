@@ -8,6 +8,7 @@ import type {
   PlaceNote,
   Preferences,
   UserData,
+  VisitedPlace,
 } from '../domain/types';
 import {
   BACKUP_LIMITS,
@@ -60,6 +61,14 @@ const schemaV2 = {
   collections: 'id, name, updatedAt, *placeIds',
   preferences: 'key',
 };
+const schemaV3 = {
+  favorites: 'placeId, createdAt',
+  notes: 'placeId, updatedAt',
+  markers: 'id, category, updatedAt',
+  collections: 'id, name, updatedAt, *placeIds',
+  visited: 'placeId, visitedAt',
+  preferences: 'key',
+};
 
 async function migrateV1(transaction: Transaction): Promise<void> {
   const [favorites, notes, markers, collections, prefs] = await Promise.all([
@@ -105,20 +114,24 @@ export class AtlasDatabase extends Dexie {
   declare notes: Table<PlaceNote, string>;
   declare markers: Table<PersonalMarker, string>;
   declare collections: Table<Collection, string>;
+  declare visited: Table<VisitedPlace, string>;
   declare preferences: Table<PreferencesRecord, string>;
 
   constructor(name = 'leonida-atlas') {
     super(name);
     this.version(1).stores(schemaV1);
     this.version(2).stores(schemaV2).upgrade(migrateV1);
+    // v3 adds the visited (found) table only; existing data is untouched.
+    this.version(3).stores(schemaV3);
   }
 
   private async snapshot(): Promise<UserData> {
-    const [favorites, notes, markers, collections, preferences] = await Promise.all([
+    const [favorites, notes, markers, collections, visited, preferences] = await Promise.all([
       this.favorites.toArray(),
       this.notes.toArray(),
       this.markers.toArray(),
       this.collections.toArray(),
+      this.visited.toArray(),
       this.preferences.get('preferences'),
     ]);
     return {
@@ -126,6 +139,7 @@ export class AtlasDatabase extends Dexie {
       notes,
       markers,
       collections,
+      visited,
       preferences: preferences?.value ?? { ...DEFAULT_PREFERENCES },
     };
   }
@@ -166,6 +180,20 @@ export class AtlasDatabase extends Dexie {
         await this.requirePlace(id);
         await this.checkCapacity(this.favorites, id);
         await this.favorites.put({ placeId: id, createdAt: new Date().toISOString() });
+        await this.ensureRestorable();
+      }
+    });
+  }
+
+  /** Mark a place as found (or unmark it). Found state is local-only progress. */
+  async toggleVisited(placeId: string): Promise<void> {
+    const id = parseId(placeId, 'placeId');
+    await this.transaction('rw', this.tables, async () => {
+      if (await this.visited.get(id)) await this.visited.delete(id);
+      else {
+        await this.requirePlace(id);
+        await this.checkCapacity(this.visited, id);
+        await this.visited.put({ placeId: id, visitedAt: new Date().toISOString() });
         await this.ensureRestorable();
       }
     });
@@ -213,13 +241,14 @@ export class AtlasDatabase extends Dexie {
     const markerId = parseId(id, 'marker.id', true);
     await this.transaction(
       'rw',
-      [this.markers, this.favorites, this.notes, this.collections],
+      [this.markers, this.favorites, this.notes, this.visited, this.collections],
       async () => {
         checkRevision(await this.markers.get(markerId), expectedMarkerUpdatedAt);
         checkRevision(await this.notes.get(markerId), expectedNoteUpdatedAt);
         await this.markers.delete(markerId);
         await this.favorites.delete(markerId);
         await this.notes.delete(markerId);
+        await this.visited.delete(markerId);
         await this.collections
           .where('placeIds')
           .equals(markerId)
@@ -328,11 +357,17 @@ export class AtlasDatabase extends Dexie {
         markers: mergeNewest(local.markers, imported.markers, (item) => item.id),
         notes: mergeNewest(local.notes, imported.notes, (item) => item.placeId),
         collections: mergeNewest(local.collections, imported.collections, (item) => item.id),
+        visited: mergeNewest(
+          local.visited.map((item) => ({ ...item, updatedAt: item.visitedAt })),
+          imported.visited.map((item) => ({ ...item, updatedAt: item.visitedAt })),
+          (item) => item.placeId,
+        ).map(({ placeId, visitedAt }) => ({ placeId, visitedAt })),
       });
       await this.markers.bulkPut(merged.markers);
       await this.favorites.bulkPut(merged.favorites);
       await this.notes.bulkPut(merged.notes);
       await this.collections.bulkPut(merged.collections);
+      await this.visited.bulkPut(merged.visited);
       await this.preferences.put({ key: 'preferences', value: merged.preferences });
     });
   }

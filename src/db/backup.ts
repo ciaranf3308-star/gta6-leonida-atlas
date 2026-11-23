@@ -7,6 +7,7 @@ import type {
   PersonalMarker,
   PlaceNote,
   Preferences,
+  VisitedPlace,
 } from '../domain/types';
 import { CANONICAL_BOUNDS } from '../features/street-leonida/leonida-coordinates';
 
@@ -107,6 +108,23 @@ export function parsePreferences(input: unknown, legacy = false): Preferences {
   };
 }
 
+export const MARKER_COLORS = Object.freeze([
+  '#c9a9ef',
+  '#73cbbb',
+  '#f2d897',
+  '#ff8a5c',
+  '#ff5c7a',
+  '#6ea8ff',
+  '#8be07a',
+] as const);
+
+function parseMarkerColor(input: unknown): string | undefined {
+  if (input === undefined) return undefined;
+  if (typeof input !== 'string' || !(MARKER_COLORS as readonly string[]).includes(input))
+    invalid('marker.color', 'is unsupported');
+  return input;
+}
+
 export function parsePersonalMarker(
   input: unknown,
   path = 'marker',
@@ -138,6 +156,7 @@ export function parsePersonalMarker(
     item.createdAt === undefined ? legacyTime : item.createdAt,
     `${path}.createdAt`,
   );
+  const color = parseMarkerColor(item.color);
   return {
     id: parseId(item.id, `${path}.id`, true),
     title: parseText(item.title, `${path}.title`, BACKUP_LIMITS.title, true),
@@ -152,6 +171,7 @@ export function parsePersonalMarker(
       y: coordinate('y', CANONICAL_BOUNDS.south, CANONICAL_BOUNDS.north),
     },
     icon,
+    ...(color ? { color } : {}),
     createdAt,
     updatedAt: timestamp(
       item.updatedAt === undefined && legacyTime ? createdAt : item.updatedAt,
@@ -242,6 +262,20 @@ export function parseBackup(input: unknown): Backup {
     (item) => item.id,
     'collections',
   );
+  const visited = unique(
+    list(data.visited === undefined ? [] : data.visited, 'visited').map(
+      (value, index): VisitedPlace => {
+        const path = `visited[${index}]`;
+        const item = record(value, path);
+        return {
+          placeId: parseId(item.placeId, `${path}.placeId`),
+          visitedAt: timestamp(item.visitedAt, `${path}.visitedAt`),
+        };
+      },
+    ),
+    (item) => item.placeId,
+    'visited',
+  );
   const markerIds = new Set(markers.map((item) => item.id));
   const checkReference = (id: string) => {
     if (id.startsWith('custom:') && !markerIds.has(id))
@@ -250,6 +284,7 @@ export function parseBackup(input: unknown): Backup {
   for (const item of favorites) checkReference(item.placeId);
   for (const item of notes) checkReference(item.placeId);
   for (const item of collections) for (const id of item.placeIds) checkReference(id);
+  for (const item of visited) checkReference(item.placeId);
   const result: Backup = {
     format: 'leonida-atlas',
     version: 2,
@@ -258,6 +293,7 @@ export function parseBackup(input: unknown): Backup {
     notes,
     collections,
     markers,
+    visited,
     preferences: parsePreferences(data.preferences, Boolean(legacyTime)),
   };
   // Count only whitelisted data: ignored keys cannot become stored executable content.

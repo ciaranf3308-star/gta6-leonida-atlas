@@ -10,6 +10,8 @@ const filters: Filters = {
   personalOnly: false,
   evidence: 'all',
   collectionId: null,
+  hideFound: false,
+  remainingOnly: false,
 };
 const place: Place = {
   id: 'L1',

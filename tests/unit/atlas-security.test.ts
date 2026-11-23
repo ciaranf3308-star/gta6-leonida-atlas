@@ -30,6 +30,9 @@ async function fixture() {
   const files: Record<string, string> = {
     'index.html': '<!doctype html><div id="root"></div>',
     'favicon.svg': '<svg/>',
+    'manifest.webmanifest': '{}',
+    'icons/icon-192.png': '',
+    'icons/icon-512.png': '',
     'assets/app-test.js': 'console.log("public app")',
     'assets/app-test.css': 'body{color:black}',
     'assets/walk-world-test.js': 'console.log("optional 3D")',

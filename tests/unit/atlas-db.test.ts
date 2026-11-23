@@ -23,6 +23,7 @@ const incoming = (): Backup => ({
   notes: [{ placeId: 'L42', text: 'Imported note', updatedAt: time }],
   collections: [{ id: 'trip', name: 'Trip', placeIds: ['L42'], createdAt: time, updatedAt: time }],
   markers: [marker()],
+  visited: [{ placeId: 'L42', visitedAt: time }],
   preferences: { reducedMotion: true, showLabels: false, clusterMarkers: false },
 });
 
@@ -42,6 +43,7 @@ describe('local atlas repository', () => {
       notes: [],
       collections: [],
       markers: [],
+      visited: [],
       preferences: { reducedMotion: false, showLabels: true, clusterMarkers: true },
     });
     await db.saveMarker(marker());
@@ -247,7 +249,8 @@ describe('real IndexedDB schema upgrade', () => {
     legacy.close();
     await db.open();
     const saved = await db.load();
-    expect(db.verno).toBe(2);
+    expect(db.verno).toBe(3);
+    expect(saved.visited).toEqual([]);
     expect(saved.markers[0]).toMatchObject({
       id: 'custom:old',
       title: 'Old stop',

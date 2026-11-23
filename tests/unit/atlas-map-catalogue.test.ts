@@ -5,12 +5,13 @@ import { catalogueFromSnapshot, markerToPlace } from '../../src/data/catalogue';
 const snapshot = JSON.parse(readFileSync(new URL('../../public/assets/street-leonida/maps/gtadb-landmarks-5c1d69f.json', import.meta.url), 'utf8'));
 
 describe('Atlas searchable catalogue', () => {
-  it('retains all 3,431 community records and six regions, including 91 unpositioned records', () => {
+  it('retains all 3,431 community records, six regions and nine gyms, including 93 unpositioned records', () => {
     const places = catalogueFromSnapshot(snapshot);
-    expect(places).toHaveLength(3437);
-    expect(places.filter(p => p.position === null)).toHaveLength(91);
+    expect(places).toHaveLength(3446);
+    expect(places.filter(p => p.position === null)).toHaveLength(93);
     expect(places.filter(p => p.layerId === 'regions')).toHaveLength(6);
-    expect(new Set(places.map(p => p.id)).size).toBe(3437);
+    expect(places.filter(p => p.layerId === 'gyms')).toHaveLength(9);
+    expect(new Set(places.map(p => p.id)).size).toBe(3446);
   });
   it('uses only source game coordinates and keeps approximate and uncertain evidence explicit', () => {
     const places = catalogueFromSnapshot(snapshot);

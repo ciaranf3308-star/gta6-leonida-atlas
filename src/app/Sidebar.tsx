@@ -28,6 +28,13 @@ export const CATEGORIES: { id: Category | 'all'; name: string }[] = [
   { id: 'personal', name: 'Personal' },
 ];
 
+export interface LayerProgress {
+  layerId: string;
+  name: string;
+  total: number;
+  found: number;
+}
+
 function LayerManager() {
   const layers = useMapStore((s) => s.layers);
   const ordered = [...layers].sort((a, b) => b.order - a.order);
@@ -51,7 +58,9 @@ function LayerManager() {
   return (
     <div className="layer-manager">
       <p className="panel-intro">
-        Choose what appears on the map. Layers at the top draw above the others.
+        Spoiler-free mode: every location layer starts off. Turn a layer on only when you want
+        to see those places — nothing is shown until you choose it. Layers at the top draw above
+        the others.
       </p>
       {ordered.map((layer, index) => (
         <div className="layer-row" key={layer.id}>
@@ -103,7 +112,13 @@ function LayerManager() {
   );
 }
 
-function Results({ places }: { places: Place[] }) {
+function Results({
+  places,
+  anyPublicLayerVisible,
+}: {
+  places: Place[];
+  anyPublicLayerVisible: boolean;
+}) {
   const filters = useUiStore((s) => s.filters);
   const selectedId = useMapStore((s) => s.selectedId);
   const status = useDomainStore((s) => s.status);
@@ -156,6 +171,28 @@ function Results({ places }: { places: Place[] }) {
             <option value="uncertain">Uncertain entries</option>
           </select>
         </div>
+        <div className="row-between">
+          <label className="check-label">
+            <input
+              type="checkbox"
+              checked={filters.hideFound}
+              onChange={(e) =>
+                useUiStore.getState().setFilters({ hideFound: e.target.checked })
+              }
+            />
+            Hide found
+          </label>
+          <label className="check-label">
+            <input
+              type="checkbox"
+              checked={filters.remainingOnly}
+              onChange={(e) =>
+                useUiStore.getState().setFilters({ remainingOnly: e.target.checked })
+              }
+            />
+            Remaining only
+          </label>
+        </div>
       </div>
       <div className="results-count">
         <span>{places.length.toLocaleString()} results</span>
@@ -165,11 +202,7 @@ function Results({ places }: { places: Place[] }) {
       </div>
       {status === 'loading' ? (
         <p className="empty-state">Loading the public catalogue…</p>
-      ) : !places.length ? (
-        <p className="empty-state">
-          No places match these filters. Try another name, region or tag.
-        </p>
-      ) : (
+      ) : places.length ? (
         <div className="place-results" aria-label="Search results">
           {places.slice(0, limit).map((place) => (
             <button
@@ -196,6 +229,15 @@ function Results({ places }: { places: Place[] }) {
             </button>
           ))}
         </div>
+      ) : !anyPublicLayerVisible ? (
+        <p className="empty-state">
+          Spoiler-free mode: all location layers are off, so there is nothing to list yet. Open
+          Layers and turn on just what you want to see — your own markers are always listed.
+        </p>
+      ) : (
+        <p className="empty-state">
+          No places match these filters. Try another name, region or tag.
+        </p>
       )}
       {places.length > limit && (
         <button className="load-more" onClick={() => setLimit((n) => n + 50)}>
@@ -206,7 +248,15 @@ function Results({ places }: { places: Place[] }) {
   );
 }
 
-export function Sidebar({ places }: { places: Place[] }) {
+export function Sidebar({
+  places,
+  progress,
+  anyPublicLayerVisible,
+}: {
+  places: Place[];
+  progress: LayerProgress[];
+  anyPublicLayerVisible: boolean;
+}) {
   const tab = useUiStore((s) => s.tab);
   const open = useUiStore((s) => s.sidebarOpen);
   const query = useUiStore((s) => s.filters.query);
@@ -262,11 +312,11 @@ export function Sidebar({ places }: { places: Place[] }) {
       </nav>
       <div className="sidebar-content">
         {tab === 'explore' ? (
-          <Results places={places} />
+          <Results places={places} anyPublicLayerVisible={anyPublicLayerVisible} />
         ) : tab === 'layers' ? (
           <LayerManager />
         ) : (
-          <SavedPlaces />
+          <SavedPlaces progress={progress} />
         )}
       </div>
       <footer className="sidebar-footer">

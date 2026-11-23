@@ -23,12 +23,19 @@ export interface PersonalMarker {
   category: Category;
   position: Position;
   icon: 'pin' | 'star' | 'flag';
+  /** Optional marker colour (hex from the editor palette). Defaults to the layer colour. */
+  color?: string;
   createdAt: string;
   updatedAt: string;
 }
 export interface Favorite {
   placeId: string;
   createdAt: string;
+}
+/** A place the user has marked as found/visited. Local only, like favorites. */
+export interface VisitedPlace {
+  placeId: string;
+  visitedAt: string;
 }
 export interface PlaceNote {
   placeId: string;
@@ -52,6 +59,7 @@ export interface UserData {
   notes: PlaceNote[];
   collections: Collection[];
   markers: PersonalMarker[];
+  visited: VisitedPlace[];
   preferences: Preferences;
 }
 export interface Backup extends UserData {
@@ -81,6 +89,10 @@ export interface Filters {
   personalOnly: boolean;
   evidence: 'all' | 'approximate' | 'uncertain';
   collectionId: string | null;
+  /** Hide places already marked as found. */
+  hideFound: boolean;
+  /** Show only places not yet marked as found (the 99% case). Implies hideFound. */
+  remainingOnly: boolean;
 }
 export const DEFAULT_PREFERENCES: Preferences = {
   reducedMotion: false,
@@ -92,5 +104,6 @@ export const EMPTY_USER_DATA: UserData = {
   notes: [],
   collections: [],
   markers: [],
+  visited: [],
   preferences: DEFAULT_PREFERENCES,
 };

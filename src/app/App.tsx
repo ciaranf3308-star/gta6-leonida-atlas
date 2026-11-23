@@ -2,7 +2,7 @@ import { lazy, Suspense, useCallback, useDeferredValue, useEffect, useMemo, useR
 import { Box, Info, MapPinPlus, Menu, X } from 'lucide-react';
 import { loadCatalogue, markerToPlace } from '../data/catalogue';
 import { filterPlaces } from '../domain/filter';
-import { DEFAULT_LAYERS } from '../features/map/layers';
+import { DEFAULT_LAYERS, filterByVisibleLayers } from '../features/map/layers';
 import MapView from '../features/map/MapView';
 import { explorerPath } from '../features/explorer/public-path';
 import { atlasRegistry } from '../plugins/registry';
@@ -42,6 +42,7 @@ export default function App() {
   const status = useDomainStore((s) => s.status);
   const error = useDomainStore((s) => s.error);
   const markers = useUserStore((s) => s.markers);
+  const visited = useUserStore((s) => s.visited);
   const favorites = useUserStore((s) => s.favorites);
   const notes = useUserStore((s) => s.notes);
   const collections = useUserStore((s) => s.collections);
@@ -62,16 +63,34 @@ export default function App() {
   const deferredQuery = useDeferredValue(filters.query);
   const filtered = useMemo(
     () =>
-      filterPlaces(
-        allPlaces,
-        { ...filters, query: deferredQuery },
-        favorites.map((f) => f.placeId),
-        notes,
-        collections,
-      ).filter((place) =>
-        [...atlasRegistry.filters.values()].every((filter) => filter.matches(place)),
+      filterByVisibleLayers(
+        filterPlaces(
+          allPlaces,
+          { ...filters, query: deferredQuery },
+          favorites.map((f) => f.placeId),
+          notes,
+          collections,
+          visited.map((v) => v.placeId),
+        ).filter((place) =>
+          [...atlasRegistry.filters.values()].every((filter) => filter.matches(place)),
+        ),
+        layers,
       ),
-    [allPlaces, filters, deferredQuery, favorites, notes, collections],
+    [allPlaces, filters, deferredQuery, favorites, notes, collections, visited, layers],
+  );
+  /** Per-layer found/total for the Progress section. Counts every place in the layer. */
+  const progress = useMemo(() => {
+    const found = new Set(visited.map((v) => v.placeId));
+    return layers.map((layer) => {
+      const total = allPlaces.filter((p) => p.layerId === layer.id).length;
+      const done = allPlaces.filter(
+        (p) => p.layerId === layer.id && found.has(p.id),
+      ).length;
+      return { layerId: layer.id, name: layer.name, total, found: done };
+    });
+  }, [allPlaces, visited, layers]);
+  const anyPublicLayerVisible = layers.some(
+    (layer) => layer.visible && layer.id !== 'personal',
   );
   const selected = useMemo(
     () => allPlaces.find((p) => p.id === selectedId),
@@ -81,6 +100,20 @@ export default function App() {
     (id: string) => {
       const place = allPlaces.find((p) => p.id === id);
       if (place) {
+        // An explicit tap is the user choosing to reveal that place: turn its
+        // layer on so a deep link or a search result is never a dead end.
+        if (place.layerId !== 'personal') {
+          const current = useMapStore.getState().layers;
+          if (current.some((l) => l.id === place.layerId && !l.visible)) {
+            useMapStore
+              .getState()
+              .setLayers(
+                current.map((l) =>
+                  l.id === place.layerId ? { ...l, visible: true } : l,
+                ),
+              );
+          }
+        }
         useMapStore.getState().select(place);
         if (window.innerWidth < 1000) useUiStore.getState().setSidebar(false);
       }
@@ -109,6 +142,13 @@ export default function App() {
     useMapStore.getState().setEditor('create');
     if (window.innerWidth < 1000) useUiStore.getState().setSidebar(false);
   }
+  /** Long-press / right-click on the map: start a marker right there. */
+  const beginMarkerAt = useCallback((position: Position) => {
+    useMapStore.getState().setEditor('create');
+    useMapStore.getState().setPosition(position);
+    useUiStore.getState().setEditorOpen(true);
+    if (window.innerWidth < 1000) useUiStore.getState().setSidebar(false);
+  }, []);
   useEffect(() => {
     useMapStore.getState().setLayers([...atlasRegistry.layers.values()]);
     void hydrateUserData();
@@ -175,8 +215,8 @@ export default function App() {
     const place = allPlaces.find((p) => p.id === route.placeId);
     if (!place) return;
     appliedPlaceRoute.current = route;
-    useMapStore.getState().select(place);
-  }, [route, status, allPlaces]);
+    select(place.id);
+  }, [route, status, allPlaces, select]);
   useEffect(() => {
     document.documentElement.dataset.reducedMotion = String(preferences.reducedMotion);
   }, [preferences.reducedMotion]);
@@ -207,7 +247,7 @@ export default function App() {
       <a className="skip-link" href="#atlas-map-region">
         Skip to map
       </a>
-      <Sidebar places={filtered} />
+      <Sidebar places={filtered} progress={progress} anyPublicLayerVisible={anyPublicLayerVisible} />
       <section className="map-workspace" id="atlas-map-region" aria-label="Interactive Leonida map">
         <MapView
           places={filtered}
@@ -216,8 +256,10 @@ export default function App() {
           focus={focus}
           editorMode={editorMode}
           preferences={preferences}
+          foundIds={new Set(visited.map((v) => v.placeId))}
           onSelect={select}
           onPlacePosition={placePosition}
+          onAddMarkerAt={beginMarkerAt}
         />
         <div className="map-topbar">
           <button
@@ -259,7 +301,7 @@ export default function App() {
             <MapPinPlus size={19} />
             <span>
               {editorMode === 'create'
-                ? 'Click the map to place your marker'
+                ? 'Click the map to place your marker — or long-press the map anywhere'
                 : 'Click a new position for this marker'}
             </span>
             <button

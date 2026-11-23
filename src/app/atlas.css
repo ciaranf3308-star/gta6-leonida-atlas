@@ -579,6 +579,7 @@ h3 {
   display: flex;
   align-items: flex-start;
   gap: 4px;
+  min-height: 48px;
 }
 .layer-row label {
   display: flex;
@@ -591,6 +592,9 @@ h3 {
 }
 .layer-row label > input {
   margin: 1px 0;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
 }
 .layer-row label > span:last-child {
   flex: 1;
@@ -641,6 +645,35 @@ h3 {
 .library-row > span:last-child {
   color: var(--muted);
   font-size: 12px;
+}
+/* Per-layer progress bar (Saved → Progress). */
+.library-row .progress-name {
+  flex: 1;
+}
+.library-row .progress-name small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 4px;
+}
+.library-row .progress-wrap {
+  flex: 0 0 auto;
+}
+.progress-bar {
+  display: block;
+  width: 72px;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--border);
+  overflow: hidden;
+}
+.progress-bar::after {
+  content: '';
+  display: block;
+  height: 100%;
+  width: var(--progress, 0%);
+  background: var(--accent);
+  border-radius: 4px;
 }
 .section-label {
   font-size: 11px;

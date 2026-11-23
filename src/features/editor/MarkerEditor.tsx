@@ -2,9 +2,20 @@ import { useState } from 'react';
 import type { Category, PersonalMarker, Position } from '../../domain/types';
 import { atlasRepository, ConflictError } from '../../db/repository';
 import { markerToPlace } from '../../data/catalogue';
+import { MARKER_COLORS } from '../../db/backup';
 import { saveLocal, useMapStore, useUiStore, useUserStore } from '../../stores/atlas';
 import { Modal } from '../../app/Modal';
 import { CATEGORIES } from '../../app/Sidebar';
+
+const MARKER_COLOR_NAMES: Record<string, string> = {
+  '#c9a9ef': 'Purple',
+  '#73cbbb': 'Teal',
+  '#f2d897': 'Sand',
+  '#ff8a5c': 'Orange',
+  '#ff5c7a': 'Pink',
+  '#6ea8ff': 'Blue',
+  '#8be07a': 'Green',
+};
 
 export default function MarkerEditor({
   position,
@@ -21,6 +32,7 @@ export default function MarkerEditor({
   const [description, setDescription] = useState(marker?.description ?? '');
   const [category, setCategory] = useState<Category>(marker?.category ?? 'personal');
   const [icon, setIcon] = useState<PersonalMarker['icon']>(marker?.icon ?? 'pin');
+  const [color, setColor] = useState<string>(marker?.color ?? MARKER_COLORS[0]);
   const [x, setX] = useState(String(position?.x ?? marker?.position.x ?? 0));
   const [y, setY] = useState(String(position?.y ?? marker?.position.y ?? 0));
   const [error, setError] = useState('');
@@ -52,6 +64,7 @@ export default function MarkerEditor({
       description: description.trim(),
       category,
       icon,
+      color,
       position: coords,
       createdAt: marker?.createdAt ?? now,
       updatedAt: now,
@@ -157,6 +170,20 @@ export default function MarkerEditor({
               <option value="pin">Pin</option>
               <option value="star">Star</option>
               <option value="flag">Flag</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="marker-color">Colour</label>
+            <select
+              id="marker-color"
+              value={color}
+              onChange={(e) => setColor(e.target.value)}
+            >
+              {MARKER_COLORS.map((value) => (
+                <option key={value} value={value}>
+                  {MARKER_COLOR_NAMES[value] ?? value}
+                </option>
+              ))}
             </select>
           </div>
         </div>

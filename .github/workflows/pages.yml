@@ -1,0 +1,67 @@
+# Deploy the spoiler-free fork to GitHub Pages
+#
+# Prepared only — this workflow never runs until the repo owner enables it:
+# it triggers on workflow_dispatch only, so nothing deploys on push.
+# To publish: push the spoiler-free-pwa branch, then run this workflow from
+# the Actions tab (or merge to main first and run it there).
+# The site then lives at https://ciaranf3308-star.github.io/gta6-leonida-atlas/
+# Add to Home Screen on Android to install it as a PWA.
+name: Deploy to GitHub Pages
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      VITE_ANALYTICS_ID: ""
+      ATLAS_BASE_PATH: "/gta6-leonida-atlas/"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+      - name: Activate pnpm
+        run: corepack enable && corepack prepare pnpm@11.3.0 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Check types
+        run: pnpm typecheck
+      - name: Lint
+        run: pnpm lint
+      - name: Run unit tests
+        run: pnpm test:unit
+      - name: Generate PWA icons
+        run: node scripts/generate-pwa-icons.mjs
+      - name: Build
+        run: pnpm build
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

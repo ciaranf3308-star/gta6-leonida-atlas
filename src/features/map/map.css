@@ -52,6 +52,12 @@
   outline-offset: 3px;
   box-shadow: 0 0 0 8px #73cbbb50;
 }
+/* Found places read as done at a glance: green tick, dimmed pin. */
+.atlas-map-marker.is-found .atlas-pin-face {
+  background: #2e7d5b;
+  color: #dcf5ed;
+  opacity: 0.75;
+}
 .atlas-map-marker:focus-visible {
   outline: 3px solid #fff;
   outline-offset: 5px;

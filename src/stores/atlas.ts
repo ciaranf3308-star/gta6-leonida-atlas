@@ -18,6 +18,8 @@ export const DEFAULT_FILTERS: Filters = {
   personalOnly: false,
   evidence: 'all',
   collectionId: null,
+  hideFound: false,
+  remainingOnly: false,
 };
 export const useDomainStore = create<{
   places: Place[];

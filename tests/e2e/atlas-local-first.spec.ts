@@ -31,7 +31,16 @@ async function openAtlas(page: Page): Promise<void> {
   await expect(page.getByRole('button', { name: 'Add marker', exact: true })).toBeEnabled();
 }
 
+async function enableLayer(page: Page, name: string): Promise<void> {
+  await openSidebar(page);
+  await sidebar(page).getByRole('button', { name: 'Layers', exact: true }).click();
+  const checkbox = page.getByRole('checkbox', { name: new RegExp(`^${name}`) });
+  if (!(await checkbox.isChecked())) await checkbox.check();
+}
+
 async function selectRegion(page: Page, name = 'Ambrosia'): Promise<void> {
+  // Spoiler-free defaults start with every public layer off.
+  await enableLayer(page, 'Named regions');
   await openSidebar(page);
   await sidebar(page).getByRole('button', { name: 'Explore', exact: true }).click();
   await page.getByLabel('Browse categories').selectOption('region');
@@ -138,6 +147,13 @@ test('the map opens without an account, filters public evidence, and toggles vis
     sidebar(page).getByRole('heading', { name: 'LEONIDA ATLAS', exact: true }),
   ).toBeVisible();
   await expect(page.locator('vite-error-overlay')).toHaveCount(0);
+  // Spoiler-free defaults start with every public layer off; opt in before
+  // asserting on search results.
+  await enableLayer(page, 'Named regions');
+  await enableLayer(page, 'Community places');
+  await enableLayer(page, 'Uncertain records');
+  await openSidebar(page);
+  await sidebar(page).getByRole('button', { name: 'Explore', exact: true }).click();
   await page.getByLabel('Browse categories').selectOption('region');
   await expect(page.locator('.place-results .place-result').first()).toContainText(
     'Region · approximate',
@@ -153,6 +169,11 @@ test('the map opens without an account, filters public evidence, and toggles vis
   await page.getByRole('button', { name: 'Close place details', exact: true }).click();
   await openSidebar(page);
   await sidebar(page).getByRole('button', { name: 'Layers', exact: true }).click();
+  // Only the region pin should be in view for the caption assertions below.
+  const communityLayer = page.getByRole('checkbox', { name: /^Community places/ });
+  if (await communityLayer.isChecked()) await communityLayer.uncheck();
+  const uncertainLayer = page.getByRole('checkbox', { name: /^Uncertain records/ });
+  if (await uncertainLayer.isChecked()) await uncertainLayer.uncheck();
   const regionLayer = page.getByRole('checkbox', { name: /^Named regions/ });
   await expect(regionLayer).toBeChecked();
   await regionLayer.uncheck();

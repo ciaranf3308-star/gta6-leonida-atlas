@@ -40,7 +40,12 @@ describe('Atlas layer visibility', () => {
     expect(places.map(p => p.id)).toEqual(['a', 'b', 'c', 'd']);
   });
   it('keeps unpositioned records available for catalogue filters', () => {
-    expect(getVisiblePlaces([{ ...place('unplaced'), position: null }], DEFAULT_LAYERS)).toHaveLength(1);
+    const visibleCommunity = DEFAULT_LAYERS.map((layer) =>
+      layer.id === 'community' ? { ...layer, visible: true } : layer,
+    );
+    expect(getVisiblePlaces([{ ...place('unplaced'), position: null }], visibleCommunity)).toHaveLength(1);
+    // Spoiler-free defaults hide public layers, so nothing is visible until opted in.
+    expect(getVisiblePlaces([{ ...place('unplaced'), position: null }], DEFAULT_LAYERS)).toHaveLength(0);
   });
 });
 
