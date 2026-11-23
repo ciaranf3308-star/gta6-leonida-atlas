@@ -3,6 +3,8 @@ import { KeyRound } from 'lucide-react';
 import { Modal } from '../../app/Modal';
 import type { LayerDefinition, Place } from '../../domain/types';
 import { getAskApiKey, setAskApiKey } from '../ask/openai';
+import { PlaceIcon, iconKeyForLayer } from '../map/place-icons';
+import { DEFAULT_LAYERS } from '../map/layers';
 import {
   QUICK_START_LAYERS,
   countUnnamedPlaces,
@@ -55,6 +57,17 @@ export default function WelcomeSheet(props: WelcomeSheetProps) {
             .filter((count) => !count.layerId.startsWith('cards:') && count.total > 0)
             .map((count) => (
               <li key={count.layerId}>
+                <span
+                  className="welcome-icon"
+                  style={{
+                    background:
+                      DEFAULT_LAYERS.find((l) => l.id === count.layerId)?.style.color ??
+                      '#e8823a',
+                  }}
+                  aria-hidden="true"
+                >
+                  <PlaceIcon icon={iconKeyForLayer(count.layerId)} size={17} />
+                </span>
                 <span>
                   <strong>{count.name}</strong>
                   <small>
@@ -67,6 +80,9 @@ export default function WelcomeSheet(props: WelcomeSheetProps) {
               </li>
             ))}
           <li>
+            <span className="welcome-icon" style={{ background: '#d98cb3' }} aria-hidden="true">
+              <PlaceIcon icon="gem" size={17} />
+            </span>
             <span>
               <strong>Trading cards · 18 sets, 480 cards</strong>
               <small>
@@ -98,6 +114,17 @@ export default function WelcomeSheet(props: WelcomeSheetProps) {
                 className="button"
                 onClick={() => props.onQuickStart(quick.layerId)}
               >
+                <span
+                  className="welcome-icon"
+                  style={{
+                    background:
+                      DEFAULT_LAYERS.find((l) => l.id === quick.layerId)?.style.color ??
+                      '#e8823a',
+                  }}
+                  aria-hidden="true"
+                >
+                  <PlaceIcon icon={iconKeyForLayer(quick.layerId)} size={15} />
+                </span>
                 {quick.label}
                 {count ? ` (${count.positioned})` : ''}
                 <small>{quick.hint}</small>

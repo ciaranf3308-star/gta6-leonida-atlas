@@ -5,16 +5,16 @@
   min-height: 300px;
   isolation: isolate;
   overflow: hidden;
-  background: #0e2835;
+  background: #1e1a15;
 }
 .atlas-map-canvas {
   position: absolute;
   inset: 0;
-  background: #0e2835;
+  background: #1e1a15;
   font-family: inherit;
 }
 .atlas-map-canvas:focus-visible {
-  outline: 2px solid #73cbbb;
+  outline: 2px solid #e8823a;
   outline-offset: -3px;
 }
 .atlas-map-view.is-editing .atlas-map-canvas,
@@ -27,21 +27,31 @@
 }
 .atlas-pin-face,
 .atlas-cluster-face {
+  position: relative;
   display: grid;
   place-items: center;
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  color: #0b202c;
-  background: var(--pin-color, #73cbbb);
-  border: 2px solid #102b37;
-  box-shadow: 0 2px 7px #00101880;
+  color: #fff;
+  background: var(--pin-color, #e8823a);
+  border: 2px solid #1b1815e6;
+  box-shadow:
+    0 2px 8px #120e0a80,
+    inset 0 0 0 1px #ffffff2e;
   font: 700 18px/1 sans-serif;
 }
+/* The glyph inside the blip: white, same stroke everywhere. */
+.atlas-pin-face svg {
+  display: block;
+  width: 17px;
+  height: 17px;
+  filter: drop-shadow(0 1px 1px #0006);
+}
 .atlas-cluster-face {
-  background: #163b43;
-  border: 1px solid #73cbbb;
-  color: #dcf5ed;
+  background: #2b251d;
+  border: 1px solid #e8823a;
+  color: #f7ecdc;
   font-size: 12px;
 }
 .atlas-map-marker.is-region .atlas-pin-face {
@@ -50,13 +60,25 @@
 .atlas-map-marker.is-selected .atlas-pin-face {
   outline: 3px solid #fff;
   outline-offset: 3px;
-  box-shadow: 0 0 0 8px #73cbbb50;
+  box-shadow: 0 0 0 8px #e8823a50;
 }
-/* Found places read as done at a glance: green tick, dimmed pin. */
+/* Found places keep their glyph and gain a small green tick badge. */
 .atlas-map-marker.is-found .atlas-pin-face {
+  opacity: 0.8;
+}
+.atlas-found-badge {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  display: grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
   background: #2e7d5b;
   color: #dcf5ed;
-  opacity: 0.75;
+  border: 1.5px solid #1b1815;
+  font: 700 9px/1 sans-serif;
 }
 /* Ask Nylah highlights: gold ring, so an answer's places stand out. */
 .atlas-map-marker.is-highlighted .atlas-pin-face {
@@ -71,8 +93,8 @@
 }
 .atlas-map-canvas .atlas-place-label {
   border: 0;
-  color: #edf8ef;
-  background: #0b202ceb;
+  color: #f7f1e3;
+  background: #1b1815eb;
   box-shadow: none;
   font-family: inherit;
   font-size: 11px;
@@ -98,10 +120,10 @@
   display: flex;
   flex-direction: column;
   gap: 1px;
-  border: 1px solid #3b535d;
+  border: 1px solid #4a4030;
   border-radius: 9px;
   overflow: hidden;
-  box-shadow: 0 4px 16px #00101840;
+  box-shadow: 0 4px 16px #120e0a40;
 }
 .atlas-map-navigation button {
   display: grid;
@@ -110,14 +132,14 @@
   height: 42px;
   border: 0;
   padding: 0;
-  color: #e5f1ed;
-  background: #102b38;
+  color: #f3ead9;
+  background: #201b14;
   font: 400 25px/1 sans-serif;
   cursor: pointer;
 }
 .atlas-map-navigation button:hover {
-  background: #204550;
-  color: #a2e6d5;
+  background: #322a1e;
+  color: #f6c48d;
 }
 .atlas-map-navigation button:disabled {
   opacity: 0.45;
@@ -138,9 +160,9 @@
   flex-wrap: wrap;
   gap: 4px 10px;
   max-width: calc(100% - 75px);
-  color: #d6e9e5;
-  background: #0b202cd9;
-  border: 1px solid #4a676555;
+  color: #e8dcc4;
+  background: #1b1815d9;
+  border: 1px solid #6b5d4a55;
   border-radius: 5px;
   padding: 5px 8px;
   font-size: 10px;
@@ -153,14 +175,14 @@
   bottom: 12px;
   padding: 5px 8px;
   border-radius: 5px;
-  background: #0b202ce6;
-  color: #a3bab8;
+  background: #1b1815e6;
+  color: #a89a80;
   font-size: 9px;
   line-height: 1.4;
   max-width: min(85%, 440px);
 }
 .atlas-map-attribution a {
-  color: #d4e9e2;
+  color: #e8dcc4;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -173,14 +195,14 @@
   width: max-content;
   max-width: calc(100% - 32px);
   font-size: 12px;
-  box-shadow: 0 4px 20px #00101840;
+  box-shadow: 0 4px 20px #120e0a40;
 }
 .atlas-map-editor-hint button,
 .atlas-map-error button {
   flex-shrink: 0;
-  border: 1px solid #73cbbb;
-  color: #122e38;
-  background: #73cbbb;
+  border: 1px solid #e8823a;
+  color: #241f18;
+  background: #e8823a;
   border-radius: 5px;
   padding: 8px 10px;
   font: inherit;
@@ -200,7 +222,7 @@
   border-radius: 50%;
   border: 1px solid #fff9;
   color: #fff;
-  background: #0b202c80;
+  background: #1b181580;
   font: 300 27px/1 sans-serif;
   pointer-events: none;
 }
@@ -223,7 +245,7 @@
   display: grid;
   gap: 14px;
   padding: 20px;
-  background: #142e3b;
+  background: #221d16;
   border: 1px solid #d5b38f;
   border-radius: 10px;
   color: #f2e9da;
@@ -231,8 +253,8 @@
 }
 .atlas-map-canvas .leaflet-popup-content-wrapper,
 .atlas-map-canvas .leaflet-popup-tip {
-  background: #122f3b;
-  color: #edf7f0;
+  background: #262119;
+  color: #f7f1e3;
 }
 .atlas-cluster-list {
   display: grid;
@@ -243,18 +265,18 @@
 }
 .atlas-cluster-list button {
   text-align: left;
-  border: 1px solid #41606a;
+  border: 1px solid #5d5142;
   border-radius: 5px;
   padding: 8px;
-  color: #e6f3ee;
-  background: #1d414b;
+  color: #f3ead9;
+  background: #2e2820;
   font: inherit;
   cursor: pointer;
 }
 .atlas-cluster-list button:hover,
 .atlas-cluster-list button:focus-visible {
-  background: #2e5961;
-  outline-color: #73cbbb;
+  background: #3d3222;
+  outline-color: #e8823a;
 }
 .map-sr-only {
   position: absolute;

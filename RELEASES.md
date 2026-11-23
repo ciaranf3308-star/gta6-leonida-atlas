@@ -2,6 +2,14 @@
 
 Release history, newest first.
 
+## v0.9.0 — 2026-11-23
+
+**Released: authentic map blips and a warmer companion redesign.**
+
+- Every place pins a GTA-style blip — a white pictogram in a coloured roundel, drawn from its GTADB tags (petrol, gun shop, hotel, gym and more) in one consistent stroke set. No place falls back to a coloured dot.
+- The same icons run through the whole app: overlay chips, layer rows, search results, place detail sheets, Ask Nylah answers and AI-suggested types.
+- Warm charcoal-and-orange redesign with an elegant serif for headings, floating glass cards and rounded bottom sheets. The map chip row wraps instead of scrolling, and the place description lifts its real-world analogue address into its own line.
+
 ## v0.8.2 — 2026-11-17
 
 ### Map data and local editing

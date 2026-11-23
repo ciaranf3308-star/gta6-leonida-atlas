@@ -7,7 +7,6 @@ import {
   Compass,
   Database,
   Layers,
-  MapPin,
   Search,
   Settings,
   X,
@@ -17,12 +16,23 @@ import { isUnnamedPlace } from '../domain/types';
 import { useDomainStore, useMapStore, usePersistenceStore, useUiStore } from '../stores/atlas';
 import { COUNTIES, COUNTY_EXTENT_NOTE } from '../data/counties';
 import { INITIAL_BOUNDS } from '../features/map/coordinates';
+import { DEFAULT_LAYERS } from '../features/map/layers';
+import {
+  PlaceIcon,
+  iconKeyForAiRecord,
+  iconKeyForLayer,
+  iconKeyForPlace,
+  type IconKey,
+} from '../features/map/place-icons';
 import { SavedPlaces } from '../features/library/SavedPlaces';
 import { Status } from './Status';
 import { setAccountEntryTarget } from '../capabilities/extension-host';
 import IndexPanel from '../features/categorise/IndexPanel';
 import { aiCategoryDisplay, aiCategoryShortLabel, effectiveAiCategory } from '../features/categorise/categories';
 import { useAiIndexStore } from '../features/categorise/store';
+
+/** Layer colour per layer id — the search-result roundel wears the layer colour. */
+const LAYER_COLORS = new Map(DEFAULT_LAYERS.map((l) => [l.id, l.style.color]));
 
 export const CATEGORIES: { id: Category | 'all'; name: string }[] = [
   { id: 'all', name: 'All places' },
@@ -122,7 +132,13 @@ function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allP
                 )
             }
           />
-          <span className="layer-dot" style={{ background: layer.style.color }} />
+          <span
+            className="layer-icon"
+            style={{ background: layer.style.color }}
+            aria-hidden="true"
+          >
+            <PlaceIcon icon={iconKeyForLayer(layer.id)} size={15} />
+          </span>
           <span>
             {layer.name}
             {totalById.has(layer.id) && (
@@ -207,13 +223,13 @@ function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allP
   );
 }
 
-const TAG_CHIPS: { label: string; query: string }[] = [
-  { label: 'Gym', query: 'gym' },
-  { label: 'Houses', query: 'residential' },
-  { label: 'Enterable', query: 'enterable' },
-  { label: 'Shops', query: 'retail' },
-  { label: 'Petrol', query: '#gas' },
-  { label: 'Food', query: '#food' },
+const TAG_CHIPS: { label: string; query: string; icon: IconKey }[] = [
+  { label: 'Gym', query: 'gym', icon: 'gym' },
+  { label: 'Houses', query: 'residential', icon: 'home' },
+  { label: 'Enterable', query: 'enterable', icon: 'door' },
+  { label: 'Shops', query: 'retail', icon: 'store' },
+  { label: 'Petrol', query: '#gas', icon: 'fuel' },
+  { label: 'Food', query: '#food', icon: 'food' },
 ];
 
 function Results({
@@ -266,6 +282,7 @@ function Results({
                     .setFilters({ query: active ? '' : chip.query })
                 }
               >
+                <PlaceIcon icon={chip.icon} size={13} />
                 {chip.label}
               </button>
             );
@@ -344,7 +361,18 @@ function Results({
               key={place.id}
               onClick={() => select(place)}
             >
-              <MapPin size={19} />
+              <span
+                className="result-icon"
+                style={{ background: LAYER_COLORS.get(place.layerId) ?? '#e8823a' }}
+                aria-hidden="true"
+              >
+                <PlaceIcon
+                  icon={
+                    iconKeyForAiRecord(aiCategories[place.id]) ?? iconKeyForPlace(place)
+                  }
+                  size={19}
+                />
+              </span>
               <span>
                 <strong>{displayTitle || 'Unnamed entry'}</strong>
                 <small>
@@ -403,7 +431,9 @@ export function Sidebar({
     <aside className="sidebar" data-open={open} aria-label="Atlas sidebar">
       <header className="brand-header">
         <div>
-          <h1>LEONIDA ATLAS</h1>
+          <h1>
+            Leonida <em>Atlas</em>
+          </h1>
           <p>GTA VI INDEPENDENT COMMUNITY ATLAS</p>
         </div>
         <button

@@ -11,6 +11,24 @@ export interface LeonidaAtlasRelease {
 /** Retained public history starts at v0.5.0; the newest release stays first. */
 export const LEONIDA_ATLAS_RELEASES: readonly LeonidaAtlasRelease[] = [
   {
+    version: 'v0.9.0',
+    date: '2026-11-23',
+    title: 'Authentic map blips and a warmer companion redesign',
+    summary:
+      'Every place pins a real pictogram in a GTA-style blip, and the whole app is redesigned to a warm charcoal-and-orange companion look.',
+    status: 'public',
+    highlights: [
+      'Map pins are GTA-style blips: a white pictogram in a coloured roundel, drawn from each place’s GTADB tags — petrol, gun shop, hotel, gym and more — in one consistent stroke set. No place falls back to a coloured dot.',
+      'The same icons run through the whole app: overlay chips, layer rows, search results, place detail sheets, Ask Nylah answers and AI-suggested types.',
+      'The interface is redesigned to a boutique-hotel register: warm charcoal surfaces with orange accents, an elegant serif for headings, floating glass cards and rounded bottom sheets.',
+      'The map chip row wraps instead of scrolling, and the place description lifts its real-world analogue address into its own line instead of a wall of text.',
+    ],
+    verification: [
+      '641 unit tests passed, including 9 new icon-system tests covering every GTADB tag in the snapshot.',
+      'TypeScript, ESLint and the production build passed; the 390px walk was re-run with screenshots.',
+    ],
+  },
+  {
     version: 'v0.8.2',
     date: '2026-11-17',
     title: 'Updated landmarks and safer local editing',

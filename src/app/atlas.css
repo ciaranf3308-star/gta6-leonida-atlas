@@ -1,15 +1,40 @@
+/* Cormorant Garamond — the elegant serif for headings (Soho House /
+   Hume register). Self-hosted in src/app/fonts/ so the PWA stays
+   offline-capable; OFL licence, Google Fonts. 500 and 600 are the same
+   file for this family, so one weight range covers both. */
+@font-face {
+  font-family: 'Cormorant Garamond';
+  font-style: normal;
+  font-weight: 500 600;
+  font-display: swap;
+  src:
+    url('./fonts/cormorant-garamond-500-latin.woff2') format('woff2'),
+    url('./fonts/cormorant-garamond-500-latin-ext.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Cormorant Garamond';
+  font-style: italic;
+  font-weight: 500 600;
+  font-display: swap;
+  src:
+    url('./fonts/cormorant-garamond-500italic-latin.woff2') format('woff2'),
+    url('./fonts/cormorant-garamond-500italic-latin-ext.woff2') format('woff2');
+}
 :root {
   font-family: Inter, system-ui, sans-serif;
-  color: #f3f5ec;
-  background: #0b202c;
+  color: #f5efe3;
+  background: #1b1815;
   font-synthesis: none;
   font-size: 14px;
-  --surface: #0b202c;
-  --surface-raised: #122d39;
-  --accent: #73cbbb;
-  --muted: #9fb5bd;
-  --border: #34515d;
+  --surface: #1b1815;
+  --surface-raised: #262119;
+  --accent: #e8823a;
+  --accent-deep: #c96a24;
+  --gold: #e8b64c;
+  --muted: #a89a80;
+  --border: #453c2d;
   --danger: #ffae9f;
+  --serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
   color-scheme: dark;
 }
 * {
@@ -63,9 +88,9 @@ input,
 select,
 textarea {
   width: 100%;
-  color: var(--text, #f3f5ec);
-  background: #102733;
-  border: 1px solid #49616b;
+  color: var(--text, #f5efe3);
+  background: #211c15;
+  border: 1px solid #6b5d4a;
   border-radius: 4px;
   padding: 11px 12px;
   min-height: 42px;
@@ -85,7 +110,7 @@ label {
   display: block;
   font-size: 12px;
   font-weight: 600;
-  color: #c3d1d5;
+  color: #c9b99c;
   margin-bottom: 8px;
 }
 h1,
@@ -95,10 +120,11 @@ p {
   margin-top: 0;
 }
 h2 {
-  font-family: Oswald, Inter, sans-serif;
-  font-weight: 500;
-  font-size: 25px;
-  line-height: 1.25;
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 28px;
+  line-height: 1.15;
+  letter-spacing: 0.1px;
   margin: 0;
 }
 h3 {
@@ -128,11 +154,15 @@ h3 {
 }
 .brand-header h1 {
   font:
-    500 38px/1.13 Oswald,
-    sans-serif;
-  letter-spacing: -1px;
+    600 40px/1.05 var(--serif);
+  letter-spacing: 0.2px;
   margin: 0 0 9px;
   white-space: nowrap;
+}
+.brand-header h1 em {
+  font-style: italic;
+  font-weight: 500;
+  color: var(--accent);
 }
 .brand-header p {
   font-size: 9px;
@@ -146,7 +176,7 @@ h3 {
   align-items: center;
   gap: 9px;
   margin: 0 18px 18px;
-  border: 1px solid #49616b;
+  border: 1px solid #6b5d4a;
   padding: 0 10px;
   border-radius: 4px;
 }
@@ -181,7 +211,7 @@ h3 {
   border: 0;
   border-bottom: 2px solid transparent;
   background: none;
-  color: #c9d5d7;
+  color: #cfc0a8;
 }
 .sidebar-tabs button.active {
   color: var(--accent);
@@ -254,12 +284,12 @@ h3 {
   gap: 12px;
   width: 100%;
   text-align: left;
-  background: #122d39;
-  border: 1px solid #2c4a55;
+  background: #262119;
+  border: 1px solid #453c2d;
   border-radius: 12px;
   padding: 13px 12px;
   min-height: 64px;
-  box-shadow: 0 1px 6px #00101830;
+  box-shadow: 0 1px 6px #120e0a30;
 }
 .place-result > svg:first-child {
   color: var(--accent);
@@ -282,14 +312,14 @@ h3 {
   color: var(--muted);
 }
 .place-result.active {
-  background: #183c45;
+  background: #2e2820;
   border-color: var(--accent);
   outline: none;
   box-shadow: 0 0 0 1px var(--accent);
 }
 .place-result:hover {
-  background: #173b43;
-  border-color: #41606a;
+  background: #2b251d;
+  border-color: #5d5142;
 }
 .place-result > svg:last-child {
   color: var(--muted);
@@ -320,7 +350,7 @@ h3 {
 .save-status strong {
   font-weight: 400;
   font-size: 12px;
-  color: #f3f5ec;
+  color: #f5efe3;
   display: block;
 }
 .save-status small {
@@ -341,7 +371,7 @@ h3 {
   justify-content: center;
   gap: 8px;
   background: transparent;
-  border: 1px solid #57707a;
+  border: 1px solid #6b5d4a;
   border-radius: 4px;
   min-height: 42px;
   padding: 10px 13px;
@@ -351,10 +381,10 @@ h3 {
 }
 .button:hover,
 .icon-button:hover {
-  background: #20434b;
+  background: #322a1e;
 }
 .button.primary {
-  color: #08242e;
+  color: #241a10;
   background: var(--accent);
   border-color: var(--accent);
   font-weight: 600;
@@ -362,7 +392,7 @@ h3 {
 .button.selected {
   color: var(--accent);
   border-color: var(--accent);
-  background: #173b43;
+  background: #2b251d;
 }
 .icon-button {
   width: 38px;
@@ -382,7 +412,7 @@ h3 {
   flex: 1;
   min-width: 0;
   position: relative;
-  background: #173b49;
+  background: #1e1a15;
 }
 .map-topbar {
   position: absolute;
@@ -402,9 +432,9 @@ h3 {
 }
 .map-topbar .button,
 .map-topbar .icon-button {
-  background: #0b202cef;
-  border: 1px solid #57707a;
-  box-shadow: 0 2px 8px #06161d40;
+  background: #1b1815ef;
+  border: 1px solid #6b5d4a;
+  box-shadow: 0 2px 8px #120e0a40;
   pointer-events: auto;
 }
 .map-about {
@@ -418,8 +448,8 @@ h3 {
   bottom: 27px;
   left: 15px;
   z-index: 430;
-  color: #e4ecec;
-  background: #0b202ce0;
+  color: #ece3d2;
+  background: #1b1815e0;
   padding: 6px 9px;
   font-size: 10px;
   border-radius: 3px;
@@ -475,7 +505,7 @@ h3 {
 .description {
   font-size: 12px;
   line-height: 1.7;
-  color: #c2d0d4;
+  color: #c9b99c;
   margin: 20px 0;
 }
 .place-meta {
@@ -547,8 +577,8 @@ h3 {
 }
 .atlas-dialog {
   background: var(--surface);
-  color: #f3f5ec;
-  border: 1px solid #57707a;
+  color: #f5efe3;
+  border: 1px solid #6b5d4a;
   border-radius: 8px;
   padding: 0;
   width: min(520px, calc(100vw - 28px));
@@ -556,7 +586,7 @@ h3 {
   box-shadow: 0 24px 80px #0008;
 }
 .atlas-dialog::backdrop {
-  background: #031118b8;
+  background: #120e0ab8;
 }
 .atlas-dialog .panel-heading {
   border-bottom: 1px solid var(--border);
@@ -579,9 +609,9 @@ h3 {
 }
 .layer-row {
   padding: 13px 12px;
-  border: 1px solid #2c4a55;
+  border: 1px solid #453c2d;
   border-radius: 12px;
-  background: #122d39;
+  background: #262119;
   display: flex;
   align-items: flex-start;
   gap: 4px;
@@ -864,7 +894,7 @@ h3 {
   align-items: center;
   gap: 12px;
   padding: 10px 12px;
-  background: #0b202cf5;
+  background: #1b1815f5;
   border: 1px solid var(--accent);
   box-shadow: 0 3px 16px #0003;
   border-radius: 5px;
@@ -1178,13 +1208,13 @@ h3 {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  border: 1px solid #73cbbb;
+  border: 1px solid #e8823a;
   border-radius: 999px;
   padding: 10px 14px;
-  color: #0b202c;
-  background: #73cbbb;
+  color: #1b1815;
+  background: #e8823a;
   font-weight: 700;
-  box-shadow: 0 4px 16px #00101866;
+  box-shadow: 0 4px 16px #120e0a66;
 }
 .ask-panel {
   position: absolute;
@@ -1199,10 +1229,10 @@ h3 {
   gap: 8px;
   max-height: min(62dvh, 560px);
   padding: 12px;
-  border: 1px solid #57707a;
+  border: 1px solid #6b5d4a;
   border-radius: 12px;
-  color: #f3f5ec;
-  background: #0b202cf2;
+  color: #f5efe3;
+  background: #1b1815f2;
   box-shadow: 0 16px 48px #000a;
 }
 .ask-panel-header {
@@ -1238,10 +1268,10 @@ h3 {
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 10px;
-  background: #122d39;
+  background: #262119;
 }
 .ask-message.is-user {
-  background: #1d414b;
+  background: #2e2820;
   margin-left: 24px;
 }
 .ask-message p {
@@ -1265,11 +1295,11 @@ h3 {
   align-items: baseline;
   gap: 10px;
   text-align: left;
-  border: 1px solid #41606a;
+  border: 1px solid #5d5142;
   border-radius: 5px;
   padding: 8px;
-  color: #e6f3ee;
-  background: #1d414b;
+  color: #f3ead9;
+  background: #2e2820;
   font: inherit;
   cursor: pointer;
 }
@@ -1284,11 +1314,11 @@ h3 {
   gap: 6px;
 }
 .ask-suggestions button {
-  border: 1px solid #41606a;
+  border: 1px solid #5d5142;
   border-radius: 999px;
   padding: 6px 10px;
-  color: #d6e9e5;
-  background: #122d39;
+  color: #e8dcc4;
+  background: #262119;
   font-size: 11px;
   text-align: left;
 }
@@ -1305,10 +1335,10 @@ h3 {
   display: grid;
   place-items: center;
   width: 42px;
-  border: 1px solid #73cbbb;
+  border: 1px solid #e8823a;
   border-radius: 4px;
-  color: #0b202c;
-  background: #73cbbb;
+  color: #1b1815;
+  background: #e8823a;
 }
 .ask-setting-row {
   display: grid;
@@ -1347,9 +1377,9 @@ h3 {
   gap: 8px;
 }
 .welcome-counts li {
-  border: 1px solid #2c4a55;
+  border: 1px solid #453c2d;
   border-radius: 12px;
-  background: #122d39;
+  background: #262119;
   padding: 12px 14px;
   border-left: 3px solid var(--accent);
 }
@@ -1396,10 +1426,10 @@ h3 {
 
 /* Ask Nylah — inline API key onboarding when no key is set. */
 .ask-key-onboarding {
-  border: 1px solid #73cbbb;
+  border: 1px solid #e8823a;
   border-radius: 8px;
   padding: 10px;
-  background: #122d39;
+  background: #262119;
 }
 .ask-key-onboarding p {
   margin: 0 0 8px;
@@ -1419,10 +1449,10 @@ h3 {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  border: 1px solid #73cbbb;
+  border: 1px solid #e8823a;
   border-radius: 4px;
-  color: #0b202c;
-  background: #73cbbb;
+  color: #1b1815;
+  background: #e8823a;
   font-weight: 700;
 }
 
@@ -1447,27 +1477,27 @@ h3 {
 .map-county-picker select {
   pointer-events: auto;
   appearance: none;
-  background: #0b202cef;
-  border: 1px solid #57707a;
+  background: #1b1815ef;
+  border: 1px solid #6b5d4a;
   border-radius: 999px;
-  color: #e4ecec;
+  color: #ece3d2;
   font: inherit;
   font-size: 12px;
   font-weight: 600;
   padding: 8px 12px;
-  box-shadow: 0 2px 8px #06161d40;
+  box-shadow: 0 2px 8px #120e0a40;
   max-width: 180px;
 }
 .map-count-pill {
-  background: #0b202ce0;
-  border: 1px solid #57707a;
+  background: #1b1815e0;
+  border: 1px solid #6b5d4a;
   border-radius: 999px;
-  color: #e4ecec;
+  color: #ece3d2;
   font-size: 12px;
   font-weight: 600;
   padding: 8px 12px;
   white-space: nowrap;
-  box-shadow: 0 2px 8px #06161d40;
+  box-shadow: 0 2px 8px #120e0a40;
 }
 .map-chips {
   display: flex;
@@ -1485,21 +1515,21 @@ h3 {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  border: 1px solid #57707a;
+  border: 1px solid #6b5d4a;
   border-radius: 999px;
-  background: #0b202ce6;
-  color: #e4ecec;
+  background: #1b1815e6;
+  color: #ece3d2;
   font: inherit;
   font-size: 12px;
   font-weight: 600;
   padding: 8px 11px;
   cursor: pointer;
-  box-shadow: 0 2px 8px #06161d40;
+  box-shadow: 0 2px 8px #120e0a40;
 }
 .map-chip.active {
-  background: #73cbbb;
-  border-color: #73cbbb;
-  color: #0b202c;
+  background: #e8823a;
+  border-color: #e8823a;
+  color: #1b1815;
 }
 .map-chip-count {
   font-size: 11px;
@@ -1547,6 +1577,9 @@ h3 {
   color: var(--muted);
 }
 .tag-chips button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   border: 1px solid var(--border);
   border-radius: 999px;
   background: none;
@@ -1558,16 +1591,16 @@ h3 {
   cursor: pointer;
 }
 .tag-chips button.active {
-  background: #73cbbb;
-  border-color: #73cbbb;
-  color: #0b202c;
+  background: #e8823a;
+  border-color: #e8823a;
+  color: #1b1815;
 }
 
 /* ---- Visual polish pass (phone-first companion app) ---- */
 
 /* Buttons: the primary action reads as the action. */
 .button.primary {
-  box-shadow: 0 4px 14px #73cbbb30;
+  box-shadow: 0 4px 14px #e8823a30;
 }
 
 /* Place detail sheet: a real bottom sheet — grabber, actions side by
@@ -1584,8 +1617,8 @@ h3 {
   font-size: 12px;
 }
 .place-meta {
-  background: #122d39;
-  border: 1px solid #2c4a55;
+  background: #262119;
+  border: 1px solid #453c2d;
   border-radius: 12px;
   padding: 6px 14px;
 }
@@ -1596,10 +1629,10 @@ h3 {
   margin: 16px 0;
 }
 .detail-tags span {
-  border: 1px solid #41606a;
+  border: 1px solid #5d5142;
   border-radius: 999px;
-  background: #173b43;
-  color: #d6e9e5;
+  background: #2b251d;
+  color: #e8dcc4;
   font-size: 11px;
   font-weight: 600;
   padding: 5px 10px;
@@ -1626,9 +1659,9 @@ h3 {
   margin: 0 0 14px;
 }
 .ai-chip.is-unsure {
-  border-color: #57707a;
-  background: #173b43;
-  color: #c9d5d7;
+  border-color: #6b5d4a;
+  background: #2b251d;
+  color: #cfc0a8;
 }
 .ai-suggestion {
   border: 1px solid #8a6d2f;
@@ -1652,9 +1685,9 @@ h3 {
 
 /* Index panel (Layers): a card with a real progress bar. */
 .index-panel {
-  border: 1px solid #41606a;
+  border: 1px solid #5d5142;
   border-radius: 14px;
-  background: #122d39;
+  background: #262119;
   padding: 16px;
   margin-top: 16px;
 }
@@ -1689,9 +1722,9 @@ h3 {
 .index-no-key {
   display: grid;
   gap: 10px;
-  border: 1px solid #73cbbb;
+  border: 1px solid #e8823a;
   border-radius: 10px;
-  background: #173b43;
+  background: #2b251d;
   padding: 12px;
   margin-top: 12px;
 }
@@ -1716,8 +1749,8 @@ h3 {
   border-radius: 12px;
 }
 .ask-message.is-user {
-  background: #1d414b;
-  border-color: #3d6b73;
+  background: #2e2820;
+  border-color: #4a3f2c;
 }
 .ask-form input {
   border-radius: 10px;
@@ -1726,10 +1759,14 @@ h3 {
   border-radius: 10px;
 }
 
-/* Map chips: a fade on the right edge says the row scrolls. */
+/* Map chips: they wrap to a second row now — no scrolling, no chip cut
+   at the edge (the 8.5/10 walk's top complaint). */
 .map-chips {
-  -webkit-mask-image: linear-gradient(to right, #000 88%, transparent 100%);
-  mask-image: linear-gradient(to right, #000 88%, transparent 100%);
+  -webkit-mask-image: none;
+  mask-image: none;
+  flex-wrap: wrap;
+  overflow-x: visible;
+  padding-bottom: 0;
 }
 .map-chip {
   min-height: 40px;
@@ -1759,7 +1796,7 @@ h3 {
     width: 44px;
     height: 4px;
     border-radius: 999px;
-    background: #57707a;
+    background: #6b5d4a;
     margin: 10px auto 0;
     flex-shrink: 0;
   }
@@ -1785,4 +1822,217 @@ h3 {
   .save-status {
     margin-bottom: 10px;
   }
+}
+
+/* ---- Redesign: authentic blips + NylahBox bar (charcoal + orange) ---- */
+
+/* One roundel shape for every icon in the UI: coloured disc, white glyph,
+   same as the map blips. The disc colour is the layer colour; the glyph
+   is the place's own icon. */
+.layer-icon,
+.result-icon,
+.ask-result-icon,
+.welcome-icon,
+.place-title-icon {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--accent);
+  border: 2px solid #1b1815cc;
+  box-shadow:
+    0 2px 8px #120e0a66,
+    inset 0 0 0 1px #ffffff2e;
+}
+.layer-icon svg,
+.result-icon svg,
+.ask-result-icon svg,
+.welcome-icon svg,
+.place-title-icon svg {
+  display: block;
+  filter: drop-shadow(0 1px 1px #0006);
+}
+.layer-icon {
+  width: 34px;
+  height: 34px;
+  margin-top: 1px;
+}
+.layer-icon svg {
+  width: 17px;
+  height: 17px;
+}
+.result-icon {
+  width: 38px;
+  height: 38px;
+}
+.result-icon svg {
+  width: 19px;
+  height: 19px;
+}
+.place-title-icon {
+  width: 44px;
+  height: 44px;
+  margin-top: 2px;
+}
+.place-title-icon svg {
+  width: 22px;
+  height: 22px;
+}
+.welcome-icon {
+  width: 34px;
+  height: 34px;
+}
+.welcome-icon svg {
+  width: 17px;
+  height: 17px;
+}
+.ask-result-icon {
+  width: 30px;
+  height: 30px;
+  background: #2e2820;
+  border-color: #453c2d;
+  color: var(--accent);
+}
+.ask-result-icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* Layer rows: the roundel replaces the old coloured dot. */
+.layer-row label {
+  align-items: flex-start;
+}
+.layer-row .layer-icon {
+  margin-top: 0;
+}
+
+/* Search results: icon roundel, title and meta beside it. */
+.place-result > .result-icon {
+  align-self: center;
+}
+.place-result > svg:last-child {
+  color: var(--muted);
+}
+
+/* Place detail: the title wears its blip. */
+.place-title {
+  align-items: flex-start;
+}
+.place-title > svg {
+  display: none;
+}
+
+/* The description is no longer a wall of text: the real-world analogue
+   address (a Miami-area building of the same kind) is lifted out of the
+   paragraph into its own quiet line. */
+.description {
+  font-size: 13px;
+  line-height: 1.7;
+}
+.analogue-note {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--muted);
+  border-left: 2px solid var(--gold);
+  padding: 2px 0 2px 12px;
+  margin: -8px 0 20px;
+}
+.analogue-note strong {
+  color: #cfc0a8;
+  font-weight: 600;
+}
+
+/* Welcome sheet: counts are icon cards, quick starts wear their blip. */
+.welcome-counts li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-left: 0;
+}
+.welcome-counts li > span:last-child {
+  flex: 1;
+  min-width: 0;
+}
+.welcome-quick-starts .button {
+  grid-template-columns: 30px 1fr;
+  align-items: center;
+  column-gap: 10px;
+  padding: 12px;
+  border-radius: 14px;
+}
+.welcome-quick-starts .button .welcome-icon {
+  grid-row: span 2;
+  width: 30px;
+  height: 30px;
+}
+.welcome-quick-starts .button .welcome-icon svg {
+  width: 15px;
+  height: 15px;
+}
+.welcome-quick-starts .button small {
+  grid-column: 2;
+}
+
+/* Ask answers: each result carries its blip. */
+.ask-results button {
+  align-items: center;
+}
+.ask-results button > strong {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Index panel: the eleven AI types as a small icon legend, so a
+   categorised "?" reads as a designed type, not a label. */
+.index-types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+}
+.index-types span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #5d5142;
+  border-radius: 999px;
+  background: #2b251d;
+  color: #e8dcc4;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 10px 5px 6px;
+}
+.index-types svg {
+  color: var(--gold);
+}
+
+/* Cards and sheets: warmer radii, softer shadows — chrome, not admin. */
+.place-result,
+.layer-row,
+.index-panel {
+  border-radius: 14px;
+}
+.atlas-dialog {
+  border-radius: 18px;
+}
+.ask-panel {
+  border-radius: 18px;
+}
+.button.primary {
+  box-shadow: 0 4px 14px #e8823a40;
+}
+.map-chip.active {
+  box-shadow: 0 2px 10px #e8823a55;
+}
+.detail-panel {
+  border-radius: 0;
+}
+.sidebar-tabs button.active {
+  font-weight: 600;
+}
+.eyebrow {
+  font-family: Oswald, Inter, sans-serif;
+  letter-spacing: 1.6px;
 }

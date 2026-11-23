@@ -14,6 +14,12 @@ import {
 } from './coordinates';
 import { GTADB_TILE_BOUNDS, gtadbTileUrl } from './gtadb-tiles';
 import { buildSpatialIndex, clusterPlaces, querySpatialIndex, type PlaceCluster } from './spatial';
+import {
+  iconKeyForAiRecord,
+  iconKeyForPlace,
+  placeIconSvg,
+} from './place-icons';
+import type { AiCategoryRecord } from '../categorise/categories';
 import 'leaflet/dist/leaflet.css';
 import './map.css';
 
@@ -29,6 +35,8 @@ export interface MapViewProps {
   foundIds: ReadonlySet<string>;
   /** Ask Nylah highlights — rendered even when their layer is off. */
   highlightIds?: ReadonlySet<string>;
+  /** AI-suggested types (on-device only): a categorised "?" pins its type glyph. */
+  aiCategories?: Readonly<Record<string, AiCategoryRecord>>;
   onSelect: (id: string) => void;
   onPlacePosition: (position: Position) => void;
   /** Long-press / right-click on empty map: start a marker at that point. */
@@ -50,25 +58,26 @@ function markerIcon(
   color?: string,
   found?: boolean,
   highlighted?: boolean,
+  iconSvg?: string,
 ): L.DivIcon {
   const cluster = group.places.length > 1;
   const content = document.createElement('span');
   content.className = cluster ? 'atlas-cluster-face' : 'atlas-pin-face';
-  content.style.setProperty('--pin-color', color ?? layer?.style.color ?? '#73cbbb');
+  content.style.setProperty('--pin-color', color ?? layer?.style.color ?? '#e8823a');
   content.setAttribute('aria-hidden', 'true');
-  content.textContent = cluster
-    ? group.places.length.toLocaleString()
-    : found
-      ? '✓'
-      : group.places[0]?.layerId === 'personal'
-        ? group.places[0].tags.includes('star')
-          ? '★'
-          : group.places[0].tags.includes('flag')
-            ? '⚑'
-            : '•'
-        : group.places[0]?.layerId === 'uncertain'
-          ? '?'
-          : '•';
+  if (cluster) {
+    content.textContent = group.places.length.toLocaleString();
+  } else {
+    // A GTA blip: white pictogram in the layer-coloured roundel — never a
+    // bare coloured dot. Found places keep their glyph and gain a tick.
+    content.innerHTML = iconSvg ?? '';
+    if (found) {
+      const badge = document.createElement('span');
+      badge.className = 'atlas-found-badge';
+      badge.textContent = '✓';
+      content.append(badge);
+    }
+  }
   const size = cluster ? 38 : Math.max(24, (layer?.style.radius ?? 6) * 2 + 10);
   return L.divIcon({
     html: content,
@@ -284,6 +293,13 @@ export default function MapView(props: MapViewProps) {
             markerColor(place),
             props.foundIds.has(place.id),
             group.places.some((member) => props.highlightIds?.has(member.id)),
+            isCluster
+              ? undefined
+              : placeIconSvg(
+                  iconKeyForAiRecord(props.aiCategories?.[place.id]) ??
+                    iconKeyForPlace(place),
+                  17,
+                ),
           ),
           title,
           alt: title,
@@ -405,6 +421,7 @@ export default function MapView(props: MapViewProps) {
     props.editorMode,
     props.foundIds,
     props.highlightIds,
+    props.aiCategories,
     props.preferences.clusterMarkers,
     props.preferences.showLabels,
   ]);

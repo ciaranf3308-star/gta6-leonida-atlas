@@ -13,8 +13,11 @@ import {
   AI_CATEGORY_LABELS,
   aiCategoryDisplay,
   effectiveAiCategory,
+  realWorldAnalogueFromDescription,
   type AiCategoryId,
 } from '../categorise/categories';
+import { PlaceIcon, iconKeyForAiRecord, iconKeyForPlace } from '../map/place-icons';
+import { DEFAULT_LAYERS } from '../map/layers';
 import { useAiIndexStore } from '../categorise/store';
 import { atlasRepository, ConflictError } from '../../db/repository';
 import {
@@ -66,6 +69,18 @@ export default function PlaceDetails({
   const aiRecord = useAiIndexStore((s) => s.categories[place.id]);
   const aiDisplay = aiCategoryDisplay(aiRecord);
   const aiCategory = effectiveAiCategory(aiRecord);
+  // The description's real-world analogue address is a Miami-area building
+  // of the same kind — useful evidence, not the Leonida place. Lift it out
+  // of the paragraph so the description stops reading as a wall of text.
+  const analogue = realWorldAnalogueFromDescription(place.description);
+  const description = analogue
+    ? place.description
+        .trim()
+        .replace(/Real-world reference \(analogue only\): .+$/, '')
+        .trim()
+    : place.description;
+  const layerColor =
+    DEFAULT_LAYERS.find((l) => l.id === place.layerId)?.style.color ?? '#e8823a';
   const [correcting, setCorrecting] = useState(false);
   const [correctChoice, setCorrectChoice] = useState<AiCategoryId>('house');
   const [correctShopType, setCorrectShopType] = useState('');
@@ -127,7 +142,12 @@ export default function PlaceDetails({
       </header>
       <div className="detail-scroll">
         <div className="place-title">
-          <MapPin size={27} />
+          <span className="place-title-icon" style={{ background: layerColor }} aria-hidden="true">
+            <PlaceIcon
+              icon={iconKeyForAiRecord(aiRecord) ?? iconKeyForPlace(place)}
+              size={22}
+            />
+          </span>
           <h2>{place.title}</h2>
         </div>
         <p className="evidence-label">
@@ -327,7 +347,13 @@ export default function PlaceDetails({
             {found ? 'Found ✓ — tap to undo' : 'Mark as found'}
           </button>
         </div>
-        {place.description && <p className="description">{place.description}</p>}
+        {description && <p className="description">{description}</p>}
+        {analogue && (
+          <p className="analogue-note">
+            <strong>Real-world reference (analogue only):</strong> {analogue} — a
+            Miami-area building of the same kind, not the Leonida place.
+          </p>
+        )}
         <dl className="place-meta">
           <div>
             <dt>Category</dt>

@@ -5,6 +5,8 @@ import { isUnnamedPlace } from "../../domain/types";
 import { getAskApiKey, getAskModel } from "../ask/openai";
 import { indexJobCounts, useAiIndexStore } from "./store";
 import { remainingUnnamedPlaces, runIndexJob } from "./runner";
+import { AI_CATEGORIES, aiCategoryShortLabel } from "./categories";
+import { PlaceIcon, iconKeyForAiCategory } from "../map/place-icons";
 
 export interface IndexPanelProps {
   /** All catalogue places (named + unnamed). */
@@ -124,6 +126,14 @@ export default function IndexPanel(props: IndexPanelProps) {
           className="progress-bar"
           style={{ "--progress": `${percent}%` } as CSSProperties}
         />
+      </div>
+      <div className="index-types" aria-label="Types the AI can suggest">
+        {AI_CATEGORIES.map((category) => (
+          <span key={category}>
+            <PlaceIcon icon={iconKeyForAiCategory(category)} size={13} />
+            {aiCategoryShortLabel(category)}
+          </span>
+        ))}
       </div>
       {job.error && (
         <p className="inline-error" role="alert">

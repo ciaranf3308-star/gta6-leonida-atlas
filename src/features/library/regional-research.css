@@ -1,7 +1,7 @@
 .regional-research {
   margin-block: 22px;
   padding-block: 18px;
-  border-block: 1px solid #62808b55;
+  border-block: 1px solid #6b5d4a55;
   min-width: 0;
 }
 .regional-research h3 {
@@ -16,10 +16,10 @@
   display: block;
   font-size: 11px;
   line-height: 1.6;
-  color: #b5c8cd;
+  color: #a89a80;
 }
 .regional-research-group {
-  border-bottom: 1px solid #62808b44;
+  border-bottom: 1px solid #6b5d4a44;
   padding-block: 7px;
 }
 .regional-research-group summary {
@@ -32,7 +32,7 @@
   display: block;
   padding-left: 18px;
   margin-top: 3px;
-  color: #b5c8cd;
+  color: #a89a80;
   font-size: 11px;
   font-weight: 400;
 }
@@ -71,13 +71,13 @@
   gap: 2px;
 }
 .regional-discovery-sources span {
-  color: #b5c8cd;
+  color: #a89a80;
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 .regional-research a {
-  color: #79dbd0;
+  color: #f2a35c;
   overflow-wrap: anywhere;
   text-underline-offset: 3px;
 }
@@ -86,7 +86,7 @@
 }
 .regional-research .regional-research-placement {
   margin: 18px 0 10px;
-  color: #b5c8cd;
+  color: #a89a80;
   font-size: 11px;
   line-height: 1.65;
 }

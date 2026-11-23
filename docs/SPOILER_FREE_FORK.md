@@ -208,6 +208,81 @@ independent post-launch guides (PowerPyx gym list; GTA6 GPS gym pages):
   categorised counts in the walk screenshots are seeded local test data
   only. The first real run happens on the user's phone, with his key.
 
+## Redesign — authentic blips + NylahBox bar (v0.9.0, 23 Nov 2026)
+
+### Icons — real pictograms, no coloured dots, no invented logos
+
+- Audit finding: the GTADB snapshot carries **no icon or blip field at
+  all** — only `tags` and a `color` per record — and the Atlas ships no
+  blip assets. So there was no authentic per-place icon to reuse, and
+  the old pins were bare coloured dots (`•`, `?`, `✓`).
+- The pins now follow the form of the game's own map legend: a GTA V /
+  VI blip is a white pictogram inside a coloured roundel. The pictogram
+  comes from the place's GTADB tags (the game's own category vocabulary
+  — `#gas`, `#guns`, `#supermarket`, `residential`, `hotel` …) and the
+  roundel is the layer colour the app already used.
+- The pictograms are one consistent set: Lucide (ISC, 24×24 grid, 2px
+  stroke, round caps/joins), already a dependency — same stroke, same
+  weight everywhere. One module, `src/features/map/place-icons.tsx`,
+  is the single source of truth: `iconKeyForPlace` (AI type → most
+  specific tag → `enterable` → layer glyph), `iconKeyForLayer`,
+  `iconKeyForAiCategory`, `PlaceIcon` (React) and `placeIconSvg`
+  (Leaflet divIcon pins, via `renderToStaticMarkup`, cached).
+- Named in-game brands (Ammu-Nation, Pay 'n' Spray …) have **no logo
+  drawn**: no brand mark is invented. The brand reads from the place's
+  own name; the pin carries the category glyph (Crosshair for a gun
+  shop, Car for Pay 'n' Spray). If Rockstar / GTADB ever ship real
+  brand blips, they slot into `iconKeyForPlace` without touching the
+  callers. No scraped closed-site assets anywhere.
+- Applied consistently: map pins (with a green tick badge for Found
+  places, which keep their glyph), overlay chips, layer rows (roundel
+  replaces the old coloured dot), search results, place detail sheets,
+  Ask Nylah answers, the welcome sheet, and the AI categorisation
+  types — a categorised "?" pins its suggested type's glyph, and the
+  index panel shows all eleven AI types as an icon legend.
+- Guarded by `tests/unit/place-icons.test.ts` (9 tests): every tag in
+  the 3,754-record snapshot resolves to a known glyph, every layer and
+  AI category maps, specific tags beat generic ones, and the SVG is a
+  real white-stroke Lucide glyph.
+
+### Visual redesign — NylahBox bar, no template supplied
+
+- The chrome moves from dark teal to the user's stated bar: warm
+  charcoal surfaces (`#1b1815` / `#262119`) with warm orange accents
+  (`#e8823a`, Hume dark), warm cream text, gold kept for AI-suggested
+  and Ask highlights. Layer/blip categorical colours are unchanged —
+  they are the GTA blip palette, not chrome.
+- Typography: Cormorant Garamond (elegant serif, self-hosted woff2 in
+  `src/app/fonts/`, OFL, so the PWA stays offline-capable) for the
+  brand and headings, with an orange italic accent; Inter for body,
+  Oswald kept for eyebrows/labels.
+- Sheets and cards: floating glass, 14–18px radii, soft warm shadows,
+  generous spacing, icon roundels everywhere, polished chips with
+  counts. The brand reads "Leonida *Atlas*" in the serif.
+- Fixes the 8.5/10 walk's top complaints: the map chip row now **wraps
+  to a second row** instead of scrolling with the last chip cut at the
+  edge; the place description lifts its real-world analogue address
+  into its own quiet line instead of a wall of text. Ask + detail
+  stacking is unchanged (Ask docks above the open sheet).
+- Validation (23 Nov 2026, second walk after two fixes): typecheck,
+  lint, 641 unit tests, production build, 390px walk steps 01–11 with
+  zero console errors and zero overflow. Two things the first walk
+  caught and fixed before shipping: the welcome icon roundels rendered
+  as wide ovals (a `li > span { flex: 1 }` rule caught the icon span —
+  scoped to the text span), and the lootable glyph was a banknote whose
+  circle-in-rectangle read as a "no" sign at pin size — it is now a
+  `$` in a circle (`CircleDollarSign`), verified at 17px. Honest mark
+  **9.0/10** (was 8.5): the icons, warm chrome, serif headings and
+  wrapping chips land. What still falls short: opening Ask while a
+  place is open still stacks two bottom sheets; Capri still falls in
+  no estimated county rect; the top-bar buttons are plain black squares
+  next to the redesigned sheets; at wide zooms the map is mostly
+  cluster count pills, which is inherent to 2,900 places on one map.
+- All functionality kept: spoiler-free first launch, persistent
+  layers, overlay chips, plain English, Ask spoiler rule + real
+  proximity, workout spots, counties, AI categorisation, collectables
+  off by default.
+
 ## Visual polish (phone-first, 390px)
 
 - Welcome counts are stat cards; Explore results and layer rows are
@@ -233,8 +308,10 @@ independent post-launch guides (PowerPyx gym list; GTA6 GPS gym pages):
   bottom sheets; the detail description is still a wall of text with the
   raw analogue address inline; Capri (-6625, 251) falls in no estimated
   county rect, so the AI context omits the county there rather than
-  guessing one. None of these were worth another rebuild cycle on their
-  own — the first two are one-line follow-ups if they annoy on the phone.
+  guessing one. The first and third of these are fixed by the v0.9.0
+  redesign above (chips wrap; the analogue address is its own line) —
+  see its fresh 390px walk mark there. Ask + detail stacking and the
+  Capri county gap remain open.
 
 ## PWA (Android)
 

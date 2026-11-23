@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
-import { Dumbbell, MapPin, ShoppingBag, DoorOpen, Layers, Star } from 'lucide-react';
 import type { LayerDefinition, Place } from '../../domain/types';
 import { useMapStore, useUiStore } from '../../stores/atlas';
 import { COUNTIES, COUNTY_EXTENT_NOTE } from '../../data/counties';
 import { INITIAL_BOUNDS } from './coordinates';
+import { PlaceIcon, type IconKey } from './place-icons';
 
 /**
  * The map overlay — the functionality lives ON the map, not buried in a
@@ -30,17 +30,17 @@ interface Chip {
   key: string;
   label: string;
   layerIds: string[];
-  icon: typeof Dumbbell;
+  icon: IconKey;
   singleLayer: boolean;
 }
 
 const CHIPS: Chip[] = [
-  { key: 'gyms', label: 'Gyms', layerIds: ['gyms', 'gyms-outdoor'], icon: Dumbbell, singleLayer: false },
-  { key: 'lootable', label: 'Lootable', layerIds: ['lootable'], icon: MapPin, singleLayer: true },
-  { key: 'shops', label: 'Shops', layerIds: ['shops'], icon: ShoppingBag, singleLayer: true },
-  { key: 'interiors', label: 'Interiors', layerIds: ['interiors'], icon: DoorOpen, singleLayer: true },
-  { key: 'cards', label: 'Cards', layerIds: [], icon: Layers, singleLayer: false },
-  { key: 'personal', label: 'My markers', layerIds: ['personal'], icon: Star, singleLayer: true },
+  { key: 'gyms', label: 'Gyms', layerIds: ['gyms', 'gyms-outdoor'], icon: 'gym', singleLayer: false },
+  { key: 'lootable', label: 'Lootable', layerIds: ['lootable'], icon: 'dollarsign', singleLayer: true },
+  { key: 'shops', label: 'Shops', layerIds: ['shops'], icon: 'store', singleLayer: true },
+  { key: 'interiors', label: 'Interiors', layerIds: ['interiors'], icon: 'door', singleLayer: true },
+  { key: 'cards', label: 'Cards', layerIds: [], icon: 'gem', singleLayer: false },
+  { key: 'personal', label: 'My markers', layerIds: ['personal'], icon: 'star', singleLayer: true },
 ];
 
 export default function MapOverlay(props: MapOverlayProps) {
@@ -132,7 +132,6 @@ export default function MapOverlay(props: MapOverlayProps) {
       </div>
       <div className="map-chips" role="group" aria-label="Turn layers on and off">
         {CHIPS.map((chip) => {
-          const Icon = chip.icon;
           const active = chipActive(chip);
           return (
             <button
@@ -142,7 +141,7 @@ export default function MapOverlay(props: MapOverlayProps) {
               aria-pressed={active}
               onClick={() => toggleChip(chip)}
             >
-              <Icon size={15} />
+              <PlaceIcon icon={chip.icon} size={15} />
               {chip.label}
               <span className="map-chip-count">{chipCount(chip)}</span>
             </button>

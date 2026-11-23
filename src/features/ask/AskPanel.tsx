@@ -16,6 +16,11 @@ import {
   aiCategoryDisplay,
   type AiCategoryRecord,
 } from '../categorise/categories';
+import {
+  PlaceIcon,
+  iconKeyForAiRecord,
+  iconKeyForPlace,
+} from '../map/place-icons';
 
 export interface AskPanelProps {
   places: Place[];
@@ -239,6 +244,15 @@ export default function AskPanel(props: AskPanelProps) {
                   return (
                     <li key={id}>
                       <button type="button" onClick={() => props.onSelect(id)}>
+                        <span className="ask-result-icon" aria-hidden="true">
+                          <PlaceIcon
+                            icon={
+                              iconKeyForAiRecord(props.aiCategories[id]) ??
+                              iconKeyForPlace(place)
+                            }
+                            size={15}
+                          />
+                        </span>
                         <strong>{place.title}</strong>
                         <small>
                           {place.region || 'Leonida'}

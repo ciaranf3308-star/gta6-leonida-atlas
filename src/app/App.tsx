@@ -365,6 +365,7 @@ export default function App() {
           preferences={preferences}
           foundIds={new Set(visited.map((v) => v.placeId))}
           highlightIds={highlightSet}
+          aiCategories={aiCategories}
           onSelect={select}
           onPlacePosition={placePosition}
           onAddMarkerAt={beginMarkerAt}

@@ -11,6 +11,7 @@ import {
 describe('Leonida Atlas release history', () => {
   it('retains every release since v0.5.0 in newest-first order across the changelog and documentation', async () => {
     expect(LEONIDA_ATLAS_RELEASES.map((release) => release.version)).toEqual([
+      'v0.9.0',
       'v0.8.2',
       'v0.8.1',
       'v0.8.0',
@@ -21,8 +22,8 @@ describe('Leonida Atlas release history', () => {
       'v0.5.0',
     ]);
     expect(latestLeonidaAtlasRelease).toMatchObject({
-      version: 'v0.8.2',
-      date: '2026-11-17',
+      version: 'v0.9.0',
+      date: '2026-11-23',
       status: 'public',
     });
     const markup = renderToStaticMarkup(
