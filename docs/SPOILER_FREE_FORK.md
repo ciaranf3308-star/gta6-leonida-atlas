@@ -126,6 +126,35 @@ independent post-launch guides (PowerPyx gym list; GTA6 GPS gym pages):
   location lead at all, most in words, not coordinates — and are NOT placed
   by guess. See `src/data/collectables.ts`.
 
+## Ask Nylah (AI helper, BYOK)
+
+- Floating "Ask Nylah" button on the map opens a bottom-sheet panel. Ask in
+  plain words — "I'm up north beside Mount Kalaga, need to hit some gains"
+  or "highlight the houses I can hit in Capri tonight" — and matching places
+  are highlighted on the map (gold ring) with a tap-through result list and
+  a Clear highlights control. The map pans to the answer's places, so a
+  highlight is never off-screen.
+- Spoiler rule, enforced in `src/features/ask/retrieval.ts` (not just in a
+  prompt): asking for a thing IS consent to show that layer, even if it is
+  off — gyms off + a gym question = the gyms are shown, for that answer
+  only, without turning the layer on. But the AI is only ever sent records
+  from layers the question asked for, layers already visible, and My
+  markers — so it CANNOT volunteer extras from other layers (a burglary
+  answer never adds cards/watches in those houses). Tested in
+  `tests/unit/ask-nylah.test.ts`, including a card pinned at the same
+  building as a lootable place.
+- Retrieval is local and pure: keyword → layer, area/county/direction/anchor
+  scope, nearest-first fallback flagged as an area mismatch, hideFound /
+  remainingOnly respected, max 30 records.
+- BYOK OpenAI: the key is entered in Settings (password field, masked),
+  stored ONLY in localStorage (`leonida-ask-api-key`, `leonida-ask-model`),
+  never in IndexedDB backups, never logged, never committed, and sent only
+  to `api.openai.com/v1/chat/completions` when the user asks. Default model
+  `gpt-4o-mini`. Without a key, Ask still lists matching places from the
+  map; it just cannot write an AI answer. Offline disables sending. API
+  errors are shown verbatim — no fake answers. The AI only cites places it
+  was sent (`parsePlaceMentions` matches titles only against sent records).
+
 ## PWA (Android)
 
 - `public/manifest.webmanifest` + 192/512 icons (generated from the existing

@@ -2,11 +2,20 @@ import { useState } from 'react';
 import { atlasRepository } from '../../db/repository';
 import { saveLocal, usePersistenceStore, useUserStore } from '../../stores/atlas';
 import { Modal } from '../../app/Modal';
+import {
+  DEFAULT_ASK_MODEL,
+  getAskApiKey,
+  getAskModel,
+  setAskApiKey,
+  setAskModel,
+} from '../ask/openai';
 
 export default function SettingsDialog({ onClose }: { onClose: () => void }) {
   const preferences = useUserStore((s) => s.preferences);
   const ready = usePersistenceStore((s) => s.ready);
   const [storageMessage, setStorageMessage] = useState('');
+  const [askApiKey, setAskApiKeyState] = useState(() => getAskApiKey());
+  const [askModel, setAskModelState] = useState(() => getAskModel());
   return (
     <Modal title="Atlas settings" onClose={onClose}>
       <div className="settings-list">
@@ -51,6 +60,65 @@ export default function SettingsDialog({ onClose }: { onClose: () => void }) {
           </label>
         ))}
       </div>
+      <section className="detail-section">
+        <h3>Ask Nylah (AI)</h3>
+        <p className="help-text">
+          Ask Nylah answers only from this map, and only about what you asked for. Your OpenAI
+          key stays on this device only — it is never backed up, never sent anywhere except
+          OpenAI when you ask, and never shown in full. Without a key, Ask still lists matching
+          places from the map.
+        </p>
+        <label className="ask-setting-row" htmlFor="ask-api-key">
+          <span>
+            OpenAI API key
+            <small>Stored only in this browser.</small>
+          </span>
+          <input
+            id="ask-api-key"
+            type="password"
+            autoComplete="off"
+            autoCapitalize="off"
+            spellCheck={false}
+            placeholder="sk-…"
+            value={askApiKey}
+            onChange={(e) => {
+              setAskApiKeyState(e.target.value);
+              setAskApiKey(e.target.value);
+            }}
+          />
+        </label>
+        <label className="ask-setting-row" htmlFor="ask-model">
+          <span>
+            Model
+            <small>Default: {DEFAULT_ASK_MODEL}</small>
+          </span>
+          <input
+            id="ask-model"
+            type="text"
+            autoComplete="off"
+            autoCapitalize="off"
+            spellCheck={false}
+            placeholder={DEFAULT_ASK_MODEL}
+            value={askModel}
+            onChange={(e) => {
+              setAskModelState(e.target.value);
+              setAskModel(e.target.value);
+            }}
+          />
+        </label>
+        {askApiKey && (
+          <button
+            className="button"
+            type="button"
+            onClick={() => {
+              setAskApiKeyState('');
+              setAskApiKey('');
+            }}
+          >
+            Remove API key
+          </button>
+        )}
+      </section>
       <section className="detail-section">
         <h3>Storage on this device</h3>
         <p className="help-text">

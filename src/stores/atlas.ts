@@ -44,11 +44,15 @@ export const useMapStore = create<{
   layers: LayerDefinition[];
   editorMode: 'none' | 'create' | 'move';
   draftPosition: Position | null;
+  /** Ask Nylah highlights — ids the last answer pointed at. Never a layer. */
+  highlightIds: string[];
   setLayers: (layers: LayerDefinition[]) => void;
   select: (place: Place | null) => void;
   setEditor: (mode: 'none' | 'create' | 'move') => void;
   setPosition: (position: Position) => void;
   setBoundsFocus: (bounds: MapBounds) => void;
+  setHighlights: (ids: string[]) => void;
+  clearHighlights: () => void;
 }>((set) => ({
   selectedId: null,
   focus: null,
@@ -56,6 +60,7 @@ export const useMapStore = create<{
   layers: [],
   editorMode: 'none',
   draftPosition: null,
+  highlightIds: [],
   setLayers: (layers) => set({ layers }),
   select: (place) => {
     set((state) => ({
@@ -74,6 +79,8 @@ export const useMapStore = create<{
     set((state) => ({
       boundsFocus: { bounds, requestId: (state.boundsFocus?.requestId ?? 0) + 1 },
     })),
+  setHighlights: (highlightIds) => set({ highlightIds }),
+  clearHighlights: () => set({ highlightIds: [] }),
 }));
 export type SidebarTab = 'explore' | 'layers' | 'saved';
 export const useUiStore = create<{
@@ -174,7 +181,7 @@ export function switchLocalWorkspace(workspaceId: string | null): Promise<void> 
     filters: DEFAULT_FILTERS,
     tab: 'explore',
   });
-  useMapStore.setState({ selectedId: null, focus: null, boundsFocus: null, editorMode: 'none', draftPosition: null });
+  useMapStore.setState({ selectedId: null, focus: null, boundsFocus: null, editorMode: 'none', draftPosition: null, highlightIds: [] });
   const operation = writeQueue.then(async () => {
     const previous = atlasRepository;
     const repository = previous.name === name ? previous : new AtlasDatabase(name);

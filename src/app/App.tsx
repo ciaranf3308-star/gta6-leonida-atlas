@@ -4,6 +4,7 @@ import { loadCatalogue, markerToPlace } from '../data/catalogue';
 import { filterPlaces } from '../domain/filter';
 import { DEFAULT_LAYERS, filterByVisibleLayers } from '../features/map/layers';
 import MapView from '../features/map/MapView';
+import AskPanel from '../features/ask/AskPanel';
 import { explorerPath } from '../features/explorer/public-path';
 import { atlasRegistry } from '../plugins/registry';
 import {
@@ -53,6 +54,9 @@ export default function App() {
   const sidebarOpen = useUiStore((s) => s.sidebarOpen);
   const selectedId = useMapStore((s) => s.selectedId);
   const layers = useMapStore((s) => s.layers);
+  const highlightIds = useMapStore((s) => s.highlightIds);
+  const highlightSet = useMemo(() => new Set(highlightIds), [highlightIds]);
+  const offline = usePersistenceStore((s) => s.offline);
   const focus = useMapStore((s) => s.focus);
   const boundsFocus = useMapStore((s) => s.boundsFocus);
   const editorMode = useMapStore((s) => s.editorMode);
@@ -93,6 +97,16 @@ export default function App() {
   const anyPublicLayerVisible = layers.some(
     (layer) => layer.visible && layer.id !== 'personal',
   );
+  /** Ask Nylah highlights render even when their layer is off — the
+   * question itself was consent to show them, for that answer only. */
+  const mapPlaces = useMemo(() => {
+    if (highlightIds.length === 0) return filtered;
+    const seen = new Set(filtered.map((place) => place.id));
+    return [
+      ...filtered,
+      ...allPlaces.filter((place) => highlightSet.has(place.id) && !seen.has(place.id)),
+    ];
+  }, [filtered, allPlaces, highlightIds, highlightSet]);
   const selected = useMemo(
     () => allPlaces.find((p) => p.id === selectedId),
     [allPlaces, selectedId],
@@ -251,7 +265,7 @@ export default function App() {
       <Sidebar places={filtered} progress={progress} anyPublicLayerVisible={anyPublicLayerVisible} />
       <section className="map-workspace" id="atlas-map-region" aria-label="Interactive Leonida map">
         <MapView
-          places={filtered}
+          places={mapPlaces}
           layers={layers}
           selectedId={selectedId}
           focus={focus}
@@ -259,9 +273,21 @@ export default function App() {
           editorMode={editorMode}
           preferences={preferences}
           foundIds={new Set(visited.map((v) => v.placeId))}
+          highlightIds={highlightSet}
           onSelect={select}
           onPlacePosition={placePosition}
           onAddMarkerAt={beginMarkerAt}
+        />
+        <AskPanel
+          places={allPlaces}
+          layers={layers}
+          filters={filters}
+          visitedIds={visited.map((v) => v.placeId)}
+          offline={offline}
+          onSelect={select}
+          onClearHighlights={() => useMapStore.getState().clearHighlights()}
+          highlightIds={highlightSet}
+          onOpenSettings={() => useUiStore.getState().setDialog('settings')}
         />
         <div className="map-topbar">
           <button

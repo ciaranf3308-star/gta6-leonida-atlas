@@ -63,6 +63,30 @@ const tileWidth = zoomedTiles
       .evaluate((img) => img.naturalWidth)
   : 0;
 console.log('z6 tiles loaded at max zoom:', zoomedTiles, 'naturalWidth:', tileWidth);
+// Ask Nylah: fab opens the panel, no-key gym question lists matching
+// places from the map (local fallback) and highlights them — gyms off.
+await page.getByRole('button', { name: 'Ask Nylah', exact: true }).click();
+await page.getByText('Answers only from this map').waitFor({ timeout: 10000 });
+const askOverflow = await page
+  .locator('html')
+  .evaluate((el) => el.scrollWidth - el.clientWidth);
+console.log('Ask panel open, horizontal overflow px:', askOverflow);
+await page.locator('#ask-nylah-input').fill('Where can I train?');
+await page.getByRole('button', { name: 'Send', exact: true }).click();
+await page.getByText('Dynamix Fitness').first().waitFor({ timeout: 10000 });
+await page.waitForTimeout(2500); // answer pans the map to the highlights
+const highlighted = await page.locator('.atlas-map-marker.is-highlighted').count();
+console.log('Ask highlights on map:', highlighted);
+console.log('Ask overflow px:', askOverflow);
+if (askOverflow > 0 || highlighted === 0) process.exit(1);
+await page.getByRole('button', { name: 'Close Ask Nylah' }).click();
+// Settings: API key field is masked (password type), never plain text.
+await page.getByRole('button', { name: 'Open sidebar', exact: true }).click();
+await page.getByRole('button', { name: 'Settings', exact: true }).click();
+const keyType = await page.locator('#ask-api-key').getAttribute('type');
+console.log('Ask API key field type:', keyType);
+if (keyType !== 'password') process.exit(1);
+await page.getByRole('button', { name: 'Close dialog' }).click();
 console.log('console errors:', errors.length ? errors : 'none');
 await page.screenshot({ path: '/tmp/atlas-390px.png', fullPage: false });
 await browser.close();

@@ -27,6 +27,8 @@ export interface MapViewProps {
   editorMode: 'none' | 'create' | 'move';
   preferences: Preferences;
   foundIds: ReadonlySet<string>;
+  /** Ask Nylah highlights — rendered even when their layer is off. */
+  highlightIds?: ReadonlySet<string>;
   onSelect: (id: string) => void;
   onPlacePosition: (position: Position) => void;
   /** Long-press / right-click on empty map: start a marker at that point. */
@@ -47,6 +49,7 @@ function markerIcon(
   selected: boolean,
   color?: string,
   found?: boolean,
+  highlighted?: boolean,
 ): L.DivIcon {
   const cluster = group.places.length > 1;
   const content = document.createElement('span');
@@ -69,7 +72,7 @@ function markerIcon(
   const size = cluster ? 38 : Math.max(24, (layer?.style.radius ?? 6) * 2 + 10);
   return L.divIcon({
     html: content,
-    className: `atlas-map-marker ${cluster ? 'is-cluster' : ''} ${selected ? 'is-selected' : ''} ${found && !cluster ? 'is-found' : ''} ${group.places[0]?.layerId === 'regions' ? 'is-region' : ''}`,
+    className: `atlas-map-marker ${cluster ? 'is-cluster' : ''} ${selected ? 'is-selected' : ''} ${found && !cluster ? 'is-found' : ''} ${highlighted ? 'is-highlighted' : ''} ${group.places[0]?.layerId === 'regions' ? 'is-region' : ''}`,
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
   });
@@ -237,9 +240,9 @@ export default function MapView(props: MapViewProps) {
       }).filter((place) => {
         const layer = layersById.get(place.layerId);
         return (
-          layer?.visible &&
-          (layer.minZoom === undefined || currentZoom >= layer.minZoom) &&
-          (layer.maxZoom === undefined || currentZoom <= layer.maxZoom)
+          (layer?.visible || props.highlightIds?.has(place.id)) &&
+          (layer?.minZoom === undefined || currentZoom >= layer.minZoom) &&
+          (layer?.maxZoom === undefined || currentZoom <= layer.maxZoom)
         );
       });
       const groups = clusterPlaces(visible, {
@@ -280,6 +283,7 @@ export default function MapView(props: MapViewProps) {
             selected,
             markerColor(place),
             props.foundIds.has(place.id),
+            group.places.some((member) => props.highlightIds?.has(member.id)),
           ),
           title,
           alt: title,
@@ -367,7 +371,7 @@ export default function MapView(props: MapViewProps) {
           !isCluster &&
           props.preferences.showLabels &&
           labelCount < 65 &&
-          (selected || place.layerId === 'regions' || currentZoom >= -1)
+          (selected || props.highlightIds?.has(place.id) || place.layerId === 'regions' || currentZoom >= -1)
         ) {
           const label = document.createElement('span');
           label.textContent = place.title;
@@ -400,6 +404,7 @@ export default function MapView(props: MapViewProps) {
     props.selectedId,
     props.editorMode,
     props.foundIds,
+    props.highlightIds,
     props.preferences.clusterMarkers,
     props.preferences.showLabels,
   ]);

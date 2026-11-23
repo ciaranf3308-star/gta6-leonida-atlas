@@ -58,6 +58,12 @@
   color: #dcf5ed;
   opacity: 0.75;
 }
+/* Ask Nylah highlights: gold ring, so an answer's places stand out. */
+.atlas-map-marker.is-highlighted .atlas-pin-face {
+  outline: 3px solid #ffd166;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 8px #ffd16640;
+}
 .atlas-map-marker:focus-visible {
   outline: 3px solid #fff;
   outline-offset: 5px;
