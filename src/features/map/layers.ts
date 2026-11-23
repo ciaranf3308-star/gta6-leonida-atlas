@@ -11,6 +11,10 @@ import { COLLECTABLE_CARD_PLACES, COLLECTABLE_SETS } from '../../data/collectabl
  * tests/unit/atlas-spoiler-free.test.ts. Uncertain GTADB records stay in
  * 'uncertain' whatever their tags say, so the interiors/shops/lootable
  * counts are the certain subset only.
+ *
+ * `order` does double duty: the Layers list shows highest first, and the
+ * map draws highest last (on top). So the order below IS the list order:
+ * the useful layers first, trading-card sets last (order 1-18).
  */
 const CARD_PIN_COUNTS = new Map<string, number>();
 for (const card of COLLECTABLE_CARD_PLACES) {
@@ -25,7 +29,7 @@ export const DEFAULT_LAYERS: LayerDefinition[] = [
     description: 'Official names with approximate community positions.',
     category: 'reference',
     visible: false,
-    order: 0,
+    order: 45,
     source: 'Rockstar Games / GTADB',
     style: { color: '#f2d897', radius: 9 },
     icon: 'region',
@@ -37,7 +41,7 @@ export const DEFAULT_LAYERS: LayerDefinition[] = [
     description: 'Named community records; placement remains approximate.',
     category: 'community',
     visible: false,
-    order: 10,
+    order: 50,
     source: 'GTADB / Map GTA · CC BY 4.0',
     style: { color: '#73cbbb', radius: 6 },
     icon: 'pin',
@@ -47,10 +51,10 @@ export const DEFAULT_LAYERS: LayerDefinition[] = [
     id: 'interiors',
     name: 'Interiors / Enterable',
     description:
-      'Enterable buildings from GTADB with confirmed names — 81 here; the other 304 of the 385 enterable records are uncertain and stay in Uncertain records.',
+      'Enterable buildings from GTADB with confirmed names — 81 here; the other 304 of the 385 enterable records are unverified and stay in Unverified places.',
     category: 'activity',
     visible: false,
-    order: 11,
+    order: 80,
     source: 'GTADB / Map GTA · CC BY 4.0',
     style: { color: '#e8b64c', radius: 6 },
     icon: 'pin',
@@ -63,7 +67,7 @@ export const DEFAULT_LAYERS: LayerDefinition[] = [
       '39 shops with confirmed names, by type — search #gas, #clothes, #guns, #supermarket and more. Robbable shops live in Lootable buildings.',
     category: 'activity',
     visible: false,
-    order: 12,
+    order: 70,
     source: 'GTADB / Map GTA · CC BY 4.0',
     style: { color: '#7ec8e3', radius: 6 },
     icon: 'pin',
@@ -76,7 +80,7 @@ export const DEFAULT_LAYERS: LayerDefinition[] = [
       '52 enterable shops that can be held up — most small stores can be robbed; safes and alarms vary by store. Ammu-Nation cannot be robbed.',
     category: 'activity',
     visible: false,
-    order: 13,
+    order: 90,
     source: 'GTADB / Map GTA · CC BY 4.0; robbery guidance: The Games Wiki',
     style: { color: '#ff5c5c', radius: 7 },
     icon: 'pin',
@@ -85,10 +89,11 @@ export const DEFAULT_LAYERS: LayerDefinition[] = [
   {
     id: 'gyms',
     name: 'Gyms / Strength',
-    description: 'Member gyms in Vice City. 8 gyms; 2 have no verified coordinates yet.',
+    description:
+      'Member gyms in Vice City. 8 gyms; 2 have no verified coordinates yet. House gyms and workout gear inside houses are not in the public data yet — add your own marker when you find one.',
     category: 'activity',
     visible: false,
-    order: 15,
+    order: 60,
     source: 'GTA6 GPS / PowerPyx · approximate',
     style: { color: '#ff8a5c', radius: 7 },
     icon: 'gym',
@@ -101,7 +106,7 @@ export const DEFAULT_LAYERS: LayerDefinition[] = [
       'Free public workout gear — Muscle Sands beach gym and Jason’s house deck (Chapter 1 only). No other outdoor spots have a verified position yet.',
     category: 'activity',
     visible: false,
-    order: 16,
+    order: 55,
     source: 'GTA6 GPS / GTADB · approximate',
     style: { color: '#7ddb8a', radius: 7 },
     icon: 'gym',
@@ -109,11 +114,12 @@ export const DEFAULT_LAYERS: LayerDefinition[] = [
   },
   {
     id: 'uncertain',
-    name: 'Uncertain records',
-    description: 'Unknown names or explicit uncertainty signals in the source.',
+    name: 'Unverified places',
+    description:
+      'Places with no confirmed name or use yet — kept off so they don’t fill the map. Turn on only if you want to see them.',
     category: 'community',
     visible: false,
-    order: 20,
+    order: 30,
     source: 'GTADB / Map GTA · CC BY 4.0',
     style: { color: '#cba980', radius: 5 },
     icon: 'question',
@@ -125,7 +131,7 @@ export const DEFAULT_LAYERS: LayerDefinition[] = [
     description: 'Your own local map annotations.',
     category: 'personal',
     visible: true,
-    order: 30,
+    order: 52,
     source: 'Your local atlas',
     style: { color: '#c9a9ef', radius: 8 },
     icon: 'pin',
@@ -137,7 +143,7 @@ export const DEFAULT_LAYERS: LayerDefinition[] = [
     description: `${set.size} cards in the set · ${CARD_PIN_COUNTS.get(set.id) ?? 0} verified pin(s) so far — the rest have no verified position yet.`,
     category: 'collectible',
     visible: false,
-    order: 40 + index,
+    order: 1 + index,
     source: 'GTA6Info / PowerPyx · approximate',
     style: { color: '#d98cb3', radius: 6 },
     icon: 'pin',

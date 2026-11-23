@@ -23,6 +23,13 @@ export interface PersonalMarker {
   category: Category;
   position: Position;
   icon: 'pin' | 'star' | 'flag';
+  /**
+   * "workout" = a house gym / workout spot the user marked (e.g. gym gear
+   * inside a house in Capri). Ask Nylah treats these as workout answers;
+   * the public map data has no house gyms at all, so the user's own marks
+   * are the only way they get on the map.
+   */
+  kind?: 'workout';
   /** Optional marker colour (hex from the editor palette). Defaults to the layer colour. */
   color?: string;
   createdAt: string;
@@ -101,6 +108,28 @@ export const DEFAULT_PREFERENCES: Preferences = {
   showLabels: true,
   clusterMarkers: true,
 };
+
+/**
+ * An unnamed GTADB record: its in-game address starts with "?" — e.g.
+ * "?, Washington Beach, Vice Beach". 2,732 of the 3,754 records at GTADB
+ * revision d406fea are unnamed (only 1,022 have a real name). They stay on
+ * the map, in the unverified layer: no name is ever invented for them, and
+ * the only way back in is a verified name from GTADB or another trusted
+ * source. What a "?" record DOES often already carry is tags saying what
+ * kind of place it is — see src/domain/tags.ts. A tag is halfway to a name.
+ */
+export function isUnnamedPlace(place: Pick<Place, 'title'>): boolean {
+  const name = place.title.split(',')[0]?.trim() ?? '';
+  // "?", "? (N)", "? Concert Hall", "? Flare" — the name itself is a
+  // question mark. A real name with a "?" qualifier ("Parsons Hotel?",
+  // "Turn ?") is a named place, just an uncertain one, and stays visible.
+  return name === '' || name.startsWith('?') || name.startsWith('Unnamed ');
+}
+
+/** Places with a real name — the only ones the map, counts, search and Ask show by default. */
+export function namedPlaces<T extends Pick<Place, 'title'>>(places: readonly T[]): T[] {
+  return places.filter((place) => !isUnnamedPlace(place));
+}
 export const EMPTY_USER_DATA: UserData = {
   favorites: [],
   notes: [],

@@ -27,7 +27,7 @@ export const CATEGORIES: { id: Category | 'all'; name: string }[] = [
   { id: 'nature', name: 'Nature' },
   { id: 'transport', name: 'Transport' },
   { id: 'business', name: 'Businesses' },
-  { id: 'personal', name: 'Personal' },
+  { id: 'personal', name: 'My markers' },
 ];
 
 export interface LayerProgress {
@@ -100,59 +100,92 @@ function LayerManager({ progress }: { progress: LayerProgress[] }) {
         ),
       );
   }
+  function row(layer: (typeof ordered)[number], index: number) {
+    return (
+      <div className="layer-row" key={layer.id}>
+        <label>
+          <input
+            type="checkbox"
+            checked={layer.visible}
+            onChange={(e) =>
+              useMapStore
+                .getState()
+                .setLayers(
+                  layers.map((l) =>
+                    l.id === layer.id ? { ...l, visible: e.target.checked } : l,
+                  ),
+                )
+            }
+          />
+          <span className="layer-dot" style={{ background: layer.style.color }} />
+          <span>
+            {layer.name}
+            {totalById.has(layer.id) && (
+              <> · {(totalById.get(layer.id) ?? 0).toLocaleString()} places</>
+            )}
+            <small>{layer.description}</small>
+          </span>
+        </label>
+        <div>
+          <button
+            className="icon-button"
+            aria-label={`Raise ${layer.name}`}
+            disabled={index === 0}
+            onClick={() => move(layer.id, -1)}
+          >
+            <ArrowUp size={15} />
+          </button>
+          <button
+            className="icon-button"
+            aria-label={`Lower ${layer.name}`}
+            disabled={index === ordered.length - 1}
+            onClick={() => move(layer.id, 1)}
+          >
+            <ArrowDown size={15} />
+          </button>
+        </div>
+      </div>
+    );
+  }
+  // Trading-card sets live in one group at the bottom: only the sets with
+  // a verified pin are listed — the rest have no verified position yet and
+  // would otherwise fill the list with 18 empty rows.
+  const mainLayers = ordered.filter((layer) => !layer.id.startsWith('cards:'));
+  const cardLayers = ordered.filter((layer) => layer.id.startsWith('cards:'));
+  const cardLayersWithPins = cardLayers.filter(
+    (layer) => (totalById.get(layer.id) ?? 0) > 0,
+  );
+  const cardPins = cardLayers.reduce(
+    (sum, layer) => sum + (totalById.get(layer.id) ?? 0),
+    0,
+  );
   return (
     <div className="layer-manager">
       <CountyPicker />
       <p className="panel-intro">
-        Spoiler-free mode: every location layer starts off. Turn a layer on only when you want
-        to see those places — nothing is shown until you choose it. Layers at the top draw above
-        the others.
+        Your map starts blank on purpose — nothing is shown until you choose it. Turn a layer
+        on only when you want to see those places. Layers at the top draw above the others.
+        Your choices are remembered on this device, so the map comes back as you left it.
       </p>
-      {ordered.map((layer, index) => (
-        <div className="layer-row" key={layer.id}>
-          <label>
-            <input
-              type="checkbox"
-              checked={layer.visible}
-              onChange={(e) =>
-                useMapStore
-                  .getState()
-                  .setLayers(
-                    layers.map((l) =>
-                      l.id === layer.id ? { ...l, visible: e.target.checked } : l,
-                    ),
-                  )
-              }
-            />
-            <span className="layer-dot" style={{ background: layer.style.color }} />
-            <span>
-              {layer.name}
-              {totalById.has(layer.id) && (
-                <> · {(totalById.get(layer.id) ?? 0).toLocaleString()} places</>
-              )}
-              <small>{layer.description}</small>
-            </span>
-          </label>
-          <div>
-            <button
-              className="icon-button"
-              aria-label={`Raise ${layer.name}`}
-              disabled={index === 0}
-              onClick={() => move(layer.id, -1)}
-            >
-              <ArrowUp size={15} />
-            </button>
-            <button
-              className="icon-button"
-              aria-label={`Lower ${layer.name}`}
-              disabled={index === ordered.length - 1}
-              onClick={() => move(layer.id, 1)}
-            >
-              <ArrowDown size={15} />
-            </button>
-          </div>
-        </div>
-      ))}
+      {mainLayers.map((layer) => row(layer, ordered.indexOf(layer)))}
+      <details className="layer-group">
+        <summary>
+          Trading cards · {cardPins.toLocaleString()} verified pin
+          {cardPins === 1 ? '' : 's'} so far
+        </summary>
+        <p className="panel-intro">
+          18 sets, 480 cards in total — only {cardPins} have a verified spot on the map so far.
+          The rest have no verified position yet. Turn a set on only when you want to hunt it.
+        </p>
+        {cardLayersWithPins.map((layer) => row(layer, ordered.indexOf(layer)))}
+        {cardLayers.length - cardLayersWithPins.length > 0 && (
+          <p className="empty-state">
+            {cardLayers.length - cardLayersWithPins.length} more set
+            {cardLayers.length - cardLayersWithPins.length === 1 ? '' : 's'} with no verified
+            pin yet — they are hidden until a card in the set gets a verified spot.
+          </p>
+        )}
+      </details>
       <p className="empty-state">
         The basemap is the GTADB in-game map (map artwork © Rockstar Games, CC BY 4.0). Place
         positions are approximate community data.
@@ -160,6 +193,15 @@ function LayerManager({ progress }: { progress: LayerProgress[] }) {
     </div>
   );
 }
+
+const TAG_CHIPS: { label: string; query: string }[] = [
+  { label: 'Gym', query: 'gym' },
+  { label: 'Houses', query: 'residential' },
+  { label: 'Enterable', query: 'enterable' },
+  { label: 'Shops', query: 'retail' },
+  { label: 'Petrol', query: '#gas' },
+  { label: 'Food', query: '#food' },
+];
 
 function Results({
   places,
@@ -194,6 +236,27 @@ function Results({
             </option>
           ))}
         </select>
+        <div className="tag-chips" aria-label="Find by type">
+          <span>Find by type:</span>
+          {TAG_CHIPS.map((chip) => {
+            const active = filters.query === chip.query;
+            return (
+              <button
+                key={chip.query}
+                type="button"
+                className={active ? 'active' : ''}
+                aria-pressed={active}
+                onClick={() =>
+                  useUiStore
+                    .getState()
+                    .setFilters({ query: active ? '' : chip.query })
+                }
+              >
+                {chip.label}
+              </button>
+            );
+          })}
+        </div>
         <div className="row-between">
           <label className="check-label">
             <input
@@ -207,7 +270,7 @@ function Results({
           </label>
           <select
             className="compact-select"
-            aria-label="Evidence filter"
+            aria-label="Show places by how sure we are"
             value={filters.evidence}
             onChange={(e) =>
               useUiStore
@@ -215,9 +278,9 @@ function Results({
                 .setFilters({ evidence: e.target.value as 'all' | 'approximate' | 'uncertain' })
             }
           >
-            <option value="all">All evidence</option>
-            <option value="approximate">Named entries</option>
-            <option value="uncertain">Uncertain entries</option>
+            <option value="all">All places</option>
+            <option value="approximate">Named places</option>
+            <option value="uncertain">Unverified places</option>
           </select>
         </div>
         <div className="row-between">
@@ -229,7 +292,7 @@ function Results({
                 useUiStore.getState().setFilters({ hideFound: e.target.checked })
               }
             />
-            Hide found
+            Hide places I’ve found
           </label>
           <label className="check-label">
             <input
@@ -239,7 +302,7 @@ function Results({
                 useUiStore.getState().setFilters({ remainingOnly: e.target.checked })
               }
             />
-            Remaining only
+            Only places I haven’t found
           </label>
         </div>
       </div>
@@ -266,11 +329,11 @@ function Results({
                   {!place.position
                     ? 'Unpositioned'
                     : place.evidence === 'personal'
-                      ? 'Personal marker'
+                      ? 'My marker'
                       : place.category === 'region'
                         ? 'Region · approximate'
                         : place.evidence === 'uncertain'
-                          ? 'Uncertain · approximate'
+                          ? 'Unverified · position not confirmed'
                           : `${place.category} · approximate`}
                 </small>
               </span>
@@ -280,8 +343,9 @@ function Results({
         </div>
       ) : !anyPublicLayerVisible ? (
         <p className="empty-state">
-          Spoiler-free mode: all location layers are off, so there is nothing to list yet. Open
-          Layers and turn on just what you want to see — your own markers are always listed.
+          Your map starts blank on purpose — all layers are off, so there is nothing to list
+          yet. Open Layers and turn on just what you want to see — your own markers are always
+          listed. Or tap a chip on the map.
         </p>
       ) : (
         <p className="empty-state">

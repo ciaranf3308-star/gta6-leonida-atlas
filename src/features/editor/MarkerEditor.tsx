@@ -32,6 +32,10 @@ export default function MarkerEditor({
   const [description, setDescription] = useState(marker?.description ?? '');
   const [category, setCategory] = useState<Category>(marker?.category ?? 'personal');
   const [icon, setIcon] = useState<PersonalMarker['icon']>(marker?.icon ?? 'pin');
+  const presetKind = useMapStore((s) => s.markerKindPreset);
+  const [kind, setKind] = useState<'general' | 'workout'>(
+    marker?.kind === 'workout' ? 'workout' : presetKind === 'workout' ? 'workout' : 'general',
+  );
   const [color, setColor] = useState<string>(marker?.color ?? MARKER_COLORS[0]);
   const [x, setX] = useState(String(position?.x ?? marker?.position.x ?? 0));
   const [y, setY] = useState(String(position?.y ?? marker?.position.y ?? 0));
@@ -65,6 +69,7 @@ export default function MarkerEditor({
       category,
       icon,
       color,
+      ...(kind === 'workout' ? { kind: 'workout' as const } : {}),
       position: coords,
       createdAt: marker?.createdAt ?? now,
       updatedAt: now,
@@ -117,7 +122,7 @@ export default function MarkerEditor({
     }
   }
   return (
-    <Modal title={marker ? 'Edit personal marker' : 'New personal marker'} onClose={onClose}>
+    <Modal title={marker ? 'Edit my marker' : 'New marker'} onClose={onClose}>
       <form
         className="editor-form"
         onSubmit={(e) => {
@@ -137,6 +142,20 @@ export default function MarkerEditor({
           onChange={(e) => setTitle(e.target.value)}
           autoFocus
         />
+        <label htmlFor="marker-kind">What is this?</label>
+        <select
+          id="marker-kind"
+          value={kind}
+          onChange={(e) => setKind(e.target.value as 'general' | 'workout')}
+        >
+          <option value="general">General marker</option>
+          <option value="workout">Workout spot — house gym / gym gear</option>
+        </select>
+        <p className="help-text">
+          Workout spots are how house gyms get on the map: the public data lists no gym gear
+          inside houses, so a place you mark here is what Ask Nylah will use when you ask
+          where to work out nearby.
+        </p>
         <label htmlFor="marker-description">Description</label>
         <textarea
           id="marker-description"

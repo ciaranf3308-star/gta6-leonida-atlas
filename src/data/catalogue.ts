@@ -230,7 +230,12 @@ export function markerToPlace(marker: PersonalMarker): Place {
     category: marker.category,
     position: marker.position,
     layerId: 'personal',
-    tags: [marker.icon, ...(marker.color ? [`color:${marker.color}`] : [])],
+    tags: [
+      marker.icon,
+      // A workout-spot marker is a gym answer for Ask Nylah.
+      ...(marker.kind === 'workout' ? ['gym', 'workout'] : []),
+      ...(marker.color ? [`color:${marker.color}`] : []),
+    ],
     region: 'My markers',
     source: { title: 'Your local atlas', url: '' },
     evidence: 'personal',

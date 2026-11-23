@@ -44,12 +44,15 @@ export const useMapStore = create<{
   layers: LayerDefinition[];
   editorMode: 'none' | 'create' | 'move';
   draftPosition: Position | null;
+  /** New-marker preset from the map overlay ("+ Workout spot"). */
+  markerKindPreset: 'workout' | null;
   /** Ask Nylah highlights — ids the last answer pointed at. Never a layer. */
   highlightIds: string[];
   setLayers: (layers: LayerDefinition[]) => void;
   select: (place: Place | null) => void;
   setEditor: (mode: 'none' | 'create' | 'move') => void;
   setPosition: (position: Position) => void;
+  setMarkerKindPreset: (kind: 'workout' | null) => void;
   setBoundsFocus: (bounds: MapBounds) => void;
   setHighlights: (ids: string[]) => void;
   clearHighlights: () => void;
@@ -60,6 +63,7 @@ export const useMapStore = create<{
   layers: [],
   editorMode: 'none',
   draftPosition: null,
+  markerKindPreset: null,
   highlightIds: [],
   setLayers: (layers) => set({ layers }),
   select: (place) => {
@@ -75,6 +79,7 @@ export const useMapStore = create<{
   },
   setEditor: (editorMode) => set({ editorMode, draftPosition: null }),
   setPosition: (draftPosition) => set({ draftPosition }),
+  setMarkerKindPreset: (markerKindPreset) => set({ markerKindPreset }),
   setBoundsFocus: (bounds) =>
     set((state) => ({
       boundsFocus: { bounds, requestId: (state.boundsFocus?.requestId ?? 0) + 1 },
@@ -181,7 +186,7 @@ export function switchLocalWorkspace(workspaceId: string | null): Promise<void> 
     filters: DEFAULT_FILTERS,
     tab: 'explore',
   });
-  useMapStore.setState({ selectedId: null, focus: null, boundsFocus: null, editorMode: 'none', draftPosition: null, highlightIds: [] });
+  useMapStore.setState({ selectedId: null, focus: null, boundsFocus: null, editorMode: 'none', draftPosition: null, markerKindPreset: null, highlightIds: [] });
   const operation = writeQueue.then(async () => {
     const previous = atlasRepository;
     const repository = previous.name === name ? previous : new AtlasDatabase(name);

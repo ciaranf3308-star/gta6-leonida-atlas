@@ -4,6 +4,13 @@ import { loadCatalogue, markerToPlace } from '../data/catalogue';
 import { filterPlaces } from '../domain/filter';
 import { DEFAULT_LAYERS, filterByVisibleLayers } from '../features/map/layers';
 import MapView from '../features/map/MapView';
+import MapOverlay from '../features/map/MapOverlay';
+import {
+  loadSavedMapView,
+  mapViewFromState,
+  saveMapView,
+} from '../features/map/view-persistence';
+import { COUNTIES } from '../data/counties';
 import AskPanel from '../features/ask/AskPanel';
 import WelcomeSheet from '../features/onboarding/WelcomeSheet';
 import { hasSeenWelcome, markWelcomeSeen } from '../features/onboarding/onboarding';
@@ -65,6 +72,10 @@ export default function App() {
   const draftPosition = useMapStore((s) => s.draftPosition);
   const ready = usePersistenceStore((s) => s.ready);
   const [welcomeOpen, setWelcomeOpen] = useState(false);
+  /** Map-view restore gate: layer/filter changes are only saved once the
+   * saved view (if any) has been applied — otherwise the first render's
+   * blank defaults would overwrite the user's saved layers. */
+  const [viewRestored, setViewRestored] = useState(false);
   /** First run: once the catalogue is loaded, say the map starts blank on
    * purpose and show what is mapped — otherwise the user sees nothing and
    * reasonably thinks nothing is mapped. */
@@ -123,6 +134,11 @@ export default function App() {
   const anyPublicLayerVisible = layers.some(
     (layer) => layer.visible && layer.id !== 'personal',
   );
+  /** Positioned places currently matching — what the overlay pill counts. */
+  const showingCount = useMemo(
+    () => filtered.filter((place) => place.position).length,
+    [filtered],
+  );
   /** Ask Nylah highlights render even when their layer is off — the
    * question itself was consent to show them, for that answer only. */
   const mapPlaces = useMemo(() => {
@@ -168,6 +184,7 @@ export default function App() {
   const closeEditor = useCallback(() => {
     useUiStore.getState().setEditorOpen(false);
     useMapStore.getState().setEditor('none');
+    useMapStore.getState().setMarkerKindPreset(null);
   }, []);
   const closeDialog = useCallback(() => useUiStore.getState().setDialog(null), []);
   const goMap = useCallback(() => {
@@ -180,11 +197,21 @@ export default function App() {
     setRoute(resolveRoute(location.pathname, location.search));
   }
   function beginMarker() {
+    useMapStore.getState().setMarkerKindPreset(null);
     useMapStore.getState().setEditor('create');
     if (window.innerWidth < 1000) useUiStore.getState().setSidebar(false);
   }
+  /** Map overlay "+ Workout spot": enter placement mode with the workout
+      preset. The editor opens only once the user taps the map (or "Use
+      map center") — opening the form first would save the marker at 0,0. */
+  const beginWorkoutSpot = useCallback(() => {
+    useMapStore.getState().setMarkerKindPreset('workout');
+    useMapStore.getState().setEditor('create');
+    if (window.innerWidth < 1000) useUiStore.getState().setSidebar(false);
+  }, []);
   /** Long-press / right-click on the map: start a marker right there. */
   const beginMarkerAt = useCallback((position: Position) => {
+    useMapStore.getState().setMarkerKindPreset(null);
     useMapStore.getState().setEditor('create');
     useMapStore.getState().setPosition(position);
     useUiStore.getState().setEditorOpen(true);
@@ -192,6 +219,29 @@ export default function App() {
   }, []);
   useEffect(() => {
     useMapStore.getState().setLayers([...atlasRegistry.layers.values()]);
+    // Restore the saved map view (layers, county, filters) from the last
+    // visit — first launch has no saved view and stays blank on purpose.
+    const saved = loadSavedMapView();
+    if (saved) {
+      const visible = new Set(saved.visibleLayerIds);
+      useMapStore.getState().setLayers(
+        [...atlasRegistry.layers.values()].map((layer) => ({
+          ...layer,
+          visible: layer.id === 'personal' ? true : visible.has(layer.id),
+        })),
+      );
+      useUiStore.getState().setFilters({
+        countyId: saved.countyId,
+        hideFound: saved.hideFound,
+        remainingOnly: saved.remainingOnly,
+        favoritesOnly: saved.favoritesOnly,
+        evidence: saved.evidence,
+        category: saved.category,
+      });
+      const county = COUNTIES.find((c) => c.id === saved.countyId);
+      if (county) useMapStore.getState().setBoundsFocus(county.bounds);
+    }
+    setViewRestored(true);
     void hydrateUserData();
     cataloguePromise ??= Promise.all(
       [...atlasRegistry.sources.values()].map((source) => source.load()),
@@ -261,6 +311,17 @@ export default function App() {
   useEffect(() => {
     document.documentElement.dataset.reducedMotion = String(preferences.reducedMotion);
   }, [preferences.reducedMotion]);
+  /** Persist layer + filter choices on this device, so a reload or PWA
+   * restart brings the map back exactly as the user left it. */
+  useEffect(() => {
+    if (!viewRestored || layers.length === 0) return;
+    saveMapView(
+      mapViewFromState(
+        layers.filter((layer) => layer.visible).map((layer) => layer.id),
+        filters,
+      ),
+    );
+  }, [layers, filters, viewRestored]);
   if (route.view === 'explorer') {
     const initialPlace = allPlaces.find((place) => place.id === route.placeId);
     // Deep links must wait for the catalogue/local hydration before choosing a spawn.
@@ -303,6 +364,13 @@ export default function App() {
           onSelect={select}
           onPlacePosition={placePosition}
           onAddMarkerAt={beginMarkerAt}
+        />
+        <MapOverlay
+          layers={layers}
+          allPlaces={allPlaces}
+          showingCount={showingCount}
+          anyPublicLayerVisible={anyPublicLayerVisible}
+          onAddWorkoutSpot={beginWorkoutSpot}
         />
         <AskPanel
           places={allPlaces}
@@ -394,7 +462,13 @@ export default function App() {
           </div>
         }
       >
-        {selected && <PlaceDetails key={selected.id} place={selected} />}
+        {selected && (
+          <PlaceDetails
+            key={selected.id}
+            place={selected}
+            onAddMarkerHere={beginMarkerAt}
+          />
+        )}
         {editorOpen && <MarkerEditor position={draftPosition} onClose={closeEditor} />}
         {dialog === 'backup' && <BackupDialog onClose={closeDialog} />}
         {dialog === 'settings' && <SettingsDialog onClose={closeDialog} />}

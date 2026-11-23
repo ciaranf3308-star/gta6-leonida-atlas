@@ -154,7 +154,7 @@ test('the map opens without an account, filters public evidence, and toggles vis
   // asserting on search results.
   await enableLayer(page, 'Named regions');
   await enableLayer(page, 'Community places');
-  await enableLayer(page, 'Uncertain records');
+  await enableLayer(page, 'Unverified places');
   await openSidebar(page);
   await sidebar(page).getByRole('button', { name: 'Explore', exact: true }).click();
   await page.getByLabel('Browse categories').selectOption('region');
@@ -175,7 +175,7 @@ test('the map opens without an account, filters public evidence, and toggles vis
   // Only the region pin should be in view for the caption assertions below.
   const communityLayer = page.getByRole('checkbox', { name: /^Community places/ });
   if (await communityLayer.isChecked()) await communityLayer.uncheck();
-  const uncertainLayer = page.getByRole('checkbox', { name: /^Uncertain records/ });
+  const uncertainLayer = page.getByRole('checkbox', { name: /^Unverified places/ });
   if (await uncertainLayer.isChecked()) await uncertainLayer.uncheck();
   const regionLayer = page.getByRole('checkbox', { name: /^Named regions/ });
   await expect(regionLayer).toBeChecked();
@@ -280,7 +280,7 @@ test('a personal marker can be edited, moved and deleted with its saved referenc
   await search(page).fill('Quiet beach overlook');
   await page
     .locator('.place-results')
-    .getByRole('button', { name: /^Quiet beach overlook Personal marker/ })
+    .getByRole('button', { name: /^Quiet beach overlook My marker/ })
     .click();
   await expect(details(page)).toContainText('-1000.0, 1200.0');
   await details(page).getByRole('button', { name: 'Edit marker', exact: true }).click();
@@ -412,7 +412,7 @@ test('the installed app reloads offline with its saved preferences and personal 
     await search(page).fill('Offline stop');
     await page
       .locator('.place-results')
-      .getByRole('button', { name: /^Offline stop Personal marker/ })
+      .getByRole('button', { name: /^Offline stop My marker/ })
       .click();
     await expect(
       details(page).getByRole('heading', { name: 'Offline stop', exact: true }),
@@ -528,7 +528,7 @@ test('a dismissed direct link stays closed when local data refreshes', async ({ 
     await createMarker(other, 'Second tab update');
     await openSidebar(page);
     await search(page).fill('Second tab update');
-    await expect(page.getByRole('button', { name: /^Second tab update Personal marker/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: /^Second tab update My marker/ })).toBeVisible();
     await expect(heading).not.toBeVisible();
   } finally {
     await other.close();

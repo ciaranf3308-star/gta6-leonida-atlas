@@ -5,6 +5,7 @@ import { retrieveForAsk, layersRequestedByQuestion } from '../../src/features/as
 import {
   askOpenAi,
   buildAskSystemPrompt,
+  formatRecordsForPrompt,
   parsePlaceMentions,
 } from '../../src/features/ask/openai';
 
@@ -285,5 +286,238 @@ describe('Ask Nylah — OpenAI client', () => {
         fetchImpl: fetchImpl as unknown as typeof fetch,
       }),
     ).rejects.toThrow('401');
+  });
+});
+
+describe('Ask Nylah — real proximity (the Capri gyms case)', () => {
+  // The user's exact case, with real coordinates: Capri is at about
+  // x -6,500, y 0 (west side); every gym is in Vice City (east side).
+  // The nearest gym to Capri is Grand Majestic, ~5,700 map units away.
+  const CAPRI_PLACES: Place[] = [
+    place({
+      id: 'L672',
+      title: 'Train Bridge, Capri',
+      layerId: 'community',
+      position: { x: -6837, y: 769 },
+      region: 'Capri',
+      category: 'transport',
+    }),
+    place({
+      id: 'L1064',
+      title: 'Capri City Jackals Stadium, Capri',
+      layerId: 'community',
+      position: { x: -6409, y: -210 },
+      region: 'Capri',
+      category: 'landmark',
+    }),
+    place({
+      id: 'gym:grand-majestic',
+      title: 'Grand Majestic Gym',
+      layerId: 'gyms',
+      position: { x: -1035, y: -1249 },
+      region: 'Tequesta, Vice City',
+      tags: ['gym'],
+    }),
+    place({
+      id: 'gym:zenith',
+      title: 'Zenith',
+      layerId: 'gyms',
+      position: { x: -826, y: -566 },
+      region: 'Downtown, Vice City',
+      tags: ['gym'],
+    }),
+    place({
+      id: 'gym:dynamix',
+      title: 'Dynamix Fitness',
+      layerId: 'gyms',
+      position: { x: -366, y: 1514 },
+      region: 'Vice City',
+      tags: ['gym'],
+    }),
+    place({
+      id: 'gym:muscle-sands',
+      title: 'Muscle Sands',
+      layerId: 'gyms-outdoor',
+      position: { x: 2019, y: 407 },
+      region: 'Ocean Beach, Vice Beach',
+      tags: ['gym', 'free', 'outdoor'],
+    }),
+    place({
+      id: 'gym:jason-house-deck',
+      title: "Jason's house deck (home gym)",
+      layerId: 'gyms-outdoor',
+      position: { x: -2353, y: -5532 },
+      region: 'Key Lento, Leonida Keys',
+      tags: ['gym', 'free', 'outdoor', 'home'],
+    }),
+    place({
+      id: 'L9999',
+      title: '?, Capri',
+      layerId: 'lootable',
+      position: { x: -6600, y: 200 },
+      region: 'Capri',
+      evidence: 'uncertain',
+    }),
+  ];
+
+  const capriGymQuestion =
+    'Show me a gym near Capri or somewhere I can hit some strength workouts';
+
+  it('a gym near Capri is answered nearest-first, and says plainly none is near', () => {
+    const result = retrieveForAsk({
+      question: capriGymQuestion,
+      places: CAPRI_PLACES,
+      layers: layers(),
+      filters: { hideFound: false, remainingOnly: false, countyId: null },
+    });
+    expect(result.anchorPlace?.region).toBe('Capri');
+    expect(result.areaMismatch).toBe(true);
+    expect(result.nearCount).toBe(0);
+    expect(result.nearestDistance).not.toBeNull();
+    expect(result.nearestDistance!).toBeGreaterThan(5000);
+    // Nearest first: Grand Majestic, NOT Muscle Sands / Jason's deck.
+    expect(result.records[0]?.id).toBe('gym:grand-majestic');
+    expect(result.records.map((p) => p.id)).not.toEqual([
+      'gym:muscle-sands',
+      'gym:jason-house-deck',
+    ]);
+    expect(result.proximitySummary).toMatch(/no gym near capri/i);
+    expect(result.proximitySummary).toContain('Grand Majestic');
+    expect(result.proximitySummary).toMatch(/long way across the map/i);
+    // The house-gym gap is stated, not hidden behind the 9 official gyms.
+    expect(result.proximitySummary).toMatch(/house gyms.*not in the public map data/i);
+  });
+
+  it('the follow-up keeps the Capri anchor instead of re-listing the far gyms', () => {
+    const result = retrieveForAsk({
+      question: 'is there nowhere else I can workout?',
+      places: CAPRI_PLACES,
+      layers: layers(),
+      filters: { hideFound: false, remainingOnly: false, countyId: null },
+      priorQuestions: [capriGymQuestion],
+    });
+    expect(result.anchorPlace?.region).toBe('Capri');
+    expect(result.nearCount).toBe(0);
+    expect(result.records[0]?.id).toBe('gym:grand-majestic');
+    expect(result.records[0]?.id).not.toBe('gym:muscle-sands');
+    expect(result.proximitySummary).toMatch(/no gym near capri/i);
+  });
+
+  it('a house gym the user marked near Capri answers first, before the far gyms', () => {
+    const withMarker = [
+      ...CAPRI_PLACES,
+      place({
+        id: 'custom:house-gym-capri',
+        title: 'House gym on 5th, Capri',
+        layerId: 'personal',
+        position: { x: -6500, y: 100 },
+        region: 'My markers',
+        evidence: 'personal',
+        tags: ['pin', 'gym', 'workout'],
+        description: 'Squat rack and bench in the garage.',
+      }),
+      place({
+        id: 'custom:photo-spot-capri',
+        title: 'Photo spot, Capri',
+        layerId: 'personal',
+        position: { x: -6550, y: 150 },
+        region: 'My markers',
+        evidence: 'personal',
+        tags: ['pin'],
+      }),
+    ];
+    const result = retrieveForAsk({
+      question: capriGymQuestion,
+      places: withMarker,
+      layers: layers(),
+      filters: { hideFound: false, remainingOnly: false, countyId: null },
+    });
+    expect(result.records[0]?.id).toBe('custom:house-gym-capri');
+    expect(result.nearCount).toBe(1);
+    expect(result.proximitySummary).toMatch(/nearest gym to capri is house gym on 5th/i);
+    // The photo spot is the user's marker but it is not a gym.
+    expect(result.records.map((p) => p.id)).not.toContain('custom:photo-spot-capri');
+  });
+
+  it('records sent to the AI carry their distance from the anchor', () => {
+    const result = retrieveForAsk({
+      question: capriGymQuestion,
+      places: CAPRI_PLACES,
+      layers: layers(),
+      filters: { hideFound: false, remainingOnly: false, countyId: null },
+    });
+    const prompt = formatRecordsForPrompt(result.records, {
+      anchorName: 'Capri',
+      distances: result.anchorDistances,
+    });
+    expect(prompt).toMatch(/Grand Majestic Gym.*map units from Capri — far/s);
+    expect(prompt).not.toMatch(/near\.$/m);
+  });
+});
+
+describe('Ask Nylah — answers from tags, not just names', () => {
+  const TAGGED: Place[] = [
+    place({
+      id: 'L777',
+      title: '?, Capri',
+      layerId: 'uncertain',
+      position: { x: -6600, y: 200 },
+      region: 'Capri',
+      evidence: 'uncertain',
+      tags: ['enterable', '#gas'],
+    }),
+    place({
+      id: 'L778',
+      title: '?, Capri',
+      layerId: 'uncertain',
+      position: { x: -6700, y: 300 },
+      region: 'Capri',
+      evidence: 'uncertain',
+      tags: ['residential'],
+    }),
+    place({
+      id: 'L779',
+      title: '?, Capri',
+      layerId: 'uncertain',
+      position: { x: -6500, y: 100 },
+      region: 'Capri',
+      evidence: 'uncertain',
+      tags: ['gym'],
+    }),
+    place({
+      id: 'L1001',
+      title: 'Corner Store, Capri',
+      layerId: 'lootable',
+      position: { x: -6400, y: -200 },
+      region: 'Capri',
+      tags: ['enterable', 'retail'],
+    }),
+  ];
+
+  it('a burglary question returns a "?" gas-station shop by its tags', () => {
+    const result = retrieveForAsk({
+      question: 'Can I rob a shop in Capri tonight?',
+      places: TAGGED,
+      layers: layers(),
+      filters: { hideFound: false, remainingOnly: false, countyId: null },
+    });
+    expect(result.records.map((p) => p.id)).toContain('L777');
+    expect(result.records.map((p) => p.id)).toContain('L1001');
+    // The house is not a shop — its tags do not match.
+    expect(result.records.map((p) => p.id)).not.toContain('L778');
+  });
+
+  it('a gym question returns a gym-tagged "?" place near Capri, nearest first', () => {
+    const result = retrieveForAsk({
+      question: 'Show me a gym near Capri',
+      places: TAGGED,
+      layers: layers(),
+      filters: { hideFound: false, remainingOnly: false, countyId: null },
+    });
+    expect(result.records[0]?.id).toBe('L779');
+    expect(result.nearCount).toBe(1);
+    // The house and the petrol station are not gyms.
+    expect(result.records.map((p) => p.id)).not.toContain('L777');
+    expect(result.records.map((p) => p.id)).not.toContain('L778');
   });
 });

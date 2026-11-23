@@ -66,7 +66,7 @@ export function SavedPlaces({
       </button>
       <button className="library-row" onClick={() => show('personal')}>
         <Bookmark size={19} />
-        <span>Personal markers</span>
+        <span>My markers</span>
         <span>{markers.length}</span>
       </button>
       <div className="section-label">
@@ -74,7 +74,7 @@ export function SavedPlaces({
       </div>
       <p className="empty-state">
         Mark places as found from their details. Progress is per layer — turn a layer on, then
-        use “Remaining only” to chase the last ones.
+        use “Only places I haven’t found” to chase the last ones.
       </p>
       {progress
         .filter((row) => row.total > 0)

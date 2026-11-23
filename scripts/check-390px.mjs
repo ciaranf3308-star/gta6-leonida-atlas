@@ -38,6 +38,23 @@ await page.waitForTimeout(2000);
 const lootableMarkers = await page.locator('.atlas-map-marker').count();
 console.log('markers on map after Show lootable:', lootableMarkers);
 if (lootableMarkers === 0) process.exit(1);
+// The overlay pill says how many places are showing, on the map itself.
+await page.getByText(/52 places showing/).waitFor({ timeout: 10000 });
+console.log('overlay pill shows 52 places showing');
+// The overlay chips are on the map: tap Shops, pins grow.
+await page.getByRole('button', { name: /^Shops \d+$/ }).click();
+await page.waitForTimeout(1500);
+const afterShops = await page.locator('.atlas-map-marker').count();
+console.log('markers after Shops chip:', afterShops);
+if (afterShops <= lootableMarkers) process.exit(1);
+// PERSISTENCE: reload — the layers must STILL be on and the pins still there.
+await page.reload({ waitUntil: 'networkidle' });
+await page.waitForTimeout(2000);
+const afterReload = await page.locator('.atlas-map-marker').count();
+console.log('markers after reload (layers must persist):', afterReload);
+if (afterReload === 0) process.exit(1);
+await page.getByText(/places showing/).waitFor({ timeout: 10000 });
+console.log('layers persisted across reload');
 // Reopen the welcome sheet from the ? button, then close it.
 await page.getByRole('button', { name: /Welcome — what is mapped/ }).click();
 await page.getByText('Welcome to Leonida').waitFor({ timeout: 10000 });
@@ -47,6 +64,15 @@ console.log('welcome sheet reopens from the ? button');
 // Open Layers, check new layers exist and are off by default
 await page.getByRole('button', { name: 'Open sidebar', exact: true }).click();
 await page.getByRole('button', { name: 'Layers', exact: true }).click();
+// Useful layers first: Lootable above Interiors above Shops above Gyms.
+const layerOrder = await page
+  .locator('.layer-row')
+  .evaluateAll((rows) => rows.map((r) => r.textContent?.slice(0, 40)));
+console.log('layer rows in order:', layerOrder.slice(0, 6));
+if (!layerOrder[0]?.includes('Lootable') || !layerOrder[1]?.includes('Interiors'))
+  process.exit(1);
+// Card sets are grouped at the bottom, collapsed: only sets with pins listed.
+await page.getByText(/Trading cards · 5 verified pins so far/).click();
 for (const name of [
   'Interiors / Enterable',
   'Shops & services',
@@ -104,6 +130,13 @@ const highlighted = await page.locator('.atlas-map-marker.is-highlighted').count
 console.log('Ask highlights on map:', highlighted);
 console.log('Ask overflow px:', askOverflow);
 if (askOverflow > 0 || highlighted === 0) process.exit(1);
+// PROXIMITY: "gym near Capri" must say plainly none is near — the gyms are
+// in Vice City, ~5,700 map units away — never present them as near Capri.
+await page.locator('#ask-nylah-input').fill('Show me a gym near Capri');
+await page.getByRole('button', { name: 'Send', exact: true }).click();
+await page.getByText(/no gym near capri/i).first().waitFor({ timeout: 10000 });
+await page.getByText(/Grand Majestic/i).first().waitFor({ timeout: 10000 });
+console.log('Ask Capri answer is honest: no gym near Capri, nearest is Grand Majestic');
 // Ask API-key onboarding: inline key field, paste + save right there.
 const keyField = page.locator('#ask-api-key-inline');
 console.log('Ask inline key field present:', (await keyField.count()) > 0);

@@ -986,6 +986,11 @@ h3 {
     width: 320px;
     box-shadow: 12px 0 40px #0004;
   }
+  /* The sidebar overlays the map here, so the Ask button hides while it
+     is open instead of peeking out from behind its edge. */
+  .atlas-app:has(.sidebar[data-open='true']) .ask-fab {
+    display: none;
+  }
   .sidebar[data-open='false'] {
     display: none;
   }
@@ -1158,9 +1163,11 @@ h3 {
 /* Ask Nylah — floating button + bottom-sheet panel (mobile-first). */
 .ask-fab {
   position: absolute;
-  z-index: 600;
+  /* Below the sidebar (600) so it never paints over it when it is open. */
+  z-index: 550;
   right: 12px;
-  bottom: 128px;
+  /* Clear of the zoom stack below it (bottom 74px + ~128px tall). */
+  bottom: 214px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -1213,11 +1220,12 @@ h3 {
   align-self: flex-start;
 }
 .ask-messages {
+  flex: 1 1 auto;
+  min-height: 60px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  min-height: 60px;
 }
 .ask-message {
   border: 1px solid var(--border);
@@ -1312,10 +1320,10 @@ h3 {
 }
 @media (max-width: 599px) {
   .ask-fab {
-    bottom: 118px;
+    bottom: 214px;
   }
   .atlas-app[data-details='true'] .ask-fab {
-    bottom: calc(52dvh + 16px);
+    bottom: calc(52dvh + 156px);
   }
   .atlas-app[data-details='true'] .ask-panel {
     bottom: calc(52dvh + 12px);
@@ -1406,4 +1414,141 @@ h3 {
   color: #0b202c;
   background: #73cbbb;
   font-weight: 700;
+}
+
+/* Map overlay — quick chips, county picker and places-showing pill, on the
+   map itself. Sits below the top bar (z-index 450, under the sidebar). */
+.map-overlay {
+  position: absolute;
+  z-index: 450;
+  top: 64px;
+  left: 10px;
+  right: 10px;
+  display: grid;
+  gap: 8px;
+  pointer-events: none;
+}
+.map-overlay-top {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+}
+.map-county-picker select {
+  pointer-events: auto;
+  appearance: none;
+  background: #0b202cef;
+  border: 1px solid #57707a;
+  border-radius: 999px;
+  color: #e4ecec;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 12px;
+  box-shadow: 0 2px 8px #06161d40;
+  max-width: 180px;
+}
+.map-count-pill {
+  background: #0b202ce0;
+  border: 1px solid #57707a;
+  border-radius: 999px;
+  color: #e4ecec;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 12px;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px #06161d40;
+}
+.map-chips {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  pointer-events: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+.map-chips::-webkit-scrollbar {
+  display: none;
+}
+.map-chip {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid #57707a;
+  border-radius: 999px;
+  background: #0b202ce6;
+  color: #e4ecec;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 11px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #06161d40;
+}
+.map-chip.active {
+  background: #73cbbb;
+  border-color: #73cbbb;
+  color: #0b202c;
+}
+.map-chip-count {
+  font-size: 11px;
+  font-weight: 700;
+  opacity: 0.75;
+}
+.map-chip-action {
+  border-style: dashed;
+  color: #f2d897;
+}
+@media (max-width: 599px) {
+  .map-overlay {
+    top: 62px;
+    left: 8px;
+    right: 8px;
+  }
+  .map-county-picker select {
+    max-width: 150px;
+  }
+}
+
+/* Layers: trading-card sets grouped at the bottom. */
+.layer-group {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+  margin-top: 4px;
+}
+.layer-group summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 4px 0;
+}
+.layer-group .layer-row {
+  margin-top: 4px;
+}
+
+/* Explore: find-by-type tag chips. */
+.tag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.tag-chips button {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+.tag-chips button.active {
+  background: #73cbbb;
+  border-color: #73cbbb;
+  color: #0b202c;
 }

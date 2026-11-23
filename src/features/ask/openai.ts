@@ -1,8 +1,8 @@
 import type { Place } from '../../domain/types';
-import { normalizeAsk } from './retrieval';
+import { NEAR_DISTANCE_UNITS, normalizeAsk } from './retrieval';
 
 /**
- * Ask Nylah — OpenAI client, BYOK.
+ * Ask Nylah — OpenAI client, using the user's own key.
  *
  * The key lives ONLY on this device, in localStorage, under the keys below.
  * It is never written to IndexedDB backups, never logged, never committed,
@@ -74,16 +74,33 @@ export function buildAskSystemPrompt(requestedLayerNames: readonly string[]): st
     '3. If the supplied records do not answer the question, say so plainly: "not in the map data". Do not guess.',
     '4. Keep it short — a sentence or two, then the place names. Cite each place by its exact title.',
     '5. Never mention layers, toggles, or places that are not in the supplied records.',
+    '6. Distances from the place the user asked about are given for every record. NEVER call a place "near" that place unless its distance is small — if the map facts say nothing is near, say that FIRST, before naming any place, and never present a far-away place as if it were nearby.',
   ].join('\n');
 }
 
-export function formatRecordsForPrompt(records: readonly Place[]): string {
+export interface FormatRecordsOptions {
+  /** Place the user asked about being near, if any. */
+  anchorName?: string | null;
+  /** Distance in map units from the anchor, by place id. */
+  distances?: ReadonlyMap<string, number>;
+}
+
+export function formatRecordsForPrompt(
+  records: readonly Place[],
+  options: FormatRecordsOptions = {},
+): string {
   if (records.length === 0) return '(no records)';
   return records
-    .map(
-      (place) =>
-        `- ${place.title} [${place.layerId}] — ${place.region || 'Leonida'}. ${place.description.slice(0, 240)}${place.position ? ` Position: ${place.position.x}, ${place.position.y}.` : ' No verified position.'}`,
-    )
+    .map((place) => {
+      const distance = options.distances?.get(place.id);
+      const distanceText =
+        distance === undefined
+          ? ''
+          : options.anchorName
+            ? ` About ${Math.round(distance)} map units from ${options.anchorName} — ${distance <= NEAR_DISTANCE_UNITS ? 'near' : 'far'}.`
+            : ` About ${Math.round(distance)} map units from the place asked about.`;
+      return `- ${place.title} [${place.layerId}] — ${place.region || 'Leonida'}. ${place.description.slice(0, 240)}${place.position ? ` Position: ${place.position.x}, ${place.position.y}.` : ' No verified position.'}${distanceText}`;
+    })
     .join('\n');
 }
 
@@ -94,6 +111,12 @@ export interface AskOpenAiInput {
   apiKey: string;
   model?: string;
   fetchImpl?: typeof fetch;
+  /** Plain-words proximity verdict from retrieval — the AI must say this first. */
+  proximitySummary?: string | null;
+  /** Place the user asked about being near, if any. */
+  anchorName?: string | null;
+  /** Distance in map units from the anchor, by place id. */
+  distances?: ReadonlyMap<string, number>;
 }
 
 export async function askOpenAi(input: AskOpenAiInput): Promise<string> {
@@ -110,7 +133,7 @@ export async function askOpenAi(input: AskOpenAiInput): Promise<string> {
         { role: 'system', content: buildAskSystemPrompt(input.requestedLayerNames) },
         {
           role: 'user',
-          content: `Question: ${input.question}\n\nMap records you may use (and nothing else):\n${formatRecordsForPrompt(input.records)}`,
+          content: `Question: ${input.question}\n\nMap records you may use (and nothing else):\n${formatRecordsForPrompt(input.records, { anchorName: input.anchorName, distances: input.distances })}${input.proximitySummary ? `\n\nMap facts — say these first, in your own words, before naming any place:\n${input.proximitySummary}` : ''}`,
         },
       ],
       temperature: 0.2,

@@ -157,6 +157,8 @@ export function parsePersonalMarker(
     `${path}.createdAt`,
   );
   const color = parseMarkerColor(item.color);
+  const kind = item.kind === undefined ? undefined : item.kind;
+  if (kind !== undefined && kind !== 'workout') invalid(`${path}.kind`, 'is unsupported');
   return {
     id: parseId(item.id, `${path}.id`, true),
     title: parseText(item.title, `${path}.title`, BACKUP_LIMITS.title, true),
@@ -171,6 +173,7 @@ export function parsePersonalMarker(
       y: coordinate('y', CANONICAL_BOUNDS.south, CANONICAL_BOUNDS.north),
     },
     icon,
+    ...(kind ? { kind } : {}),
     ...(color ? { color } : {}),
     createdAt,
     updatedAt: timestamp(

@@ -1,4 +1,5 @@
 import type { LayerDefinition, Place } from '../../domain/types';
+import { isUnnamedPlace } from '../../domain/types';
 
 /**
  * First-run onboarding — the fix for "none of the places are showing".
@@ -52,7 +53,9 @@ export interface LayerCount {
  * positioned), interiors 81 (80), shops 39 (36), lootable 52 (52), gyms 8
  * (6), free outdoor 2 (2), regions 6 (6), uncertain 2,902 (2,848), cards 5
  * positioned pins across 18 sets (480 cards in total, the rest have no
- * verified position yet).
+ * verified position yet). The 2,732 unnamed "?" records stay in these
+ * counts and on the map, in the unverified layer — they are the level of
+ * detail the map needs, and hiding them would hide the work still to do.
  */
 export function layerCounts(
   places: readonly Place[],
@@ -81,6 +84,11 @@ export function layerCounts(
 
 export function totalMappedPlaces(places: readonly Place[]): number {
   return places.filter((place) => place.layerId !== 'personal').length;
+}
+
+/** Unnamed "?" records — still on the map, still to be resolved. */
+export function countUnnamedPlaces(places: readonly Place[]): number {
+  return places.filter((place) => isUnnamedPlace(place)).length;
 }
 
 /** One-tap quick starts on the welcome sheet: turn on just that layer. */

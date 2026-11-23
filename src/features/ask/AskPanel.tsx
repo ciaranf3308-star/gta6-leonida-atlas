@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { KeyRound, Send, Sparkles, X } from 'lucide-react';
 import type { Filters, LayerDefinition, Place } from '../../domain/types';
+import { isUnnamedPlace } from '../../domain/types';
+import { displayTagsFor } from '../../domain/tags';
 import { useMapStore } from '../../stores/atlas';
 import { retrieveForAsk } from './retrieval';
 import {
@@ -42,6 +44,13 @@ export default function AskPanel(props: AskPanelProps) {
   const [busy, setBusy] = useState(false);
   const [keyInput, setKeyInput] = useState('');
   const [hasKey, setHasKey] = useState(() => getAskApiKey().length > 0);
+  const messagesRef = useRef<HTMLDivElement>(null);
+  // The latest answer must be in view: scroll the messages to the bottom
+  // on every new message, instead of leaving the answer below the fold.
+  useEffect(() => {
+    const el = messagesRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [messages, busy]);
 
   function saveKey() {
     if (!keyInput.trim()) return;
@@ -85,6 +94,12 @@ export default function AskPanel(props: AskPanelProps) {
         layers: props.layers,
         filters: props.filters,
         visitedIds: props.visitedIds,
+        // Follow-ups ("is there nowhere else?") inherit the place from the
+        // earlier question in this conversation — the layers asked for
+        // still come from this question alone.
+        priorQuestions: messages
+          .filter((message) => message.role === 'user')
+          .map((message) => message.text),
       });
       const apiKey = getAskApiKey();
       if (result.records.length === 0) {
@@ -106,12 +121,15 @@ export default function AskPanel(props: AskPanelProps) {
       }
       if (!apiKey) {
         // No key: still a useful finder — the local records, no AI text.
+        // The proximity verdict leads: never present far-away places as near.
         showOnMap(result.records);
         setMessages((prev) => [
           ...prev,
           {
             role: 'assistant',
-            text: `Here are the matching places from the map (${result.records.length} shown${result.totalInScope > result.records.length ? ` of ${result.totalInScope}` : ''}${result.areaMismatch ? ' — nothing in that exact area, so these are the nearest' : ''}). Add your OpenAI key in Settings for a written answer.`,
+            text: result.proximitySummary
+              ? `${result.proximitySummary} Matching places from the map (${result.records.length} shown${result.totalInScope > result.records.length ? ` of ${result.totalInScope}` : ''}):`
+              : `Here are the matching places from the map (${result.records.length} shown${result.totalInScope > result.records.length ? ` of ${result.totalInScope}` : ''}${result.areaMismatch ? ' — nothing in that exact area, so these are the nearest' : ''}). Add your OpenAI key in Settings for a written answer.`,
             placeIds: result.records.map((place) => place.id),
           },
         ]);
@@ -123,6 +141,9 @@ export default function AskPanel(props: AskPanelProps) {
         requestedLayerNames: result.requestedLayerNames,
         apiKey,
         model: getAskModel(),
+        proximitySummary: result.proximitySummary,
+        anchorName: result.anchorPlace?.title ?? result.areaLabel,
+        distances: result.anchorDistances,
       });
       const mentioned = parsePlaceMentions(answer, result.records);
       const highlight = mentioned.length > 0 ? mentioned : result.records;
@@ -190,7 +211,7 @@ export default function AskPanel(props: AskPanelProps) {
           Clear highlights ({props.highlightIds.size})
         </button>
       )}
-      <div className="ask-messages">
+      <div className="ask-messages" ref={messagesRef}>
         {messages.length === 0 && (
           <p className="help-text">
             Roleplay help, grounded in the map. Ask for a gym, a shop, a place to hit — asking
@@ -210,7 +231,12 @@ export default function AskPanel(props: AskPanelProps) {
                     <li key={id}>
                       <button type="button" onClick={() => props.onSelect(id)}>
                         <strong>{place.title}</strong>
-                        <small>{place.region || 'Leonida'}</small>
+                        <small>
+                          {place.region || 'Leonida'}
+                          {isUnnamedPlace(place) && displayTagsFor(place).length > 0
+                            ? ` · ${displayTagsFor(place).join(' · ')}`
+                            : ''}
+                        </small>
                       </button>
                     </li>
                   );

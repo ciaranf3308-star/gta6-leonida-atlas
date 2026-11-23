@@ -5,6 +5,7 @@ import type { LayerDefinition, Place } from '../../domain/types';
 import { getAskApiKey, setAskApiKey } from '../ask/openai';
 import {
   QUICK_START_LAYERS,
+  countUnnamedPlaces,
   layerCounts,
   totalMappedPlaces,
 } from './onboarding';
@@ -29,6 +30,7 @@ export default function WelcomeSheet(props: WelcomeSheetProps) {
   const counts = layerCounts(props.places, props.layers);
   const byId = new Map(counts.map((count) => [count.layerId, count]));
   const total = totalMappedPlaces(props.places);
+  const unnamed = countUnnamedPlaces(props.places);
   const cardCounts = counts.filter((count) => count.layerId.startsWith('cards:'));
   const cardPins = cardCounts.reduce((sum, count) => sum + count.positioned, 0);
 
@@ -74,6 +76,11 @@ export default function WelcomeSheet(props: WelcomeSheetProps) {
             </span>
           </li>
         </ul>
+        <p className="help-text">
+          {unnamed.toLocaleString()} places are still “?” with no name yet — many already say
+          what kind of place they are (house, shop, petrol station). Turn on Unverified places
+          in Layers to see them.
+        </p>
       </section>
       <section className="detail-section">
         <h3>Show me…</h3>

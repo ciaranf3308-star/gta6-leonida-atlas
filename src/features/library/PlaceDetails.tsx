@@ -1,6 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Bookmark, Check, ExternalLink, MapPin, Move, Pencil, Star, X } from 'lucide-react';
-import type { Place } from '../../domain/types';
+import type { Place, Position } from '../../domain/types';
+import { isUnnamedPlace } from '../../domain/types';
+import {
+  displayTagsFor,
+  isEnterablePlace,
+  placeStatusLine,
+  placeTypeLine,
+} from '../../domain/tags';
 import { atlasRepository, ConflictError } from '../../db/repository';
 import {
   saveLocal,
@@ -13,7 +20,14 @@ import { finishNoteSave, reconcileNoteDraft, type NoteDraft } from './note-draft
 import { getResearchForPlace } from '../street-leonida/leonida-research';
 import RegionalResearch from './RegionalResearch';
 
-export default function PlaceDetails({ place }: { place: Place }) {
+export default function PlaceDetails({
+  place,
+  onAddMarkerHere,
+}: {
+  place: Place;
+  /** Start a My marker at this place's position (for "?" places the user identifies). */
+  onAddMarkerHere?: (position: Position) => void;
+}) {
   const favorite = useUserStore((s) => s.favorites.some((f) => f.placeId === place.id));
   const found = useUserStore((s) => s.visited.some((v) => v.placeId === place.id));
   const savedNote = useUserStore((s) => s.notes.find((n) => n.placeId === place.id)?.text ?? '');
@@ -85,7 +99,7 @@ export default function PlaceDetails({ place }: { place: Place }) {
   return (
     <aside className="detail-panel" aria-label="Place details">
       <header className="panel-heading">
-        <span className="eyebrow">{isPersonal ? 'PERSONAL PLACE' : 'PLACE DETAILS'}</span>
+        <span className="eyebrow">{isPersonal ? 'MY MARKER' : 'PLACE DETAILS'}</span>
         <button
           className="icon-button"
           aria-label="Close place details"
@@ -101,13 +115,59 @@ export default function PlaceDetails({ place }: { place: Place }) {
         </div>
         <p className="evidence-label">
           {isPersonal
-            ? 'Personal marker · on this device'
+            ? 'My marker · saved on this device'
             : !place.position
               ? 'No mapped position'
               : place.evidence === 'uncertain'
-                ? 'Uncertain entry · approximate placement'
+                ? 'Unverified place · position not confirmed'
                 : 'Community placement · approximate'}
         </p>
+        {isUnnamedPlace(place) && (
+          <section className="detail-section" aria-label="What is known about this place">
+            <h3>What we know</h3>
+            <p className="help-text">
+              No name yet — this place is still “?” in the source data. What the source does
+              say:
+            </p>
+            <dl className="place-meta">
+              {place.region && (
+                <div>
+                  <dt>Area</dt>
+                  <dd>{place.region}</dd>
+                </div>
+              )}
+              <div>
+                <dt>You can go inside</dt>
+                <dd>{isEnterablePlace(place) ? 'Yes' : 'Not known'}</dd>
+              </div>
+              {placeTypeLine(place) && (
+                <div>
+                  <dt>What it is</dt>
+                  <dd>{placeTypeLine(place)}</dd>
+                </div>
+              )}
+              {placeStatusLine(place) && (
+                <div>
+                  <dt>Heads up</dt>
+                  <dd>{placeStatusLine(place)}</dd>
+                </div>
+              )}
+            </dl>
+            <p className="help-text">
+              If you find out what this place is in the game, add your own marker with the
+              name — or leave a note below.
+            </p>
+            {place.position && onAddMarkerHere && (
+              <button
+                type="button"
+                className="button"
+                onClick={() => onAddMarkerHere(place.position!)}
+              >
+                <MapPin size={16} /> Add my own marker here
+              </button>
+            )}
+          </section>
+        )}
         <button
           disabled={!ready}
           className={`button ${favorite ? 'selected' : ''}`}
@@ -145,7 +205,9 @@ export default function PlaceDetails({ place }: { place: Place }) {
             </div>
           )}
         </dl>
-        {place.tags.length > 0 && <p className="tags">{place.tags.join(' · ')}</p>}
+        {place.tags.length > 0 && (
+          <p className="tags">{displayTagsFor(place).join(' · ') || place.tags.join(' · ')}</p>
+        )}
         {place.source.url && (
           <a className="source-link" href={place.source.url} target="_blank" rel="noreferrer">
             {place.source.title}
