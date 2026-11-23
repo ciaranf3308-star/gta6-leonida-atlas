@@ -1,0 +1,6 @@
+/gta6-leonida-atlas/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+/gta6-leonida-atlas/sw.js
+  Cache-Control: no-cache
