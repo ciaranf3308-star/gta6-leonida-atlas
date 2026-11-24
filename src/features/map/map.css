@@ -10,7 +10,11 @@
 .atlas-map-canvas {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, #072e40 0%, #0a3a4e 60%, #0d4a61 100%);
+  /* v0.17.0: the same deep teal as the sea grade — any area the tiles
+   * have not drawn yet (or the sea canvas has not graded yet) reads
+   * as sea, not as a pale rectangle with a hard edge against the
+   * graded water. */
+  background: linear-gradient(180deg, #04202e 0%, #063042 60%, #094256 100%);
   font-family: inherit;
 }
 /* Rich grade on the real day tiles: a touch darker, more saturated —
@@ -277,9 +281,36 @@
 }
 .atlas-map-navigation button:focus-visible,
 .atlas-map-editor-hint button:focus-visible,
-.atlas-map-error button:focus-visible {
+.atlas-map-error button:focus-visible,
+.atlas-recenter:focus-visible {
   outline: 2px solid #fff;
   outline-offset: -4px;
+}
+/* v0.17.0: one floating recenter button, phones only — the zoom
+ * buttons are hidden under 599px, so this is the way back to all of
+ * Leonida when a camera strands the player zoomed in. Desktop keeps
+ * the full nav (which already has ⌖) and never sees this. */
+.atlas-recenter {
+  display: none;
+  position: absolute;
+  z-index: 500;
+  right: 12px;
+  bottom: 76px;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border: 1px solid #f6f0e529;
+  border-radius: 50%;
+  background: #0b1018d9;
+  backdrop-filter: blur(12px);
+  color: #f6f0e5;
+  font: 400 25px/1 sans-serif;
+  box-shadow: 0 4px 16px #0009;
+  cursor: pointer;
+}
+.atlas-recenter:disabled {
+  opacity: 0.45;
+  cursor: default;
 }
 .atlas-map-attribution {
   position: absolute;
@@ -423,9 +454,13 @@
   }
 }
 @media (max-width: 599px) {
-  /* Pinch-to-zoom replaces permanent zoom buttons on phones. */
+  /* Pinch-to-zoom replaces permanent zoom buttons on phones — but
+   * the recenter button stays: it is the way back to all of Leonida. */
   .atlas-map-navigation {
     display: none;
+  }
+  .atlas-recenter {
+    display: grid;
   }
   .atlas-app[data-details='true'] .atlas-map-attribution {
     display: none;

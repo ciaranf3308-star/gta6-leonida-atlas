@@ -21,7 +21,7 @@ import {
 } from './place-icons';
 import type { AiCategoryRecord } from '../categorise/categories';
 import type { Isolation } from './isolation';
-import { loadSavedCamera } from './camera-persistence';
+import { loadSavedCamera, shouldResumeCamera } from './camera-persistence';
 import { runToLatLngs, useAfterHoursGeo } from './after-hours-geo';
 import { buildSeaStencil, drawSeaFrame, maskDrawRect, seaMaskUrl } from './sea-overlay';
 import 'leaflet/dist/leaflet.css';
@@ -157,12 +157,20 @@ export default function MapView(props: MapViewProps) {
         markerZoomAnimation: !callbacks.current.preferences.reducedMotion,
       });
       const activeMap = instance;
-      // Resume where the player left off: a saved camera (centre +
-      // zoom, written on every moveend/zoomend) beats the full-map
-      // fit. A saved county isolation still flies there afterwards
-      // via the boundsFocus effect. No saved camera: full Leonida.
+      // v0.17.0: the camera is resumed ONLY when it still shows the
+      // whole of Leonida. A saved zoomed-in / panned-away camera (his
+      // 4:28pm screenshot: Vice City shops, land cut off, empty sea
+      // on the left) is ignored and the map fits all of Leonida —
+      // with the zoom buttons hidden on phones there was no way back.
+      // The fit camera is then saved by reportViewport below, so the
+      // stale value is overwritten and never comes back.
       const savedCamera = loadSavedCamera();
-      if (savedCamera) {
+      const fitCenter = {
+        x: (INITIAL_BOUNDS.west + INITIAL_BOUNDS.east) / 2,
+        y: (INITIAL_BOUNDS.south + INITIAL_BOUNDS.north) / 2,
+      };
+      const fitZoom = activeMap.getBoundsZoom(leafletBounds(INITIAL_BOUNDS), false, L.point(24, 24));
+      if (savedCamera && shouldResumeCamera(savedCamera, fitZoom, fitCenter)) {
         activeMap.setView(
           toMapCoordinate(savedCamera.center),
           savedCamera.zoom,
@@ -319,7 +327,16 @@ export default function MapView(props: MapViewProps) {
             maxMarkers: 120,
           }).slice(0, 120);
       let labelCount = 0;
-      for (const group of groups) {
+      // v0.17.0: label-collision check — a label runs right from its
+      // pin, so when another pin sits just to the right (Leonida Keys
+      // into Grassrivers, in his screenshot) the text runs straight
+      // into that pin and the next label. Those pins label left.
+      const groupPoints = groups.map((g) =>
+        map.latLngToContainerPoint(toMapCoordinate(g.position)),
+      );
+      for (let gi = 0; gi < groups.length; gi++) {
+        const group = groups[gi]!;
+        const pinPoint = groupPoints[gi]!;
         const place = group.places[0]!;
         const layer = layersById.get(place.layerId);
         const isCluster = group.places.length > 1;
@@ -451,10 +468,22 @@ export default function MapView(props: MapViewProps) {
         ) {
           const label = document.createElement('span');
           label.textContent = place.title;
+          // v0.17.0: a label runs right from its pin — when another
+          // pin sits just to the right of it (Leonida Keys into
+          // Grassrivers, in his screenshot) the text runs straight
+          // into that pin and the next label. Those pins label left,
+          // over empty sea, instead.
+          const labelLeft = groupPoints.some(
+            (other, oi) =>
+              oi !== gi &&
+              Math.abs(other.y - pinPoint.y) < 28 &&
+              other.x > pinPoint.x &&
+              other.x - pinPoint.x < 90,
+          );
           marker.bindTooltip(label, {
             permanent: true,
-            direction: 'right',
-            offset: [10, 0],
+            direction: labelLeft ? 'left' : 'right',
+            offset: labelLeft ? [-10, 0] : [10, 0],
             className: `atlas-place-label ${selected ? 'is-selected' : ''}`,
           });
           labelCount++;
@@ -866,6 +895,27 @@ export default function MapView(props: MapViewProps) {
           ⌖
         </button>
       </div>
+      {/* v0.17.0: the zoom buttons are hidden on phones, so a saved
+       * camera that stranded the player zoomed in had no way out —
+       * pinch was the only escape and he did not know it. One
+       * floating recenter button, phones only (desktop keeps the
+       * full nav above); it fits all of Leonida, like the reference's
+       * right-edge controls. */}
+      <button
+        type="button"
+        className="atlas-recenter"
+        aria-label="Show all of Leonida"
+        title="Show all of Leonida"
+        disabled={!map}
+        onClick={() =>
+          map?.fitBounds(leafletBounds(INITIAL_BOUNDS), {
+            padding: [24, 24],
+            animate: !props.preferences.reducedMotion,
+          })
+        }
+      >
+        ⌖
+      </button>
       <div className="atlas-map-attribution">
         <a href="https://map.gtadb.org" target="_blank" rel="noreferrer">
           GTADB / Map GTA

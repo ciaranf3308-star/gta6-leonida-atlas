@@ -152,5 +152,24 @@ export function drawSeaFrame(
   glow.addColorStop(1, 'rgba(255,240,220,0)');
   ctx.fillStyle = glow;
   ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
+  // v0.17.0 — no hard rectangle edge: outside the tile bounds there
+  // is only ocean (Leaflet's error tiles there are ocean.jpg), so the
+  // strips of canvas past the mask rect get the same deep-teal grade
+  // as the water inside it. His 4:28pm screenshot showed a sharp
+  // vertical/horizontal seam where the grade simply stopped — a
+  // saved camera had put the mask rect's edge mid-screen. The strips
+  // are painted last, over the canvas only, never over land tiles:
+  // land only ever exists inside the mask rect.
   ctx.globalCompositeOperation = 'source-over';
+  const edgeGrade = ctx.createLinearGradient(0, 0, 0, height);
+  edgeGrade.addColorStop(0, 'rgba(4,32,46,0.55)');
+  edgeGrade.addColorStop(0.55, 'rgba(6,48,66,0.5)');
+  edgeGrade.addColorStop(1, 'rgba(9,66,86,0.45)');
+  ctx.fillStyle = edgeGrade;
+  if (rect.x > 0) ctx.fillRect(0, 0, rect.x, height);
+  if (rect.x + rect.width < width)
+    ctx.fillRect(rect.x + rect.width, 0, width - (rect.x + rect.width), height);
+  if (rect.y > 0) ctx.fillRect(rect.x, 0, rect.width, rect.y);
+  if (rect.y + rect.height < height)
+    ctx.fillRect(rect.x, rect.y + rect.height, rect.width, height - (rect.y + rect.height));
 }

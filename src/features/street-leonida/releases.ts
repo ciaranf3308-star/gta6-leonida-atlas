@@ -11,6 +11,27 @@ export interface LeonidaAtlasRelease {
 /** Retained public history starts at v0.5.0; the newest release stays first. */
 export const LEONIDA_ATLAS_RELEASES: readonly LeonidaAtlasRelease[] = [
   {
+    version: 'v0.17.0',
+    date: '2026-11-24',
+    title: 'Opens on Leonida: a saved zoomed-in camera can no longer strand the map, the header is a slim strip, and the sea has no seams',
+    summary:
+      'The fix for his 4:28pm screenshot — the map opened shifted right with the land cut off, a huge empty sea on the left and a few pins on the right edge. The cause was a saved camera from an old session, zoomed into the Vice City shops, resuming on open with no way back on a phone. The map now always opens on the whole of Leonida.',
+    status: 'public',
+    highlights: [
+      'The map always opens on the whole of Leonida: a saved camera is only resumed when it still shows the full map. A zoomed-in or panned-away camera from an old session is ignored and the map fits all of Leonida instead — and the stale value is overwritten by the fit camera, so it never comes back.',
+      'A way back on phones: the zoom buttons are hidden under 599px, so a stranded camera had no escape except pinch. One floating recenter button (⌖) now sits on the map on phones and fits all of Leonida in one tap.',
+      'The header is a slim strip now: the sunset banner was a big floating card (84px, round corners, border, shadow) and read as a website header sitting on the map. It is a 56px edge-to-edge strip with no card, no border, no shadow, and the subtitle hides on phones — the wordmark alone is the identity.',
+      'The empty-map prompt is a compact bar pinned to the bottom of the map, not a big card in the middle of it — the big card covered the whole of Leonida on first open. Same buttons, one line of copy.',
+      'The sea has no seams: the grade used to stop at the edge of the water-mask rect, so a camera that put that edge mid-screen showed a sharp rectangle of graded water against pale ungraded sea. The strips past the mask rect now get the same deep-teal grade (outside the tile bounds there is only ocean), and the map background is the same deep teal, so nothing the tiles have not drawn yet reads as a pale rectangle.',
+      'Kept, unchanged: spoiler-free first launch, forced indexing onboarding, 48px+ thumb targets, Gyms vs Workout Equipment split, breakable homes as a system, interiors on tap, the Ask spoiler rule + proximity, the index resolver v3, traced county outlines, and the animated sea at ~8fps, paused when the tab hides.',
+    ],
+    verification: [
+      'Unit tests pass (including new tests: the camera gate resumes a whole-map camera and ignores the zoomed-in Vice City camera from his screenshot, a panned-away camera, and a centred-but-zoomed-in camera). TypeScript, ESLint and the production build pass.',
+      'The 390px walk (scripts/check-v017.mjs) passes with zero console errors and zero overflow: with the exact saved camera from his screenshot seeded, the tiles that load are GTADB zoom 0 (whole map), the banner is 56px, the prompt is a bottom bar, the recenter button is visible, and the v0.16.0 flows still pass (0 markers on open, hero pins, Vice City sheet, lag check, Turn everything off).',
+      'The general 390px walk passes with zero console errors.',
+    ],
+  },
+  {
     version: 'v0.16.0',
     date: '2026-11-24',
     title: 'Clean, fast, pretty: the map opens empty, the sea is deep teal at last, and the pink number blobs are gone',

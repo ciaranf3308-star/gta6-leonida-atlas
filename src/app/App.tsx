@@ -86,8 +86,10 @@ export default function App() {
    * because a saved "Show everything" came back on its own. The map
    * opens with zero public pins, every time; the saved layers are kept
    * aside here so the empty-map prompt can offer them back in one tap.
-   * The camera (position + zoom) still resumes — that is the map, not
-   * the spoilers. */
+   * The camera still resumes — but only when it still shows the
+   * whole of Leonida (v0.17.0 gate in camera-persistence.ts); a
+   * zoomed-in camera from an old session no longer opens the map
+   * on a partial view. */
   const [lastSession, setLastSession] = useState<{ layerIds: string[] } | null>(null);
   /** First launch after v0.11.0 is forced (no ×, no Escape); reopening
    * it from the panel footer ("What is mapped") is dismissable. */
@@ -529,7 +531,10 @@ export default function App() {
           onViewport={(viewport) => {
             useMapStore.getState().setMapCenter(viewport.center);
             // Resume where the player left off: the camera is saved
-            // on every moveend/zoomend and restored on the next open.
+            // on every moveend/zoomend and restored on the next open
+            // — but only if it still shows the whole of Leonida
+            // (v0.17.0 gate in MapView: a zoomed-in saved camera is
+            // ignored and the map fits all of Leonida instead).
             saveCamera({ center: viewport.center, zoom: viewport.zoom });
           }}
         />
@@ -571,55 +576,57 @@ export default function App() {
                 </button>
               ))}
             </div>
-            {status === 'ready' && showingCount === 0 ? (
-              !anyPublicLayerVisible ? (
-                <div className="empty-map-prompt" role="status">
-                  <strong>Nothing showing yet — pick what to see</strong>
-                  <p>
-                    {allPlaces.length.toLocaleString()} places are in the
-                    map — nothing is turned on yet. Pick one and the pins
-                    appear straight away.
-                  </p>
-                  <div className="empty-map-buttons">
-                    <button type="button" onClick={() => turnOnLayers(['interiors'])}>
-                      Show interiors
-                    </button>
-                    <button type="button" onClick={() => turnOnLayers(['lootable'])}>
-                      Show lootable
-                    </button>
-                    <button type="button" onClick={() => turnOnLayers(['shops'])}>
-                      Show shops
-                    </button>
-                    <button type="button" onClick={() => turnOnLayers('all')}>
-                      Show everything
-                    </button>
-                    {lastSession && (
-                      <button type="button" onClick={restoreLastSession}>
-                        Restore my last layers ({lastSession.layerIds.length} on)
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div className="empty-map-prompt" role="status">
-                  <strong>Nothing showing here</strong>
-                  <p>
-                    Layers are on, but nothing matches in this area with
-                    these filters. Clear the filters, or show everything.
-                  </p>
-                  <div className="empty-map-buttons">
-                    <button type="button" onClick={clearFiltersAndIsolation}>
-                      Clear filters
-                    </button>
-                    <button type="button" onClick={() => turnOnLayers('all')}>
-                      Show everything
-                    </button>
-                  </div>
-                </div>
-              )
-            ) : null}
           </div>
         )}
+        {/* v0.17.0: the empty-map prompt is a compact bar pinned to the
+         * bottom of the map, not a big card in the middle of it — the
+         * big card covered the whole of Leonida on first open and read
+         * as a website pop-up, not a map. Same buttons, one line of
+         * copy, and it never covers the centre of the map. */}
+        {navTab === 'map' && !selected && status === 'ready' && showingCount === 0 ? (
+          !anyPublicLayerVisible ? (
+            <div className="empty-map-prompt" role="status">
+              <strong>Nothing showing yet — pick what to see</strong>
+              <p>
+                {allPlaces.length.toLocaleString()} places are in the map — nothing is turned on yet.
+              </p>
+              <div className="empty-map-buttons">
+                <button type="button" onClick={() => turnOnLayers(['interiors'])}>
+                  Show interiors
+                </button>
+                <button type="button" onClick={() => turnOnLayers(['lootable'])}>
+                  Show lootable
+                </button>
+                <button type="button" onClick={() => turnOnLayers(['shops'])}>
+                  Show shops
+                </button>
+                <button type="button" onClick={() => turnOnLayers('all')}>
+                  Show everything
+                </button>
+                {lastSession && (
+                  <button type="button" onClick={restoreLastSession}>
+                    Restore my last layers ({lastSession.layerIds.length} on)
+                  </button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="empty-map-prompt" role="status">
+              <strong>Nothing showing here</strong>
+              <p>
+                Layers are on, but nothing matches in this area with these filters.
+              </p>
+              <div className="empty-map-buttons">
+                <button type="button" onClick={clearFiltersAndIsolation}>
+                  Clear filters
+                </button>
+                <button type="button" onClick={() => turnOnLayers('all')}>
+                  Show everything
+                </button>
+              </div>
+            </div>
+          )
+        ) : null}
         <AskPanel
           places={allPlaces}
           layers={layers}

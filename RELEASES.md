@@ -2,6 +2,17 @@
 
 Release history, newest first.
 
+## v0.17.0 — 2026-11-24
+
+**Released: Opens on Leonida — a saved zoomed-in camera can no longer strand the map, the header is a slim strip, and the sea has no seams.**
+
+- The map always opens on the whole of Leonida: his 4:28pm screenshot showed the map shifted right with the land cut off, a huge empty sea on the left and a few pins on the right edge. The cause was a saved camera from an old session, zoomed into the Vice City shops, resuming on open — with the zoom buttons hidden on phones there was no way back. A saved camera is now only resumed when it still shows the full map; anything zoomed in or panned away is ignored and the map fits all of Leonida, and the stale value is overwritten by the fit camera so it never comes back.
+- A way back on phones: one floating recenter button (⌖) on the map, phones only, fits all of Leonida in one tap.
+- The header is a slim strip now: the sunset banner was a big floating card (84px, round corners, border, shadow) and read as a website header sitting on the map. It is a 56px edge-to-edge strip with no card, no border, no shadow, and the subtitle hides on phones.
+- The empty-map prompt is a compact bar pinned to the bottom of the map, not a big card in the middle of it — the big card covered the whole of Leonida on first open. Same buttons, one line of copy.
+- The sea has no seams: the grade used to stop at the edge of the water-mask rect, so a camera that put that edge mid-screen showed a sharp rectangle of graded water against pale ungraded sea. The strips past the mask rect now get the same deep-teal grade (outside the tile bounds there is only ocean), and the map background is the same deep teal.
+- Kept, unchanged: spoiler-free first launch, forced indexing onboarding, 48px+ thumb targets, Gyms vs Workout Equipment split, breakable homes as a system, interiors on tap, the Ask spoiler rule + proximity, the index resolver v3, traced county outlines, and the animated sea at ~8fps, paused when the tab hides.
+
 ## v0.16.0 — 2026-11-24
 
 **Released: Clean, fast, pretty — the map opens empty, the sea is deep teal at last, and the pink number blobs are gone.**

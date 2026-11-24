@@ -302,17 +302,23 @@ h3 {
   background: #0b2a4a;
 }
 
-/* ---- Map hero (v0.16.0): sunset banner + wordmark, search, chips.
- * The reference's first screen: identity up top, then the map. The
- * banner is one compact strip — the map still owns the screen. ---- */
+/* ---- Map hero (v0.16.0, slimmed v0.17.0): sunset strip + wordmark,
+ * search, chips. v0.16.0's banner was a big floating card (84px, round
+ * corners, border, shadow) and his screenshot read as a website
+ * header sitting on the map. v0.17.0: the banner is a slim edge-to-
+ * edge strip, no card, no border, no shadow — the sunset is the top
+ * of the screen, the map starts underneath it. The reference's
+ * header is full-bleed too; ours is just slimmer, so the map owns
+ * the screen. ---- */
 .map-hero {
   position: absolute;
   z-index: 450;
-  top: 12px;
-  left: 12px;
-  right: 12px;
+  top: 0;
+  left: 0;
+  right: 0;
   display: grid;
   gap: 10px;
+  padding: 0 12px;
   pointer-events: none;
 }
 .map-hero > * {
@@ -320,11 +326,9 @@ h3 {
 }
 .map-hero-banner {
   position: relative;
-  height: 84px;
-  border-radius: 16px;
+  height: 56px;
+  margin: 0 -12px;
   overflow: hidden;
-  border: 1px solid #f6f0e529;
-  box-shadow: 0 4px 16px #0007;
   pointer-events: none;
 }
 .map-hero-banner img {
@@ -353,7 +357,7 @@ h3 {
 }
 .map-hero-brand {
   font-family: var(--condensed);
-  font-size: 22px;
+  font-size: 19px;
   font-weight: 600;
   line-height: 1;
   letter-spacing: 5px;
@@ -370,6 +374,16 @@ h3 {
   color: #ffb56b;
   text-shadow: 0 1px 6px #000c;
 }
+@media (max-width: 599px) {
+  /* Phones: the subtitle is the first thing to go — the wordmark
+   * alone is the identity, and the map gets the pixels. */
+  .map-hero-sub {
+    display: none;
+  }
+  .map-hero-titles {
+    bottom: 8px;
+  }
+}
 /* Quick-filter chips (v0.16.0): the reference row. One group on, the
  * rest off — tapping a chip is the way into the map. */
 .map-chips {
@@ -378,6 +392,12 @@ h3 {
   overflow-x: auto;
   scrollbar-width: none;
   padding-bottom: 2px;
+  /* v0.17.0: the last chip (Collectibles) read as cut off at the
+   * right edge — a scroll row with no hint that it scrolls. A fade
+   * on the right edge says "there is more", and the row can scroll
+   * the last chip fully into view. */
+  mask-image: linear-gradient(90deg, #000 0%, #000 calc(100% - 28px), transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 calc(100% - 28px), transparent 100%);
 }
 .map-chips::-webkit-scrollbar {
   display: none;
@@ -426,46 +446,54 @@ h3 {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* ---- Empty map (v0.14.0): the map must never look empty with no
- * explanation. Spoiler-free first launch turns every public layer
- * off, so 0 places show — and that read as a broken map. This prompt
- * says so in plain words, with one-tap buttons that turn layers on
- * and make pins appear immediately. ---- */
+/* ---- Empty map (v0.14.0, bottom bar v0.17.0): the map must never
+ * look empty with no explanation. Spoiler-free first launch turns
+ * every public layer off, so 0 places show — and that read as a
+ * broken map. This prompt says so in plain words, with one-tap
+ * buttons that turn layers on and make pins appear immediately.
+ * v0.17.0: it is a compact bar pinned to the bottom of the map, not
+ * a big card in the middle of it — the big card covered the whole
+ * of Leonida on first open. ---- */
 .empty-map-prompt {
+  position: absolute;
+  z-index: 450;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
   background: #0b1018d9;
   backdrop-filter: blur(12px);
   border: 1px solid #f6f0e51f;
   border-radius: 16px;
-  padding: 16px;
+  padding: 12px 14px;
   box-shadow: 0 8px 28px #000a;
 }
 .empty-map-prompt strong {
   display: block;
   font-family: var(--condensed);
-  font-size: 19px;
+  font-size: 16px;
   letter-spacing: 0.8px;
   text-transform: uppercase;
 }
 .empty-map-prompt p {
-  margin: 8px 0 14px;
-  font-size: 14px;
-  line-height: 1.55;
+  margin: 4px 0 10px;
+  font-size: 13px;
+  line-height: 1.45;
   color: var(--text);
 }
 .empty-map-buttons {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 8px;
 }
 .empty-map-buttons button {
-  min-height: 52px;
+  min-height: 44px;
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 10px 12px;
+  padding: 8px 10px;
   background: var(--surface-raised);
   color: var(--text);
   font-family: var(--condensed);
-  font-size: 15px;
+  font-size: 14px;
   letter-spacing: 0.8px;
   text-transform: uppercase;
   cursor: pointer;
@@ -2044,7 +2072,12 @@ h3 {
   .map-hero {
     left: 18px;
     right: 18px;
-    top: 18px;
+    top: 0;
+    padding: 0;
+  }
+  .map-hero-banner {
+    margin: 0;
+    border-radius: 0 0 16px 16px;
   }
   .map-search-pill {
     max-width: 460px;
