@@ -60,7 +60,11 @@ async function openAtlas(page: Page): Promise<void> {
   // First launch shows the forced onboarding as a modal dialog — it blocks
   // the bottom nav underneath until an explicit choice (Start or Skip).
   await dismissWelcome(page);
-  await expect(page.getByRole('button', { name: '+ Add', exact: true })).toBeEnabled();
+  // v0.12.0: the map is clean — a wordmark and one search pill, no
+  // filter bar, no floating Add button (Add lives in Layers now).
+  await expect(page.locator('.map-wordmark')).toBeVisible();
+  await expect(page.locator('.map-search-pill')).toBeVisible();
+  await expect(page.locator('.filter-bar')).toHaveCount(0);
 }
 
 async function enableLayer(page: Page, name: string): Promise<void> {
@@ -93,11 +97,8 @@ async function createMarker(page: Page, title: string): Promise<void> {
   if (await page.getByRole('button', { name: 'Close panel', exact: true }).isVisible()) {
     await page.getByRole('button', { name: 'Close panel', exact: true }).click();
   }
-  await page.getByRole('button', { name: '+ Add', exact: true }).click();
-  await page
-    .getByRole('dialog', { name: 'Add to the map', exact: true })
-    .getByRole('button', { name: /^Add marker/ })
-    .click();
+  await openPanel(page, 'layers');
+  await page.getByRole('button', { name: /^Add marker/ }).click();
   await page.getByRole('button', { name: 'Enter coordinates', exact: true }).click();
   const editor = page.getByRole('dialog', { name: 'New marker', exact: true });
   await expect(editor).toBeVisible();
@@ -215,17 +216,14 @@ test('the map opens without an account, filters public evidence, and toggles vis
     path: testInfo.outputPath(`atlas-qa-${testInfo.project.name}-layers.png`),
     fullPage: true,
   });
-  // One count, in the filter bar — the map caption's duplicate
-  // ("N places in view") is gone in v0.11.0. The bar only renders on
-  // the Map tab (the Layers panel has per-layer counts instead), so go
-  // there to read it.
-  const mapTab = page.locator('.bottom-nav').getByRole('button', { name: 'Map' });
-  await mapTab.click();
-  await expect(page.locator('.filter-count-pill')).toHaveText('0 places');
+  // One count, in Find — v0.12.0 has no filter bar on the map at
+  // all, so the count lives in the Find screen.
+  await openPanel(page, 'find');
+  await expect(page.locator('.find-count')).toContainText('0 places showing');
   await openPanel(page, 'layers');
   await page.getByRole('checkbox', { name: /^Named regions/ }).check();
-  await mapTab.click();
-  await expect(page.locator('.filter-count-pill')).toHaveText('1 place');
+  await openPanel(page, 'find');
+  await expect(page.locator('.find-count')).toContainText('1 place showing');
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
     page.viewportSize()!.width,
   );
@@ -517,7 +515,8 @@ test('blocked local storage keeps the public map usable and never reports a succ
   await openPanel(page, 'find');
   await expect(page.getByText('Local storage needs attention', { exact: true })).toBeVisible();
   await expect(page.getByText('Local data saved', { exact: true })).not.toBeVisible();
-  await expect(page.getByRole('button', { name: '+ Add', exact: true })).toBeDisabled();
+  await openPanel(page, 'layers');
+  await expect(page.getByRole('button', { name: /^Add marker/ })).toBeDisabled();
   await page.getByRole('button', { name: 'Retry storage', exact: true }).click();
   await expect(page.getByText('Local storage needs attention', { exact: true })).toBeVisible();
   await selectRegion(page);
@@ -709,15 +708,15 @@ test('forced indexing onboarding appears on a fresh profile, and Skip leaves a o
   // Skip is an explicit choice, not a missed ×.
   await welcome.getByRole('button', { name: /^Skip for now/ }).click({ force: true });
   await expect(welcome).not.toBeVisible();
-  // The map after onboarding: ONE count pill, the reminder pill, one
-  // "+ Add" — no duplicate count, no stack of add buttons, no caption.
-  await expect(page.locator('.filter-count-pill')).toHaveText('0 places');
-  const reminder = page.getByRole('button', { name: /Sort the unnamed places/ });
-  await expect(reminder).toBeVisible();
-  await expect(reminder).toContainText('2,151 still unnamed');
-  await expect(page.getByRole('button', { name: '+ Add', exact: true })).toBeVisible();
+  // The map after onboarding, v0.12.0: wordmark + one search pill
+  // and nothing else — no filter bar, no count pill, no reminder pill,
+  // no floating Add button, no caption.
+  await expect(page.locator('.map-wordmark')).toBeVisible();
+  await expect(page.locator('.map-search-pill')).toBeVisible();
+  await expect(page.locator('.filter-bar')).toHaveCount(0);
+  await expect(page.locator('.filter-count-pill')).toHaveCount(0);
   await expect(page.locator('.atlas-map-caption')).toHaveCount(0);
-  await expect(page.locator('.filter-bar .filter-chip')).toHaveCount(14);
+  await expect(page.getByRole('button', { name: /still unnamed/ })).toHaveCount(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
     390,
   );
@@ -725,7 +724,13 @@ test('forced indexing onboarding appears on a fresh profile, and Skip leaves a o
     path: testInfo.outputPath(`atlas-qa-${testInfo.project.name}-map-after-onboarding.png`),
     fullPage: true,
   });
-  // One tap on the reminder opens Layers at the job.
+  // The reminder lives in Layers now: six county cards, the reminder
+  // banner, and the job itself. One tap on the reminder scrolls to it.
+  await openPanel(page, 'layers');
+  await expect(page.locator('.county-card')).toHaveCount(6);
+  const reminder = page.getByRole('button', { name: /still unnamed/ });
+  await expect(reminder).toBeVisible();
+  await expect(reminder).toContainText('2,151 places still unnamed');
   await reminder.click();
   await expect(page.getByText('Sort the unnamed places')).toBeVisible();
   await expect(page.getByText('0 sorted so far')).toBeVisible();
@@ -741,7 +746,7 @@ test('forced indexing onboarding appears on a fresh profile, and Skip leaves a o
     fullPage: true,
   });
   await page.getByRole('button', { name: 'Close place details', exact: true }).click();
-  // Find, from the same single filter bar.
+  // Find, with its own county + kind filters.
   await enableLayer(page, 'Named regions');
   await openPanel(page, 'find');
   await search(page).fill('Ambrosia');

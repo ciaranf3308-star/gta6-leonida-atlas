@@ -148,9 +148,10 @@ export default function PlaceDetails({
     }
   }
   return (
-    <aside className="detail-panel" aria-label="Place details">
-      <header className="panel-heading">
-        <span className="eyebrow">{isPersonal ? 'MY MARKER' : 'PLACE DETAILS'}</span>
+    <aside className="place-sheet" aria-label="Place details">
+      <div className="sheet-grabber" aria-hidden="true" />
+      <header className="place-sheet-top">
+        <span className="eyebrow">{isPersonal ? 'MY MARKER' : 'LEONIDA · PLACE'}</span>
         <button
           className="icon-button"
           aria-label="Close place details"
@@ -160,15 +161,25 @@ export default function PlaceDetails({
         </button>
       </header>
       <div className="detail-scroll">
-        <div className="place-title">
-          <span className="place-title-icon" style={{ background: layerColor }} aria-hidden="true">
+        <div className="place-hero">
+          <span className="place-hero-icon" style={{ background: layerColor }} aria-hidden="true">
             <PlaceIcon
               icon={iconKeyForAiRecord(aiRecord) ?? iconKeyForPlace(place)}
-              size={22}
+              size={30}
             />
           </span>
           <h2>{place.title}</h2>
         </div>
+        <p className="place-badges" aria-label="What this place is">
+          {interior.breakable && <span>Breakable home</span>}
+          {place.layerId === 'lootable' && <span>Lootable</span>}
+          {interior.status === 'enterable' && <span>Can go inside</span>}
+          {interior.possibleBreakable && !interior.breakable && (
+            <span>Possible enterable house</span>
+          )}
+          {place.layerId === 'gyms' && <span>Gym</span>}
+          {place.layerId === 'equipment' && <span>Workout equipment</span>}
+        </p>
         <p className="evidence-label">
           {isPersonal
             ? 'My marker · saved on this device'
@@ -190,6 +201,24 @@ export default function PlaceDetails({
             uncategorised.
           </p>
         )}
+        <div className="place-actions">
+          <button
+            disabled={!ready}
+            className={`button ${favorite ? 'selected' : ''}`}
+            onClick={() => void saveLocal(() => atlasRepository.toggleFavorite(place.id))}
+          >
+            <Star size={18} fill={favorite ? 'currentColor' : 'none'} />
+            {favorite ? 'Saved to favorites' : 'Add to favorites'}
+          </button>
+          <button
+            disabled={!ready}
+            className={`button ${found ? 'selected' : ''}`}
+            onClick={() => void saveLocal(() => atlasRepository.toggleVisited(place.id))}
+          >
+            <Check size={18} />
+            {found ? 'Found ✓ — tap to undo' : 'Mark as found'}
+          </button>
+        </div>
         <section className="detail-section" aria-label="Interior">
           <h3>Inside</h3>
           <p className="help-text">
@@ -418,24 +447,7 @@ export default function PlaceDetails({
             )}
           </section>
         )}
-        <div className="detail-actions">
-          <button
-            disabled={!ready}
-            className={`button ${favorite ? 'selected' : ''}`}
-            onClick={() => void saveLocal(() => atlasRepository.toggleFavorite(place.id))}
-          >
-            <Star size={18} fill={favorite ? 'currentColor' : 'none'} />
-            {favorite ? 'Saved to favorites' : 'Add to favorites'}
-          </button>
-          <button
-            disabled={!ready}
-            className={`button ${found ? 'selected' : ''}`}
-            onClick={() => void saveLocal(() => atlasRepository.toggleVisited(place.id))}
-          >
-            <Check size={18} />
-            {found ? 'Found ✓ — tap to undo' : 'Mark as found'}
-          </button>
-        </div>
+
         {description && <p className="description">{description}</p>}
         {analogue && (
           <p className="analogue-note">

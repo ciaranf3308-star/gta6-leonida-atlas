@@ -1,11 +1,10 @@
 import { lazy, Suspense, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
-import { Dumbbell, Home, MapPinPlus, Plus, X } from 'lucide-react';
+import { MapPinPlus, Search, X } from 'lucide-react';
 import { loadCatalogue, markerToPlace } from '../data/catalogue';
 import { filterPlaces } from '../domain/filter';
 import { DEFAULT_LAYERS, filterByVisibleLayers } from '../features/map/layers';
 import MapView from '../features/map/MapView';
 import BottomNav from './BottomNav';
-import FilterBar from './FilterBar';
 import {
   loadSavedMapView,
   mapViewFromState,
@@ -19,7 +18,6 @@ import {
   hasSeenIndexOnboarding,
   markIndexOnboardingSeen,
 } from '../features/onboarding/onboarding';
-import { Modal } from './Modal';
 import { explorerPath } from '../features/explorer/public-path';
 import { atlasRegistry } from '../plugins/registry';
 import {
@@ -78,12 +76,10 @@ export default function App() {
   const boundsFocus = useMapStore((s) => s.boundsFocus);
   const editorMode = useMapStore((s) => s.editorMode);
   const draftPosition = useMapStore((s) => s.draftPosition);
-  const ready = usePersistenceStore((s) => s.ready);
   const [welcomeOpen, setWelcomeOpen] = useState(false);
   /** First launch after v0.11.0 is forced (no ×, no Escape); reopening
    * it from the panel footer ("What is mapped") is dismissable. */
   const [welcomeForced, setWelcomeForced] = useState(true);
-  const [addOpen, setAddOpen] = useState(false);
   /** Map-view restore gate: layer/filter changes are only saved once the
    * saved view (if any) has been applied — otherwise the first render's
    * blank defaults would overwrite the user's saved layers. */
@@ -271,27 +267,6 @@ export default function App() {
     history.pushState({}, '', url);
     setRoute(resolveRoute(location.pathname, location.search));
   }
-  function beginMarker() {
-    useMapStore.getState().setMarkerKindPreset(null);
-    useMapStore.getState().setEditor('create');
-    if (window.innerWidth < 1000) useUiStore.getState().setNavTab('map');
-  }
-  /** "+ Workout spot": enter placement mode with the workout
-      preset. The editor opens only once the user taps the map (or "Use
-      map center") — opening the form first would save the marker at 0,0. */
-  const beginWorkoutSpot = useCallback(() => {
-    useMapStore.getState().setMarkerKindPreset('workout');
-    useMapStore.getState().setEditor('create');
-    if (window.innerWidth < 1000) useUiStore.getState().setNavTab('map');
-  }, []);
-  /** Big "+ Add here" for breakable homes: the map centre is the
-   * position, so marking a house he found takes one tap, not a
-   * precise long-press. */
-  const beginBreakableSpot = useCallback(() => {
-    useMapStore.getState().setMarkerKindPreset('breakable');
-    useMapStore.getState().setEditor('create');
-    if (window.innerWidth < 1000) useUiStore.getState().setNavTab('map');
-  }, []);
   /** Long-press / right-click on the map: start a marker right there. */
   const beginMarkerAt = useCallback((position: Position) => {
     useMapStore.getState().setMarkerKindPreset(null);
@@ -466,8 +441,26 @@ export default function App() {
           onAddMarkerAt={beginMarkerAt}
           onViewport={(viewport) => useMapStore.getState().setMapCenter(viewport.center)}
         />
-        {(navTab === 'map' || navTab === 'ask') && (
-          <FilterBar allPlaces={allPlaces} showingCount={showingCount} />
+        {navTab === 'map' && !selected && (
+          <div className="map-hero">
+            <div className="map-wordmark" aria-label="Leonida Atlas">
+              <span>Leonida</span>
+              <em>Atlas</em>
+            </div>
+            <button
+              type="button"
+              className="map-search-pill"
+              onClick={() => {
+                goToTab('explore');
+                requestAnimationFrame(() =>
+                  document.getElementById('atlas-search')?.focus(),
+                );
+              }}
+            >
+              <Search size={18} />
+              <span>Search Leonida — places, gyms, lootable homes</span>
+            </button>
+          </div>
         )}
         <AskPanel
           places={allPlaces}
@@ -484,67 +477,6 @@ export default function App() {
           onClose={closeAsk}
           onMarkWorkout={markWorkoutAt}
         />
-        <div className="map-add-buttons">
-          <button
-            className="button primary"
-            disabled={!ready}
-            onClick={() => setAddOpen(true)}
-          >
-            <Plus size={18} />
-            <span>+ Add</span>
-          </button>
-        </div>
-        {addOpen && (
-          <Modal title="Add to the map" onClose={() => setAddOpen(false)}>
-            <p className="panel-intro">
-              Your own marks only — nothing here invents a place. Pick what
-              you found, then tap the map (or &ldquo;Use map center&rdquo;) to
-              place it.
-            </p>
-            <div className="add-sheet-options">
-              <button
-                className="button"
-                disabled={!ready}
-                onClick={() => {
-                  setAddOpen(false);
-                  beginMarker();
-                }}
-              >
-                <MapPinPlus size={18} />
-                <span>
-                  Add marker
-                  <small>A place or note of your own</small>
-                </span>
-              </button>
-              <button
-                className="button"
-                onClick={() => {
-                  setAddOpen(false);
-                  beginWorkoutSpot();
-                }}
-              >
-                <Dumbbell size={18} />
-                <span>
-                  Add workout spot
-                  <small>Free equipment — a bench, a deck, a bar</small>
-                </span>
-              </button>
-              <button
-                className="button"
-                onClick={() => {
-                  setAddOpen(false);
-                  beginBreakableSpot();
-                }}
-              >
-                <Home size={18} />
-                <span>
-                  Add breakable home
-                  <small>A house you can get into — dark blue on the map</small>
-                </span>
-              </button>
-            </div>
-          </Modal>
-        )}
         {status === 'error' && (
           <div className="map-notice inline-error" role="alert">
             {error}

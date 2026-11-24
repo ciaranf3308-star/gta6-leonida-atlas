@@ -142,7 +142,7 @@ export default function IndexPanel(props: IndexPanelProps) {
   }
 
   return (
-    <section className="index-panel" aria-label="Sort the unnamed places">
+    <section className="index-panel" id="index-panel" aria-label="Sort the unnamed places">
       <h3>
         <Sparkles size={16} /> Sort the unnamed places
       </h3>

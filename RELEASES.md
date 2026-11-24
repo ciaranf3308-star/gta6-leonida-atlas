@@ -2,6 +2,17 @@
 
 Release history, newest first.
 
+## v0.12.0 — 2026-11-24
+
+**Released: mobile redesign from scratch — full-screen map, GTA VI sunset identity.**
+
+- The map is the app now: full-bleed, edge to edge, with only a small LEONIDA ATLAS wordmark and one search pill over it. The filter bar is deleted — no chips, no count pill, no reminder pill, no floating Add button on the map at all. This is the redesign the user asked for after rating v0.11.0 a 6 ("tweaks on a design I hate rather than redesigning").
+- Find is a proper screen: big search, two big filters (county, kind), and big place cards with a 56px blip roundel, area, county, distance and Can go inside / Lootable / Breakable home badges. Tap a card to fly to the place.
+- Layers is a proper screen: big toggle rows with real icons and counts, a county picker as six big cards (All Leonida plus Lummox, Kelly, Leonard, Vice-Dale, Mariana), trading cards grouped at the bottom, the indexing job inside Layers only, and Add to the map (marker / workout spot / breakable home) here instead of floating over the map.
+- Place detail is a full bottom sheet: grabber, a 72px blip hero, badges (Can go inside, Lootable, Breakable home, Gym, Workout equipment), and Save / Mark as found as two big buttons right under the title — then Inside, with the dark-blue rule and the 385 enterable places in GTADB.
+- Fresh phone-first stylesheet written from scratch, replacing the layered v0.9/v0.10/v0.11 sheet: violet-night chrome, the GTA VI pink-to-orange sunset on primary actions and the active bottom-nav tab, Anton display + Oswald labels, glass sheets. No black pill stack, no generic dark dashboard.
+- Kept, unchanged: forced indexing onboarding (2,732 still "?", 581 typed from GTADB tags, 2,151 unresolved), spoiler-free first launch, persistence, 48px+ thumb targets, Gyms vs Workout Equipment split, breakable homes as a system, the Ask spoiler rule, and AI categories labelled "AI suggested", never a fact.
+
 ## v0.11.0 — 2026-11-24
 
 **Released: forced indexing onboarding, a de-cluttered map-first layout, and GTA VI sunset vibes — the "one more go" pass.**

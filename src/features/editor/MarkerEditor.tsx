@@ -5,7 +5,7 @@ import { markerToPlace } from '../../data/catalogue';
 import { MARKER_COLORS } from '../../db/backup';
 import { saveLocal, useMapStore, useUiStore, useUserStore } from '../../stores/atlas';
 import { Modal } from '../../app/Modal';
-import { CATEGORIES } from '../../app/FilterBar';
+import { CATEGORIES } from '../../app/categories';
 
 const MARKER_COLOR_NAMES: Record<string, string> = {
   '#c9a9ef': 'Purple',

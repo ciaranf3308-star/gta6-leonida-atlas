@@ -3,10 +3,14 @@ import {
   Box,
   ChevronRight,
   Database,
+  Dumbbell,
   HelpCircle,
+  Home,
   Info,
+  MapPinPlus,
   Search,
   Settings,
+  Sparkles,
   X,
 } from 'lucide-react';
 import type { Place } from '../domain/types';
@@ -16,6 +20,7 @@ import {
   useMapStore,
   usePersistenceStore,
   useUiStore,
+  useUserStore,
 } from '../stores/atlas';
 import { useAiIndexStore } from '../features/categorise/store';
 import { COUNTIES, countyForPlace, countyIdForPosition } from '../data/counties';
@@ -31,7 +36,8 @@ import { Status } from './Status';
 import { setAccountEntryTarget } from '../capabilities/extension-host';
 import IndexPanel from '../features/categorise/IndexPanel';
 import { aiCategoryDisplay, aiCategoryShortLabel, effectiveAiCategory } from '../features/categorise/categories';
-import FilterBar from './FilterBar';
+import { INITIAL_BOUNDS } from '../features/map/coordinates';
+import { CATEGORIES } from './categories';
 import { distanceBetween, distanceWord } from '../domain/distance';
 import {
   housesToCheck,
@@ -40,15 +46,21 @@ import {
   nearestVerifiedEquipment,
   nearestVerifiedGym,
 } from '../domain/gym-check';
-import { possibleBreakableHouse } from '../domain/interiors';
-import { tagResolutionFor } from '../domain/resolve-tags';
+import {
+  VENUE_TYPE_OPTIONS,
+  possibleBreakableHouse,
+  venueTypeCounts,
+  type VenueType,
+} from '../domain/interiors';
+import { filterPlaces } from '../domain/filter';
+import { tagResolutionCounts, tagResolutionFor } from '../domain/resolve-tags';
 import { NEAR_DISTANCE_UNITS } from '../features/ask/retrieval';
 
 /**
  * The panel — Find, Layers and Saved live here, driven by the bottom
- * nav. There are no tabs inside the panel and no sidebar that starts
- * closed: the bottom nav IS the navigation, and the one filter bar
- * (FilterBar, shared with the map) sits at the top of Find.
+ * nav. On a phone each tab is a full screen over the map: nothing sits
+ * on the map itself. Find has its own two big filters (county, kind);
+ * the layer switches live in Layers.
  *
  * On a phone the panel is a bottom sheet above the bottom nav; on a
  * wide screen it is the left column. One sheet at a time: picking a
@@ -63,6 +75,124 @@ export interface LayerProgress {
   name: string;
   total: number;
   found: number;
+}
+
+/** "Narrow it down" — the narrowing filters that used to live on the
+ * old filter bar. They live in Layers now, as big toggle rows with
+ * counts: Can go inside, Interior houses, Lootable only, Not found
+ * yet, Saved only, My markers only — plus the interior-type picker
+ * while an interiors layer is on. */
+function NarrowFilters({ allPlaces }: { allPlaces: Place[] }) {
+  const layers = useMapStore((s) => s.layers);
+  const filters = useUiStore((s) => s.filters);
+  const favorites = useUserStore((s) => s.favorites);
+  const notes = useUserStore((s) => s.notes);
+  const collections = useUserStore((s) => s.collections);
+  const visited = useUserStore((s) => s.visited);
+  const aiCategories = useAiIndexStore((s) => s.categories);
+  const visibleIds = new Set(layers.filter((l) => l.visible).map((l) => l.id));
+  const favoriteIds = favorites.map((f: { placeId: string }) => f.placeId);
+  const visitedIds = visited.map((v: { placeId: string }) => v.placeId);
+  const countWith = (patch: Partial<typeof filters>) => {
+    const matching = filterPlaces(
+      allPlaces,
+      { ...filters, ...patch },
+      favoriteIds,
+      notes,
+      collections,
+      visitedIds,
+      aiCategories,
+    );
+    return matching.filter((p) => p.position && visibleIds.has(p.layerId)).length;
+  };
+  const venueCounts = venueTypeCounts(
+    filterPlaces(
+      allPlaces,
+      { ...filters, venueType: 'all' },
+      favoriteIds,
+      notes,
+      collections,
+      visitedIds,
+      aiCategories,
+    ),
+  );
+  const interiorsOn =
+    layers.some((l) => l.id === 'interiors' && l.visible) ||
+    layers.some((l) => l.id === 'breakable' && l.visible) ||
+    filters.enterableOnly;
+  function toggleFlag(
+    key:
+      | 'enterableOnly'
+      | 'lootableOnly'
+      | 'remainingOnly'
+      | 'favoritesOnly'
+      | 'personalOnly'
+      | 'interiorHouseOnly',
+  ) {
+    const patch: Partial<typeof filters> = { [key]: !filters[key] };
+    if (key === 'remainingOnly') patch.hideFound = !filters.remainingOnly;
+    useUiStore.getState().setFilters(patch);
+  }
+  const toggles: {
+    key:
+      | 'enterableOnly'
+      | 'lootableOnly'
+      | 'remainingOnly'
+      | 'favoritesOnly'
+      | 'personalOnly'
+      | 'interiorHouseOnly';
+    label: string;
+    hint: string;
+  }[] = [
+    { key: 'enterableOnly', label: 'Can go inside', hint: 'Only places with an interior' },
+    { key: 'interiorHouseOnly', label: 'Interior houses', hint: 'Houses you can go inside' },
+    { key: 'lootableOnly', label: 'Lootable only', hint: 'Only places you can loot' },
+    { key: 'remainingOnly', label: 'Not found yet', hint: 'Hide places you already found' },
+    { key: 'favoritesOnly', label: 'Saved only', hint: 'Only your saved places' },
+    { key: 'personalOnly', label: 'My markers only', hint: 'Only your own markers' },
+  ];
+  return (
+    <section className="narrow-filters" aria-label="Narrow what shows">
+      <h3>Narrow it down</h3>
+      {toggles.map((toggle) => (
+        <button
+          key={toggle.key}
+          type="button"
+          className={`narrow-row ${filters[toggle.key] ? 'active' : ''}`}
+          aria-pressed={filters[toggle.key]}
+          onClick={() => toggleFlag(toggle.key)}
+        >
+          <span>
+            <strong>{toggle.label}</strong>
+            <small>{toggle.hint}</small>
+          </span>
+          <span className="narrow-count">{countWith({ [toggle.key]: true })}</span>
+        </button>
+      ))}
+      {interiorsOn && (
+        <label className="narrow-select">
+          <span>Kind of interior</span>
+          <select
+            value={filters.venueType}
+            onChange={(e) =>
+              useUiStore
+                .getState()
+                .setFilters({ venueType: e.target.value as VenueType | 'all' })
+            }
+            aria-label="Show one kind of interior"
+          >
+            {VENUE_TYPE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.value === 'all'
+                  ? 'All interiors'
+                  : `${option.label} (${venueCounts[option.value as VenueType]})`}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+    </section>
+  );
 }
 
 function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allPlaces: Place[] }) {
@@ -117,6 +247,24 @@ function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allP
       </div>
     );
   }
+  const filters = useUiStore((s) => s.filters);
+  const attempted = useAiIndexStore((s) => s.job.attemptedPlaceIds.length);
+  const ready = usePersistenceStore((s) => s.ready);
+  /** "?" places the map data's own tags cannot resolve — the indexing
+   * job's real remaining work (2,151 on a fresh phone). */
+  const unnamedRemaining = tagResolutionCounts(allPlaces).remaining;
+  function chooseCounty(id: string | null) {
+    useUiStore.getState().setFilters({ countyId: id });
+    const county = COUNTIES.find((c) => c.id === id);
+    useMapStore.getState().setBoundsFocus(county ? county.bounds : INITIAL_BOUNDS);
+  }
+  function beginAdd(preset: 'marker' | 'workout' | 'breakable') {
+    useMapStore
+      .getState()
+      .setMarkerKindPreset(preset === 'marker' ? null : preset);
+    useMapStore.getState().setEditor('create');
+    useUiStore.getState().setNavTab('map');
+  }
   return (
     <div className="layer-manager">
       <p className="panel-intro">
@@ -124,6 +272,51 @@ function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allP
         on only when you want to see those places. Your choices are remembered on this device,
         so the map comes back as you left it.
       </p>
+      <section className="county-cards" aria-label="Isolate one county">
+        <h3>Isolate a county</h3>
+        <div className="county-grid">
+          <button
+            type="button"
+            className={`county-card ${filters.countyId === null ? 'active' : ''}`}
+            aria-pressed={filters.countyId === null}
+            onClick={() => chooseCounty(null)}
+          >
+            <strong>All Leonida</strong>
+            <small>The whole map</small>
+          </button>
+          {COUNTIES.map((county) => (
+            <button
+              type="button"
+              key={county.id}
+              className={`county-card ${filters.countyId === county.id ? 'active' : ''}`}
+              aria-pressed={filters.countyId === county.id}
+              onClick={() => chooseCounty(county.id)}
+            >
+              <strong>{county.name.replace(' County', '')}</strong>
+              <small>{county.area}</small>
+            </button>
+          ))}
+        </div>
+        <p className="help-text">
+          County edges are estimates — the official map prints county names but no boundary
+          lines.
+        </p>
+      </section>
+      {attempted === 0 && unnamedRemaining > 0 && (
+        <button
+          type="button"
+          className="index-reminder"
+          onClick={() =>
+            document.getElementById('index-panel')?.scrollIntoView({ behavior: 'smooth' })
+          }
+        >
+          <Sparkles size={16} />
+          <span>
+            <strong>{unnamedRemaining.toLocaleString()} places still unnamed</strong>
+            <small>Sort them with your key — tap here</small>
+          </span>
+        </button>
+      )}
       {mainLayers.map((layer) => row(layer))}
       <details className="layer-group">
         <summary>
@@ -143,11 +336,42 @@ function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allP
           </p>
         )}
       </details>
+      <NarrowFilters allPlaces={allPlaces} />
       <IndexPanel
         places={allPlaces}
         offline={offline}
         onOpenSettings={() => useUiStore.getState().setDialog('settings')}
       />
+      <section className="add-section" aria-label="Add to the map">
+        <h3>Add to the map</h3>
+        <p className="panel-intro">
+          Your own marks only — nothing here invents a place. Pick what you found, then tap
+          the map to place it, or use the map centre.
+        </p>
+        <div className="add-options">
+          <button type="button" className="button" disabled={!ready} onClick={() => beginAdd('marker')}>
+            <MapPinPlus size={18} />
+            <span>
+              Add marker
+              <small>A place or note of your own</small>
+            </span>
+          </button>
+          <button type="button" className="button" onClick={() => beginAdd('workout')}>
+            <Dumbbell size={18} />
+            <span>
+              Add workout spot
+              <small>Free equipment — a bench, a deck, a bar</small>
+            </span>
+          </button>
+          <button type="button" className="button" onClick={() => beginAdd('breakable')}>
+            <Home size={18} />
+            <span>
+              Add breakable home
+              <small>A house you can get into — dark blue on the map</small>
+            </span>
+          </button>
+        </div>
+      </section>
       <p className="empty-state">
         The basemap is the GTADB in-game map (map artwork © Rockstar Games, CC BY 4.0). Place
         positions are approximate community data.
@@ -395,6 +619,101 @@ function Results({
   );
 }
 
+/** Find's own filters — two big native selects inside the Find
+ * screen, never pills over the map. County isolates one county (and
+ * flies the map there); kind narrows to one kind of place. The full
+ * layer switches live in Layers. */
+function FindFilters({
+  allPlaces,
+  showingCount,
+}: {
+  allPlaces: Place[];
+  showingCount: number;
+}) {
+  const filters = useUiStore((s) => s.filters);
+  const layers = useMapStore((s) => s.layers);
+  function chooseCounty(id: string | null) {
+    useUiStore.getState().setFilters({ countyId: id });
+    const county = COUNTIES.find((c) => c.id === id);
+    useMapStore.getState().setBoundsFocus(county ? county.bounds : INITIAL_BOUNDS);
+  }
+  const anythingActive =
+    layers.some((l) => l.visible && l.id !== 'personal') ||
+    filters.countyId !== null ||
+    filters.category !== 'all' ||
+    filters.query !== '' ||
+    filters.enterableOnly ||
+    filters.lootableOnly ||
+    filters.interiorHouseOnly ||
+    filters.remainingOnly ||
+    filters.favoritesOnly ||
+    filters.personalOnly;
+  return (
+    <div className="find-filters">
+      <label>
+        <span>County</span>
+        <select
+          value={filters.countyId ?? ''}
+          onChange={(e) => chooseCounty(e.target.value || null)}
+          aria-label="Isolate one county"
+        >
+          <option value="">All Leonida</option>
+          {COUNTIES.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label>
+        <span>Kind</span>
+        <select
+          value={filters.category}
+          onChange={(e) =>
+            useUiStore
+              .getState()
+              .setFilters({ category: e.target.value as (typeof CATEGORIES)[number]['id'] })
+          }
+          aria-label="Show one kind of place"
+        >
+          {CATEGORIES.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      <div className="find-count" role="status">
+        {showingCount.toLocaleString()} place{showingCount === 1 ? '' : 's'} showing
+        {anythingActive && (
+          <button
+            type="button"
+            className="text-button"
+            onClick={() => {
+              useUiStore.getState().resetFilters();
+              useMapStore
+                .getState()
+                .setLayers(
+                  useMapStore
+                    .getState()
+                    .layers.map((layer) =>
+                      layer.id === 'personal' ? layer : { ...layer, visible: false },
+                    ),
+                );
+            }}
+          >
+            Clear all
+          </button>
+        )}
+      </div>
+      <p className="help-text">
+        Layers live in the Layers tab — turn on Gyms, Interiors, Breakable homes, Lootable
+        and the rest there. {allPlaces.length.toLocaleString()} places in the atlas.
+      </p>
+    </div>
+  );
+}
+
 const PANEL_TITLES = {
   explore: 'Find a place',
   layers: 'Layers',
@@ -459,11 +778,9 @@ export function Sidebar({
         </div>
       )}
       <div className="sidebar-content">
-        {/* The filter bar rides inside the scrolling content here — it
-            used to sit above it as fixed chrome and left the results
-            a 35px slit, with the "no places match" guidance below the
-            fold where nobody could see it. */}
-        {navTab === 'explore' && <FilterBar allPlaces={allPlaces} showingCount={showingCount} />}
+        {navTab === 'explore' && (
+          <FindFilters allPlaces={allPlaces} showingCount={showingCount} />
+        )}
         {navTab === 'explore' ? (
           <Results places={places} allPlaces={allPlaces} anyPublicLayerVisible={anyPublicLayerVisible} onSelect={onSelect} />
         ) : navTab === 'layers' ? (

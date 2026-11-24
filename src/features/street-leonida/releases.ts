@@ -11,6 +11,27 @@ export interface LeonidaAtlasRelease {
 /** Retained public history starts at v0.5.0; the newest release stays first. */
 export const LEONIDA_ATLAS_RELEASES: readonly LeonidaAtlasRelease[] = [
   {
+    version: 'v0.12.0',
+    date: '2026-11-24',
+    title: 'Mobile redesign from scratch — full-screen map, GTA VI sunset identity',
+    summary:
+      'The phone app is rebuilt, not re-coloured: a full-screen map with nothing on it but a wordmark and one search bar, proper Find and Layers screens, county cards, and a full place sheet — after the user rated v0.11.0 a 6 and said the redesign was tweaks on a design he hates.',
+    status: 'public',
+    highlights: [
+      'The map is the app now: full-bleed Leaflet map, edge to edge, with only a small LEONIDA ATLAS wordmark and one search pill over it. The filter bar is deleted — no chips, no count pill, no reminder pill, no floating Add button on the map at all.',
+      'Find is a proper screen: big search, two big filters (county, kind), and big place cards with a 56px blip roundel, area, county, distance and Can go inside / Lootable / Breakable home badges. Tap a card to fly to the place.',
+      'Layers is a proper screen: big toggle rows with real icons and counts, a county picker as six big cards (All Leonida plus Lummox, Kelly, Leonard, Vice-Dale, Mariana), trading cards grouped at the bottom, the indexing job inside Layers only, and Add to the map (marker / workout spot / breakable home) here instead of floating over the map.',
+      'Place detail is a full bottom sheet: grabber, a 72px blip hero, badges (Can go inside, Lootable, Breakable home, Gym, Workout equipment), and Save / Mark as found as two big buttons right under the title — then Inside, with the dark-blue rule and the 385 enterable places in GTADB.',
+      'Fresh phone-first stylesheet written from scratch (1,800 lines replacing the layered v0.9/v0.10/v0.11 sheet): violet-night chrome, the GTA VI pink-to-orange sunset on primary actions and the active bottom-nav tab, Anton display + Oswald labels, glass sheets. No black pill stack, no generic dark dashboard.',
+      'Kept, unchanged: forced indexing onboarding (2,732 still “?”, 581 typed from GTADB tags, 2,151 unresolved — the job is the only way they get sorted), spoiler-free first launch, persistence, 48px+ thumb targets, Gyms vs Workout Equipment split, breakable homes as a system, the Ask spoiler rule, and AI categories labelled “AI suggested”, never a fact. Positions remain APPROXIMATE and absent coverage UNKNOWN; GTADB data is CC BY 4.0, including 107 unpositioned entries.',
+    ],
+    verification: [
+      'Unit tests passed; TypeScript, ESLint and the production build passed.',
+      'The 390px walk (22 flows) and the 390px check script pass with zero console errors, zero overflow, and zero tap targets under 48px.',
+      'Chromium e2e: 11 of 12 pass, including the new forced-onboarding test on a fresh profile; the 3D explorer test needs a real GPU (software WebGL is too slow in this sandbox). The WebKit offline-navigation case is explicitly skipped in the suite where Playwright WebKit cannot run it.',
+    ],
+  },
+  {
     version: 'v0.11.0',
     date: '2026-11-24',
     title: 'Forced indexing onboarding, a de-cluttered map, GTA VI sunset vibes',

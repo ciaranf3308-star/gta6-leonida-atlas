@@ -1,3 +1,4 @@
+/* global self, caches, fetch, URL */
 /* Leonida Atlas service worker — runtime caching only, no precache.
    The app shell (index.html) is network-first so a new deploy always
    lands; hashed static assets (js/css/fonts/icons) and map tiles are

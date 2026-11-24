@@ -1,5 +1,6 @@
 /* 390px viewport check: tiles load, no overflow, no console errors,
-   bottom nav + one filter bar + county + new layers work.
+   bottom nav + clean map + county + new layers work. v0.12.0: there is
+   no filter bar — the count lives in Find, layers live in Layers.
    Run with: ./node_modules/.bin/tsx scripts/check-390px.mjs */
 import { chromium } from 'playwright';
 
@@ -40,17 +41,21 @@ await page.waitForTimeout(2000);
 const lootableMarkers = await page.locator('.atlas-map-marker').count();
 console.log('markers on map after Show lootable:', lootableMarkers);
 if (lootableMarkers === 0) process.exit(1);
-// The filter bar pill says how many places are showing, on the map itself.
-// v0.11.0: one count pill ("52 places") — the map caption's duplicate is gone.
-await page.getByText('52 places', { exact: true }).waitFor({ timeout: 10000 });
-console.log('filter bar pill shows 52 places');
-// Breakable homes chip: 47 more on the map (52 in the layer, 5 listed
+// The count lives in Find now, not a pill on the map.
+await nav('Find').click();
+await page.locator('.find-count').getByText('52 places showing').waitFor({ timeout: 10000 });
+console.log('Find count shows 52 places');
+// Breakable homes layer: 47 more on the map (52 in the layer, 5 listed
 // by name only), 99 showing — houses, not shops.
-await page.getByRole('button', { name: /^Breakable homes \d+$/ }).click();
-await page.getByText('99 places', { exact: true }).waitFor({ timeout: 10000 });
-console.log('Breakable homes chip on: 99 places');
-// The filter chips are on the map: tap Shops, pins grow.
-await page.getByRole('button', { name: /^Shops \d+$/ }).click();
+await nav('Layers').click();
+await page.getByRole('checkbox', { name: /^Breakable homes/ }).check();
+await nav('Find').click();
+await page.locator('.find-count').getByText('99 places showing').waitFor({ timeout: 10000 });
+console.log('Breakable homes layer on: 99 places');
+// Layers: tap Shops, pins grow.
+await nav('Layers').click();
+await page.getByRole('checkbox', { name: /^Shops & services/ }).check();
+await nav('Map').click();
 await page.waitForTimeout(1500);
 const afterShops = await page.locator('.atlas-map-marker').count();
 console.log('markers after Shops chip:', afterShops);
@@ -61,9 +66,10 @@ await page.waitForTimeout(2000);
 const afterReload = await page.locator('.atlas-map-marker').count();
 console.log('markers after reload (layers must persist):', afterReload);
 if (afterReload === 0) process.exit(1);
-const pillAfterReload = await page.locator('.filter-count-pill').textContent();
-console.log('filter count pill after reload:', pillAfterReload);
-if (!/\d+ places/.test(pillAfterReload ?? '')) process.exit(1);
+await nav('Find').click();
+const countAfterReload = await page.locator('.find-count').textContent();
+console.log('Find count after reload:', countAfterReload);
+if (!/\d+ places showing/.test(countAfterReload ?? '')) process.exit(1);
 console.log('layers persisted across reload');
 // Reopen the welcome sheet from the panel footer, then close it.
 await nav('Find').click();
@@ -128,7 +134,7 @@ console.log('z6 tiles loaded at max zoom:', zoomedTiles, 'naturalWidth:', tileWi
 // Ask Nylah: bottom-nav tab opens the panel, no-key gym question lists
 // matching places from the map (local fallback) and highlights them.
 // Clear the Kelly county filter first, or no gym can match.
-await nav('Map').click();
+await nav('Find').click();
 await page.getByRole('button', { name: 'Clear all' }).click();
 await page.waitForTimeout(800);
 await nav('Ask').click();
