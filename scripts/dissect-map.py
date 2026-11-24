@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Pixel-dissect the real GTADB In-Game Day tiles (After Hours, v0.15.0).
 
-Reads every z5 day tile under public/assets/gta6-leonida-atlas/tiles/day/5/,
+Reads every z5 day tile under tiles-source/day/5/,
 classifies each 16-unit cell with the SAME rule the app's 3D explorer uses
 (`classifyGtadbSurfacePixel` in src/features/street-leonida/walk-cartography.ts:
 water is blue >= red+45 and blue >= green+25), and derives from that grid:
@@ -35,7 +35,7 @@ import numpy as np
 from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-TILE_DIR = os.path.join(ROOT, "public/assets/gta6-leonida-atlas/tiles/day/5")
+TILE_DIR = os.path.join(ROOT, "tiles-source/day/5")
 COUNTIES_TS = os.path.join(ROOT, "src/data/counties.ts")
 MASK_OUT = os.path.join(ROOT, "public/assets/after-hours/sea-mask.png")
 GEO_OUT = os.path.join(ROOT, "public/assets/after-hours/after-hours-geo.json")

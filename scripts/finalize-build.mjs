@@ -1,5 +1,5 @@
-import { fileURLToPath } from 'node:url';
-import { readFile, writeFile, readdir, mkdir } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
+import { readFile, writeFile, readdir, mkdir, stat } from "node:fs/promises";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
 import { createServer, loadEnv } from "vite";
@@ -48,21 +48,26 @@ const validMeasurementId =
     : "";
 if (process.env.ATLAS_NGINX_CSP_FILE) {
   const originPattern = /^https:\/\/(?:[a-z0-9.-]+|\[[0-9a-f:]+\])(?::\d+)?$/;
-  const enabled = validMeasurementId && [analyticsOrigin, parentOrigin].every((value) =>
-    originPattern.test(value),
-  );
-  if (validMeasurementId && !enabled) throw new Error("Invalid nginx analytics hostname.");
+  const enabled =
+    validMeasurementId &&
+    [analyticsOrigin, parentOrigin].every((value) => originPattern.test(value));
+  if (validMeasurementId && !enabled)
+    throw new Error("Invalid nginx analytics hostname.");
   const frameSources = enabled ? "'self' " + analyticsOrigin : "'self'";
   const ancestors = enabled ? parentOrigin : "'none'";
   await writeFile(
     process.env.ATLAS_NGINX_CSP_FILE,
-    'map $uri $atlas_analytics_ancestors {\n' +
-      '  default "\'self\'";\n' +
-      '  /analytics.html "' + ancestors + '";\n' +
-      '}\nmap $uri $atlas_frame_sources {\n' +
-      '  default "' + frameSources + '";\n' +
-      '  /analytics.html "\'none\'";\n' +
-      '}\n',
+    "map $uri $atlas_analytics_ancestors {\n" +
+      "  default \"'self'\";\n" +
+      '  /analytics.html "' +
+      ancestors +
+      '";\n' +
+      "}\nmap $uri $atlas_frame_sources {\n" +
+      '  default "' +
+      frameSources +
+      '";\n' +
+      "  /analytics.html \"'none'\";\n" +
+      "}\n",
   );
 }
 await writeFile(
@@ -153,7 +158,7 @@ ${
 // Use the existing project components as the initial HTML; no second editorial copy.
 // The interactive app still mounts normally, including private account extensions.
 const renderer = await createServer({
-  root: fileURLToPath(new URL('..', import.meta.url)),
+  root: fileURLToPath(new URL("..", import.meta.url)),
   envDir: process.cwd(),
   base,
   optimizeDeps: { noDiscovery: true, include: [] },
@@ -164,7 +169,7 @@ const renderer = await createServer({
     // per file to stderr (4+ MB), which overflowed the calling test's
     // exec buffer. This server only SSR-renders static pages; it never
     // needs to watch static assets.
-    watch: { ignored: ['**/tiles/**'] },
+    watch: { ignored: ["**/tiles/**"] },
   },
   appType: "custom",
 });
@@ -224,13 +229,44 @@ for (const url of [...precache, ...threeDimensionalAssets]) {
   if (url !== base)
     contentHash.update(await readFile(join(outDir, url.slice(base.length))));
 }
+// Tile fingerprint (v0.20.2): the cache name MUST change when tile bytes
+// change, even when no app code changed. v0.20 re-rendered all 31,022
+// tiles at the same filenames and the content hash above — which only
+// covers the app shell and precached assets — did not move, so the old
+// cache (and its stale tiles) survived. The fingerprint is the list of
+// enhanced tile paths + sizes: cheap (stat only, no content reads) and
+// it moves on any tile re-render. A tile re-render must ALSO change
+// the tile path (see gtadb-tiles.ts) — both layers, not one hope.
+const tileDir = join(outDir, "assets/gta6-leonida-atlas/tiles/enhanced");
+try {
+  for (let zoom = 0; zoom <= 6; zoom++) {
+    let names;
+    try {
+      names = (await readdir(join(tileDir, String(zoom)))).sort();
+    } catch {
+      continue; // No tiles at this zoom in this build — not an error.
+    }
+    for (const name of names) {
+      const { size } = await stat(join(tileDir, String(zoom), name));
+      contentHash.update(`${zoom}/${name}:${size}\n`);
+    }
+  }
+} catch {
+  // No enhanced pyramid in this build (older checkouts) — the hash
+  // still covers the shell; tiles are not cached from this build.
+}
 const revision = contentHash.digest("hex").slice(0, 12);
 const prefix = `atlas-${createHash("sha256").update(base).digest("hex").slice(0, 8)}-`;
 const worker = `// Generated per release; never cache external analytics, APIs, or private data.
+// Cache name is a content hash of the shell + precache + tile fingerprint:
+// a tile re-render changes it, and install skipWaits so the update
+// activates immediately instead of waiting for every tab to close
+// (v0.20: no skipWaiting meant the new worker waited forever and the
+// phone kept serving stale tiles from the old cache).
 const CACHE=${JSON.stringify(prefix + revision)}, PREFIX=${JSON.stringify(prefix)}, BASE=${JSON.stringify(base)};
 const CORE=${JSON.stringify(precache)};
 const APP_FILES=CORE.concat(${JSON.stringify(threeDimensionalAssets)});
-self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)));});
+self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)));self.skipWaiting();});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith(PREFIX)&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()));});
 self.addEventListener('fetch',event=>{
   const request=event.request,url=new URL(request.url);
@@ -245,6 +281,24 @@ self.addEventListener('fetch',event=>{
   event.respondWith(caches.open(CACHE).then(async cache=>{
     const cached=await cache.match(request);if(cached)return cached;
     const response=await fetch(request);
+    // A missing tile is ocean by definition (v0.20.2): the GTADB
+    // pyramid only draws land, and Leaflet asks for one tile beyond
+    // the grid edge (its bounds check counts edge-touching tiles as
+    // valid — worse with 128px retina tiles). Answer with the ocean
+    // tile instead of the 404, so the image loads cleanly, no console
+    // error is logged, and the tile is cached as ocean for offline.
+    if(!response.ok&&url.pathname.startsWith(BASE+'assets/gta6-leonida-atlas/tiles/')&&/\\.jpg$/.test(url.pathname)){
+      const oceanUrl=new URL(BASE+'assets/gta6-leonida-atlas/tiles/ocean.jpg',self.location.origin).href;
+      let ocean=await cache.match(oceanUrl);
+      if(!ocean||!ocean.ok){
+        const fetched=await fetch(oceanUrl);
+        if(fetched.ok){try{await cache.put(oceanUrl,fetched.clone());}catch{}ocean=fetched;}
+      }
+      if(ocean&&ocean.ok){
+        try{await cache.put(request,ocean.clone());}catch{}
+        return ocean;
+      }
+    }
     if(response.ok&&response.type==='basic'&&!/private|no-store/i.test(response.headers.get('cache-control')||'')){
       // Bound optional asset caching (3D assets and map tiles visited);
       // the app shell and public data remain pinned.

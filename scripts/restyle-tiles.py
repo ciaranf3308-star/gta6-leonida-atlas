@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Re-render the GTADB In-Game Day tiles into the After Hours look (v0.18.0).
 
-Reads every tile under public/assets/gta6-leonida-atlas/tiles/day/<z>/ and
+Reads every tile under tiles-source/day/<z>/ and
 writes a recoloured copy to .../tiles/styled/<z>/ with the SAME filename,
 tile coordinates, zoom levels and geometry. Nothing moves; no place data
 changes; no geography is invented. This is a colour grade of the real
@@ -42,7 +42,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SRC = os.path.join(ROOT, "public/assets/gta6-leonida-atlas/tiles/day")
+SRC = os.path.join(ROOT, "tiles-source/day")
 DST = os.path.join(ROOT, "public/assets/gta6-leonida-atlas/tiles/styled")
 QUALITY = 88  # matches the source tiles' visual quality at ~same byte size
 

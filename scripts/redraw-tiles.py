@@ -52,7 +52,7 @@ v0.20.0 fix (this script) — PIXEL BY PIXEL, provably:
     above it, and the report states the pixel counts to prove it.
 
 SOURCE OF TRUTH (only): the GTADB In-Game Day tiles
-(public/assets/gta6-leonida-atlas/tiles/day/, z0-z6, same grid).
+(tiles-source/day/, z0-z6, same grid).
 Coastline, water, sand, land, urban ground and roads all come from
 THAT data. No invented coastline, road, city or place. The ungraded
 originals stay in `tiles/day/`; the redrawn pyramid is
@@ -94,7 +94,7 @@ from scipy import ndimage as ndi
 from skimage.morphology import skeletonize
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SRC = os.path.join(ROOT, "public/assets/gta6-leonida-atlas/tiles/day")
+SRC = os.path.join(ROOT, "tiles-source/day")
 DST = os.path.join(ROOT, "public/assets/gta6-leonida-atlas/tiles/redrawn")
 QUALITY = 92
 OUT = 512  # v0.20.0: 2x supersampled tiles (source is 256px)
@@ -576,6 +576,16 @@ def preview():
 
 
 def main():
+    # SUPERSEDED (v0.20.2, user decision 2026-11-24): the illustrated
+    # redraw is dead — the reference image is a render, not a real map,
+    # and the repaint ended up worse than the real map. The basemap is
+    # now the real GTADB tiles through ONE realism filter,
+    # scripts/enhance-tiles.py. This script is kept for the record
+    # only; it refuses to run.
+    raise SystemExit(
+        "redraw-tiles.py is superseded by enhance-tiles.py (v0.20.2). "
+        "Do not re-run the redraw."
+    )
     ap = argparse.ArgumentParser()
     ap.add_argument("--preview", action="store_true")
     ap.add_argument("--all", action="store_true")

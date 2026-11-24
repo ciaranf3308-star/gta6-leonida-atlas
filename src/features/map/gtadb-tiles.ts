@@ -20,29 +20,36 @@
  * zoomOffset / minNativeZoom / maxNativeZoom — those clamp the tile zoom
  * Leaflet computes, which would break the mapping above.
  */
-import type { MapBounds } from './coordinates';
+import type { MapBounds } from "./coordinates";
 
-export const GTADB_DAY_TILE_REVISION = 'd406fea099e1df2bce42fd6b87eed04bce646629' as const;
+export const GTADB_DAY_TILE_REVISION =
+  "d406fea099e1df2bce42fd6b87eed04bce646629" as const;
 /**
- * Redrawn tiles (v0.20.0): a NEW illustrated basemap painted from the
- * GTADB day tiles by scripts/redraw-tiles.py — flat illustrated fills
- * per surface, vector-drawn roads (cream minor streets, thin coral
- * majors, sunset highways), sea depth bands and clustered clouds.
- * Same filenames, coordinates, zooms and geometry as the day tiles;
- * the geography is real, the shading and detail are artistic.
+ * Enhanced tiles (v0.20.2): the real GTADB day tiles through ONE realism
+ * filter — scripts/enhance-tiles.py, a fixed per-pixel colour grade
+ * (deeper teal sea, warmer land, richer greens, warm cream roads,
+ * fine grain). Geography is locked 1:1: every output pixel comes from
+ * exactly one source pixel at the same coordinates — no resampling, no
+ * blur, no warp, no new roads, no new coastline. A pin on a road stays
+ * on that road. The same fixed parameters run over all 31,022 tiles at
+ * every zoom, so zooming in feels like getting closer to the same map,
+ * never a different map loading.
+ *
  * The ungraded originals stay in tiles/day/ as the source of truth.
- * v0.18.0's recoloured pyramid (tiles/styled/) is deleted in v0.20.0:
- * superseded, unreferenced, 175 MB.
- * v0.20.0 re-renders every tile at 512x512 (2x display density),
- * pixel by pixel with no blur step anywhere: each output pixel's
- * class comes from exactly one source pixel (nearest lookup, never
- * a blend), colours are flat fills, roads are hard vector strokes.
- * Leaflet tileSize stays 256, so a 512px tile displays at 256 CSS
- * px — 1:1 device pixels on a DPR 2 phone. Leaflet's detectRetina
- * is deliberately NOT used: it clamps the layer minZoom to 0 and
- * this map lives at Leaflet zoom -5..1.
+ * v0.19.0/v0.20.0's illustrated redraw (tiles/redrawn/, a repaint)
+ * is dead by the user's decision (2026-11-24 22:48): the reference
+ * image is a render, not a real map, and the repaint ended up worse
+ * than the real map. Do not revive it.
+ *
+ * CACHE RULE (the v0.20 lesson): a tile re-render must NEVER ship new
+ * bytes at an old tile URL. The installed PWA caches tiles
+ * cache-first, so same-filename tiles were served stale forever.
+ * Every re-render changes the tile path (tiles/enhanced/ now) AND the
+ * revision below AND the service-worker cache (finalize-build.mjs
+ * folds the tile fingerprint into its content hash, and the generated
+ * worker skipWaits so the update activates immediately).
  */
-export const GTADB_REDRAWN_TILE_REVISION = 'v0.20.0-redraw-512' as const;
+export const GTADB_ENHANCED_TILE_REVISION = "v0.20.2-realism-filter" as const;
 export const GTADB_DAY_TILE_ZOOM_OFFSET = 5 as const;
 export const GTADB_DAY_TILE_MIN_ZOOM = 0 as const;
 export const GTADB_DAY_TILE_MAX_ZOOM = 6 as const;
@@ -77,16 +84,17 @@ export function gtadbTileFileName(tile: GtadbTileRef): string {
 }
 
 /** Same-origin tile URL for a Leaflet tile request.
- * v0.19.0: serves the redrawn pyramid (tiles/redrawn/), the true
- * rebuild — not the pale day tiles, and not v0.18's recolour. */
+ * v0.20.2: serves the enhanced pyramid (tiles/enhanced/) — the real
+ * GTADB day tiles through one realism filter, geography locked 1:1.
+ * Not the pale day tiles, and not v0.19/v0.20's repaint. */
 export function gtadbTileUrl(
   base: string,
   leafletTileX: number,
   leafletTileY: number,
   leafletZoom: number,
 ): string {
-  const prefix = base.endsWith('/') ? base : `${base}/`;
-  return `${prefix}assets/gta6-leonida-atlas/tiles/redrawn/${gtadbTileFileName(
+  const prefix = base.endsWith("/") ? base : `${base}/`;
+  return `${prefix}assets/gta6-leonida-atlas/tiles/enhanced/${gtadbTileFileName(
     leafletTileToGtadb(leafletTileX, leafletTileY, leafletZoom),
   )}`;
 }

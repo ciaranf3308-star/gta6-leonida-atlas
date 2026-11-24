@@ -22,7 +22,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SRC = os.path.join(ROOT, "public/assets/gta6-leonida-atlas/tiles/day/2")
+SRC = os.path.join(ROOT, "tiles-source/day/2")
 OUT = os.path.join(ROOT, "public/assets/gta6-leonida-atlas/shore-distance.png")
 
 W, H = 3072, 4096  # z2 grid: 12 tiles wide x 16 tall, 256px each
