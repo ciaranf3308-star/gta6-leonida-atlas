@@ -72,6 +72,12 @@ export function aiCategoryShortLabel(category: AiCategoryId): string {
   return AI_CATEGORY_LABELS[category].split(" / ")[0]!;
 }
 
+/** Where a stored type came from. 'ai' is the LLM, last resort — the
+ * deterministic steps below resolve first, and the label shown in the
+ * app follows this field, so a tag match is never shown as "AI
+ * suggested". Records written before v0.13.0 have no source and read
+ * as 'ai'. */
+export type ResolutionSource = 'coordinate' | 'tag' | 'guide' | 'analogue' | 'ai';
 /** Below this confidence a suggestion is recorded as "not sure" and is
  * never shown as a type. */
 export const MIN_AI_CONFIDENCE = 0.6;
@@ -100,6 +106,48 @@ export interface AiCategoryRecord {
   /** The user's correction, when status is `corrected`. */
   userCategory?: AiCategoryId;
   userShopType?: string;
+  /** Where the type came from — 'ai' when the LLM suggested it, one of
+   * the deterministic resolver steps otherwise. Absent on records
+   * written before v0.13.0; those read as 'ai'. */
+  source?: ResolutionSource;
+  /** What the deterministic step matched — the named place for a
+   * coordinate match, the guide pin for a guide match. */
+  matchedFrom?: string;
+}
+
+/** The source of a stored record — 'ai' for the LLM and for every
+ * record written before v0.13.0, which had no source field. */
+export function recordSource(
+  record: AiCategoryRecord | undefined | null,
+): ResolutionSource {
+  return record?.source ?? 'ai';
+}
+
+/** Short source label for lists ("AI suggested", "From its tags"). */
+export function resolutionSourceLabel(source: ResolutionSource): string {
+  if (source === 'coordinate') return 'Same spot on the map';
+  if (source === 'tag') return 'From its tags';
+  if (source === 'guide') return 'Guide match';
+  if (source === 'analogue') return 'From its analogue address';
+  return 'AI suggested';
+}
+
+/** One honest line about where a stored type came from, for the detail
+ * sheet — a deterministic match is never called an AI suggestion. */
+export function resolutionSourceNote(
+  record: AiCategoryRecord | undefined | null,
+): string | null {
+  if (!record) return null;
+  const source = recordSource(record);
+  if (source === 'coordinate')
+    return `Matched by position${record.matchedFrom ? ` — same spot as ${record.matchedFrom}` : ''}. A type from the map data, not a name.`;
+  if (source === 'tag')
+    return 'Resolved from the map data’s own tags — not a name, only a type.';
+  if (source === 'guide')
+    return `Matched to a verified guide entry${record.matchedFrom ? ` — ${record.matchedFrom}` : ''}. A type from the guide, not a name.`;
+  if (source === 'analogue')
+    return 'Read from its real-world analogue address — the Miami-area building it was modelled on. A type, not a name.';
+  return 'AI suggested, not a verified fact. The name stays “?” — only the type is suggested.';
 }
 
 /**
@@ -316,6 +364,12 @@ export function buildPlaceContext(
     nearby.length > 0
       ? `nearby named places: ${nearby.map((n) => `${n.title} (${Math.round(n.distance)} units)`).join("; ")}`
       : "nearby named places: none within 1,500 units",
+    // Resolver v2: this place already failed every deterministic check
+    // (same-spot coordinate match, guide-pin match, tag and analogue
+    // rules) — what is above is all there is. The model must not
+    // re-derive a type from position alone, and a low confidence is the
+    // right answer when the evidence is thin.
+    "deterministic check: no same-spot match, no guide-pin match, no tag or analogue rule fired",
   ];
   return parts.filter(Boolean).join(" · ");
 }
@@ -330,6 +384,7 @@ export function buildCategorisationSystemPrompt(): string {
     `4. "category" must be exactly one of: ${AI_CATEGORIES.join(", ")}. Use "shop" with a "shopType" (one word, e.g. supermarket, clothes, pharmacy) when it is a shop; use "other" only when no other type fits.`,
     '5. "confidence" is 0 to 1. Below 0.6 means "not sure" — use it whenever the evidence is thin, the analogue address is empty, or two types fit equally well. A confident answer needs real evidence in the record, not a hunch.',
     '6. "reason" is one short line naming the evidence you used (e.g. "Analogue address is an apartment tower; tagged residential"). Never mention a name for the place.',
+    '7. You are the last resort, not the first check: every place here already failed the deterministic checks (same-spot coordinate match, guide-pin match, tag and analogue rules). Do not re-derive a type from the map position alone — position without other evidence is "not sure".',
   ].join("\n");
 }
 
@@ -347,6 +402,11 @@ export interface ParsedCategorisationResult {
   shopType?: string;
   confidence: number;
   reason: string;
+  /** Where the type came from — 'ai' for an LLM batch reply, one of the
+   * deterministic resolver steps otherwise. */
+  source?: ResolutionSource;
+  /** What the deterministic step matched, for the detail sheet. */
+  matchedFrom?: string;
 }
 
 /**
@@ -470,8 +530,11 @@ export async function categoriseBatch(
   const content = data.choices?.[0]?.message?.content?.trim() ?? "";
   if (!content)
     throw new Error("OpenAI returned an empty answer for this batch.");
+  // LLM results are always source 'ai' — the deterministic steps run
+  // before this is ever called (see resolver.ts), so nothing here can
+  // be mistaken for a data match.
   return parseCategorisationResponse(
     content,
     input.places.map((place) => place.id),
-  );
+  ).map((result) => ({ ...result, source: "ai" as const }));
 }

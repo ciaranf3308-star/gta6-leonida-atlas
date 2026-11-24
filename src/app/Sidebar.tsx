@@ -35,7 +35,7 @@ import { SavedPlaces } from '../features/library/SavedPlaces';
 import { Status } from './Status';
 import { setAccountEntryTarget } from '../capabilities/extension-host';
 import IndexPanel from '../features/categorise/IndexPanel';
-import { aiCategoryDisplay, aiCategoryShortLabel, effectiveAiCategory } from '../features/categorise/categories';
+import { aiCategoryDisplay, aiCategoryShortLabel, effectiveAiCategory, recordSource, resolutionSourceLabel } from '../features/categorise/categories';
 import { INITIAL_BOUNDS } from '../features/map/coordinates';
 import { CATEGORIES } from './categories';
 import { distanceBetween, distanceWord } from '../domain/distance';
@@ -251,7 +251,7 @@ function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allP
   const attempted = useAiIndexStore((s) => s.job.attemptedPlaceIds.length);
   const ready = usePersistenceStore((s) => s.ready);
   /** "?" places the map data's own tags cannot resolve — the indexing
-   * job's real remaining work (2,151 on a fresh phone). */
+   * job's real remaining work (2,144 on a fresh phone). */
   const unnamedRemaining = tagResolutionCounts(allPlaces).remaining;
   function chooseCounty(id: string | null) {
     useUiStore.getState().setFilters({ countyId: id });
@@ -581,7 +581,7 @@ function Results({
                   {place.region ? ` · ${place.region}` : ''}
                   {countyName && place.region !== countyName ? ` · ${countyName}` : ''}
                   {distance ? ` · ${distance}` : ''}
-                  {aiDisplay ? ` · AI suggested: ${aiDisplay.label}` : ''}
+                  {aiDisplay ? ` · ${resolutionSourceLabel(recordSource(aiCategories[place.id]))}: ${aiDisplay.label}` : ''}
                   {!aiDisplay && tagResolution
                     ? ` · ${tagResolution.label} — from its tags`
                     : ''}

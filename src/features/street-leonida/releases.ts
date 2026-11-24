@@ -11,6 +11,27 @@ export interface LeonidaAtlasRelease {
 /** Retained public history starts at v0.5.0; the newest release stays first. */
 export const LEONIDA_ATLAS_RELEASES: readonly LeonidaAtlasRelease[] = [
   {
+    version: 'v0.13.0',
+    date: '2026-11-24',
+    title: 'Ask answers as place cards, and an index resolver that checks the data before it guesses',
+    summary:
+      'The fix for the user’s 7/10 verdict on v0.12.0: Ask answers as nearest-first place cards with distances and badges instead of a text wall, and the indexing job resolves from real data — coordinates, tags, guide pins, analogues — before the LLM ever sees a place.',
+    status: 'public',
+    highlights: [
+      'Ask answers are big place cards: a 56px blip roundel, the name or “? · type”, area and county, the distance from the anchor, and Enterable / Lootable / Breakable / Gym / Equipment badges — nearest first, always. One tap flies to the place and opens its sheet. The verdict is one or two lines above the cards, with a “Near Capri” anchor chip on every answer.',
+      'Ask is stable: an answer is added whole or not at all, a skeleton shows while it works, a stale answer can never overwrite a later one, and the latest answer scrolls to its top — the verdict and the first cards — instead of landing on the tail of the list.',
+      'Index resolver v2 — the job no longer guesses from almost nothing. Before the LLM sees a “?” place it checks the real data: a same-spot coordinate match (within 15 map units — measured, not guessed: records sit a median 118 units apart, so a wider tolerance matches neighbouring buildings), then GTADB tags, then guide pins, then real-world analogue rules. Only what is left goes to the LLM, with the full context and temperature 0.',
+      'Measured on the real snapshot, 658 of 2,732 “?” places resolve from data alone (588 from tags, 9 same-spot, 1 guide match, 60 analogue) and 2,074 go to the LLM. The Index panel shows the unsure rate honestly, resolved by source, with the remaining count — and every resolved place carries its source where the type is shown, so a data match is never shown as an AI guess.',
+      'Fixed, found by looking at the screenshots: the 56px blip roundel was stretched into a wide oval on every Find and Ask card in v0.12.0. It is a circle again everywhere.',
+      'Kept, unchanged: forced indexing onboarding, the job’s pause/resume/batch-save, the on-device-only key, spoiler-free first launch, Gyms vs Workout Equipment split, breakable homes as a system, and the Ask spoiler rule. Real counts throughout: 3,754 GTADB records, 986 named, 2,768 unnamed, 588 of 2,732 “?” typed from data, 2,144 left for the job. No “5k” anywhere.',
+    ],
+    verification: [
+      '712 unit tests pass, including 17 for the coordinate/guide/analogue resolver and 7 for Ask card presentation; TypeScript, ESLint and the production build pass.',
+      'The 390px walk passes with zero console errors and zero overflow, and the Ask screenshots were looked at: “gym near Capri” (Grand Majestic Gym, about 5,700 units away, GYM badge), “workout equipment near Capri” (Jason’s deck first), “enterable houses in Rockridge” (Venture Apts with Breakable badges), and the Index panel with the per-source counts row.',
+      'Chromium e2e: 11 of 12 pass; the 3D explorer test needs a real GPU (software WebGL is too slow in this sandbox). The WebKit offline-navigation case is explicitly skipped in the suite where Playwright WebKit cannot run it.',
+    ],
+  },
+  {
     version: 'v0.12.0',
     date: '2026-11-24',
     title: 'Mobile redesign from scratch — full-screen map, GTA VI sunset identity',

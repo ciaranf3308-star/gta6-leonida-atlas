@@ -138,7 +138,7 @@ the counts are the certain subset:
   would be inventing pins. Its 1,534 landmarks are all already in our
   snapshot (0 new records; they cite GTADB L-ids). Its per-record
   `kind` adds nothing: the kinds are derived from the same GTADB tags
-  (102 of our 2,151 unresolved "?" get a kind, mostly hotel/industrial).
+  (102 of our 2,144 unresolved "?" get a kind, mostly hotel/industrial).
 - **GTABase (gtabase.com/gta-6/map)** — 3,994 pins, closed site, no
   public data file or API found. Reference-only for counts: 87 safes,
   105 hidden packages, 227 yellow loot boxes, 22 banks, 130 stunt jumps.
@@ -168,13 +168,18 @@ the counts are the certain subset:
 - **PlanetGTA6** — 932 sourced places, 148 at exact official-map spot,
   plus 89 WAiNK, 111 items, 70 cards, 145 stunts, 126 heists/jobs.
   Reference-only.
-- **Resolving the "?" places** — 581 of 2,732 "?" resolve to a type
+- **Resolving the "?" places** — 588 of 2,732 "?" resolve to a type
   from the map data's own tags (house 332, shop 106, landmark 47,
-  transport 37, leisure 25, services 17, restaurant 15, petrol 2);
-  they show as "? · House" in Find, labelled "from its tags". 2,151
-  still have nothing to read (1,108 no tags, 942 only internal notes,
-  101 hotel/industrial). Those are what the in-app AI job is for (see
-  below) or the user's own marks — never guessed.
+  transport 37, leisure 30, services 19, restaurant 15, petrol 2);
+  they show as "? · House" in Find, labelled "from its tags". A further
+  70 resolve without the AI — 9 by same-spot coordinate match (within 15
+  units of a named place; 50 units was tested and rejected, most "matches"
+  there are neighbouring buildings), 1 by verified guide pin, 60 by
+  narrow rules on the analogue address — so 658 resolve from data and
+  2,074 are left for the LLM. 2,144 still have nothing to read from tags
+  alone (1,108 no tags, 942 only internal notes, 101 hotel/industrial).
+  Those are what the in-app index job is for (see below) or the user's
+  own marks — never guessed.
 
 ## Gyms / Strength layer (was missing)
 
@@ -276,8 +281,8 @@ GPS gym pages):
 - **Forced onboarding.** First launch after this update shows a
   full-screen onboarding BEFORE the map is usable, with no × and no
   Escape — Start sorting or Skip for now are the only ways out. It says
-  in plain words that 2,732 places are still "?", 581 already have a type
-  from the map data's own tags, 2,151 still have nothing to read, and the
+  in plain words that 2,732 places are still "?", 588 already have a type
+  from the map data's own tags, 2,144 still have nothing to read, and the
   only way they get sorted is this job with the user's own OpenAI key
   (paste it in the sheet, same key Ask Nylah uses, on-device only, link
   to platform.openai.com/api-keys). The job as shown: 8 at a time,
@@ -286,7 +291,7 @@ GPS gym pages):
   phone. "Start sorting" closes the sheet, opens Layers, and starts the
   job (via a session-only `startRequestId` in the AI index store, which
   the Layers panel watches). Skipping is explicit: the job stays one tap
-  away in Layers and a sunset reminder pill ("2,151 still unnamed — Sort
+  away in Layers and a sunset reminder pill ("2,144 still unnamed — Sort
   them") stays in the filter bar until the job has run at least once. A
   NEW seen-key (`leonida-index-onboarding-seen`) means everyone sees it
   once after this update, including users who dismissed the old welcome

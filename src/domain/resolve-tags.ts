@@ -7,16 +7,20 @@ import {
 /**
  * Resolve "?" places from the map data's own tags — no AI, no guessing.
  *
- * Of the 2,732 unnamed records in the GTADB snapshot, 581 carry a tag
- * that resolves to a real type (residential, a shop tag, transport…).
- * Those 581 get a resolved type here, labelled "from the map data" —
- * the name stays "?" and the type is only as good as the tag. A further
- * 101 carry only a hotel or industrial tag, which says "a building" and
- * nothing more — those stay unknown, not "Other". The other 2,050 carry
- * no usable tag (1,108 have no tags at all, 942 only internal notes
- * like `enterable`) and stay "not sure" until the AI job runs on the
- * user's phone or he marks them himself. Nothing here invents a type:
- * a tag that says nothing about use resolves to nothing.
+ * Of the 2,732 unnamed records in the GTADB snapshot, 588 carry a tag
+ * that resolves to a real type (residential 332, retail 93, natural 47,
+ * transportation 37, leisure 25, government 13, restaurant 11, shop tags
+ * ~40, plus gym/fitness 0 in GTADB itself, hospital/police 2, cinema/
+ * tennis/racetrack/marina 5 — the extended rules below). Those get a
+ * resolved type here, labelled "from the map data" — the name stays "?"
+ * and the type is only as good as the tag. A further 101 carry only a
+ * hotel or industrial tag, which says "a building" and nothing more —
+ * those stay unknown, not "Other". The rest carry no usable tag (1,108
+ * have no tags at all, 942 only internal notes like `enterable`) and
+ * stay "not sure" until the resolver's coordinate / guide / analogue
+ * steps or the AI job runs on the user's phone, or he marks them
+ * himself. Nothing here invents a type: a tag that says nothing about
+ * use resolves to nothing.
  *
  * Counts (GTADB d406fea, checked 2026-11-23): residential 332, retail
  * 93, natural 47, transportation 37, leisure 25, government 13,
@@ -57,10 +61,10 @@ const SHOP_TAG_TYPES: readonly [string, string][] = [
  * The type a place's tags resolve to, or null when its tags say nothing
  * about what it is. Only unnamed places resolve — a named place already
  * says what it is in its name, and its tags are shown as they are.
+ * `tagResolutionForTags` is the tag-only core, shared with the index
+ * resolver's coordinate step (a named place's type, from its tags).
  */
-export function tagResolutionFor(place: Pick<Place, 'title' | 'tags'>): TagResolution | null {
-  if (!isUnnamedPlace(place)) return null;
-  const tags = place.tags;
+export function tagResolutionForTags(tags: readonly string[]): TagResolution | null {
   if (tags.includes('#gas')) return { category: 'petrol', label: 'Petrol station' };
   if (tags.includes('#bar')) return { category: 'bar', label: 'Bar' };
   if (tags.includes('#nightclub') || tags.includes('#stripclub'))
@@ -80,9 +84,37 @@ export function tagResolutionFor(place: Pick<Place, 'title' | 'tags'>): TagResol
     return { category: 'services', label: 'Services' };
   if (tags.includes('natural') || tags.includes('agriculture'))
     return { category: 'landmark', label: 'Landmark' };
-  // A hotel or industrial tag says "a building" and nothing more — it
-  // does not resolve to a type. Those stay unknown, not "Other".
+  // Extended rules (resolver v2, 2026-11-24): a gym tag IS a gym — 0
+  // GTADB records carry one, so this fires for seeded/user data and
+  // future snapshots, never for today's snapshot. A hospital or police
+  // tag is a service; a cinema, tennis court, racetrack or marina is
+  // leisure; a metro/metromover tag is transport. A hotel or industrial
+  // tag still says "a building" and nothing more — it does not resolve
+  // to a type. Those stay unknown, not "Other".
+  if (
+    tags.includes('gym') ||
+    tags.includes('fitness') ||
+    tags.includes('workout') ||
+    tags.includes('strength')
+  )
+    return { category: 'gym', label: 'Gym / workout' };
+  if (tags.includes('#hospital') || tags.includes('#police'))
+    return { category: 'services', label: 'Services' };
+  if (
+    tags.includes('#cinema') ||
+    tags.includes('#tennis') ||
+    tags.includes('#racetrack') ||
+    tags.includes('#marina')
+  )
+    return { category: 'leisure', label: 'Leisure' };
+  if (tags.includes('#metro') || tags.includes('#metromover'))
+    return { category: 'transport', label: 'Transport' };
   return null;
+}
+
+export function tagResolutionFor(place: Pick<Place, 'title' | 'tags'>): TagResolution | null {
+  if (!isUnnamedPlace(place)) return null;
+  return tagResolutionForTags(place.tags);
 }
 
 /** Search words for a tag-resolved type, so "house" finds a residential "?". */

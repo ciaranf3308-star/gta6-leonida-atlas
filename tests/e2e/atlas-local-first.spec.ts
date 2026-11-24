@@ -689,9 +689,9 @@ test('forced indexing onboarding appears on a fresh profile, and Skip leaves a o
   await expect(welcome.getByRole('button', { name: 'Close dialog' })).toHaveCount(0);
   await page.keyboard.press('Escape');
   await expect(welcome).toBeVisible();
-  // Plain words, real numbers: 2,151 still need sorting, 8 at a time,
+  // Plain words, real numbers: 2,144 still need sorting, 8 at a time,
   // gpt-4o-mini, 0 sorted on a fresh phone.
-  await expect(welcome.getByText(/2,151 places still need sorting/)).toBeVisible();
+  await expect(welcome.getByText(/2,144 places still need sorting/)).toBeVisible();
   await expect(welcome.getByText(/8 at a time/)).toBeVisible();
   await expect(welcome.getByText(/gpt-4o-mini/)).toBeVisible();
   await expect(welcome.getByText(/0 are sorted/)).toBeVisible();
@@ -730,7 +730,7 @@ test('forced indexing onboarding appears on a fresh profile, and Skip leaves a o
   await expect(page.locator('.county-card')).toHaveCount(6);
   const reminder = page.getByRole('button', { name: /still unnamed/ });
   await expect(reminder).toBeVisible();
-  await expect(reminder).toContainText('2,151 places still unnamed');
+  await expect(reminder).toContainText('2,144 places still unnamed');
   await reminder.click();
   await expect(page.getByText('Sort the unnamed places')).toBeVisible();
   await expect(page.getByText('0 sorted so far')).toBeVisible();

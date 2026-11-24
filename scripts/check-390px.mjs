@@ -165,6 +165,43 @@ await page.getByText(/no gym near capri/i).first().waitFor({ timeout: 10000 });
 await page.getByText(/Grand Majestic/i).first().waitFor({ timeout: 10000 });
 await page.getByText('Houses in Capri to check').waitFor({ timeout: 10000 });
 console.log('Ask Capri answer is honest: no gym near Capri, nearest is Grand Majestic, houses to check listed');
+// ASK CARDS (v0.13.0): the answer is big place cards, nearest first,
+// each with its distance — never a text wall. Anchor chip on the answer.
+const askCards = await page.locator('.ask-card').count();
+console.log('Ask cards on the Capri answer:', askCards);
+if (askCards === 0) process.exit(1);
+await page.getByText('Near Capri').first().waitFor({ timeout: 10000 });
+await page.getByText(/map units away/).first().waitFor({ timeout: 10000 });
+const firstCard = await page.locator('.ask-card strong').first().textContent();
+console.log('First Ask card (nearest):', firstCard);
+if (firstCard !== 'Grand Majestic Gym') process.exit(1);
+await page.screenshot({ path: '/tmp/ask-gym-capri.png', fullPage: false });
+// "workout equipment near Capri": free gear, never the member gyms.
+await page.locator('#ask-nylah-input').fill('workout equipment near Capri');
+await page.getByRole('button', { name: 'Send', exact: true }).click();
+await page.getByText("Jason's house deck (home gym)").first().waitFor({ timeout: 10000 });
+await page.getByText('Muscle Sands').first().waitFor({ timeout: 10000 });
+await page.getByText('Equipment', { exact: true }).first().waitFor({ timeout: 10000 });
+await page.screenshot({ path: '/tmp/ask-equipment-capri.png', fullPage: false });
+console.log('Ask equipment answer: free gear cards, Jason deck nearest');
+// "enterable houses in Rockridge": breakable-house cards with badges.
+await page.locator('#ask-nylah-input').fill('enterable houses in Rockridge');
+await page.getByRole('button', { name: 'Send', exact: true }).click();
+await page.getByText(/Venture Apts/).first().waitFor({ timeout: 10000 });
+await page.getByText('Breakable', { exact: true }).first().waitFor({ timeout: 10000 });
+await page.screenshot({ path: '/tmp/ask-houses-vice-city.png', fullPage: false });
+console.log('Ask houses answer: breakable-house cards with badges');
+// INDEX PANEL (v0.13.0): resolved-by-source counts, honestly split.
+await page.getByRole('button', { name: 'Close Ask Nylah' }).click();
+await nav('Layers').click();
+await page.getByText('Sort the unnamed places').waitFor({ timeout: 10000 });
+await page.locator('.index-sources').waitFor({ timeout: 10000 });
+for (const sourceText of ['Tags · 588', 'Same spot · 0', 'Guide match · 0', 'Analogue address · 0', 'AI suggested · 0', 'Not sure · 0', 'To go · 2,732']) {
+  if (!(await page.getByText(sourceText, { exact: true }).isVisible()))
+    throw new Error(`index sources missing: ${sourceText}`);
+}
+await page.screenshot({ path: '/tmp/index-sources.png', fullPage: false });
+console.log('Index sources row: Tags 588, rest 0 on a fresh phone, 2,732 to go');
 // Ask API-key onboarding: inline key field, paste + save right there.
 // Ask keeps its messages for the page session, so reload for a fresh Ask.
 await page.reload({ waitUntil: 'networkidle' });

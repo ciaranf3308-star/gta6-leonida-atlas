@@ -1,5 +1,5 @@
 /* ==========================================================================
-   LEONIDA ATLAS — v0.12.0 phone-first redesign, written from scratch.
+   LEONIDA ATLAS — v0.13.0 Ask cards + index resolver v2, on the v0.12.0 phone-first sheet.
    The old sheet (v0.9 / v0.10 / v0.11 layered on top of each other) is
    gone: this file is the whole design system, phone first, desktop
    second. The look is GTA VI's own: Vice City sunset — pink, orange,
@@ -678,6 +678,12 @@ h3 {
   place-items: center;
   color: #fff;
   box-shadow: 0 2px 8px #0008;
+}
+/* The text span flexes; the roundel must not. `.place-result > span`
+ * sets flex:1 on every direct span, which stretched the 56px roundel
+ * into a wide oval in v0.12.0 — Find and Ask alike. This pins it. */
+.place-result > .result-icon {
+  flex: 0 0 auto;
 }
 .result-badges {
   display: flex;
@@ -1363,61 +1369,67 @@ h3 {
 .ask-message p:last-child {
   margin-bottom: 0;
 }
-.ask-results {
-  list-style: none;
-  margin: 10px 0 0;
-  padding: 0;
-  display: grid;
-  gap: 8px;
+/* Ask answers are big place cards (same card as Find), never a text
+ * wall: 56px blip roundel, name, area/county, distance, badges. */
+.ask-anchor {
+  display: inline-block;
+  font-family: var(--condensed);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--gold);
+  border: 1px solid #ffb34766;
+  border-radius: 999px;
+  padding: 4px 10px;
+  margin-bottom: 8px;
 }
-.ask-results button {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  text-align: left;
-  background: var(--night);
-  border: 1px solid var(--border-soft);
-  border-radius: 12px;
-  padding: 10px 12px;
-  min-height: 52px;
+.ask-summary {
+  font-weight: 600;
+}
+.ask-ai-note {
+  color: var(--muted);
   font-size: 13px;
 }
-.ask-result-icon {
-  width: 36px;
-  height: 36px;
-  flex-shrink: 0;
-  border-radius: 50%;
+.ask-cards {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
   display: grid;
-  place-items: center;
-  color: #fff;
+  gap: 10px;
+}
+.ask-card {
+  min-height: 76px;
+}
+.ask-card-distance {
+  color: var(--gold);
+  font-weight: 600;
+}
+.ask-loading {
+  display: grid;
+  gap: 10px;
+}
+.ask-card-skeleton {
+  min-height: 76px;
+  border-radius: 16px;
+  border: 1px solid var(--border-soft);
+  background: linear-gradient(90deg, var(--surface) 25%, var(--surface-raised) 50%, var(--surface) 75%);
+  background-size: 200% 100%;
+  animation: ask-shimmer 1.4s infinite linear;
+}
+@keyframes ask-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
 }
 .ask-houses {
   margin-top: 10px;
 }
-.ask-house-list {
-  list-style: none;
-  margin: 8px 0 0;
-  padding: 0;
+.ask-house-card {
   display: grid;
-  gap: 6px;
+  gap: 8px;
 }
-.ask-house-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.ask-house-mark {
   width: 100%;
-  text-align: left;
-  background: none;
-  border: 1px solid var(--border-soft);
-  border-radius: 12px;
-  padding: 10px 12px;
-  min-height: 52px;
-  font-size: 13px;
-}
-.ask-house-name {
-  flex: 1;
-  min-width: 0;
 }
 .ask-suggestions {
   display: flex;
@@ -1614,6 +1626,24 @@ h3 {
   flex-wrap: wrap;
   gap: 8px;
   margin: 12px 0;
+}
+/* Resolved by source — the honest count: tags, same-spot, guide,
+ * analogue, AI, not sure, to go. */
+.index-sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 4px;
+}
+.index-sources span {
+  font-family: var(--condensed);
+  font-size: 12px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  border: 1px solid var(--pink);
+  border-radius: 999px;
+  padding: 6px 10px;
+  color: var(--text);
 }
 .index-types span {
   font-family: var(--condensed);

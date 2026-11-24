@@ -5,6 +5,7 @@ import {
   type AiCategoryRecord,
   type ParsedCategorisationResult,
 } from "./categories";
+import { resolvePlaceDeterministically } from "./resolver";
 import type { IndexJobState } from "./storage";
 
 /**
@@ -14,6 +15,14 @@ import type { IndexJobState } from "./storage";
  * batches, never mid-batch, so a batch is either fully saved or not
  * attempted at all. A failed batch is NOT marked attempted, so a resume
  * retries exactly that batch.
+ *
+ * Resolver v2: every batch runs the deterministic resolver FIRST
+ * (tags → same-spot coordinate → guide pin → analogue keywords).
+ * Places it resolves never reach the network at all — the LLM only
+ * ever sees what no data could resolve, with the full context. A
+ * batch that resolves fully makes no API call. Deterministic results
+ * are saved before the LLM call, so a failed LLM batch keeps them and
+ * a resume only re-runs the unresolved rest.
  */
 
 export interface RunIndexJobInput {
@@ -63,16 +72,32 @@ export async function runIndexJob(
         start,
         start + CATEGORISATION_BATCH_SIZE,
       );
-      const results = await categoriseBatch({
-        places: batch,
-        allPlaces: input.allPlaces,
-        apiKey: input.apiKey,
-        model: input.model,
-        fetchImpl: input.fetchImpl,
-      });
+      // Deterministic first: resolve what the data already says, and
+      // only send the rest to the LLM. A fully-resolved batch makes no
+      // network call at all.
+      const deterministic: ParsedCategorisationResult[] = [];
+      const unresolved: Place[] = [];
+      for (const place of batch) {
+        const resolved = resolvePlaceDeterministically(place, input.allPlaces);
+        if (resolved) deterministic.push(resolved);
+        else unresolved.push(place);
+      }
+      if (deterministic.length > 0) input.applyResults(deterministic);
+      if (unresolved.length > 0) {
+        const aiResults = await categoriseBatch({
+          places: unresolved,
+          allPlaces: input.allPlaces,
+          apiKey: input.apiKey,
+          model: input.model,
+          fetchImpl: input.fetchImpl,
+        });
+        input.applyResults(aiResults);
+      }
       // Save the results FIRST, then mark the batch attempted — so a
       // crash between the two can only re-run a batch, never lose one.
-      input.applyResults(results);
+      // (A failed LLM call throws before this line: the deterministic
+      // results above are already saved, and the batch is not marked
+      // attempted, so a resume retries only the unresolved rest.)
       input.markAttempted(batch.map((place) => place.id));
       attempted += batch.length;
       input.onProgress?.(attempted, total);

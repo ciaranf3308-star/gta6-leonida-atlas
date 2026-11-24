@@ -1,21 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
-import { KeyRound, Send, Sparkles, X } from 'lucide-react';
+import { ChevronRight, KeyRound, Send, Sparkles, X } from 'lucide-react';
 import type { Filters, LayerDefinition, Place } from '../../domain/types';
-import { isUnnamedPlace } from '../../domain/types';
-import { displayTagsFor } from '../../domain/tags';
 import { useMapStore } from '../../stores/atlas';
 import { retrieveForAsk } from './retrieval';
 import {
   askOpenAi,
   getAskApiKey,
   getAskModel,
-  parsePlaceMentions,
   setAskApiKey,
 } from './openai';
-import {
-  aiCategoryDisplay,
-  type AiCategoryRecord,
-} from '../categorise/categories';
+import { buildAskCard, buildAskCards, askAnchorLabel, shortVerdict, type AskCard } from './cards';
+import type { AiCategoryRecord } from '../categorise/categories';
 import {
   PlaceIcon,
   iconKeyForAiRecord,
@@ -43,10 +38,37 @@ export interface AskPanelProps {
   onMarkWorkout: (place: Place) => void;
 }
 
+/**
+ * An Ask answer is CARDS, never a text wall (user, 2026-11-24: the old
+ * presentation was "awful"). One assistant message is:
+ *   - one short verdict line (the proximity verdict — never "near"
+ *     when it is far),
+ *   - at most two short AI sentences, only when a key is saved — the AI
+ *     never lists places, the cards do that,
+ *   - big place cards: blip roundel, name or "? · type", area/county,
+ *     distance from the anchor, Enterable / Lootable / Breakable / Gym
+ *     / Equipment badges — nearest first, one tap to fly to the place
+ *     and open its sheet.
+ *
+ * STABILITY: a message is only ever appended whole, once its cards are
+ * built — never half-loaded. While an answer is being fetched the panel
+ * shows skeleton cards, not a partial answer. A stale answer (an
+ * earlier request finishing after a newer one) is dropped by request
+ * id. The anchor is shown on every answer, so a follow-up never loses
+ * what it is about.
+ */
 interface AskMessage {
   role: 'user' | 'assistant';
   text: string;
-  placeIds: string[];
+  /** At most two short AI sentences, only when a key is saved — never a
+   * place list, never a repeat of the verdict. */
+  aiNote?: string;
+  /** Cards for this answer, nearest first (assistant only). */
+  cards: AskCard[];
+  /** Matching places in total — the rest are highlighted on the map. */
+  totalInScope: number;
+  /** The anchor the distances are measured from ("Near Capri"). */
+  anchorLabel: string | null;
   /** Houses in the asked area worth checking for workout equipment —
    * candidates, never verified equipment. 'equipment' when equipment was
    * asked for, 'gym' when a member gym was. */
@@ -63,14 +85,20 @@ export default function AskPanel(props: AskPanelProps) {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<AskMessage[]>([]);
   const [busy, setBusy] = useState(false);
+  const [busyNote, setBusyNote] = useState<string | null>(null);
   const [keyInput, setKeyInput] = useState('');
   const [hasKey, setHasKey] = useState(() => getAskApiKey().length > 0);
   const messagesRef = useRef<HTMLDivElement>(null);
-  // The latest answer must be in view: scroll the messages to the bottom
-  // on every new message, instead of leaving the answer below the fold.
+  /** Monotonic submit id — a stale answer never lands after a newer one. */
+  const requestRef = useRef(0);
+  // The latest answer must be in view — scrolled to its TOP, so the
+  // verdict and the first cards show, not the tail of the list. (The
+  // old scroll-to-bottom landed on the houses list at the end of a
+  // long answer, hiding the cards the answer is about.)
   useEffect(() => {
     const el = messagesRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
+    const last = el?.lastElementChild as HTMLElement | null;
+    if (el && last) el.scrollTop = last.offsetTop - el.offsetTop;
   }, [messages, busy]);
 
   function saveKey() {
@@ -81,6 +109,8 @@ export default function AskPanel(props: AskPanelProps) {
   }
 
   const placeById = new Map(props.places.map((place) => [place.id, place]));
+  const layerColor = (layerId: string) =>
+    props.layers.find((layer) => layer.id === layerId)?.style.color ?? '#e8823a';
 
   /** Houses to check ride on the answer message — never sent to the AI,
    * never presented as verified gyms. */
@@ -120,12 +150,27 @@ export default function AskPanel(props: AskPanelProps) {
     });
   }
 
+  /** One tap on a card: highlight just that place, fly to it, open its sheet. */
+  function openCard(placeId: string) {
+    const place = placeById.get(placeId);
+    if (!place) return;
+    useMapStore.getState().setHighlights([placeId]);
+    props.onSelect(placeId);
+  }
+
+  function appendAssistant(message: Omit<AskMessage, 'role'>, requestId: number) {
+    if (requestId !== requestRef.current) return;
+    setMessages((prev) => [...prev, { ...message, role: 'assistant' }]);
+  }
+
   async function submit(questionText: string) {
     const question = questionText.trim();
     if (!question || busy) return;
+    const requestId = ++requestRef.current;
     setInput('');
-    setMessages((prev) => [...prev, { role: 'user', text: question, placeIds: [] }]);
+    setMessages((prev) => [...prev, { role: 'user', text: question, cards: [], totalInScope: 0, anchorLabel: null }]);
     setBusy(true);
+    setBusyNote('Finding places…');
     try {
       const result = retrieveForAsk({
         question,
@@ -141,16 +186,21 @@ export default function AskPanel(props: AskPanelProps) {
           .filter((message) => message.role === 'user')
           .map((message) => message.text),
       });
+      const anchorLabel = askAnchorLabel(result);
+      const cards = buildAskCards(result, props.places, props.aiCategories);
+      setBusyNote(
+        anchorLabel
+          ? `Finding places ${anchorLabel.toLowerCase()}…`
+          : 'Finding places…',
+      );
       const apiKey = getAskApiKey();
       if (result.records.length === 0) {
         const scope = result.requestedLayerNames.length
           ? ` for ${result.requestedLayerNames.join(', ')}`
           : '';
         const houses = housesFor(result);
-        setMessages((prev) => [
-          ...prev,
+        appendAssistant(
           {
-            role: 'assistant',
             text: houses
               ? houses.kind === 'equipment'
                 ? `No verified workout equipment in ${houses.areaName} in any public data — and no gym tag anywhere in the map data outside Ajax Gym. The equipment is in a garage in a house, so the houses below are worth checking instead.`
@@ -158,28 +208,35 @@ export default function AskPanel(props: AskPanelProps) {
               : result.areaMismatch
                 ? `Nothing${scope} in that area in the map data — the nearest matching places are shown below instead.`
                 : `Nothing${scope} in the map data for that. I won't guess — try turning a layer on, or drop your own marker when you find one.`,
-            placeIds: [],
+            cards: [],
+            totalInScope: 0,
+            anchorLabel,
             houses,
           },
-        ]);
+          requestId,
+        );
         props.onClearHighlights();
         return;
       }
+      // The verdict leads, in one or two lines — the cards carry the
+      // places, and the houses section carries the house-gym gap.
+      const verdict =
+        shortVerdict(result.proximitySummary) ??
+        `Here are the matching places from the map (${result.records.length} shown${result.totalInScope > result.records.length ? ` of ${result.totalInScope}` : ''}${result.areaMismatch ? ' — nothing in that exact area, so these are the nearest' : ''}).`;
       if (!apiKey) {
         // No key: still a useful finder — the local records, no AI text.
         // The proximity verdict leads: never present far-away places as near.
         showOnMap(result.records);
-        setMessages((prev) => [
-          ...prev,
+        appendAssistant(
           {
-            role: 'assistant',
-            text: result.proximitySummary
-              ? `${result.proximitySummary} Matching places from the map (${result.records.length} shown${result.totalInScope > result.records.length ? ` of ${result.totalInScope}` : ''}):`
-              : `Here are the matching places from the map (${result.records.length} shown${result.totalInScope > result.records.length ? ` of ${result.totalInScope}` : ''}${result.areaMismatch ? ' — nothing in that exact area, so these are the nearest' : ''}). Add your OpenAI key in Settings for a written answer.`,
-            placeIds: result.records.map((place) => place.id),
+            text: verdict,
+            cards: cards.cards,
+            totalInScope: cards.total,
+            anchorLabel,
             houses: housesFor(result),
           },
-        ]);
+          requestId,
+        );
         return;
       }
       const answer = await askOpenAi({
@@ -193,32 +250,40 @@ export default function AskPanel(props: AskPanelProps) {
         distances: result.anchorDistances,
         aiCategories: props.aiCategories,
       });
-      const mentioned = parsePlaceMentions(answer, result.records);
-      const highlight = mentioned.length > 0 ? mentioned : result.records;
-      showOnMap(highlight);
-      setMessages((prev) => [
-        ...prev,
+      showOnMap(result.records);
+      appendAssistant(
         {
-          role: 'assistant',
-          text: answer,
-          placeIds: highlight.map((place) => place.id),
+          // The verdict is the answer; the AI writes at most two short
+          // sentences under it (see the system prompt) — never a wall,
+          // never a place list, never a repeat of the verdict. One
+          // atomic append: verdict + AI note + cards together.
+          text: verdict,
+          aiNote: answer,
+          cards: cards.cards,
+          totalInScope: cards.total,
+          anchorLabel,
           houses: housesFor(result),
         },
-      ]);
+        requestId,
+      );
     } catch (error) {
-      setMessages((prev) => [
-        ...prev,
+      appendAssistant(
         {
-          role: 'assistant',
           text:
             error instanceof Error
               ? error.message
               : 'Ask failed. Your map and markers are untouched.',
-          placeIds: [],
+          cards: [],
+          totalInScope: 0,
+          anchorLabel: null,
         },
-      ]);
+        requestId,
+      );
     } finally {
-      setBusy(false);
+      if (requestId === requestRef.current) {
+        setBusy(false);
+        setBusyNote(null);
+      }
     }
   }
 
@@ -258,39 +323,82 @@ export default function AskPanel(props: AskPanelProps) {
         )}
         {messages.map((message, index) => (
           <div key={index} className={`ask-message is-${message.role}`}>
-            <p>{message.text}</p>
-            {message.placeIds.length > 0 && (
-              <ul className="ask-results">
-                {message.placeIds.slice(0, 10).map((id) => {
-                  const place = placeById.get(id);
+            {message.role === 'assistant' && message.anchorLabel && (
+              <p className="ask-anchor" aria-label="Anchor for this answer">
+                {message.anchorLabel}
+              </p>
+            )}
+            <p className={message.role === 'assistant' ? 'ask-summary' : undefined}>
+              {message.text}
+            </p>
+            {message.role === 'assistant' && message.aiNote && (
+              <p className="ask-ai-note">{message.aiNote}</p>
+            )}
+            {message.cards.length > 0 && (
+              <ul className="ask-cards">
+                {message.cards.map((card) => {
+                  const place = placeById.get(card.placeId);
                   if (!place) return null;
-                  const aiDisplay = aiCategoryDisplay(props.aiCategories[id]);
                   return (
-                    <li key={id}>
-                      <button type="button" onClick={() => props.onSelect(id)}>
-                        <span className="ask-result-icon" aria-hidden="true">
-                          <PlaceIcon
-                            icon={
-                              iconKeyForAiRecord(props.aiCategories[id]) ??
-                              iconKeyForPlace(place)
-                            }
-                            size={15}
-                          />
-                        </span>
-                        <strong>{place.title}</strong>
+                  <li key={card.placeId}>
+                    <button
+                      type="button"
+                      className="place-result ask-card"
+                      onClick={() => openCard(card.placeId)}
+                    >
+                      <span
+                        className="result-icon"
+                        style={{ background: layerColor(card.layerId) }}
+                        aria-hidden="true"
+                      >
+                        <PlaceIcon
+                          icon={
+                            iconKeyForAiRecord(props.aiCategories[card.placeId]) ??
+                            iconKeyForPlace(place)
+                          }
+                          size={19}
+                        />
+                      </span>
+                      <span>
+                        <strong>{card.title}</strong>
                         <small>
-                          {place.region || 'Leonida'}
-                          {isUnnamedPlace(place) && displayTagsFor(place).length > 0
-                            ? ` · ${displayTagsFor(place).join(' · ')}`
+                          {card.area}
+                          {card.countyName && card.area !== card.countyName
+                            ? ` · ${card.countyName}`
                             : ''}
-                          {aiDisplay ? ` · AI suggested: ${aiDisplay.label}` : ''}
+                          {card.typeNote ? ` · ${card.typeNote}` : ''}
                         </small>
-                      </button>
-                    </li>
+                        <small className="ask-card-distance">
+                          {card.near ? 'Close by · ' : ''}
+                          {card.distanceLabel}
+                        </small>
+                        {card.badges.length > 0 && (
+                          <span className="result-badges">
+                            {card.badges.map((badge) => (
+                              <span key={badge}>
+                                {badge}
+                                {card.aiBadges[badge] ? ' · AI' : ''}
+                              </span>
+                            ))}
+                          </span>
+                        )}
+                      </span>
+                      <ChevronRight size={16} />
+                    </button>
+                  </li>
                   );
                 })}
               </ul>
             )}
+            {message.role === 'assistant' &&
+              message.totalInScope > message.cards.length &&
+              message.cards.length > 0 && (
+                <p className="help-text">
+                  {message.totalInScope - message.cards.length} more matching{' '}
+                  {message.totalInScope - message.cards.length === 1 ? 'place' : 'places'}{' '}
+                  highlighted on the map.
+                </p>
+              )}
             {message.houses && message.houses.placeIds.length > 0 && (
               <div className="ask-houses">
                 <strong>
@@ -315,48 +423,69 @@ export default function AskPanel(props: AskPanelProps) {
                     it next time.
                   </p>
                 )}
-                <ul className="ask-house-list">
+                <ul className="ask-cards">
                   {message.houses.placeIds.map((id) => {
                     const place = placeById.get(id);
                     if (!place) return null;
+                    const card = buildAskCard(
+                      place,
+                      null,
+                      props.aiCategories,
+                    );
                     return (
-                      <li key={id}>
-                        <span className="ask-house-row">
-                          <span className="ask-result-icon" aria-hidden="true">
+                      <li key={id} className="ask-house-card">
+                        <button
+                          type="button"
+                          className="place-result ask-card"
+                          onClick={() => openCard(id)}
+                        >
+                          <span
+                            className="result-icon"
+                            style={{ background: layerColor(card.layerId) }}
+                            aria-hidden="true"
+                          >
                             <PlaceIcon
                               icon={
                                 iconKeyForAiRecord(props.aiCategories[id]) ??
                                 iconKeyForPlace(place)
                               }
-                              size={15}
+                              size={19}
                             />
                           </span>
-                          <span className="ask-house-name">
-                            <strong>{place.title}</strong>
+                          <span>
+                            <strong>{card.title}</strong>
                             <small>
-                              {place.region || 'Leonida'}
-                              {isUnnamedPlace(place) && displayTagsFor(place).length > 0
-                                ? ` · ${displayTagsFor(place).join(' · ')}`
+                              {card.area}
+                              {card.countyName && card.area !== card.countyName
+                                ? ` · ${card.countyName}`
                                 : ''}
                             </small>
+                            {card.badges.length > 0 && (
+                              <span className="result-badges">
+                                {card.badges.map((badge) => (
+                                  <span key={badge}>{badge}</span>
+                                ))}
+                              </span>
+                            )}
                           </span>
-                          <button
-                            type="button"
-                            className="button"
-                            onClick={() => props.onMarkWorkout(place)}
-                          >
-                            {message.houses?.kind === 'equipment'
-                              ? 'Workout equipment in the garage — mark it'
-                              : 'Mark as workout spot'}
-                          </button>
-                        </span>
+                          <ChevronRight size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          className="button ask-house-mark"
+                          onClick={() => props.onMarkWorkout(place)}
+                        >
+                          {message.houses?.kind === 'equipment'
+                            ? 'Workout equipment in the garage — mark it'
+                            : 'Mark as workout spot'}
+                        </button>
                       </li>
                     );
                   })}
                 </ul>
               </div>
             )}
-            {message.role === 'assistant' && message.placeIds.length === 0 && !hasKey && (
+            {message.role === 'assistant' && message.cards.length === 0 && !message.houses && !hasKey && (
               <button type="button" className="text-button" onClick={props.onOpenSettings}>
                 Add your OpenAI key in Settings
               </button>
@@ -364,9 +493,12 @@ export default function AskPanel(props: AskPanelProps) {
           </div>
         ))}
         {busy && (
-          <p className="help-text" role="status">
-            Asking…
-          </p>
+          <div className="ask-loading" role="status">
+            <p className="help-text">{busyNote ?? 'Finding places…'}</p>
+            <div className="ask-card-skeleton" aria-hidden="true" />
+            <div className="ask-card-skeleton" aria-hidden="true" />
+            <div className="ask-card-skeleton" aria-hidden="true" />
+          </div>
         )}
       </div>
       {messages.length === 0 && (

@@ -226,13 +226,17 @@ describe('Resolve every POI — from the map data’s own tags', () => {
     ).toBeNull();
   });
 
-  it('counts the real resolution: 581 resolved from tags, 2,151 still unknown', () => {
+  it('counts the real resolution: 588 resolved from tags, 2,144 still unknown', () => {
     const places = catalogueFromSnapshot(snapshot);
     const counts = tagResolutionCounts(places);
-    expect(counts.resolved).toBe(581);
-    expect(counts.remaining).toBe(2151);
+    expect(counts.resolved).toBe(588);
+    expect(counts.remaining).toBe(2144);
     expect(counts.byCategory.house).toBe(332);
     expect(counts.byCategory.shop).toBe(106);
+    // Extended rules (resolver v2): hospital/police 2 services,
+    // cinema/tennis/racetrack/marina 5 leisure.
+    expect(counts.byCategory.services).toBe(19);
+    expect(counts.byCategory.leisure).toBe(30);
   });
 
   it('searching "house" finds a residential "?"', () => {

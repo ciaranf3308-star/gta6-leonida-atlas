@@ -2,6 +2,17 @@
 
 Release history, newest first.
 
+## v0.13.0 — 2026-11-24
+
+**Released: Ask answers as place cards, and an index resolver that checks the data before it guesses — the fix for the user's 7/10 verdict on v0.12.0.**
+
+- Ask answers are big place cards now, never a text wall: a 56px blip roundel, the name or "? · type", area and county, the distance from the anchor, and Enterable / Lootable / Breakable / Gym / Equipment badges — nearest first, always. One tap flies to the place on the map and opens its sheet. The verdict is one or two lines above the cards, with a "Near Capri" anchor chip on every answer, so a follow-up never loses where it was looking. Nothing from a layer you did not ask about is volunteered.
+- Ask is stable now: an answer is added whole or not at all (no half-loaded answer), a skeleton shows while it works, a stale answer from an earlier question can never overwrite a later one, and the latest answer scrolls to its top — the verdict and the first cards — instead of landing on the tail of the list. One sheet at a time, as before.
+- Index resolver v2 — the job no longer guesses from almost nothing. Before the LLM sees a "?" place, it checks the real data first: a same-spot coordinate match (within 15 map units — measured, not guessed: records sit a median 118 units apart, so a wider tolerance matches neighbouring buildings, not the same place), then GTADB tags, then guide pins, then real-world analogue rules. Only what is left goes to the LLM, with the full context and temperature 0. Measured on the real snapshot, 658 of 2,732 "?" places resolve from data alone (588 from tags, 9 same-spot, 1 guide match, 60 analogue) and 2,074 go to the LLM — the unsure rate falls because data answers first, not because the confidence bar moved. Nothing is ever presented as a fact unless the data said it.
+- The Index panel shows the unsure rate honestly: resolved by source — Tags 588, Same spot, Guide match, Analogue address, AI suggested, Not sure — with the remaining count. Every resolved place carries its source, and the source is shown where the type is shown ("? · House — from its tags", "AI suggested", and so on), so a data match is never shown as an AI guess. The online check is honest about its limit too: the guides publish shop counts but no pullable positions, so their shops cannot be matched by coordinates — that gap is shown in the panel, not hidden.
+- Fixed, found by looking at the screenshots: the 56px blip roundel was stretched into a wide oval on every Find and Ask card in v0.12.0 (a flex rule on the card's text span was growing the icon). It is a circle again everywhere.
+- Kept, unchanged: forced indexing onboarding, the job's pause/resume/batch-save, the on-device-only key, spoiler-free first launch, Gyms vs Workout Equipment split, breakable homes as a system, and the Ask spoiler rule. Real counts throughout: 3,754 GTADB records, 986 named, 2,768 unnamed, 588 of 2,732 "?" typed from data, 2,144 left for the job. No "5k" anywhere.
+
 ## v0.12.0 — 2026-11-24
 
 **Released: mobile redesign from scratch — full-screen map, GTA VI sunset identity.**

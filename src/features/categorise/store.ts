@@ -91,6 +91,11 @@ export const useAiIndexStore = create<AiIndexStoreState>()((set, get) => ({
         model,
         indexedAt: now,
         status: result.confidence < MIN_AI_CONFIDENCE ? "unsure" : "suggested",
+        // Where the type came from — 'ai' for an LLM reply, a
+        // deterministic step otherwise. The label in the app follows
+        // this, so a data match is never shown as "AI suggested".
+        source: result.source ?? "ai",
+        matchedFrom: result.matchedFrom,
       };
     }
     set({ categories });

@@ -15,6 +15,9 @@ import {
   aiCategoryDisplay,
   effectiveAiCategory,
   realWorldAnalogueFromDescription,
+  recordSource,
+  resolutionSourceLabel,
+  resolutionSourceNote,
   type AiCategoryId,
 } from '../categorise/categories';
 import { PlaceIcon, iconKeyForAiRecord, iconKeyForPlace } from '../map/place-icons';
@@ -191,8 +194,8 @@ export default function PlaceDetails({
         </p>
         {aiDisplay && aiCategory && (
           <p className="ai-chip" role="status">
-            <Sparkles size={13} /> AI suggested: {aiDisplay.label} ·{' '}
-            {Math.round(aiDisplay.confidence * 100)}% sure
+            <Sparkles size={13} /> {resolutionSourceLabel(recordSource(aiRecord))}:{' '}
+            {aiDisplay.label} · {Math.round(aiDisplay.confidence * 100)}% sure
           </p>
         )}
         {aiRecord && aiRecord.status === 'unsure' && (
@@ -336,9 +339,12 @@ export default function PlaceDetails({
           </section>
         )}
         {aiRecord && (
-          <section className="detail-section ai-suggestion" aria-label="AI-suggested type">
+          <section className="detail-section ai-suggestion" aria-label="Suggested type">
             <h3>
-              <Sparkles size={15} /> What the AI suggests
+              <Sparkles size={15} />{' '}
+              {recordSource(aiRecord) === 'ai'
+                ? 'What the AI suggests'
+                : 'What the index found'}
             </h3>
             {aiDisplay && aiCategory ? (
               <>
@@ -348,10 +354,7 @@ export default function PlaceDetails({
                   </strong>{' '}
                   {aiRecord.reason}
                 </p>
-                <p className="help-text">
-                  AI suggested, not a verified fact. The name stays “?” — only the type is
-                  suggested, and only from what the map already knows.
-                </p>
+                <p className="help-text">{resolutionSourceNote(aiRecord)}</p>
                 {aiRecord.status === 'suggested' && (
                   <button
                     type="button"

@@ -29,7 +29,7 @@ export interface WelcomeSheetProps {
  * Forced first-launch onboarding (v0.11.0). The map opens blank on
  * purpose so nothing is spoiled — but the reason this sheet cannot be
  * dismissed with an × is the indexing job: 2,732 places are still "?",
- * 581 already have a type from the map data's own tags, 2,151 still
+ * 588 already have a type from the map data's own tags, 2,144 still
  * have nothing to read, and the ONLY way they get sorted is this job,
  * on this phone, with the user's own OpenAI key.
  *
@@ -105,12 +105,18 @@ export default function WelcomeSheet(props: WelcomeSheetProps) {
           the job has never run until you start it.
         </p>
         <p className="panel-intro">
-          How it works, plainly: it goes through the unnamed places{' '}
+          How it works, plainly: it resolves each place from real data
+          first — the map data&rsquo;s own tags, the same spot as a named
+          place, a verified guide pin, its analogue address — and only
+          what survives all of that goes to the AI,{' '}
           <strong>8 at a time</strong>, using the small model{' '}
           <strong>(gpt-4o-mini)</strong>, and saves each batch on this phone
           before starting the next — so you can pause it, stop it, and pick
-          up where you left off. Every suggestion is labelled{' '}
-          <strong>&ldquo;AI suggested&rdquo;</strong>, never a fact, and if the
+          up where you left off. Every type is labelled with where it came
+          from — <strong>&ldquo;From its tags&rdquo;</strong>,{' '}
+          <strong>&ldquo;Same spot on the map&rdquo;</strong>,{' '}
+          <strong>&ldquo;Guide match&rdquo;</strong> or{' '}
+          <strong>&ldquo;AI suggested&rdquo;</strong> — never a fact, and if the
           AI isn&rsquo;t sure it stays <strong>&ldquo;not sure&rdquo;</strong> — nothing
           is guessed, and no name is ever invented.
         </p>

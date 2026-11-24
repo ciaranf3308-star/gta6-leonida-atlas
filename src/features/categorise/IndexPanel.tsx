@@ -5,6 +5,7 @@ import { isUnnamedPlace } from "../../domain/types";
 import { getAskApiKey, getAskModel } from "../ask/openai";
 import { indexJobCounts, useAiIndexStore } from "./store";
 import { remainingUnnamedPlaces, runIndexJob } from "./runner";
+import { resolutionSourceCounts } from "./resolver";
 import {
   AI_CATEGORIES,
   aiCategoryShortLabel,
@@ -73,6 +74,16 @@ export default function IndexPanel(props: IndexPanelProps) {
     }
     return counts;
   }, [categories]);
+  /** Resolved BY SOURCE, honestly: the tag counts are live from the
+   * map data's own tags (they are not in the store until the job
+   * runs); the rest are what the job itself resolved, split by the
+   * step that earned them — same-spot coordinate, guide pin, analogue
+   * address, or the AI as last resort. "Not sure" is only ever the
+   * AI's answer, never a data match. */
+  const sourceCounts = useMemo(
+    () => resolutionSourceCounts(categories),
+    [categories],
+  );
   const percent =
     unnamed.length > 0
       ? Math.round((counts.attempted / unnamed.length) * 100)
@@ -149,13 +160,18 @@ export default function IndexPanel(props: IndexPanelProps) {
       <p className="panel-intro">
         {names.unknown.toLocaleString()} places have no confirmed name —{' '}
         {unnamed.length.toLocaleString()} are still “?” and this job sorts
-        those. This asks the AI to suggest what kind of place each one is —
-        house, shop, gym, petrol station and so on — from what the map
-        already knows about it. Suggestions are labelled “AI suggested”,
-        never facts, and a name is never invented. Low-confidence answers
-        stay “not sure” instead of guessed: with no tag and no analogue
-        address there is nothing to read, so a house with no evidence
-        never becomes a gym.
+        those. It resolves each one from real data first, in order: the
+        map data’s own tags, then the same spot as a named place on the
+        map (within 15 units — checked against the snapshot, because at
+        50 units most “matches” are just neighbouring buildings), then
+        a verified guide pin (gyms and free equipment from the guides
+        already checked), then narrow rules on its real-world analogue
+        address. Only what survives all of that goes to the AI, with the
+        full context — the AI is the last resort, not the first guess.
+        A name is never invented. Low-confidence answers stay “not
+        sure” instead of guessed: with no tag and no analogue address
+        there is nothing to read, so a house with no evidence never
+        becomes a gym.
       </p>
       {counts.attempted === 0 && (
         <p className="panel-intro" role="status">
@@ -203,7 +219,38 @@ export default function IndexPanel(props: IndexPanelProps) {
           style={{ "--progress": `${percent}%` } as CSSProperties}
         />
       </div>
-      <div className="index-types" aria-label="Types the AI can suggest, with how many it has suggested so far">
+      <div className="index-sources" aria-label="Resolved by source">
+        <span>
+          Tags · {tagCounts.resolved.toLocaleString()}
+        </span>
+        <span>
+          Same spot · {sourceCounts.coordinate.toLocaleString()}
+        </span>
+        <span>
+          Guide match · {sourceCounts.guide.toLocaleString()}
+        </span>
+        <span>
+          Analogue address · {sourceCounts.analogue.toLocaleString()}
+        </span>
+        <span>
+          AI suggested · {sourceCounts.ai.toLocaleString()}
+        </span>
+        <span>
+          Not sure · {counts.unsure.toLocaleString()}
+        </span>
+        <span>
+          To go · {counts.remaining.toLocaleString()}
+        </span>
+      </div>
+      <p className="help-text">
+        Guide matches come from the guide lists already checked and
+        bundled with the app (gyms and equipment pins, verified
+        23 Nov 2026). The shop guides publish counts but no positions
+        you can pull, so a shop the guides count but no map data pins
+        cannot be matched by coordinates — that gap is shown, not
+        hidden, and the job never invents a pin for it.
+      </p>
+      <div className="index-types" aria-label="Types resolved so far, with how many of each">
         {AI_CATEGORIES.map((category) => {
           const count = typeCounts.get(category) ?? 0;
           return (
@@ -309,9 +356,11 @@ export default function IndexPanel(props: IndexPanelProps) {
       )}
       <p className="help-text">
         Small and cheap: the small model, 8 places at a time, saved after each
-        batch — so you can stop any time and pick up where you left off. Turn on
-        Unverified places to see the “?” places on the map, with their suggested
-        type.
+        batch — so you can stop any time and pick up where you left off.
+        Places the map data, a same-spot match, a guide pin or the analogue
+        address already resolve never reach the AI at all, so those cost
+        nothing. Turn on Unverified places to see the “?” places on the map,
+        with their suggested type.
       </p>
     </section>
   );

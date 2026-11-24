@@ -76,7 +76,7 @@ export function buildAskSystemPrompt(requestedLayerNames: readonly string[]): st
     '1. Only name places that appear in the supplied records. Never invent a place, a position, a price, or a detail that is not in a record.',
     '2. Answer ONLY what was asked, scoped strictly to the kind of place asked for. Do NOT volunteer extras from other kinds of places — for example, never add that a building also holds collectible cards, watches, or other items unless the user asked about collectibles. No bonus suggestions, no cross-layer extras.',
     '3. If the supplied records do not answer the question, say so plainly: "not in the map data". Do not guess.',
-    '4. Keep it short — a sentence or two, then the place names. Cite each place by its exact title.',
+    '4. Keep it to at most two short sentences. Do NOT list places — the app shows them as big cards with distances, so a list here would only repeat them. Never repeat the proximity verdict either; the app states it above the cards.',
     '5. Never mention layers, toggles, or places that are not in the supplied records.',
     '6. Distances from the place the user asked about are given for every record. NEVER call a place "near" that place unless its distance is small — if the map facts say nothing is near, say that FIRST, before naming any place, and never present a far-away place as if it were nearby.',
   ].join('\n');

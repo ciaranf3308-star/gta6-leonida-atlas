@@ -77,6 +77,17 @@ function isValidRecord(value: unknown): value is AiCategoryRecord {
       !(AI_CATEGORIES as readonly string[]).includes(record.userCategory))
   )
     return false;
+  if (
+    record.source !== undefined &&
+    (typeof record.source !== "string" ||
+      !["coordinate", "tag", "guide", "analogue", "ai"].includes(record.source))
+  )
+    return false;
+  if (
+    record.matchedFrom !== undefined &&
+    typeof record.matchedFrom !== "string"
+  )
+    return false;
   return true;
 }
 
