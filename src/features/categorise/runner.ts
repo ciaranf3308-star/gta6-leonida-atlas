@@ -2,6 +2,7 @@ import type { Place } from "../../domain/types";
 import {
   CATEGORISATION_BATCH_SIZE,
   categoriseBatch,
+  MIN_AI_CONFIDENCE,
   type AiCategoryRecord,
   type ParsedCategorisationResult,
 } from "./categories";
@@ -23,6 +24,12 @@ import type { IndexJobState } from "./storage";
  * batch that resolves fully makes no API call. Deterministic results
  * are saved before the LLM call, so a failed LLM batch keeps them and
  * a resume only re-runs the unresolved rest.
+ *
+ * "Not sure" is NOT attempted (v0.14.0): a batch's low-confidence
+ * results (< 0.6) are saved as "not sure" records but their places
+ * are NOT marked attempted — they stay in the "To go" count and the
+ * next run, or the next resolver version, re-scans them with the new
+ * prompt instead of skipping them forever.
  */
 
 export interface RunIndexJobInput {
@@ -83,6 +90,7 @@ export async function runIndexJob(
         else unresolved.push(place);
       }
       if (deterministic.length > 0) input.applyResults(deterministic);
+      const batchResults: ParsedCategorisationResult[] = [...deterministic];
       if (unresolved.length > 0) {
         const aiResults = await categoriseBatch({
           places: unresolved,
@@ -92,14 +100,25 @@ export async function runIndexJob(
           fetchImpl: input.fetchImpl,
         });
         input.applyResults(aiResults);
+        batchResults.push(...aiResults);
       }
       // Save the results FIRST, then mark the batch attempted — so a
       // crash between the two can only re-run a batch, never lose one.
       // (A failed LLM call throws before this line: the deterministic
       // results above are already saved, and the batch is not marked
       // attempted, so a resume retries only the unresolved rest.)
-      input.markAttempted(batch.map((place) => place.id));
-      attempted += batch.length;
+      // "Not sure" is not attempted: places the AI could not resolve
+      // stay in the "To go" count for the next run / new prompt.
+      const unsureIds = new Set(
+        batchResults
+          .filter((result) => result.confidence < MIN_AI_CONFIDENCE)
+          .map((result) => result.placeId),
+      );
+      const attemptedIds = batch
+        .map((place) => place.id)
+        .filter((id) => !unsureIds.has(id));
+      input.markAttempted(attemptedIds);
+      attempted += attemptedIds.length;
       input.onProgress?.(attempted, total);
       // Yield so the map thread gets a turn between batches.
       await sleep(input.batchDelayMs ?? 120);

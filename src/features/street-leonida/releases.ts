@@ -11,6 +11,26 @@ export interface LeonidaAtlasRelease {
 /** Retained public history starts at v0.5.0; the newest release stays first. */
 export const LEONIDA_ATLAS_RELEASES: readonly LeonidaAtlasRelease[] = [
   {
+    version: 'v0.14.0',
+    date: '2026-11-24',
+    title: 'Minimal cards, not-sure places re-scanned, county and area isolation, and a map that never looks empty',
+    summary:
+      'The fix for three complaints at once: place cards that read as essays, not-sure places the job skipped forever, and a county picker that filtered the list while the map stayed lit — plus the empty first-launch map that read as broken, with 3,754 places in the data and nothing showing.',
+    status: 'public',
+    highlights: [
+      'Cards are minimal now: a 56px blip roundel, the name or "? · type", the area, the distance, and Enterable / Lootable / Breakable / Gym / Equipment badges — nothing else on the card face. No paragraph, no evidence text, no "AI suggested" line on the card. All of that lives behind one tap, in the place sheet: the full description, the Inside section, loot, the AI-suggested label with its confidence, and the source. Ask answers are the same: a one-or-two-line verdict, then clean cards.',
+      'Not-sure places get re-scanned: "not sure" is no longer attempted — a low-confidence answer is saved as "not sure" but its place stays in the "To go" count, and the next run checks it again. When the resolver version moves, the job re-queues every "not sure" place from the old version (resolver v3) and the Index panel says so — "X not-sure places re-queued for re-scan with the new prompt" — with a "Re-scan not-sure places" button to trigger it by hand.',
+      'County and area isolation work on the map now, not just in the list: pick a county (Lummox, Kelly, Leonard, Vice-Dale, Mariana) or a town/city/area (Capri, Vice City, Port Gellhorn and the rest) from Layers or Find and the map zooms to it, dims everything outside it, shows only that area\'s places, and names the area on the map — with one big "Show all of Leonida" button to leave. County bounds are the estimated extents; area bounds come from the area\'s own places.',
+      'The map never looks empty with no explanation again: on first launch — every public layer off on purpose, spoiler-free — the map now says so in plain words, "Nothing showing yet — pick what to see", with big buttons: Show interiors, Show lootable, Show shops, Show everything. One tap turns a layer on and the pins appear straight away. While places are showing, the map itself says how many and that Layers changes it.',
+      'Kept, unchanged: spoiler-free first launch (all collectibles off, no spoilers shown), forced indexing onboarding, persistence, 48px+ thumb targets, Gyms vs Workout Equipment split, breakable homes as a system (dark blue = has an interior, light blue = closed), interiors on tap, the Ask spoiler rule + proximity, and the index resolver v2 (data first, LLM last). Positions remain APPROXIMATE and absent coverage UNKNOWN; GTADB data is CC BY 4.0, including 107 unpositioned entries.',
+    ],
+    verification: [
+      'Unit tests pass, including 11 new tests for the not-sure re-queue (a v1 not-sure place re-queued under the new version, the runner never marking a not-sure place attempted, the re-queue surviving a storage round-trip exactly once) and for county/area isolation (Capri bounds contain its own places, Vice City neighbourhoods belong to Vice City). TypeScript, ESLint and the production build pass.',
+      'The 390px walk passes with zero console errors and zero overflow, and the screenshots were looked at: a clean minimal Find card, an Ask answer with clean cards, the Index panel showing the re-queued not-sure count, Capri isolated with the rest of the map dimmed, and the fresh-profile first launch — the empty-map prompt, then pins appearing after one tap on "Show interiors".',
+      'Chromium e2e: 11 of 12 pass; the 3D explorer test needs a real GPU (software WebGL is too slow in this sandbox). The WebKit offline-navigation case is explicitly skipped in the suite where Playwright WebKit cannot run it.',
+    ],
+  },
+  {
     version: 'v0.13.0',
     date: '2026-11-24',
     title: 'Ask answers as place cards, and an index resolver that checks the data before it guesses',

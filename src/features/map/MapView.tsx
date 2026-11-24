@@ -20,6 +20,7 @@ import {
   placeIconSvg,
 } from './place-icons';
 import type { AiCategoryRecord } from '../categorise/categories';
+import type { Isolation } from './isolation';
 import 'leaflet/dist/leaflet.css';
 import './map.css';
 
@@ -30,6 +31,11 @@ export interface MapViewProps {
   focus: { position: Position; requestId: number } | null;
   /** Fit the map to these bounds (county picker). */
   boundsFocus: { bounds: MapBounds; requestId: number } | null;
+  /** Area isolation (v0.14.0): the named area stays lit, everything
+   * outside its bounds is dimmed, and only its places show. */
+  isolation?: Isolation | null;
+  /** Exit isolation — back to all of Leonida. */
+  onExitIsolation?: () => void;
   editorMode: 'none' | 'create' | 'move';
   preferences: Preferences;
   foundIds: ReadonlySet<string>;
@@ -449,6 +455,48 @@ export default function MapView(props: MapViewProps) {
     });
   }, [map, props.boundsFocus]);
 
+  // Area isolation: dim everything outside the isolated bounds. The
+  // mask is one polygon — the whole basemap rect with the isolated
+  // rect cut out as a hole — plus a bright outline around the area
+  // itself, so the lit part reads as the place and the rest reads as
+  // deliberately switched off, not broken. The list filter already
+  // hides the outside places; the mask is what makes it visible.
+  useEffect(() => {
+    if (!map) return;
+    const isolation = props.isolation;
+    if (!isolation) return;
+    const outer: L.LatLngExpression[] = [
+      [BASEMAP_BOUNDS.south, BASEMAP_BOUNDS.west],
+      [BASEMAP_BOUNDS.south, BASEMAP_BOUNDS.east],
+      [BASEMAP_BOUNDS.north, BASEMAP_BOUNDS.east],
+      [BASEMAP_BOUNDS.north, BASEMAP_BOUNDS.west],
+    ];
+    const b = isolation.bounds;
+    const hole: L.LatLngExpression[] = [
+      [b.south, b.west],
+      [b.south, b.east],
+      [b.north, b.east],
+      [b.north, b.west],
+    ];
+    const mask = L.polygon([outer, hole], {
+      color: '#12060f',
+      weight: 0,
+      fillColor: '#12060f',
+      fillOpacity: 0.62,
+      interactive: false,
+    }).addTo(map);
+    const outline = L.rectangle(leafletBounds(b), {
+      color: '#ff2e88',
+      weight: 2,
+      fill: false,
+      interactive: false,
+    }).addTo(map);
+    return () => {
+      mask.remove();
+      outline.remove();
+    };
+  }, [map, props.isolation]);
+
   useEffect(() => {
     if (props.editorMode === 'none') {
       setPreviewPosition(null);
@@ -512,6 +560,17 @@ export default function MapView(props: MapViewProps) {
         aria-describedby={descriptionId}
         tabIndex={0}
       />
+      {props.isolation && (
+        <div className="isolation-banner" role="status">
+          <span>
+            <strong>{props.isolation.label}</strong>
+            <small>Only this area — the rest of Leonida is dimmed</small>
+          </span>
+          <button type="button" onClick={() => props.onExitIsolation?.()}>
+            Show all of Leonida
+          </button>
+        </div>
+      )}
       {props.editorMode !== 'none' ? (
         <div className="atlas-map-editor-hint">
           <button type="button" onClick={useMapCenter}>

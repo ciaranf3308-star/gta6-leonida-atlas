@@ -102,6 +102,10 @@ export interface Filters {
   collectionId: string | null;
   /** Isolate one county (estimated extents, see src/data/counties.ts). */
   countyId: string | null;
+  /** Isolate one town/city/area by region name ("Capri", "Vice City") —
+   * a region, or a neighbourhood of it ("Downtown, Vice City" is Vice
+   * City). Cleared when a county is chosen, and vice versa. */
+  area: string | null;
   /** Hide places already marked as found. */
   hideFound: boolean;
   /** Show only places not yet marked as found (the 99% case). Implies hideFound. */

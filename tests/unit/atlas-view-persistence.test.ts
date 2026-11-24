@@ -21,6 +21,7 @@ function memoryStorage(initial: Record<string, string> = {}) {
 const VIEW: SavedMapView = {
   visibleLayerIds: ['lootable', 'shops'],
   countyId: 'kelly',
+  area: null,
   hideFound: true,
   remainingOnly: false,
   favoritesOnly: false,

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { Filters, LayerDefinition, Place, Position, UserData } from '../domain/types';
 import type { MapBounds } from '../features/map/coordinates';
+import type { Isolation } from '../features/map/isolation';
 import { EMPTY_USER_DATA } from '../domain/types';
 import {
   AtlasDatabase,
@@ -20,6 +21,7 @@ export const DEFAULT_FILTERS: Filters = {
   evidence: 'all',
   collectionId: null,
   countyId: null,
+  area: null,
   hideFound: false,
   remainingOnly: false,
   enterableOnly: false,
@@ -46,6 +48,9 @@ export const useMapStore = create<{
   focus: { position: Position; requestId: number } | null;
   /** Fit the map to these bounds (county picker, "show all"). */
   boundsFocus: { bounds: MapBounds; requestId: number } | null;
+  /** Area isolation (v0.14.0): the county/area on the map is lit and
+   * named, everything outside it is dimmed. Null = all of Leonida. */
+  isolation: Isolation | null;
   layers: LayerDefinition[];
   editorMode: 'none' | 'create' | 'move';
   draftPosition: Position | null;
@@ -62,6 +67,7 @@ export const useMapStore = create<{
   setPosition: (position: Position) => void;
   setMarkerKindPreset: (kind: 'workout' | 'breakable' | null) => void;
   setBoundsFocus: (bounds: MapBounds) => void;
+  setIsolation: (isolation: Isolation | null) => void;
   setHighlights: (ids: string[]) => void;
   clearHighlights: () => void;
   setMapCenter: (center: Position) => void;
@@ -69,6 +75,7 @@ export const useMapStore = create<{
   selectedId: null,
   focus: null,
   boundsFocus: null,
+  isolation: null,
   layers: [],
   editorMode: 'none',
   draftPosition: null,
@@ -94,6 +101,7 @@ export const useMapStore = create<{
     set((state) => ({
       boundsFocus: { bounds, requestId: (state.boundsFocus?.requestId ?? 0) + 1 },
     })),
+  setIsolation: (isolation) => set({ isolation }),
   setHighlights: (highlightIds) => set({ highlightIds }),
   clearHighlights: () => set({ highlightIds: [] }),
   setMapCenter: (mapCenter) => set({ mapCenter }),
@@ -207,7 +215,7 @@ export function switchLocalWorkspace(workspaceId: string | null): Promise<void> 
     navTab: 'map',
     askOpen: false,
   });
-  useMapStore.setState({ selectedId: null, focus: null, boundsFocus: null, editorMode: 'none', draftPosition: null, markerKindPreset: null, highlightIds: [] });
+  useMapStore.setState({ selectedId: null, focus: null, boundsFocus: null, isolation: null, editorMode: 'none', draftPosition: null, markerKindPreset: null, highlightIds: [] });
   const operation = writeQueue.then(async () => {
     const previous = atlasRepository;
     const repository = previous.name === name ? previous : new AtlasDatabase(name);

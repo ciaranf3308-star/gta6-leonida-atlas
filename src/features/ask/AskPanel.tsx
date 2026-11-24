@@ -56,6 +56,11 @@ export interface AskPanelProps {
  * earlier request finishing after a newer one) is dropped by request
  * id. The anchor is shown on every answer, so a follow-up never loses
  * what it is about.
+ *
+ * MINIMAL CARDS (v0.14.0): the card face carries the blip, the name,
+ * the area, the distance and the badges — nothing else. No "AI
+ * suggested" line, no county line, no evidence paragraph on the card:
+ * all of that lives behind one tap, in the place sheet.
  */
 interface AskMessage {
   role: 'user' | 'assistant';
@@ -203,8 +208,8 @@ export default function AskPanel(props: AskPanelProps) {
           {
             text: houses
               ? houses.kind === 'equipment'
-                ? `No verified workout equipment in ${houses.areaName} in any public data — and no gym tag anywhere in the map data outside Ajax Gym. The equipment is in a garage in a house, so the houses below are worth checking instead.`
-                : `No verified gym in ${houses.areaName} in any public data — and no gym tag anywhere in the map data outside Ajax Gym. The houses below are worth checking instead.`
+                ? `No verified workout equipment in ${houses.areaName} — the houses below are worth checking instead.`
+                : `No verified gym in ${houses.areaName} — the houses below are worth checking instead.`
               : result.areaMismatch
                 ? `Nothing${scope} in that area in the map data — the nearest matching places are shown below instead.`
                 : `Nothing${scope} in the map data for that. I won't guess — try turning a layer on, or drop your own marker when you find one.`,
@@ -363,10 +368,6 @@ export default function AskPanel(props: AskPanelProps) {
                         <strong>{card.title}</strong>
                         <small>
                           {card.area}
-                          {card.countyName && card.area !== card.countyName
-                            ? ` · ${card.countyName}`
-                            : ''}
-                          {card.typeNote ? ` · ${card.typeNote}` : ''}
                         </small>
                         <small className="ask-card-distance">
                           {card.near ? 'Close by · ' : ''}
@@ -375,10 +376,7 @@ export default function AskPanel(props: AskPanelProps) {
                         {card.badges.length > 0 && (
                           <span className="result-badges">
                             {card.badges.map((badge) => (
-                              <span key={badge}>
-                                {badge}
-                                {card.aiBadges[badge] ? ' · AI' : ''}
-                              </span>
+                              <span key={badge}>{badge}</span>
                             ))}
                           </span>
                         )}
@@ -409,18 +407,15 @@ export default function AskPanel(props: AskPanelProps) {
                 </strong>
                 {message.houses.kind === 'equipment' ? (
                   <p>
-                    No verified workout equipment here — the equipment is in
-                    a garage in a house, so these are the houses in{' '}
-                    {message.houses.areaName} worth checking. Not verified
-                    equipment. If you find gear in one, mark it and Ask
-                    will use it next time.
+                    No verified workout equipment here — check these houses
+                    instead. Not verified equipment: if you find gear in
+                    one, mark it and Ask will use it next time.
                   </p>
                 ) : (
                   <p>
-                    No verified gym here — these are the enterable houses and
-                    homes in {message.houses.areaName}. Not verified gyms.
-                    If you find equipment in one, mark it and Ask will use
-                    it next time.
+                    No verified gym here — check these houses instead. Not
+                    verified gyms: if you find equipment in one, mark it
+                    and Ask will use it next time.
                   </p>
                 )}
                 <ul className="ask-cards">
@@ -456,9 +451,6 @@ export default function AskPanel(props: AskPanelProps) {
                             <strong>{card.title}</strong>
                             <small>
                               {card.area}
-                              {card.countyName && card.area !== card.countyName
-                                ? ` · ${card.countyName}`
-                                : ''}
                             </small>
                             {card.badges.length > 0 && (
                               <span className="result-badges">

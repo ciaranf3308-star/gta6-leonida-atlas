@@ -11,6 +11,8 @@ import {
   saveMapView,
 } from '../features/map/view-persistence';
 import { COUNTIES } from '../data/counties';
+import { INITIAL_BOUNDS } from '../features/map/coordinates';
+import { areaIsolation, countyIsolation } from '../features/map/isolation';
 import AskPanel from '../features/ask/AskPanel';
 import { useAiIndexStore } from '../features/categorise/store';
 import WelcomeSheet from '../features/onboarding/WelcomeSheet';
@@ -74,6 +76,7 @@ export default function App() {
   const aiCategories = useAiIndexStore((s) => s.categories);
   const focus = useMapStore((s) => s.focus);
   const boundsFocus = useMapStore((s) => s.boundsFocus);
+  const isolation = useMapStore((s) => s.isolation);
   const editorMode = useMapStore((s) => s.editorMode);
   const draftPosition = useMapStore((s) => s.draftPosition);
   const [welcomeOpen, setWelcomeOpen] = useState(false);
@@ -204,9 +207,47 @@ export default function App() {
     },
     [allPlaces],
   );
-  /** Bottom-nav navigation, with the single-sheet rule. Ask opens as
-   * the one sheet (the place detail closes); a panel tab closes Ask
-   * and, on a phone, the detail. */
+  /** Exit area isolation: back to all of Leonida, filters and map. */
+  const exitIsolation = useCallback(() => {
+    useUiStore.getState().setFilters({ countyId: null, area: null });
+    useMapStore.getState().setIsolation(null);
+    useMapStore.getState().setBoundsFocus(INITIAL_BOUNDS);
+  }, []);
+  /** Restore a saved area isolation once the catalogue is in — the
+   * area's bounds come from its own places, so this waits for them. */
+  useEffect(() => {
+    if (status !== 'ready') return;
+    const area = useUiStore.getState().filters.area;
+    if (area && !useMapStore.getState().isolation) {
+      const iso = areaIsolation(area, allPlaces);
+      if (iso) {
+        useMapStore.getState().setIsolation(iso);
+        useMapStore.getState().setBoundsFocus(iso.bounds);
+      }
+    }
+  }, [status, allPlaces]);
+  /** Turn layers on from the empty-map prompt: one tap, pins appear
+   * immediately. "Everything" is every public layer — the user's tap
+   * is the consent to show it all. */
+  const turnOnLayers = useCallback((layerIds: string[] | 'all') => {
+    useMapStore.getState().setLayers(
+      useMapStore
+        .getState()
+        .layers.map((layer) =>
+          layer.id === 'personal'
+            ? layer
+            : layerIds === 'all' || layerIds.includes(layer.id)
+              ? { ...layer, visible: true }
+              : layer,
+        ),
+    );
+  }, []);
+  /** Clear every filter and lift the isolation: back to all of Leonida. */
+  const clearFiltersAndIsolation = useCallback(() => {
+    useUiStore.getState().resetFilters();
+    useMapStore.getState().setIsolation(null);
+    useMapStore.getState().setBoundsFocus(INITIAL_BOUNDS);
+  }, []);
   const goToTab = useCallback((tab: 'map' | 'explore' | 'layers' | 'saved' | 'ask') => {
     if (tab === 'ask') {
       useMapStore.getState().select(null);
@@ -291,6 +332,7 @@ export default function App() {
       );
       useUiStore.getState().setFilters({
         countyId: saved.countyId,
+        area: saved.area ?? null,
         hideFound: saved.hideFound,
         remainingOnly: saved.remainingOnly,
         favoritesOnly: saved.favoritesOnly,
@@ -300,7 +342,10 @@ export default function App() {
         lootableOnly: saved.lootableOnly,
       });
       const county = COUNTIES.find((c) => c.id === saved.countyId);
-      if (county) useMapStore.getState().setBoundsFocus(county.bounds);
+      if (county) {
+        useMapStore.getState().setBoundsFocus(county.bounds);
+        useMapStore.getState().setIsolation(countyIsolation(county));
+      }
     }
     setViewRestored(true);
     void hydrateUserData();
@@ -431,6 +476,8 @@ export default function App() {
           selectedId={selectedId}
           focus={focus}
           boundsFocus={boundsFocus}
+          isolation={isolation}
+          onExitIsolation={exitIsolation}
           editorMode={editorMode}
           preferences={preferences}
           foundIds={new Set(visited.map((v) => v.placeId))}
@@ -460,6 +507,58 @@ export default function App() {
               <Search size={18} />
               <span>Search Leonida — places, gyms, lootable homes</span>
             </button>
+            {status === 'ready' && showingCount === 0 ? (
+              !anyPublicLayerVisible ? (
+                <div className="empty-map-prompt" role="status">
+                  <strong>Nothing showing yet — pick what to see</strong>
+                  <p>
+                    {allPlaces.length.toLocaleString()} places are in the
+                    map — nothing is turned on yet, so nothing shows. Pick
+                    one and the pins appear straight away. Nothing here is
+                    a spoiler until you turn it on.
+                  </p>
+                  <div className="empty-map-buttons">
+                    <button type="button" onClick={() => turnOnLayers(['interiors'])}>
+                      Show interiors
+                    </button>
+                    <button type="button" onClick={() => turnOnLayers(['lootable'])}>
+                      Show lootable
+                    </button>
+                    <button type="button" onClick={() => turnOnLayers(['shops'])}>
+                      Show shops
+                    </button>
+                    <button type="button" onClick={() => turnOnLayers('all')}>
+                      Show everything
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="empty-map-prompt" role="status">
+                  <strong>Nothing showing here</strong>
+                  <p>
+                    Layers are on, but nothing matches in this area with
+                    these filters. Clear the filters, or show everything.
+                  </p>
+                  <div className="empty-map-buttons">
+                    <button type="button" onClick={clearFiltersAndIsolation}>
+                      Clear filters
+                    </button>
+                    <button type="button" onClick={() => turnOnLayers('all')}>
+                      Show everything
+                    </button>
+                  </div>
+                </div>
+              )
+            ) : status === 'ready' && showingCount > 0 ? (
+              <button
+                type="button"
+                className="map-showing-count"
+                onClick={() => goToTab('layers')}
+              >
+                {showingCount.toLocaleString()} place{showingCount === 1 ? '' : 's'} showing
+                {' '}· tap to change in Layers
+              </button>
+            ) : null}
           </div>
         )}
         <AskPanel

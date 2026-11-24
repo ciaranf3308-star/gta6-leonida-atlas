@@ -369,6 +369,64 @@ h3 {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* ---- Empty map (v0.14.0): the map must never look empty with no
+ * explanation. Spoiler-free first launch turns every public layer
+ * off, so 0 places show — and that read as a broken map. This prompt
+ * says so in plain words, with one-tap buttons that turn layers on
+ * and make pins appear immediately. ---- */
+.empty-map-prompt {
+  background: #17102ee6;
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--pink);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 8px 28px #000a;
+}
+.empty-map-prompt strong {
+  display: block;
+  font-family: var(--condensed);
+  font-size: 19px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+.empty-map-prompt p {
+  margin: 8px 0 14px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text);
+}
+.empty-map-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.empty-map-buttons button {
+  min-height: 52px;
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: linear-gradient(135deg, #ff2e88, #ff7a18);
+  color: #fff;
+  font-family: var(--condensed);
+  font-size: 15px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+/* How many places are showing, on the map itself, in plain words —
+ * one tap opens Layers to change it. */
+.map-showing-count {
+  width: fit-content;
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 1px solid #ffffff2e;
+  border-radius: 999px;
+  background: #17102ee6;
+  backdrop-filter: blur(8px);
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+}
 
 /* Transient map notices (placement mode, load errors) — only while active. */
 .placement-notice {
@@ -1605,6 +1663,21 @@ h3 {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+/* Re-queued "not sure" places (v0.14.0): the resolver got a new
+ * prompt, so the places it could not tell before go back in the
+ * "To go" count and get checked again. */
+.index-requeue {
+  background: var(--surface-raised);
+  border: 1px solid var(--gold);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin: 12px 0;
+  font-size: 13px;
+  line-height: 1.55;
+}
+.index-requeue strong {
+  color: var(--gold);
 }
 .index-counts {
   display: flex;

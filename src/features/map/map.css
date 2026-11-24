@@ -123,6 +123,61 @@
   color: #fff;
   font-weight: 700;
 }
+/* ---- Area isolation (v0.14.0): the isolated area is named on the
+ * map, with one big exit back to all of Leonida. Bottom-centre, above
+ * the bottom nav and clear of the zoom column on the right (the top
+ * is the wordmark + search pill's space). ---- */
+.isolation-banner {
+  position: absolute;
+  z-index: 500;
+  bottom: 76px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  width: min(320px, calc(100% - 92px));
+  background: #201b14f2;
+  border: 1px solid #ff2e88;
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 4px 18px #000a;
+  color: #f3ead9;
+}
+.isolation-banner > span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.isolation-banner strong {
+  font-family: var(--condensed, 'Oswald', sans-serif);
+  font-size: 16px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.isolation-banner small {
+  font-size: 12px;
+  color: #d8c9b8;
+  line-height: 1.4;
+}
+.isolation-banner button {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ff2e88, #ff7a18);
+  color: #fff;
+  font-family: var(--condensed, 'Oswald', sans-serif);
+  font-size: 14px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+}
 .atlas-map-navigation {
   position: absolute;
   z-index: 500;

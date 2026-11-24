@@ -38,6 +38,7 @@ export interface IndexPanelProps {
 export default function IndexPanel(props: IndexPanelProps) {
   const categories = useAiIndexStore((s) => s.categories);
   const job = useAiIndexStore((s) => s.job);
+  const requeuedUnsure = useAiIndexStore((s) => s.requeuedUnsure);
   const startRequestId = useAiIndexStore((s) => s.startRequestId);
   const [running, setRunning] = useState(false);
   const pauseRef = useRef(false);
@@ -88,12 +89,15 @@ export default function IndexPanel(props: IndexPanelProps) {
     unnamed.length > 0
       ? Math.round((counts.attempted / unnamed.length) * 100)
       : 0;
-  const done = unnamed.length > 0 && counts.remaining === 0 && !running;
+  // Done means nothing never-run is left — "not sure" places still
+  // sit in "To go" for a re-scan, so they never block "done".
+  const done = unnamed.length > 0 && counts.pending === 0 && !running;
 
   async function start() {
     if (running || runningRef.current) return;
     const apiKey = getAskApiKey();
     if (!apiKey) return;
+    useAiIndexStore.getState().clearRequeueNotice();
     // Read the job fresh from the store — after "check the not-sure ones
     // again" the attempted list has just changed and the closure is stale.
     const todo = remainingUnnamedPlaces(
@@ -202,6 +206,18 @@ export default function IndexPanel(props: IndexPanelProps) {
           );
         })}
       </div>
+      {requeuedUnsure > 0 && (
+        <p className="index-requeue" role="status">
+          <strong>
+            {requeuedUnsure.toLocaleString()} not-sure place
+            {requeuedUnsure === 1 ? '' : 's'} re-queued for re-scan with
+            the new prompt.
+          </strong>{' '}
+          The last run could not tell what {requeuedUnsure === 1 ? 'this place is' : 'these places are'} — with the new
+          prompt they go back in the “To go” count and get checked
+          again instead of being skipped forever.
+        </p>
+      )}
       <div className="index-progress" role="status">
         <div className="index-counts">
           <strong>
@@ -297,9 +313,9 @@ export default function IndexPanel(props: IndexPanelProps) {
       ) : done ? (
         <div className="index-done">
           <p className="success-message" role="status">
-            All {unnamed.length.toLocaleString()} unnamed places indexed.
+            Every unnamed place has been through the job.
             {counts.unsure > 0
-              ? ` ${counts.unsure.toLocaleString()} the AI was not sure about — those stay uncategorised.`
+              ? ` ${counts.unsure.toLocaleString()} the AI was not sure about — those stay uncategorised, in the “To go” count, until a re-scan.`
               : ""}
           </p>
           {counts.unsure > 0 && (
@@ -309,7 +325,7 @@ export default function IndexPanel(props: IndexPanelProps) {
               onClick={retryUnsure}
               disabled={running}
             >
-              Check the not-sure ones again
+              Re-scan not-sure places
             </button>
           )}
         </div>
@@ -342,17 +358,24 @@ export default function IndexPanel(props: IndexPanelProps) {
           </button>
         </div>
       ) : (
-        <button
-          type="button"
-          className="button primary"
-          onClick={() => void start()}
-          disabled={remaining.length === 0}
-        >
-          <Sparkles size={16} />{" "}
-          {counts.attempted > 0
-            ? `Continue indexing (${counts.remaining.toLocaleString()} to go)`
-            : "Index unnamed places"}
-        </button>
+        <div className="button-row">
+          <button
+            type="button"
+            className="button primary"
+            onClick={() => void start()}
+            disabled={remaining.length === 0}
+          >
+            <Sparkles size={16} />{" "}
+            {counts.attempted > 0
+              ? `Continue indexing (${counts.remaining.toLocaleString()} to go)`
+              : "Index unnamed places"}
+          </button>
+          {counts.unsure > 0 && (
+            <button type="button" className="button" onClick={retryUnsure}>
+              Re-scan not-sure places
+            </button>
+          )}
+        </div>
       )}
       <p className="help-text">
         Small and cheap: the small model, 8 places at a time, saved after each

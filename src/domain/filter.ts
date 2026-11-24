@@ -1,5 +1,6 @@
 import type { Collection, Filters, Place, PlaceNote } from './types';
 import { countyForPlace } from '../data/counties';
+import { matchesArea } from '../features/map/isolation';
 import { isEnterablePlace } from './tags';
 import { venueTypeFor } from './interiors';
 import { tagResolutionSearchWords } from './resolve-tags';
@@ -67,6 +68,10 @@ export function filterPlaces(
     if (filters.countyId) {
       if (!place.position) return false;
       if (countyForPlace(place) !== filters.countyId) return false;
+    }
+    if (filters.area) {
+      if (!place.position) return false;
+      if (!matchesArea(place, filters.area)) return false;
     }
     if (filters.category !== 'all' && filters.category !== place.category) return false;
     if (filters.favoritesOnly && !favorites.has(place.id)) return false;

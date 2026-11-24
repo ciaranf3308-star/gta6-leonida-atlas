@@ -24,6 +24,7 @@ import {
 } from '../stores/atlas';
 import { useAiIndexStore } from '../features/categorise/store';
 import { COUNTIES, countyForPlace, countyIdForPosition } from '../data/counties';
+import { areaIsolation, areaOptions, countyIsolation } from '../features/map/isolation';
 import { DEFAULT_LAYERS } from '../features/map/layers';
 import {
   PlaceIcon,
@@ -35,7 +36,7 @@ import { SavedPlaces } from '../features/library/SavedPlaces';
 import { Status } from './Status';
 import { setAccountEntryTarget } from '../capabilities/extension-host';
 import IndexPanel from '../features/categorise/IndexPanel';
-import { aiCategoryDisplay, aiCategoryShortLabel, effectiveAiCategory, recordSource, resolutionSourceLabel } from '../features/categorise/categories';
+import { aiCategoryShortLabel, effectiveAiCategory } from '../features/categorise/categories';
 import { INITIAL_BOUNDS } from '../features/map/coordinates';
 import { CATEGORIES } from './categories';
 import { distanceBetween, distanceWord } from '../domain/distance';
@@ -254,9 +255,12 @@ function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allP
    * job's real remaining work (2,144 on a fresh phone). */
   const unnamedRemaining = tagResolutionCounts(allPlaces).remaining;
   function chooseCounty(id: string | null) {
-    useUiStore.getState().setFilters({ countyId: id });
+    useUiStore.getState().setFilters({ countyId: id, area: null });
     const county = COUNTIES.find((c) => c.id === id);
     useMapStore.getState().setBoundsFocus(county ? county.bounds : INITIAL_BOUNDS);
+    // Isolation, on the map: the county stays lit and named, the rest
+    // of Leonida dims. Picking All Leonida lifts it.
+    useMapStore.getState().setIsolation(county ? countyIsolation(county) : null);
   }
   function beginAdd(preset: 'marker' | 'workout' | 'breakable') {
     useMapStore
@@ -521,11 +525,10 @@ function Results({
       ) : sorted.length ? (
         <div className="place-results" aria-label="Search results">
           {sorted.slice(0, limit).map((place) => {
-            const aiDisplay = aiCategoryDisplay(aiCategories[place.id]);
             const aiCategory = effectiveAiCategory(aiCategories[place.id]);
             // A categorised "?" shows as "?" + its AI type — the name stays "?".
-            // A "?" the map data's tags resolve to a type shows the same way,
-            // labelled "from its tags" below. An unresolved "?" stays "?".
+            // A "?" the map data's tags resolve to a type shows the same way.
+            // An unresolved "?" stays "?".
             const tagResolution = tagResolutionFor(place);
             const displayTitle =
               isUnnamedPlace(place) && aiCategory
@@ -533,21 +536,28 @@ function Results({
                 : isUnnamedPlace(place) && tagResolution
                   ? `? · ${aiCategoryShortLabel(tagResolution.category)}`
                   : place.title;
-            const countyId = countyForPlace(place);
-            const countyName = COUNTIES.find((c) => c.id === countyId)?.name.replace(
-              ' County',
-              '',
-            );
             const distance =
               place.position && mapCenter
                 ? distanceWord(distanceBetween(place.position, mapCenter))
                 : null;
+            // The card face is minimal (v0.14.0): name, area, distance,
+            // badges — nothing else. No evidence line, no "AI suggested"
+            // line, no tag line: all of that lives behind one tap, in
+            // the place sheet. A card that reads as a paragraph fails.
             const badges: string[] = [];
             if (place.tags.includes('enterable') || place.layerId === 'interiors')
-              badges.push('Can go inside');
-            if (place.layerId === 'breakable') badges.push('Breakable home');
+              badges.push('Enterable');
             if (place.layerId === 'lootable') badges.push('Lootable');
-            if (possibleBreakableHouse(place)) badges.push('Possible enterable house');
+            if (place.layerId === 'breakable' || possibleBreakableHouse(place))
+              badges.push('Breakable');
+            if (place.layerId === 'gyms' || place.tags.includes('gym') || place.tags.includes('fitness'))
+              badges.push('Gym');
+            else if (
+              place.layerId === 'equipment' ||
+              place.tags.includes('equipment') ||
+              place.tags.includes('workout')
+            )
+              badges.push('Equipment');
             return (
             <button
               className={`place-result ${selectedId === place.id ? 'active' : ''}`}
@@ -569,22 +579,8 @@ function Results({
               <span>
                 <strong>{displayTitle || 'Unnamed entry'}</strong>
                 <small>
-                  {!place.position
-                    ? 'Unpositioned'
-                    : place.evidence === 'personal'
-                      ? 'My marker'
-                      : place.category === 'region'
-                        ? 'Region · approximate'
-                        : place.evidence === 'uncertain'
-                          ? 'Unverified · position not confirmed'
-                          : `${place.category} · approximate`}
-                  {place.region ? ` · ${place.region}` : ''}
-                  {countyName && place.region !== countyName ? ` · ${countyName}` : ''}
+                  {place.region || 'Leonida'}
                   {distance ? ` · ${distance}` : ''}
-                  {aiDisplay ? ` · ${resolutionSourceLabel(recordSource(aiCategories[place.id]))}: ${aiDisplay.label}` : ''}
-                  {!aiDisplay && tagResolution
-                    ? ` · ${tagResolution.label} — from its tags`
-                    : ''}
                 </small>
                 {badges.length > 0 && (
                   <span className="result-badges">
@@ -619,10 +615,11 @@ function Results({
   );
 }
 
-/** Find's own filters — two big native selects inside the Find
- * screen, never pills over the map. County isolates one county (and
- * flies the map there); kind narrows to one kind of place. The full
- * layer switches live in Layers. */
+/** Find's own filters — three big native selects inside the Find
+ * screen, never pills over the map. County isolates one county and
+ * area isolates one town/city (both fly the map there and dim the
+ * rest); kind narrows to one kind of place. The full layer switches
+ * live in Layers. */
 function FindFilters({
   allPlaces,
   showingCount,
@@ -632,14 +629,25 @@ function FindFilters({
 }) {
   const filters = useUiStore((s) => s.filters);
   const layers = useMapStore((s) => s.layers);
+  const areas = useMemo(() => areaOptions(allPlaces), [allPlaces]);
   function chooseCounty(id: string | null) {
-    useUiStore.getState().setFilters({ countyId: id });
+    useUiStore.getState().setFilters({ countyId: id, area: null });
     const county = COUNTIES.find((c) => c.id === id);
     useMapStore.getState().setBoundsFocus(county ? county.bounds : INITIAL_BOUNDS);
+    useMapStore.getState().setIsolation(county ? countyIsolation(county) : null);
+  }
+  /** Isolate one town/city/area: the area's own places draw its box,
+   * the map dims outside it, the list shows only its places. */
+  function chooseArea(area: string | null) {
+    useUiStore.getState().setFilters({ area, countyId: null });
+    const iso = area ? areaIsolation(area, allPlaces) : null;
+    useMapStore.getState().setIsolation(iso);
+    useMapStore.getState().setBoundsFocus(iso ? iso.bounds : INITIAL_BOUNDS);
   }
   const anythingActive =
     layers.some((l) => l.visible && l.id !== 'personal') ||
     filters.countyId !== null ||
+    filters.area !== null ||
     filters.category !== 'all' ||
     filters.query !== '' ||
     filters.enterableOnly ||
@@ -661,6 +669,21 @@ function FindFilters({
           {COUNTIES.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label>
+        <span>Area</span>
+        <select
+          value={filters.area ?? ''}
+          onChange={(e) => chooseArea(e.target.value || null)}
+          aria-label="Isolate one town, city or area"
+        >
+          <option value="">All Leonida</option>
+          {areas.map((area) => (
+            <option key={area.name} value={area.name}>
+              {area.name} ({area.count.toLocaleString()})
             </option>
           ))}
         </select>
@@ -691,6 +714,8 @@ function FindFilters({
             className="text-button"
             onClick={() => {
               useUiStore.getState().resetFilters();
+              useMapStore.getState().setIsolation(null);
+              useMapStore.getState().setBoundsFocus(INITIAL_BOUNDS);
               useMapStore
                 .getState()
                 .setLayers(

@@ -47,7 +47,8 @@ export interface AskCard {
   title: string;
   /** Where the type in the title came from. */
   typeSource: 'layer' | 'tag' | 'ai' | 'none';
-  /** "AI suggested: Gym" — shown when the type itself is AI-suggested. */
+  /** "AI suggested: Gym" — kept on the card data for the place sheet,
+   * never rendered on the card face (v0.14.0: the card stays clean). */
   typeNote: string | null;
   /** Area / region, e.g. "Tequesta, Vice City". */
   area: string;

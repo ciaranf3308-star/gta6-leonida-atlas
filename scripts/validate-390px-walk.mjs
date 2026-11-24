@@ -83,7 +83,7 @@ console.log('01 bottom nav: Map / Find / Layers / Saved / Ask all labelled');
 
 // (a) Turn on Lootable in 2 taps: welcome quick start, then the map.
 // v0.12.0: no count pill on the map — the count lives in Find.
-await page.getByRole('button', { name: /^Show lootable/ }).click();
+await page.locator('.welcome-quick-starts').getByRole('button', { name: /^Show lootable/ }).click();
 await page.waitForTimeout(1500);
 await shot('02-map-lootable');
 console.log('02 overflow:', await overflow());

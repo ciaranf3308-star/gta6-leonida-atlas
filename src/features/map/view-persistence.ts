@@ -21,6 +21,7 @@ export const MAP_VIEW_STORAGE_KEY = 'leonida-map-view-v1';
 export interface SavedMapView {
   visibleLayerIds: string[];
   countyId: string | null;
+  area: string | null;
   hideFound: boolean;
   remainingOnly: boolean;
   favoritesOnly: boolean;
@@ -64,6 +65,7 @@ export function loadSavedMapView(
         id === 'gyms-outdoor' ? 'equipment' : id,
       ),
       countyId: typeof value.countyId === 'string' ? value.countyId : null,
+      area: typeof value.area === 'string' ? value.area : null,
       hideFound: value.hideFound === true,
       remainingOnly: value.remainingOnly === true,
       favoritesOnly: value.favoritesOnly === true,
@@ -117,6 +119,7 @@ export function mapViewFromState(
   return {
     visibleLayerIds,
     countyId: filters.countyId,
+    area: filters.area,
     hideFound: filters.hideFound,
     remainingOnly: filters.remainingOnly,
     favoritesOnly: filters.favoritesOnly,

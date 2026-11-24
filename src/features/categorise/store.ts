@@ -13,6 +13,7 @@ import {
   EMPTY_INDEX_JOB,
   loadAiCategories,
   loadIndexJob,
+  migrateIndexJobForResolver,
   saveAiCategories,
   saveIndexJob,
   type IndexJobState,
@@ -35,6 +36,11 @@ interface AiIndexStoreState {
   categories: Record<string, AiCategoryRecord>;
   job: IndexJobState;
   loaded: boolean;
+  /** How many "not sure" places the resolver-version migration just
+   * re-queued (v0.14.0) — shown in the Index panel until the job runs
+   * again. Session-only: it describes this launch's migration. */
+  requeuedUnsure: number;
+  clearRequeueNotice: () => void;
   /** Session-only counter, never persisted: the forced onboarding's
    * "Start sorting" bumps it, and the Layers panel starts the job
    * when it sees the bump. Lets the job start from the onboarding
@@ -63,16 +69,21 @@ export const useAiIndexStore = create<AiIndexStoreState>()((set, get) => ({
   categories: {},
   job: { ...EMPTY_INDEX_JOB, attemptedPlaceIds: [] },
   loaded: false,
+  requeuedUnsure: 0,
+  clearRequeueNotice: () => set({ requeuedUnsure: 0 }),
   startRequestId: 0,
   requestIndexStart: () =>
     set((state) => ({ startRequestId: state.startRequestId + 1 })),
   load: (storage = browserStorage()) => {
     activeStorage = storage;
-    set({
-      categories: loadAiCategories(storage),
-      job: loadIndexJob(storage),
-      loaded: true,
-    });
+    const categories = loadAiCategories(storage);
+    const storedJob = loadIndexJob(storage);
+    // A job from an older resolver version has its "not sure" places
+    // re-queued for a re-scan with the new prompt (v0.14.0) — the
+    // migration is saved immediately, so it runs exactly once.
+    const { job, requeued } = migrateIndexJobForResolver(storedJob, categories);
+    if (requeued > 0) saveIndexJob(job, storage);
+    set({ categories, job, loaded: true, requeuedUnsure: requeued });
   },
   applyResults: (results, model = CATEGORISATION_MODEL) => {
     const now = new Date().toISOString();
@@ -161,11 +172,11 @@ export const useAiIndexStore = create<AiIndexStoreState>()((set, get) => ({
       updatedAt: new Date().toISOString(),
       error: undefined,
     };
-    set({ job });
+    set({ job, requeuedUnsure: 0 });
     saveIndexJob(job, activeStorage);
   },
   clearAll: (storage = activeStorage) => {
-    set({ categories: {}, job: { ...EMPTY_INDEX_JOB, attemptedPlaceIds: [] } });
+    set({ categories: {}, job: { ...EMPTY_INDEX_JOB, attemptedPlaceIds: [] }, requeuedUnsure: 0 });
     try {
       storage?.removeItem?.(AI_CATEGORIES_STORAGE_KEY);
       storage?.removeItem?.(AI_INDEX_JOB_STORAGE_KEY);
@@ -175,7 +186,11 @@ export const useAiIndexStore = create<AiIndexStoreState>()((set, get) => ({
   },
 }));
 
-/** Counts for the progress line: X of N indexed, Y still to go. */
+/** Counts for the progress line: X of N indexed, Y still to go.
+ * "To go" includes the "not sure" places — they are NOT attempted,
+ * so they are still to do. "Pending" is the never-run remainder:
+ * the job is done when pending hits 0, even while "not sure" places
+ * wait for a re-scan. */
 export function indexJobCounts(
   categories: Record<string, AiCategoryRecord>,
   job: IndexJobState,
@@ -185,6 +200,7 @@ export function indexJobCounts(
   categorised: number;
   unsure: number;
   remaining: number;
+  pending: number;
 } {
   const attempted = job.attemptedPlaceIds.length;
   let categorised = 0;
@@ -193,10 +209,12 @@ export function indexJobCounts(
     if (record.status === "unsure") unsure++;
     else if (record.confidence >= MIN_AI_CONFIDENCE) categorised++;
   }
+  const remaining = Math.max(0, totalUnnamed - attempted);
   return {
     attempted,
     categorised,
     unsure,
-    remaining: Math.max(0, totalUnnamed - attempted),
+    remaining,
+    pending: Math.max(0, remaining - unsure),
   };
 }

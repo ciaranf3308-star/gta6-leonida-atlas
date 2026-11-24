@@ -2,6 +2,16 @@
 
 Release history, newest first.
 
+## v0.14.0 — 2026-11-24
+
+**Released: Minimal cards, not-sure places re-scanned, county and area isolation, and a map that never looks empty.**
+
+- Cards are minimal now: a 56px blip roundel, the name or "? · type", the area, the distance, and Enterable / Lootable / Breakable / Gym / Equipment badges — nothing else on the card face. No paragraph, no evidence text, no "AI suggested" line on the card. All of that lives behind one tap, in the place sheet: the full description, the Inside section, loot, the AI-suggested label with its confidence, and the source. Ask answers are the same: a one-or-two-line verdict, then clean cards.
+- Not-sure places get re-scanned: "not sure" is no longer attempted — a low-confidence answer is saved as "not sure" but its place stays in the "To go" count, and the next run checks it again. When the resolver version moves, the job re-queues every "not sure" place from the old version (resolver v3) and the Index panel says so — "X not-sure places re-queued for re-scan with the new prompt" — with a "Re-scan not-sure places" button to trigger it by hand.
+- County and area isolation work on the map now, not just in the list: pick a county (Lummox, Kelly, Leonard, Vice-Dale, Mariana) or a town/city/area (Capri, Vice City, Port Gellhorn and the rest) from Layers or Find and the map zooms to it, dims everything outside it, shows only that area's places, and names the area on the map — with one big "Show all of Leonida" button to leave. County bounds are the estimated extents; area bounds come from the area's own places.
+- The map never looks empty with no explanation again: on first launch — every public layer off on purpose, spoiler-free — the map now says so in plain words, "Nothing showing yet — pick what to see", with big buttons: Show interiors, Show lootable, Show shops, Show everything. One tap turns a layer on and the pins appear straight away. While places are showing, the map itself says how many and that Layers changes it.
+- Kept, unchanged: spoiler-free first launch (all collectibles off, no spoilers shown), forced indexing onboarding, persistence, 48px+ thumb targets, Gyms vs Workout Equipment split, breakable homes as a system (dark blue = has an interior, light blue = closed), interiors on tap, the Ask spoiler rule + proximity, and the index resolver v2 (data first, LLM last). Real counts throughout: 3,754 GTADB records, 986 named, 2,768 unnamed, 658 of 2,732 "?" resolve from data (588 tags, 9 same-spot, 1 guide, 60 analogue). No "5k" anywhere.
+
 ## v0.13.0 — 2026-11-24
 
 **Released: Ask answers as place cards, and an index resolver that checks the data before it guesses — the fix for the user's 7/10 verdict on v0.12.0.**

@@ -418,6 +418,7 @@ describe("AI categorisation — on-device storage", () => {
     expect(loadIndexJob(memoryStorage())).toEqual({
       status: "idle",
       attemptedPlaceIds: [],
+      resolverVersion: 3,
       updatedAt: new Date(0).toISOString(),
     });
   });
@@ -490,6 +491,9 @@ describe("AI categorisation — on-device storage", () => {
       categorised: 1,
       unsure: 1,
       remaining: 2730,
+      // The unsure place is still "to go" (remaining) but was already
+      // run once, so it is not pending — only the never-run places are.
+      pending: 2729,
     });
   });
 });

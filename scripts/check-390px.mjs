@@ -36,7 +36,7 @@ const welcomeOverflow = await page
 console.log('welcome sheet horizontal overflow px:', welcomeOverflow);
 if (welcomeOverflow > 0) process.exit(1);
 // Quick start: "Show lootable" turns on just that layer and its pins render.
-await page.getByRole('button', { name: /^Show lootable/ }).click();
+await page.locator('.welcome-quick-starts').getByRole('button', { name: /^Show lootable/ }).click();
 await page.waitForTimeout(2000);
 const lootableMarkers = await page.locator('.atlas-map-marker').count();
 console.log('markers on map after Show lootable:', lootableMarkers);

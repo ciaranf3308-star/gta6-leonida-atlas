@@ -11,6 +11,7 @@ const filters: Filters = {
   evidence: 'all',
   collectionId: null,
   countyId: null,
+  area: null,
   hideFound: false,
   remainingOnly: false,
   enterableOnly: false,
