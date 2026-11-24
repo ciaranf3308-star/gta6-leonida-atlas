@@ -350,10 +350,51 @@ h3 {
   position: absolute;
   left: 14px;
   right: 14px;
-  bottom: 10px;
+  bottom: 8px;
   z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+/* v0.19.0 GTA VI text wordmark (drawn, not lifted): condensed name
+ * over a coral-to-sunset VI, a divider, then the Atlas name. */
+.map-hero-gta {
+  display: grid;
+  gap: 0;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.gta-name {
+  font-family: var(--condensed);
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--text);
+  text-shadow: 0 1px 6px #000c;
+}
+.gta-vi {
+  font-family: var(--condensed);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: 2px;
+  background: linear-gradient(135deg, #ff527f, #ffb56b);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 1px 4px #000c);
+}
+.map-hero-divider {
+  width: 1px;
+  height: 30px;
+  background: #f6f0e540;
+  flex-shrink: 0;
+}
+.map-hero-names {
   display: grid;
   gap: 2px;
+  min-width: 0;
 }
 .map-hero-brand {
   font-family: var(--condensed);
@@ -446,14 +487,18 @@ h3 {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* ---- Empty map (v0.14.0, bottom bar v0.17.0): the map must never
- * look empty with no explanation. Spoiler-free first launch turns
- * every public layer off, so 0 places show — and that read as a
- * broken map. This prompt says so in plain words, with one-tap
- * buttons that turn layers on and make pins appear immediately.
- * v0.17.0: it is a compact bar pinned to the bottom of the map, not
- * a big card in the middle of it — the big card covered the whole
- * of Leonida on first open. ---- */
+/* ---- Empty map (v0.14.0, bottom bar v0.17.0, slimmed v0.19.0):
+ * the map must never look empty with no explanation. Spoiler-free
+ * first launch turns every public layer off, so 0 places show — and
+ * that read as a broken map. This prompt says so in plain words,
+ * with one-tap buttons that turn layers on and make pins appear
+ * immediately. v0.17.0: it is a compact bar pinned to the bottom of
+ * the map, not a big card in the middle of it — the big card covered
+ * the whole of Leonida on first open. v0.19.0: his 7:08pm screenshot
+ * showed the "bar" was still a tall card (five buttons in a 2-col
+ * grid) and "Restore my last layers (4 on)" wrapped mid-phrase.
+ * Buttons are one compact row-group now and the restore button is
+ * full-width with no wrapping, so the bar stays a bar. ---- */
 .empty-map-prompt {
   position: absolute;
   z-index: 450;
@@ -464,39 +509,46 @@ h3 {
   backdrop-filter: blur(12px);
   border: 1px solid #f6f0e51f;
   border-radius: 16px;
-  padding: 12px 14px;
+  padding: 10px 12px;
   box-shadow: 0 8px 28px #000a;
 }
 .empty-map-prompt strong {
   display: block;
   font-family: var(--condensed);
-  font-size: 16px;
+  font-size: 15px;
   letter-spacing: 0.8px;
   text-transform: uppercase;
 }
 .empty-map-prompt p {
-  margin: 4px 0 10px;
-  font-size: 13px;
-  line-height: 1.45;
+  margin: 2px 0 8px;
+  font-size: 12px;
+  line-height: 1.4;
   color: var(--text);
 }
 .empty-map-buttons {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 .empty-map-buttons button {
-  min-height: 44px;
+  flex: 1 1 auto;
+  min-height: 40px;
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 8px 10px;
+  padding: 6px 10px;
   background: var(--surface-raised);
   color: var(--text);
   font-family: var(--condensed);
-  font-size: 14px;
+  font-size: 13px;
   letter-spacing: 0.8px;
   text-transform: uppercase;
+  white-space: nowrap;
   cursor: pointer;
+}
+.empty-map-buttons button.restore-last {
+  flex: 1 1 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .empty-map-buttons button:first-child {
   border-color: transparent;

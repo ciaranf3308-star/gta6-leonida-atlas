@@ -39,7 +39,7 @@ describe('GTADB In-Game Day tiles', () => {
     // Leaflet zoom 1 (tile zoom 6): x = floor(1420/128) = 11, y = floor(-1766/128) = -14.
     expect(leafletTileToGtadb(11, -14, 1)).toEqual({ zoom: 6, tileX: 139, tileY: 114 });
     expect(gtadbTileUrl('/gta6-leonida-atlas/', 5, -7, 0)).toBe(
-      '/gta6-leonida-atlas/assets/gta6-leonida-atlas/tiles/styled/5/5,57,69.jpg',
+      '/gta6-leonida-atlas/assets/gta6-leonida-atlas/tiles/redrawn/5/5,57,69.jpg',
     );
   });
 

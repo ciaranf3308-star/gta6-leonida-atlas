@@ -546,8 +546,21 @@ export default function App() {
                 alt=""
               />
               <div className="map-hero-titles">
-                <span className="map-hero-brand">Leonida Atlas</span>
-                <span className="map-hero-sub">The complete GTA VI companion</span>
+                {/* v0.19.0: the reference header carries the GTA VI
+                 * wordmark beside LEONIDA ATLAS; ours was a bare
+                 * wordmark on a sunset strip. Text-only mark (no
+                 * copied logo art): condensed "Grand Theft Auto"
+                 * over a coral-to-sunset VI, a divider, then the
+                 * Atlas name — the same lockup, drawn not lifted. */}
+                <span className="map-hero-gta">
+                  <span className="gta-name">Grand Theft Auto</span>
+                  <span className="gta-vi">VI</span>
+                </span>
+                <span className="map-hero-divider" aria-hidden="true" />
+                <span className="map-hero-names">
+                  <span className="map-hero-brand">Leonida Atlas</span>
+                  <span className="map-hero-sub">The complete GTA VI companion</span>
+                </span>
               </div>
             </div>
             <button
@@ -604,7 +617,11 @@ export default function App() {
                   Show everything
                 </button>
                 {lastSession && (
-                  <button type="button" onClick={restoreLastSession}>
+                  <button
+                    type="button"
+                    className="restore-last"
+                    onClick={restoreLastSession}
+                  >
                     Restore my last layers ({lastSession.layerIds.length} on)
                   </button>
                 )}

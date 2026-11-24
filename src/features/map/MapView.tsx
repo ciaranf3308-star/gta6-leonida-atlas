@@ -208,8 +208,8 @@ export default function MapView(props: MapViewProps) {
       // and the pale tiles showed through (reported 2026-11-24, the
       // v0.17 "seamless sea" fix did not hold on the user's phone).
       // The colour is now baked into the tiles themselves
-      // (tiles/styled/, scripts/restyle-tiles.py), so there is no
-      // overlay, no mask rect and nothing left that can seam.
+      // (v0.19.0: tiles/redrawn/, scripts/redraw-tiles.py), so there
+      // is no overlay, no mask rect and nothing left that can seam.
       const reportViewport = () => {
         setZoom(activeMap.getZoom());
         callbacks.current.onViewport?.({
@@ -700,8 +700,8 @@ export default function MapView(props: MapViewProps) {
     };
   }, [map, previewPosition, props.editorMode]);
 
-  // v0.18.0: the animated sea canvas is gone — the sea grade is baked
-  // into the styled tiles themselves, so there is no overlay left
+  // v0.19.0: the animated sea canvas is gone — the sea is baked
+  // into the redrawn tiles themselves, so there is no overlay left
   // that can seam. See the note at the tile-layer setup above.
 
   const useMapCenter = () => {

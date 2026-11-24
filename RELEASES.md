@@ -2,6 +2,16 @@
 
 Release history, newest first.
 
+## v0.19.0 — 2026-11-24
+
+**Released: True rebuild — the map is redrawn, not recoloured, and the pink mess is gone.**
+
+- The answer to his question — "You're not truly rebuilding the map are you ??" — was that v0.18 only recoloured the same GTADB day-map photo, and zoomed in every street was a thick bright-pink neon line. This build draws a new illustrated basemap from the real geography: all 31,022 tiles re-rendered offline into `tiles/redrawn/` with the same filenames, coordinates and zooms, so every place still lands in the right spot. Illustrated basemap drawn from the real in-game map — geography is real, shading and detail are artistic.
+- Flat illustrated fills per surface, painted from a classification of the source tiles (coastline, water, sand, land, urban ground and roads from that data only, nothing invented): deep-teal sea in depth bands, rich green land with blurred relief shading, warm sand, warm-grey city blocks, with the photographic texture deliberately flattened away. Roads are vector strokes from skeleton centrelines: only genuinely wide routes (half-width >= 8 tile-px at z5, measured — the old 5px bar made 83% of Vice City "major") get a thin coral core with a soft glow, highways get sunset, minor streets are cream with no pink and no glow. Junctions are cut out of the major mask, so intersections no longer paint pink X blobs. Clouds are large soft white puffs over water only, clustered with clear sea between them.
+- Header carries the GTA VI wordmark now (text-only, drawn not lifted), and the empty-map prompt is a slim bar at last: the restore button is full-width with no wrapping.
+- Kept, unchanged: camera gate (opens on the whole of Leonida), slim 56px header, 120-marker cap / 24 hero pins, traced county outlines, spoiler-free defaults, real place data only (3,754 GTADB records, 986 named, 2,768 unnamed — never invent a name, coordinate, interior or pin).
+- Honest limit: this is an illustration of the real in-game map, not the AI-rendered reference (which invents places) and not 3D terrain — city blocks are flat two-tone slabs, clouds are procedural puffs, and the header wordmark is text, not logo art. Method and the three-iteration log are in `scripts/redraw-report.md`. The redrawn pyramid sits alongside the 149 MB originals (source of truth) and v0.18's recoloured pyramid.
+
 ## v0.18.0 — 2026-11-24
 
 **Released: The map itself, rebuilt pixel by pixel — deep teal sea, rich green land, pink roads, baked into the tiles.**

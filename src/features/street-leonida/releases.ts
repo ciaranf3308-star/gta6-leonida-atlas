@@ -11,6 +11,27 @@ export interface LeonidaAtlasRelease {
 /** Retained public history starts at v0.5.0; the newest release stays first. */
 export const LEONIDA_ATLAS_RELEASES: readonly LeonidaAtlasRelease[] = [
   {
+    version: 'v0.19.0',
+    date: '2026-11-24',
+    title: 'True rebuild: the map is redrawn, not recoloured — and the pink mess is gone',
+    summary:
+      'The fix for his question — “You’re not truly rebuilding the map are you ??” — because he was right: v0.18 only recoloured the same GTADB day-map photo, and zoomed in every street was a thick bright-pink neon line. v0.19 draws a new illustrated basemap from the real geography: flat illustrated fills per surface, vector-drawn roads, sea depth bands and clustered clouds, cut into the same tile pyramid so every place still lands in the right spot. Illustrated basemap drawn from the real in-game map — geography is real, shading and detail are artistic.',
+    status: 'public',
+    highlights: [
+      'A true redraw, not a recolour: scripts/redraw-tiles.py paints every pixel from a classification of the GTADB day tiles — coastline, water, sand, land, urban ground and roads all come from that data only, nothing invented — then renders flat illustrated fills (deep-teal sea in depth bands, rich green land with blurred relief shading, warm sand, warm-grey city blocks) with the photographic texture deliberately flattened away. All 31,022 tiles re-rendered into tiles/redrawn/ with the same filenames, coordinates and zooms, so a pin that was on a road is still on that road.',
+      'The pink mess is fixed in the redraw, not patched over: roads are drawn as vector strokes from skeleton centrelines, and only genuinely wide routes (skeleton half-width >= 8 tile-px at z5, measured — the old 5px bar made 83% of Vice City "major") get a thin coral core with a soft glow; highways get sunset. Minor streets are cream, no pink, no glow. Junctions are cut out of the major mask, so intersections no longer paint pink X blobs. At street zoom the map reads like a clean street map; the pink only survives on the routes that matter, and it fades as you zoom in.',
+      'Clouds you can actually see, clustered like the reference: v0.18\'s 6% alpha read as no clouds at all on his phone. The redraw paints large soft white puffs over water only, clustered by a low-frequency envelope with clear sea between them, in global coordinates so they never seam.',
+      'Header carries the GTA VI wordmark now (text-only, drawn not lifted: condensed "Grand Theft Auto" over a coral-to-sunset VI, a divider, then Leonida Atlas), beside the sunset banner — the reference lockup, without copying logo art.',
+      'The empty-map prompt is a slim bar at last: his 7:08pm screenshot showed the "bar" was still a tall card and "Restore my last layers (4 on)" wrapped mid-phrase. Buttons are one compact row-group and the restore button is full-width with no wrapping.',
+      'Kept, unchanged: camera gate (opens on the whole of Leonida), slim 56px header, 120-marker cap / 24 hero pins, traced county outlines, spoiler-free defaults, real place data only (3,754 GTADB records, 986 named, 2,768 unnamed), backup v3, the Collectibles chip fade.',
+    ],
+    verification: [
+      'Unit tests pass (767 tests, 81 files, including the redrawn-tile URL test and the releases history for v0.19.0). TypeScript and ESLint pass. Chromium e2e: 11 passed, 0 failed.',
+      'The 390px walk (scripts/check-v019.mjs) passes with zero console errors and zero overflow: redrawn tiles load at GTADB zoom 0 on open with the saved zoomed-in camera seeded, the GTA VI wordmark is in the header, the restore button is a single non-wrapping 40px line, the empty prompt is a 203px slim bar, and at street zoom the sampled redrawn tiles are 0.0008% coral with 1.45% cream streets across 15 tiles (measured on the redrawn Vice City downtown tiles: 0.000-0.009% coral, against 3.97-4.82% on the v0.18 styled tiles); the v0.18 flows still pass (0 markers on open, hero pins, Vice City sheet, lag check, Turn everything off).',
+      'Before/after sheets at full zoom, Vice City street zoom and Capri were judged by eye against the reference (scripts/redraw-report.md): the land reads illustrated green, the sea deep teal with clouds, the streets cream with only majors in coral — after four redraw iterations, not one. Honest visual grade in the delivery report, owned by the builder.',
+    ],
+  },
+  {
     version: 'v0.18.0',
     date: '2026-11-24',
     title: 'The map itself, rebuilt pixel by pixel: deep teal sea, rich green land, pink roads, baked into the tiles',
