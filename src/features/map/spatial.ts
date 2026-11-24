@@ -18,6 +18,49 @@ export interface ClusterOptions {
   maxMarkers?: number;
 }
 
+/**
+ * Hero pins (v0.16.0): at full-map zoom the reference shows about a
+ * dozen small icon pins, never a wall of numbered circles. When the
+ * user is zoomed all the way out, only the most useful places draw:
+ * named regions first, then named places spread one per grid cell so
+ * they cover the map instead of bunching in Vice City. Everything else
+ * waits for a zoom-in — the data is still there, it just does not pay
+ * a DOM node until the player is close enough to read it.
+ */
+export function selectHeroPlaces(
+  places: readonly Place[],
+  maxHero = 24,
+): PositionedPlace[] {
+  const positioned = places.filter((place): place is PositionedPlace =>
+    isValidPosition(place.position),
+  );
+  const named = (place: PositionedPlace) =>
+    place.title !== '?' && place.evidence !== 'uncertain';
+  const regions = positioned.filter((place) => place.layerId === 'regions').slice(0, 12);
+  const picked: PositionedPlace[] = [...regions];
+  const pickedIds = new Set(picked.map((place) => place.id));
+  const priority = (place: PositionedPlace) =>
+    place.layerId === 'lootable' ? 0 : place.layerId === 'interiors' ? 1 : place.layerId === 'shops' ? 2 : 3;
+  const cell = 2200;
+  const usedCells = new Set<string>();
+  for (const place of regions) {
+    usedCells.add(
+      `${Math.floor(place.position.x / cell)}:${Math.floor(place.position.y / cell)}`,
+    );
+  }
+  const candidates = positioned
+    .filter((place) => !pickedIds.has(place.id) && named(place))
+    .sort((a, b) => priority(a) - priority(b));
+  for (const place of candidates) {
+    if (picked.length >= maxHero) break;
+    const key = `${Math.floor(place.position.x / cell)}:${Math.floor(place.position.y / cell)}`;
+    if (usedCells.has(key)) continue;
+    usedCells.add(key);
+    picked.push(place);
+  }
+  return picked;
+}
+
 export function buildSpatialIndex(places: readonly Place[], cellSize = 512): SpatialIndex {
   if (!Number.isFinite(cellSize) || cellSize <= 0)
     throw new Error('Spatial cell size must be positive.');
@@ -64,7 +107,10 @@ export function clusterPlaces(places: readonly Place[], options: ClusterOptions)
   const positioned = places.filter((place): place is PositionedPlace =>
     isValidPosition(place.position),
   );
-  const maxMarkers = Math.max(32, options.maxMarkers ?? 360);
+  // v0.16.0: never render thousands of DOM pins — that was the real
+  // lag on his phone. 120 markers max at any zoom; hero mode below
+  // takes over entirely at full-map zoom.
+  const maxMarkers = Math.max(32, options.maxMarkers ?? 120);
   if (!options.enabled && positioned.length <= maxMarkers) {
     return positioned.map((place) => ({ id: place.id, position: place.position, places: [place] }));
   }

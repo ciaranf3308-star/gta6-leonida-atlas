@@ -8,11 +8,11 @@ import BottomNav from './BottomNav';
 import {
   loadSavedMapView,
   mapViewFromState,
+  savedLayersOffer,
   saveMapView,
 } from '../features/map/view-persistence';
-import { COUNTIES } from '../data/counties';
 import { INITIAL_BOUNDS } from '../features/map/coordinates';
-import { areaIsolation, countyIsolation } from '../features/map/isolation';
+import { areaIsolation } from '../features/map/isolation';
 import { saveCamera } from '../features/map/camera-persistence';
 import AskPanel from '../features/ask/AskPanel';
 import { useAiIndexStore } from '../features/categorise/store';
@@ -81,6 +81,14 @@ export default function App() {
   const editorMode = useMapStore((s) => s.editorMode);
   const draftPosition = useMapStore((s) => s.draftPosition);
   const [welcomeOpen, setWelcomeOpen] = useState(false);
+  /** v0.16.0 — clean launch: the saved view is NEVER re-applied on
+   * open. His screenshot had a "27" badge and a wall of pink clusters
+   * because a saved "Show everything" came back on its own. The map
+   * opens with zero public pins, every time; the saved layers are kept
+   * aside here so the empty-map prompt can offer them back in one tap.
+   * The camera (position + zoom) still resumes — that is the map, not
+   * the spoilers. */
+  const [lastSession, setLastSession] = useState<{ layerIds: string[] } | null>(null);
   /** First launch after v0.11.0 is forced (no ×, no Escape); reopening
    * it from the panel footer ("What is mapped") is dismissable. */
   const [welcomeForced, setWelcomeForced] = useState(true);
@@ -243,6 +251,61 @@ export default function App() {
         ),
     );
   }, []);
+  /** v0.16.0: bring back the layers from the last session — the one
+   * tap the clean launch offers instead of restoring them itself. */
+  const restoreLastSession = useCallback(() => {
+    if (!lastSession) return;
+    turnOnLayers(lastSession.layerIds);
+    setLastSession(null);
+  }, [lastSession, turnOnLayers]);
+  /** Map chips (v0.16.0, reference row: All / Locations / Activities /
+   * Stores / Collectibles): one group on, the rest off — the map stays
+   * fast and readable. "All" is the only one that turns everything on,
+   * and only on an explicit tap. */
+  const showOnlyLayers = useCallback((layerIds: string[] | 'all') => {
+    useMapStore.getState().setLayers(
+      useMapStore
+        .getState()
+        .layers.map((layer) =>
+          layer.id === 'personal'
+            ? layer
+            : layerIds === 'all' || layerIds.includes(layer.id)
+              ? { ...layer, visible: true }
+              : { ...layer, visible: false },
+        ),
+    );
+  }, []);
+  const chipGroups: { id: string; label: string; layers: string[] | 'all' }[] = [
+    { id: 'all', label: 'All', layers: 'all' },
+    { id: 'locations', label: 'Locations', layers: ['regions', 'community'] },
+    {
+      id: 'activities',
+      label: 'Activities',
+      layers: ['interiors', 'breakable', 'gyms', 'equipment'],
+    },
+    { id: 'stores', label: 'Stores', layers: ['shops', 'lootable'] },
+    {
+      id: 'collectibles',
+      label: 'Collectibles',
+      layers: layers.filter((l) => l.id.startsWith('cards:')).map((l) => l.id),
+    },
+  ];
+  const activeChip = useMemo(() => {
+    const visible = new Set(layers.filter((l) => l.visible && l.id !== 'personal').map((l) => l.id));
+    if (visible.size === 0) return null;
+    for (const chip of chipGroups) {
+      if (chip.layers === 'all') {
+        if (visible.size === layers.filter((l) => l.id !== 'personal').length) return 'all';
+      } else if (
+        chip.layers.length > 0 &&
+        chip.layers.every((id) => visible.has(id)) &&
+        [...visible].every((id) => chip.layers.includes(id))
+      ) {
+        return chip.id;
+      }
+    }
+    return null;
+  }, [layers]);
   /** Clear every filter and lift the isolation: back to all of Leonida. */
   const clearFiltersAndIsolation = useCallback(() => {
     useUiStore.getState().resetFilters();
@@ -320,33 +383,14 @@ export default function App() {
   useEffect(() => {
     useAiIndexStore.getState().load();
     useMapStore.getState().setLayers([...atlasRegistry.layers.values()]);
-    // Restore the saved map view (layers, county, filters) from the last
-    // visit — first launch has no saved view and stays blank on purpose.
+    // v0.16.0: restore NOTHING visible on launch. The saved view is
+    // read only so the empty-map prompt can offer it back ("Restore my
+    // last layers") — first launch has no saved view and stays clean.
+    // Camera, county and filters stay off: clean map first.
     const saved = loadSavedMapView();
-    if (saved) {
-      const visible = new Set(saved.visibleLayerIds);
-      useMapStore.getState().setLayers(
-        [...atlasRegistry.layers.values()].map((layer) => ({
-          ...layer,
-          visible: layer.id === 'personal' ? true : visible.has(layer.id),
-        })),
-      );
-      useUiStore.getState().setFilters({
-        countyId: saved.countyId,
-        area: saved.area ?? null,
-        hideFound: saved.hideFound,
-        remainingOnly: saved.remainingOnly,
-        favoritesOnly: saved.favoritesOnly,
-        evidence: saved.evidence,
-        category: saved.category,
-        enterableOnly: saved.enterableOnly,
-        lootableOnly: saved.lootableOnly,
-      });
-      const county = COUNTIES.find((c) => c.id === saved.countyId);
-      if (county) {
-        useMapStore.getState().setBoundsFocus(county.bounds);
-        useMapStore.getState().setIsolation(countyIsolation(county));
-      }
+    const offer = savedLayersOffer(saved);
+    if (offer.length > 0) {
+      setLastSession({ layerIds: offer });
     }
     setViewRestored(true);
     void hydrateUserData();
@@ -491,9 +535,15 @@ export default function App() {
         />
         {navTab === 'map' && !selected && (
           <div className="map-hero">
-            <div className="map-wordmark" aria-label="Leonida Atlas">
-              <span>Leonida</span>
-              <em>Atlas</em>
+            <div className="map-hero-banner" aria-hidden="true">
+              <img
+                src={`${import.meta.env.BASE_URL}assets/after-hours/hero-sunset.jpg`}
+                alt=""
+              />
+              <div className="map-hero-titles">
+                <span className="map-hero-brand">Leonida Atlas</span>
+                <span className="map-hero-sub">The complete GTA VI companion</span>
+              </div>
             </div>
             <button
               type="button"
@@ -508,6 +558,19 @@ export default function App() {
               <Search size={18} />
               <span>Search Leonida…</span>
             </button>
+            <div className="map-chips" role="group" aria-label="Quick filters">
+              {chipGroups.map((chip) => (
+                <button
+                  key={chip.id}
+                  type="button"
+                  className={`map-chip ${activeChip === chip.id ? 'is-active' : ''}`}
+                  aria-pressed={activeChip === chip.id}
+                  onClick={() => showOnlyLayers(chip.layers)}
+                >
+                  {chip.label}
+                </button>
+              ))}
+            </div>
             {status === 'ready' && showingCount === 0 ? (
               !anyPublicLayerVisible ? (
                 <div className="empty-map-prompt" role="status">
@@ -530,6 +593,11 @@ export default function App() {
                     <button type="button" onClick={() => turnOnLayers('all')}>
                       Show everything
                     </button>
+                    {lastSession && (
+                      <button type="button" onClick={restoreLastSession}>
+                        Restore my last layers ({lastSession.layerIds.length} on)
+                      </button>
+                    )}
                   </div>
                 </div>
               ) : (

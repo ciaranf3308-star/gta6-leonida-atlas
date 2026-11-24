@@ -2,6 +2,17 @@
 
 Release history, newest first.
 
+## v0.16.0 — 2026-11-24
+
+**Released: Clean, fast, pretty — the map opens empty, the sea is deep teal at last, and the pink number blobs are gone.**
+
+- Clean launch, every time: a saved view never brings its layers back on open. His screenshot had a "27" badge and a wall of pink clusters because a saved "Show everything" restored itself. Now the map opens with zero public pins and the empty-map prompt offers the saved layers back in one tap — "Restore my last layers (27 on)". Layers also has a one-tap "Turn everything off". The camera (position + zoom) still resumes.
+- The lag fix: never more than 120 DOM markers at any zoom (was 360), and at full-map zoom only hero pins draw — at most 24 small icon pins, regions first, one per grid cell so they spread across the map instead of bunching in Vice City. The full 3,754-place catalogue is never turned into pins on launch; markers only ever come from layers the player turned on.
+- Clusters are small icon pins now, not giant pink numbers: a cluster wears its best member's glyph on dark smoked glass with one tiny count badge. The pink numbered disc that covered his map is gone.
+- The sea is deep teal at last — two bugs hid it since v0.15.0. First, the water mask PNG has no alpha channel, so the grade was composited over opaque white and the sea stayed pale; the mask is now stencilled (luminance becomes alpha) and the grade replaces the white with dark teal. Second, the sea canvas sat at z-index 300 as a sibling of the map — but Leaflet's map pane itself is z-index 400, so the whole map painted over it; the canvas now lives in its own Leaflet pane at z-index 300, between the tiles and the pins, with its size set in pixels because the pane has no size of its own.
+- The reference header, on the real map: a sunset banner (generated art, no text, no logos) with "Leonida Atlas / The complete GTA VI companion", a compact search pill, and the All / Locations / Activities / Stores / Collectibles chips — one group on, the rest off, so a tap is the way into the map. Tapping a region pin opens the reference-style sheet: county photo, Set Route, View Area, Add to List.
+- Kept, unchanged: spoiler-free first launch, forced indexing onboarding, 48px+ thumb targets, Gyms vs Workout Equipment split, breakable homes as a system, interiors on tap, the Ask spoiler rule + proximity, the index resolver v3, traced county outlines, and the animated sea at ~8fps, paused when the tab hides.
+
 ## v0.15.0 — 2026-11-24
 
 **Released: After Hours — a map that reads beautiful: traced county outlines, an animated sea, and art painted with your key.**

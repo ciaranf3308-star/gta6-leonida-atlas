@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Bookmark, Check, Dumbbell, ExternalLink, Home, MapPin, Move, Pencil, Sparkles, Star, X } from 'lucide-react';
+import { Bookmark, Check, Dumbbell, ExternalLink, Home, MapPin, Move, Navigation, Pencil, Scan, Sparkles, Star, X } from 'lucide-react';
 import type { Place, Position } from '../../domain/types';
 import { isUnnamedPlace } from '../../domain/types';
 import {
@@ -34,6 +34,26 @@ import {
 import { finishNoteSave, reconcileNoteDraft, type NoteDraft } from './note-draft';
 import { getResearchForPlace } from '../street-leonida/leonida-research';
 import RegionalResearch from './RegionalResearch';
+import { COUNTIES } from '../../data/counties';
+import { countyIsolation } from '../map/isolation';
+
+/** County art for a named region (Vice City → Vice-Dale's photo).
+ * The photo is the county's own art, never a photo of the place. */
+function regionPhoto(place: Place): string | null {
+  if (place.layerId !== 'regions' || !place.position) return null;
+  const byName = COUNTIES.find(
+    (county) => county.area.includes(place.title) || county.name.includes(place.title),
+  );
+  if (byName?.photo) return byName.photo;
+  const containing = COUNTIES.find(
+    (county) =>
+      place.position!.x >= county.bounds.west &&
+      place.position!.x <= county.bounds.east &&
+      place.position!.y >= county.bounds.south &&
+      place.position!.y <= county.bounds.north,
+  );
+  return containing?.photo ?? null;
+}
 
 export default function PlaceDetails({
   place,
@@ -138,6 +158,34 @@ export default function PlaceDetails({
     if (!collection) return;
     await saveLocal(() => atlasRepository.addCollectionPlace(collection.id, place.id));
   }
+  async function toggleFavorite() {
+    await saveLocal(() => atlasRepository.toggleFavorite(place.id));
+  }
+  /** Region sheet actions (v0.16.0, reference bottom sheet): fly the
+   * camera to the region, or isolate its county on the map. */
+  function setRoute() {
+    // Re-selecting re-fires the focus (new requestId) — the camera flies.
+    useMapStore.getState().select(place);
+  }
+  function viewArea() {
+    const county =
+      COUNTIES.find(
+        (c) => c.area.includes(place.title) || c.name.includes(place.title),
+      ) ??
+      COUNTIES.find(
+        (c) =>
+          place.position &&
+          place.position.x >= c.bounds.west &&
+          place.position.x <= c.bounds.east &&
+          place.position.y >= c.bounds.south &&
+          place.position.y <= c.bounds.north,
+      );
+    if (!county) return;
+    useUiStore.getState().setFilters({ countyId: county.id, area: null });
+    useMapStore.getState().setBoundsFocus(county.bounds);
+    useMapStore.getState().setIsolation(countyIsolation(county));
+  }
+  const photo = regionPhoto(place);
   async function share() {
     const url = new URL(window.location.href);
     url.search = '';
@@ -164,6 +212,14 @@ export default function PlaceDetails({
         </button>
       </header>
       <div className="detail-scroll">
+        {photo && (
+          <div className="place-photo">
+            <img
+              src={`${import.meta.env.BASE_URL}${photo}`}
+              alt={`${place.title} — county art`}
+            />
+          </div>
+        )}
         <div className="place-hero">
           <span className="place-hero-icon" style={{ background: layerColor }} aria-hidden="true">
             <PlaceIcon
@@ -173,6 +229,25 @@ export default function PlaceDetails({
           </span>
           <h2>{place.title}</h2>
         </div>
+        {place.layerId === 'regions' && (
+          <div className="place-actions">
+            <button type="button" className="button primary" onClick={setRoute}>
+              <Navigation size={18} /> Set Route
+            </button>
+            <button type="button" className="button" onClick={viewArea}>
+              <Scan size={18} /> View Area
+            </button>
+            <button
+              type="button"
+              disabled={!ready}
+              className={`button ${favorite ? 'selected' : ''}`}
+              onClick={() => void toggleFavorite()}
+            >
+              <Star size={18} fill={favorite ? 'currentColor' : 'none'} />
+              {favorite ? 'Saved' : 'Add to List'}
+            </button>
+          </div>
+        )}
         <p className="place-badges" aria-label="What this place is">
           {interior.breakable && <span>Breakable home</span>}
           {place.layerId === 'lootable' && <span>Lootable</span>}

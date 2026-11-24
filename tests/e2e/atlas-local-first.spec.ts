@@ -62,7 +62,7 @@ async function openAtlas(page: Page): Promise<void> {
   await dismissWelcome(page);
   // v0.12.0: the map is clean — a wordmark and one search pill, no
   // filter bar, no floating Add button (Add lives in Layers now).
-  await expect(page.locator('.map-wordmark')).toBeVisible();
+  await expect(page.locator('.map-hero-banner')).toBeVisible();
   await expect(page.locator('.map-search-pill')).toBeVisible();
   await expect(page.locator('.filter-bar')).toHaveCount(0);
 }
@@ -711,7 +711,7 @@ test('forced indexing onboarding appears on a fresh profile, and Skip leaves a o
   // The map after onboarding, v0.12.0: wordmark + one search pill
   // and nothing else — no filter bar, no count pill, no reminder pill,
   // no floating Add button, no caption.
-  await expect(page.locator('.map-wordmark')).toBeVisible();
+  await expect(page.locator('.map-hero-banner')).toBeVisible();
   await expect(page.locator('.map-search-pill')).toBeVisible();
   await expect(page.locator('.filter-bar')).toHaveCount(0);
   await expect(page.locator('.filter-count-pill')).toHaveCount(0);

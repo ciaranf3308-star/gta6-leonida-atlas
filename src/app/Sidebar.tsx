@@ -274,8 +274,25 @@ function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allP
   return (
     <div className="layer-manager">
       <p className="panel-intro">
-        Nothing is shown until you choose it. Your choices are remembered on this device.
+        Nothing is shown until you choose it. The map always opens clean —
+        your last layers are one tap away on the map.
       </p>
+      <button
+        type="button"
+        className="button"
+        disabled={!layers.some((l) => l.visible && l.id !== 'personal')}
+        onClick={() =>
+          useMapStore
+            .getState()
+            .setLayers(
+              layers.map((l) =>
+                l.id === 'personal' ? l : { ...l, visible: false },
+              ),
+            )
+        }
+      >
+        Turn everything off
+      </button>
       <section className="county-cards" aria-label="Isolate one county">
         <h3>Isolate a county</h3>
         <div className="county-grid">

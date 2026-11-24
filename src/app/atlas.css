@@ -302,7 +302,9 @@ h3 {
   background: #0b2a4a;
 }
 
-/* ---- Map hero: the ONLY things on the map. Wordmark + one search bar. ---- */
+/* ---- Map hero (v0.16.0): sunset banner + wordmark, search, chips.
+ * The reference's first screen: identity up top, then the map. The
+ * banner is one compact strip — the map still owns the screen. ---- */
 .map-hero {
   position: absolute;
   z-index: 450;
@@ -316,23 +318,88 @@ h3 {
 .map-hero > * {
   pointer-events: auto;
 }
-.map-wordmark {
+.map-hero-banner {
+  position: relative;
+  height: 84px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #f6f0e529;
+  box-shadow: 0 4px 16px #0007;
+  pointer-events: none;
+}
+.map-hero-banner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* The sunset sky lives in the top quarter of the art — crop there,
+   * or the banner is just dark skyline. */
+  object-position: center 22%;
+  display: block;
+}
+.map-hero-banner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #0b101800 30%, #0b1018b3 100%);
+}
+.map-hero-titles {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 10px;
+  z-index: 1;
+  display: grid;
+  gap: 2px;
+}
+.map-hero-brand {
   font-family: var(--condensed);
-  font-size: 15px;
+  font-size: 22px;
   font-weight: 600;
   line-height: 1;
-  letter-spacing: 4px;
+  letter-spacing: 5px;
   text-transform: uppercase;
   color: var(--text);
   text-shadow: 0 1px 8px #000c;
-  width: fit-content;
 }
-.map-wordmark em {
-  font-style: normal;
-  background: var(--sunset);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+.map-hero-sub {
+  font-family: var(--condensed);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #ffb56b;
+  text-shadow: 0 1px 6px #000c;
+}
+/* Quick-filter chips (v0.16.0): the reference row. One group on, the
+ * rest off — tapping a chip is the way into the map. */
+.map-chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.map-chips::-webkit-scrollbar {
+  display: none;
+}
+.map-chip {
+  flex-shrink: 0;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid #f6f0e529;
+  border-radius: 999px;
+  background: #0b1018cc;
+  backdrop-filter: blur(12px);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.map-chip.is-active {
+  border-color: var(--coral);
+  background: linear-gradient(135deg, #ff527f33, #ffb56b33);
+  color: #fff;
 }
 .map-search-pill {
   display: flex;
@@ -1198,6 +1265,21 @@ h3 {
   overscroll-behavior: contain;
   flex: 1;
   min-height: 0;
+}
+/* Region sheet photo (v0.16.0): the county art above the title,
+ * like the reference's Vice City sheet. */
+.place-photo {
+  margin: 4px 0 0;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #f6f0e51f;
+}
+.place-photo img {
+  display: block;
+  width: 100%;
+  height: 148px;
+  object-fit: cover;
+  object-position: center 60%;
 }
 .place-hero {
   display: flex;

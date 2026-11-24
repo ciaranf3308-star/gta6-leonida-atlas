@@ -5,17 +5,28 @@
   min-height: 300px;
   isolation: isolate;
   overflow: hidden;
-  background: #1e1a15;
+  background: #062a3a;
 }
 .atlas-map-canvas {
   position: absolute;
   inset: 0;
-  background: #1e1a15;
+  background: linear-gradient(180deg, #072e40 0%, #0a3a4e 60%, #0d4a61 100%);
   font-family: inherit;
 }
-/* The animated sea: canvas over the tiles (z-index 300 — above the
- * tile pane at 200, below the overlay pane at 400 and the markers at
- * 600), pointer-transparent so taps still reach the map. */
+/* Rich grade on the real day tiles: a touch darker, more saturated —
+ * the flat pale map becomes the deep reference map. Static filter on
+ * the tile pane: composited once by the GPU, no per-frame cost. */
+.atlas-map-canvas .leaflet-tile-pane {
+  filter: saturate(1.18) contrast(1.05) brightness(0.93);
+}
+/* The animated sea: canvas in its own Leaflet pane (z-index 300 —
+ * above the tile pane at 200, below the overlay pane at 400 and the
+ * markers at 600), pointer-transparent so taps still reach the map.
+ * v0.16.0 fix: the canvas used to be a sibling of the map with
+ * z-index 300 — but Leaflet's map pane itself is z-index 400, so the
+ * whole map (tiles included) painted over it and the sea stayed flat
+ * pale blue. A real Leaflet pane is the only place between the tiles
+ * and the pins. */
 .sea-overlay {
   position: absolute;
   inset: 0;
@@ -58,9 +69,41 @@
   width: 28px;
   height: 28px;
 }
+/* v0.16.0: a cluster is a small glowing icon pin — dark smoked glass
+ * with the member's glyph — plus one tiny count badge. The giant pink
+ * numbered disc is gone: it was the thing covering his map. */
 .atlas-cluster-face {
-  width: 38px;
-  height: 38px;
+  width: 30px;
+  height: 30px;
+  background: #0b1018e6;
+  border: 2px solid #f6f0e555;
+  box-shadow:
+    0 2px 10px #000a,
+    0 0 0 1px #ff527f33,
+    0 0 14px #ff527f2e;
+  font-size: 11px;
+}
+.atlas-cluster-face svg {
+  display: block;
+  width: 15px;
+  height: 15px;
+  filter: drop-shadow(0 1px 1px #0006);
+}
+.atlas-cluster-count {
+  position: absolute;
+  right: -7px;
+  top: -7px;
+  display: grid;
+  place-items: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--coral, #ff527f);
+  border: 1.5px solid #0b1018;
+  color: #fff;
+  font: 700 10px/1 sans-serif;
+  text-shadow: 0 1px 2px #0008;
 }
 /* The glyph inside the blip: white, same stroke everywhere. */
 .atlas-pin-face svg {
@@ -69,13 +112,7 @@
   height: 17px;
   filter: drop-shadow(0 1px 1px #0006);
 }
-.atlas-cluster-face {
-  background: var(--coral, #ff527f);
-  border: 2px solid #0b1018e6;
-  color: #fff;
-  font-size: 12px;
-  text-shadow: 0 1px 2px #0008;
-}
+/* (Cluster face styling lives above, with the pin face — v0.16.0.) */
 .atlas-map-marker.is-region .atlas-pin-face {
   border-radius: 8px;
 }

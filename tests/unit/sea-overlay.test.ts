@@ -3,17 +3,27 @@ import { drawSeaFrame, maskDrawRect, SEA_MASK_BOUNDS } from '../../src/features/
 
 function fakeCtx() {
   const gradient = { addColorStop: vi.fn() };
+  const compositeOps: string[] = [];
   return {
-    clearRect: vi.fn(),
-    drawImage: vi.fn(),
-    createLinearGradient: vi.fn(() => gradient),
-    createRadialGradient: vi.fn(() => gradient),
-    fillRect: vi.fn(),
-    set globalCompositeOperation(_value: string) {},
-    get globalCompositeOperation() {
-      return 'source-over';
-    },
-  } as unknown as CanvasRenderingContext2D;
+    ctx: {
+      clearRect: vi.fn(),
+      drawImage: vi.fn(),
+      createLinearGradient: vi.fn(() => gradient),
+      createRadialGradient: vi.fn(() => gradient),
+      fillRect: vi.fn(),
+      save: vi.fn(),
+      translate: vi.fn(),
+      scale: vi.fn(),
+      restore: vi.fn(),
+      set globalCompositeOperation(value: string) {
+        compositeOps.push(value);
+      },
+      get globalCompositeOperation() {
+        return compositeOps[compositeOps.length - 1] ?? 'source-over';
+      },
+    } as unknown as CanvasRenderingContext2D,
+    compositeOps,
+  };
 }
 
 describe('animated sea overlay', () => {
@@ -31,7 +41,7 @@ describe('animated sea overlay', () => {
   });
 
   it('draws the mask then light only where the mask is (source-atop)', () => {
-    const ctx = fakeCtx();
+    const { ctx } = fakeCtx();
     const mask = {} as HTMLImageElement;
     drawSeaFrame(ctx, mask, { x: 10, y: 20, width: 300, height: 400 }, 5, 390, 844);
     expect(ctx.drawImage).toHaveBeenCalledWith(mask, 10, 20, 300, 400);
@@ -40,8 +50,29 @@ describe('animated sea overlay', () => {
     expect(ctx.fillRect).toHaveBeenCalled();
   });
 
+  it('grades the sea deep teal before the light bands (v0.16.0)', () => {
+    const { ctx } = fakeCtx();
+    const mask = {} as HTMLImageElement;
+    drawSeaFrame(ctx, mask, { x: 0, y: 0, width: 300, height: 400 }, 5, 390, 844);
+    // First linear gradient is the vertical deep-teal grade over the
+    // whole water rect; the bands come after it.
+    expect(ctx.createLinearGradient).toHaveBeenCalledWith(0, 0, 0, 400);
+  });
+
+  it('grades with source-in so the grade replaces the stencil white (v0.16.0)', () => {
+    // The v0.15.0 bug: the grade was drawn source-atop over the white
+    // mask, so the sea stayed pale. source-in replaces the white with
+    // dark teal; the bands then layer on with source-atop.
+    const { ctx, compositeOps } = fakeCtx();
+    const mask = {} as HTMLImageElement;
+    drawSeaFrame(ctx, mask, { x: 0, y: 0, width: 300, height: 400 }, 5, 390, 844);
+    expect(compositeOps[0]).toBe('source-in');
+    expect(compositeOps).toContain('source-atop');
+    expect(compositeOps[compositeOps.length - 1]).toBe('source-over');
+  });
+
   it('does nothing visible when the mask is off-screen', () => {
-    const ctx = fakeCtx();
+    const { ctx } = fakeCtx();
     const mask = {} as HTMLImageElement;
     drawSeaFrame(ctx, mask, { x: 0, y: 0, width: 0, height: 0 }, 5, 390, 844);
     expect(ctx.drawImage).not.toHaveBeenCalled();

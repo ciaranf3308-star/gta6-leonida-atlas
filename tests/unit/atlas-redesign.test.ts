@@ -50,11 +50,12 @@ describe('v0.12.0 mobile redesign', () => {
     }
   });
 
-  it('the map is clean: wordmark + one search pill, nothing else over it', async () => {
+  it('the map is clean: hero banner + one search pill + chips, nothing else over it', async () => {
     const app = await readFile(new URL('../../src/app/App.tsx', import.meta.url), 'utf8');
     expect(app).toContain('map-hero');
     expect(app).toContain('map-search-pill');
-    expect(app).toContain('map-wordmark');
+    expect(app).toContain('map-hero-banner');
+    expect(app).toContain('map-chips');
     expect(app).not.toContain('map-add-buttons');
     expect(app).not.toContain('FilterBar');
   });

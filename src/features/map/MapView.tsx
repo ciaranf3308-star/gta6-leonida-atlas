@@ -13,7 +13,7 @@ import {
   type MapBounds,
 } from './coordinates';
 import { GTADB_TILE_BOUNDS, gtadbTileUrl } from './gtadb-tiles';
-import { buildSpatialIndex, clusterPlaces, querySpatialIndex, type PlaceCluster } from './spatial';
+import { buildSpatialIndex, clusterPlaces, querySpatialIndex, selectHeroPlaces, type PlaceCluster } from './spatial';
 import {
   iconKeyForAiRecord,
   iconKeyForPlace,
@@ -23,7 +23,7 @@ import type { AiCategoryRecord } from '../categorise/categories';
 import type { Isolation } from './isolation';
 import { loadSavedCamera } from './camera-persistence';
 import { runToLatLngs, useAfterHoursGeo } from './after-hours-geo';
-import { drawSeaFrame, maskDrawRect, seaMaskUrl } from './sea-overlay';
+import { buildSeaStencil, drawSeaFrame, maskDrawRect, seaMaskUrl } from './sea-overlay';
 import 'leaflet/dist/leaflet.css';
 import './map.css';
 
@@ -68,6 +68,7 @@ function markerIcon(
   found?: boolean,
   highlighted?: boolean,
   iconSvg?: string,
+  clusterIconSvg?: string,
 ): L.DivIcon {
   const cluster = group.places.length > 1;
   const content = document.createElement('span');
@@ -75,7 +76,15 @@ function markerIcon(
   content.style.setProperty('--pin-color', color ?? layer?.style.color ?? '#e8823a');
   content.setAttribute('aria-hidden', 'true');
   if (cluster) {
-    content.textContent = group.places.length.toLocaleString();
+    // v0.16.0: a cluster is a small icon pin, not a giant pink number.
+    // It wears its best member's glyph (named first, enterable next)
+    // and carries the count as one tiny badge — the reference never
+    // shows a number as the whole marker.
+    content.innerHTML = clusterIconSvg ?? '';
+    const badge = document.createElement('span');
+    badge.className = 'atlas-cluster-count';
+    badge.textContent = group.places.length > 99 ? '99+' : String(group.places.length);
+    content.append(badge);
   } else {
     // A GTA blip: white pictogram in the layer-coloured roundel — never a
     // bare coloured dot. Found places keep their glyph and gain a tick.
@@ -186,6 +195,19 @@ export default function MapView(props: MapViewProps) {
         // Missing tiles are ocean the source never drew; the ocean tile
         // above covers them. Only a wholesale failure is worth surfacing.
       });
+      // The animated sea lives in its own Leaflet pane (z-index 300),
+      // between the tiles and the pins — see map.css for why a sibling
+      // canvas cannot sit there (the map pane itself is z-index 400).
+      // The canvas is created here, not in JSX: React must never own
+      // a node that lives inside a Leaflet pane.
+      const seaPane = activeMap.createPane('seaPane');
+      seaPane.style.zIndex = '300';
+      seaPane.style.pointerEvents = 'none';
+      const seaCanvas = document.createElement('canvas');
+      seaCanvas.className = 'sea-overlay';
+      seaCanvas.setAttribute('aria-hidden', 'true');
+      seaPane.appendChild(seaCanvas);
+      seaCanvasRef.current = seaCanvas;
       const reportViewport = () => {
         setZoom(activeMap.getZoom());
         callbacks.current.onViewport?.({
@@ -236,6 +258,7 @@ export default function MapView(props: MapViewProps) {
         cancelAnimationFrame(resizeFrame);
         tiles.off();
         tiles.remove();
+        seaCanvasRef.current = null;
         activeMap.off('moveend zoomend', reportViewport);
         // Leaflet 1.9's uncancellable 250ms zoom fallback can outlive remove().
         // Clear its guard before the map pane is deleted; preserve internal unload cleanup.
@@ -278,11 +301,23 @@ export default function MapView(props: MapViewProps) {
           (layer?.maxZoom === undefined || currentZoom <= layer.maxZoom)
         );
       });
-      const groups = clusterPlaces(visible, {
-        zoom: currentZoom,
-        enabled: props.preferences.clusterMarkers,
-        selectedId: props.selectedId,
-      });
+      // v0.16.0: full-map zoom shows hero pins only — about two dozen
+      // small icon pins, no clustering, no counts. Zooming in brings
+      // the full layers back, clustered, capped at 120 DOM markers.
+      // That cap is the lag fix: 3,754 places never become 3,754 pins.
+      const heroMode = currentZoom <= -2.5;
+      const groups = heroMode
+        ? selectHeroPlaces(visible).map((place) => ({
+            id: place.id,
+            position: place.position,
+            places: [place],
+          }))
+        : clusterPlaces(visible, {
+            zoom: currentZoom,
+            enabled: props.preferences.clusterMarkers,
+            selectedId: props.selectedId,
+            maxMarkers: 120,
+          }).slice(0, 120);
       let labelCount = 0;
       for (const group of groups) {
         const place = group.places[0]!;
@@ -296,6 +331,10 @@ export default function MapView(props: MapViewProps) {
         const title = isCluster
           ? `Explore ${group.places.length.toLocaleString()} places`
           : `${place.title}${selected ? ', selected' : ''}`;
+        // A cluster wears its best member's glyph: a named place first,
+        // then an enterable one, so the pin still says what it is.
+        const representative =
+          group.places.find((member) => member.title !== '?') ?? group.places[0]!;
         const marker = L.marker(toMapCoordinate(group.position), {
           icon: markerIcon(
             group,
@@ -311,6 +350,13 @@ export default function MapView(props: MapViewProps) {
                     iconKeyForPlace(place),
                   17,
                 ),
+            isCluster
+              ? placeIconSvg(
+                  iconKeyForAiRecord(props.aiCategories?.[representative.id]) ??
+                    iconKeyForPlace(representative),
+                  15,
+                )
+              : undefined,
           ),
           title,
           alt: title,
@@ -397,7 +443,11 @@ export default function MapView(props: MapViewProps) {
           !isCluster &&
           props.preferences.showLabels &&
           labelCount < 65 &&
-          (selected || props.highlightIds?.has(place.id) || place.layerId === 'regions' || currentZoom >= -1)
+          // v0.16.0: labels only for regions / selected / highlights at
+          // normal zoom — every place labelling itself at zoom -1 was
+          // the overlapping-labels mess in his screenshot. Close in
+          // (zoom 0.5+) the labels come back for every place.
+          (selected || props.highlightIds?.has(place.id) || place.layerId === 'regions' || currentZoom >= 0.5)
         ) {
           const label = document.createElement('span');
           label.textContent = place.title;
@@ -640,7 +690,7 @@ export default function MapView(props: MapViewProps) {
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx) return;
     const reducedMotion = callbacks.current.preferences.reducedMotion;
-    let mask: HTMLImageElement | null = null;
+    let mask: HTMLCanvasElement | null = null;
     let raf = 0;
     let lastDraw = 0;
     let running = !document.hidden;
@@ -651,6 +701,11 @@ export default function MapView(props: MapViewProps) {
       if (canvas.width !== Math.round(size.x * dpr) || canvas.height !== Math.round(size.y * dpr)) {
         canvas.width = Math.round(size.x * dpr);
         canvas.height = Math.round(size.y * dpr);
+        // The Leaflet pane has no size of its own, so percentage CSS
+        // sizing collapses the canvas to 0×0 — set it in pixels here,
+        // or the sea draws into a bitmap nobody can see.
+        canvas.style.width = `${size.x}px`;
+        canvas.style.height = `${size.y}px`;
       }
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       const rect = maskDrawRect((lat, lng) => {
@@ -669,7 +724,9 @@ export default function MapView(props: MapViewProps) {
     };
     const img = new Image();
     img.onload = () => {
-      mask = img;
+      // The raw mask has no alpha (see buildSeaStencil): stencil it
+      // once here, or the grade paints a pale veil over the whole map.
+      mask = buildSeaStencil(img);
       if (reducedMotion) {
         draw(0);
       } else if (running) {
@@ -739,7 +796,6 @@ export default function MapView(props: MapViewProps) {
         aria-describedby={descriptionId}
         tabIndex={0}
       />
-      <canvas ref={seaCanvasRef} className="sea-overlay" aria-hidden="true" />
       {props.isolation && (
         <>
           <div className="county-map-title" aria-hidden="true">

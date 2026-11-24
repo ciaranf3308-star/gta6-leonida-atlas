@@ -1,14 +1,16 @@
 import type { Filters } from '../../domain/types';
 
 /**
- * Map-view persistence — the fix for "still nothing showing up".
+ * Map-view persistence (v0.16.0: clean launch).
  *
- * Layer choices used to live only in memory: turn Lootable + Shops on,
- * close the tab, reopen, and the map was blank again. The first launch
- * still starts blank on purpose (spoiler-free: every public layer off),
- * but once the user chooses layers, those choices — plus the county and
- * the list filters — are saved on this device in localStorage and restored
- * on the next launch or PWA restart. My markers are always on regardless.
+ * Layer choices are saved on this device in localStorage — but they are
+ * NOT re-applied on the next launch. v0.15.0 restored them, so a saved
+ * "Show everything" reopened as a wall of pink clusters with a "27"
+ * badge — the exact screenshot the user sent back. The map always opens
+ * clean (zero public pins); the saved layers are offered back in one
+ * tap on the empty-map prompt ("Restore my last layers"). The camera
+ * (position + zoom) still resumes — that is the map, not the spoilers.
+ * My markers are always on regardless.
  *
  * This is separate from the IndexedDB user data (markers, notes, found
  * places): it is view state, not user data, and localStorage is the right
@@ -130,4 +132,15 @@ export function mapViewFromState(
     interiorHouseOnly: filters.interiorHouseOnly,
     venueType: filters.venueType,
   };
+}
+
+/**
+ * v0.16.0 clean launch: the saved view is an OFFER, never a restore.
+ * The app opens with every public layer off; the empty-map prompt may
+ * offer these ids back in one tap ("Restore my last layers"). 'personal'
+ * is excluded — My markers are always on anyway, they are not an offer.
+ */
+export function savedLayersOffer(saved: SavedMapView | null): string[] {
+  if (!saved) return [];
+  return saved.visibleLayerIds.filter((id) => id !== 'personal');
 }

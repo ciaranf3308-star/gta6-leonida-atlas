@@ -11,6 +11,27 @@ export interface LeonidaAtlasRelease {
 /** Retained public history starts at v0.5.0; the newest release stays first. */
 export const LEONIDA_ATLAS_RELEASES: readonly LeonidaAtlasRelease[] = [
   {
+    version: 'v0.16.0',
+    date: '2026-11-24',
+    title: 'Clean, fast, pretty: the map opens empty, the sea is deep teal at last, and the pink number blobs are gone',
+    summary:
+      'The fix for his side-by-side verdict on v0.15.0 — ours was the flat one, giant pink number clusters covering the map — and for the real lag those thousands of icons caused on his phone. The map now opens with zero pins every time, draws at most 120 markers at any zoom, and the sea grade he asked for is finally visible: two real bugs had hidden it since v0.15.0.',
+    status: 'public',
+    highlights: [
+      'Clean launch, every time: a saved view never brings its layers back on open. His screenshot had a "27" badge and a wall of pink clusters because a saved "Show everything" restored itself. Now the map opens with zero public pins and the empty-map prompt offers the saved layers back in one tap — "Restore my last layers (27 on)". Layers also has a one-tap "Turn everything off". The camera (position + zoom) still resumes.',
+      'The lag fix: never more than 120 DOM markers at any zoom (was 360), and at full-map zoom only hero pins draw — at most 24 small icon pins, regions first, one per grid cell so they spread across the map instead of bunching in Vice City. The full 3,754-place catalogue is never turned into pins on launch; markers only ever come from layers the player turned on.',
+      'Clusters are small icon pins now, not giant pink numbers: a cluster wears its best member\u2019s glyph on dark smoked glass with one tiny count badge. The pink numbered disc that covered his map is gone.',
+      'The sea is deep teal at last — two bugs hid it since v0.15.0. First, the water mask PNG has no alpha channel, so the grade was composited over opaque white and the sea stayed pale; the mask is now stencilled (luminance becomes alpha) and the grade replaces the white with dark teal. Second, the sea canvas sat at z-index 300 as a sibling of the map — but Leaflet\u2019s map pane itself is z-index 400, so the whole map painted over it; the canvas now lives in its own Leaflet pane at z-index 300, between the tiles and the pins, with its size set in pixels because the pane has no size of its own.',
+      'The reference header, on the real map: a sunset banner (generated art, no text, no logos) with "Leonida Atlas / The complete GTA VI companion", a compact search pill, and the All / Locations / Activities / Stores / Collectibles chips — one group on, the rest off, so a tap is the way into the map. Tapping a region pin opens the reference-style sheet: county photo, Set Route, View Area, Add to List.',
+      'Kept, unchanged: spoiler-free first launch, forced indexing onboarding, 48px+ thumb targets, Gyms vs Workout Equipment split, breakable homes as a system, interiors on tap, the Ask spoiler rule + proximity, the index resolver v3, traced county outlines, and the animated sea at ~8fps, paused when the tab hides.',
+    ],
+    verification: [
+      'Unit tests pass (754, including new tests: the saved view is an offer never a restore, hero pins cap at 24 with regions first and no unnamed places, clusters cap at 120 no matter how many places are on, and the sea grade draws with source-in so it replaces the stencil white). TypeScript, ESLint and the production build pass.',
+      'The 390px walk (scripts/check-v016.mjs) passes with zero console errors and zero overflow, and the screenshots were looked at: 0 markers on open despite a seeded 27-layer saved view, the restore offer, the sunset hero and chips, 24 hero pins with zero cluster discs after "All", the Vice City sheet with its photo and three actions, 6 markers after zooming in with Activities on, and 0 markers after "Turn everything off". The pan/zoom lag check recorded no long task over 200ms (two long tasks at 72ms and 88ms in one run, none in the next — both under the bar).',
+      'The general 390px walk passes with zero console errors. Chromium e2e: 11 of 12 pass; the 3D explorer test needs a real GPU (software WebGL is too slow in this sandbox).',
+    ],
+  },
+  {
     version: 'v0.15.0',
     date: '2026-11-24',
     title: 'After Hours: a map that reads beautiful — traced county outlines, an animated sea, and art painted with your key',
