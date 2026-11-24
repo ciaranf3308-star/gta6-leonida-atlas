@@ -11,6 +11,28 @@ export interface LeonidaAtlasRelease {
 /** Retained public history starts at v0.5.0; the newest release stays first. */
 export const LEONIDA_ATLAS_RELEASES: readonly LeonidaAtlasRelease[] = [
   {
+    version: 'v0.10.0',
+    date: '2026-11-24',
+    title: 'Navigation first, breakable homes, interiors on tap',
+    summary:
+      'A labelled bottom nav with one filter system, thumb-sized controls everywhere, breakable homes as a systemic rule instead of a 33-item list, and interiors shown on every place.',
+    status: 'public',
+    highlights: [
+      'Labelled bottom nav (Map / Find / Layers / Saved / Ask), one filter system shared by the map and Find, and one sheet at a time — Ask never stacks on a place detail.',
+      'Every tappable thing is at least 48px on a phone, measured by the 390px walk.',
+      'Gyms and workout equipment are separate layers; the Capri garage-in-a-house flow turns his own knowledge into a real Workout Equipment pin.',
+      'Breakable homes layer (52 places) with the dark-blue in-game rule in plain words, plus “Possible enterable house — check it” for untagged houses.',
+      'Every place detail has an “Inside” section, and Interiors filters by venue type — 385 enterable in GTADB, 33 houses tagged.',
+      '581 of the 2,732 “?” places already have a type from the map data’s own tags; 2,151 still have nothing to read, and the AI indexing job is the way to close them.',
+      'Real service worker (the app registered one that did not exist), Anton + Oswald type, and the welcome’s Skip button pinned below the sheet instead of 1,200px below the fold.',
+    ],
+    verification: [
+      '678 unit tests passed; TypeScript, ESLint and the production build passed.',
+      'The 390px walk (22 flows) and the 390px check script pass with zero console errors and zero tap targets under 48px.',
+      'Chromium e2e: 10 of 11 pass; the 3D explorer test needs a real GPU (software WebGL is too slow in this sandbox).',
+    ],
+  },
+  {
     version: 'v0.9.0',
     date: '2026-11-23',
     title: 'Authentic map blips and a warmer companion redesign',

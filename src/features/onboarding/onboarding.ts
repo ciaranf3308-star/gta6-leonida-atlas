@@ -5,7 +5,7 @@ import { isUnnamedPlace } from '../../domain/types';
  * First-run onboarding — the fix for "none of the places are showing".
  *
  * The map opens blank on purpose (spoiler-free: every public layer starts
- * off), but nothing on screen said that, or that 3,775 places are mapped
+ * off), but nothing on screen said that, or that 3,781 places are mapped
  * and waiting behind the layer toggles. The welcome sheet says so in plain
  * words, shows the real counts per layer, and offers one-tap quick starts
  * that turn on just one layer. Layers stay off until the user chooses one.
@@ -49,13 +49,17 @@ export interface LayerCount {
 
 /**
  * Real per-layer counts from the loaded catalogue. Audited against the
- * GTADB snapshot d406fea: 3,775 places total — community 680 (647
- * positioned), interiors 81 (80), shops 39 (36), lootable 52 (52), gyms 8
- * (6), free outdoor 2 (2), regions 6 (6), uncertain 2,902 (2,848), cards 5
- * positioned pins across 18 sets (480 cards in total, the rest have no
- * verified position yet). The 2,732 unnamed "?" records stay in these
- * counts and on the map, in the unverified layer — they are the level of
- * detail the map needs, and hiding them would hide the work still to do.
+ * GTADB snapshot d406fea: 3,781 places total — community 679 (646
+ * positioned), interiors 77 (76), breakable homes 52 (47 positioned, 5
+ * guide examples searchable-only), shops 39 (36), lootable 52 (52), gyms 8
+ * (6), free outdoor 3 (2 positioned, 1 listed by name only), regions 6
+ * (6), uncertain 2,860 (2,806), cards 5 positioned pins across 18 sets
+ * (480 cards in total, the rest have no verified position yet). The 2,732
+ * unnamed "?" records stay in these counts and on the map, in the
+ * unverified layer — they are the level of detail the map needs, and
+ * hiding them would hide the work still to do. Names: 986 confirmed,
+ * 2,768 without a confirmed name (2,732 still "?" plus 36 tentative
+ * "Name?" records) — see nameCounts(). There is no "5k".
  */
 export function layerCounts(
   places: readonly Place[],
@@ -91,9 +95,62 @@ export function countUnnamedPlaces(places: readonly Place[]): number {
   return places.filter((place) => isUnnamedPlace(place)).length;
 }
 
+export interface NameCounts {
+  /** GTADB records in the catalogue (not regions, gyms, cards or markers). */
+  total: number;
+  /** Confirmed name — the snapshot's own knownNameCount. Verified 23 Nov 2026: 986. */
+  known: number;
+  /** No confirmed name — the snapshot's unknownNameCount: 2,768. */
+  unknown: number;
+  /** Still "?" — the AI job's scope: 2,732. */
+  questionMark: number;
+  /** Shows a name with a "?" ("Parsons Hotel?") — the name itself is not confirmed: 36. */
+  tentative: number;
+}
+
+/**
+ * The real name counts, from the GTADB snapshot's own counts field
+ * (recordCount 3,754, knownNameCount 986, unknownNameCount 2,768 —
+ * verified against the snapshot 23 Nov 2026). There is no "5k": that was
+ * ever only a rough guess, never a count. The 36-record gap between the
+ * app's "?" count (2,732) and the snapshot's unknown count (2,768) is
+ * the tentative names — "Parsons Hotel?" and the like, where the name
+ * itself carries a "?" and the source counts it unknown. Those 36 keep
+ * showing their tentative name; only the 2,732 still-"?" records are in
+ * the AI job's scope.
+ */
+export function nameCounts(places: readonly Place[]): NameCounts {
+  // GTADB records carry L-ids; regions, gyms, equipment, guide
+  // examples and cards do not. Breakable homes are GTADB records too
+  // (their layer is 'breakable'), so the filter is by id, not layer.
+  const gtadb = places.filter((place) => place.id.startsWith('L'));
+  let known = 0;
+  let questionMark = 0;
+  let tentative = 0;
+  for (const place of gtadb) {
+    const first = place.title.split(',')[0]?.trim() ?? '';
+    if (first === '' || first.startsWith('?') || first.startsWith('Unnamed ')) {
+      questionMark++;
+    } else if (first.includes('?')) {
+      tentative++;
+    } else {
+      known++;
+    }
+  }
+  return {
+    total: gtadb.length,
+    known,
+    unknown: questionMark + tentative,
+    questionMark,
+    tentative,
+  };
+}
+
 /** One-tap quick starts on the welcome sheet: turn on just that layer. */
 export const QUICK_START_LAYERS: { layerId: string; label: string; hint: string }[] = [
-  { layerId: 'gyms', label: 'Show gyms', hint: 'Member gyms + free outdoor gear' },
+  { layerId: 'gyms', label: 'Show gyms', hint: 'Member gyms in Vice City' },
+  { layerId: 'equipment', label: 'Show workout equipment', hint: 'Free gear — beach, decks, benches' },
+  { layerId: 'breakable', label: 'Show breakable homes', hint: 'Houses you can break into' },
   { layerId: 'lootable', label: 'Show lootable', hint: 'Buildings you can hold up' },
   { layerId: 'interiors', label: 'Show interiors', hint: 'Enterable buildings' },
   { layerId: 'shops', label: 'Show shops', hint: 'Shops & services' },

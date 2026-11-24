@@ -26,6 +26,10 @@ const VIEW: SavedMapView = {
   favoritesOnly: false,
   evidence: 'all',
   category: 'all',
+  enterableOnly: false,
+  lootableOnly: false,
+  interiorHouseOnly: false,
+  venueType: 'all',
 };
 
 describe('Map-view persistence — layers survive a reload', () => {
@@ -69,12 +73,13 @@ describe('Map-view persistence — layers survive a reload', () => {
   it('lists the useful layers first and the card sets last', () => {
     const ordered = [...DEFAULT_LAYERS].sort((a, b) => b.order - a.order);
     const names = ordered.map((l) => l.name);
-    expect(names.slice(0, 5)).toEqual([
+    expect(names.slice(0, 6)).toEqual([
       'Lootable buildings',
       'Interiors / Enterable',
+      'Breakable homes',
       'Shops & services',
-      'Gyms / Strength',
-      'Free outdoor equipment',
+      'Gyms',
+      'Workout equipment',
     ]);
     expect(names.slice(-2)).toEqual([
       'Cards · Vice City Narcos',

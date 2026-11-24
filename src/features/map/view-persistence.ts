@@ -26,6 +26,10 @@ export interface SavedMapView {
   favoritesOnly: boolean;
   evidence: Filters['evidence'];
   category: Filters['category'];
+  enterableOnly: boolean;
+  lootableOnly: boolean;
+  interiorHouseOnly: boolean;
+  venueType: Filters['venueType'];
 }
 
 export interface StorageLike {
@@ -53,7 +57,12 @@ export function loadSavedMapView(
     const value = parsed as Partial<SavedMapView>;
     if (!isStringArray(value.visibleLayerIds)) return null;
     return {
-      visibleLayerIds: value.visibleLayerIds,
+      // Layer rename (v0.10.0): 'gyms-outdoor' became 'equipment' when
+      // Gyms and Workout equipment were split. Old saved views still
+      // open with the equipment layer on.
+      visibleLayerIds: value.visibleLayerIds.map((id) =>
+        id === 'gyms-outdoor' ? 'equipment' : id,
+      ),
       countyId: typeof value.countyId === 'string' ? value.countyId : null,
       hideFound: value.hideFound === true,
       remainingOnly: value.remainingOnly === true,
@@ -70,6 +79,19 @@ export function loadSavedMapView(
         value.category === 'business' ||
         value.category === 'personal'
           ? value.category
+          : 'all',
+      enterableOnly: value.enterableOnly === true,
+      lootableOnly: value.lootableOnly === true,
+      interiorHouseOnly: value.interiorHouseOnly === true,
+      venueType:
+        value.venueType === 'house' ||
+        value.venueType === 'apartment' ||
+        value.venueType === 'trailer' ||
+        value.venueType === 'shop' ||
+        value.venueType === 'bar' ||
+        value.venueType === 'gym' ||
+        value.venueType === 'other'
+          ? value.venueType
           : 'all',
     };
   } catch {
@@ -100,5 +122,9 @@ export function mapViewFromState(
     favoritesOnly: filters.favoritesOnly,
     evidence: filters.evidence,
     category: filters.category,
+    enterableOnly: filters.enterableOnly,
+    lootableOnly: filters.lootableOnly,
+    interiorHouseOnly: filters.interiorHouseOnly,
+    venueType: filters.venueType,
   };
 }

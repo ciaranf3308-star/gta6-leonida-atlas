@@ -5,15 +5,16 @@ import { catalogueFromSnapshot, markerToPlace } from '../../src/data/catalogue';
 const snapshot = JSON.parse(readFileSync(new URL('../../public/assets/street-leonida/maps/gtadb-landmarks-d406fea.json', import.meta.url), 'utf8'));
 
 describe('Atlas searchable catalogue', () => {
-  it('retains all 3,754 community records, six regions, eight member gyms, two outdoor spots and five cards, including 93 unpositioned records', () => {
+  it('retains all 3,754 community records, six regions, eight member gyms, three outdoor spots, five breakable-home examples and five cards, including 99 unpositioned records', () => {
     const places = catalogueFromSnapshot(snapshot);
-    expect(places).toHaveLength(3775);
-    expect(places.filter(p => p.position === null)).toHaveLength(93);
+    expect(places).toHaveLength(3781);
+    expect(places.filter(p => p.position === null)).toHaveLength(99);
     expect(places.filter(p => p.layerId === 'regions')).toHaveLength(6);
     expect(places.filter(p => p.layerId === 'gyms')).toHaveLength(8);
-    expect(places.filter(p => p.layerId === 'gyms-outdoor')).toHaveLength(2);
+    expect(places.filter(p => p.layerId === 'equipment')).toHaveLength(3);
+    expect(places.filter(p => p.layerId === 'breakable' && p.id.startsWith('breakable:'))).toHaveLength(5);
     expect(places.filter(p => p.layerId.startsWith('cards:'))).toHaveLength(5);
-    expect(new Set(places.map(p => p.id)).size).toBe(3775);
+    expect(new Set(places.map(p => p.id)).size).toBe(3781);
   });
   it('uses only source game coordinates and keeps approximate and uncertain evidence explicit', () => {
     const places = catalogueFromSnapshot(snapshot);

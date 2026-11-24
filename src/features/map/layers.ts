@@ -9,8 +9,17 @@ import { COLLECTABLE_CARD_PLACES, COLLECTABLE_SETS } from '../../data/collectabl
  * Layer counts below are the verified counts at GTADB revision d406fea
  * (3,754 records), computed by catalogueFromSnapshot and asserted in
  * tests/unit/atlas-spoiler-free.test.ts. Uncertain GTADB records stay in
- * 'uncertain' whatever their tags say, so the interiors/shops/lootable
- * counts are the certain subset only.
+ * 'uncertain' whatever their tags say, except breakable houses: a
+ * residential+enterable record, a Capri rob-house candidate, or the Port
+ * Gellhorn trailer park is a breakable home even when its name is "?".
+ * The 385 enterable records split across Interiors (77 named venues),
+ * Breakable homes (52 houses/apartments/trailers — 47 positioned, 5
+ * guide examples searchable-only), Lootable (52 shops) and Unverified
+ * (the rest — unnamed, no confirmed use). The 8 named
+ * residential+enterable records (Venture Apts, Jason's House, Lucia's
+ * Apartment, Pegassi Residences…) moved from Interiors / Unverified
+ * into Breakable homes; the 5 guide examples add the 'enterable' tag,
+ * so the built catalogue counts 390 enterable places in total.
  *
  * `order` does double duty: the Layers list shows highest first, and the
  * map draws highest last (on top). So the order below IS the list order:
@@ -51,13 +60,26 @@ export const DEFAULT_LAYERS: LayerDefinition[] = [
     id: 'interiors',
     name: 'Interiors / Enterable',
     description:
-      'Enterable buildings from GTADB with confirmed names — 81 here; the other 304 of the 385 enterable records are unverified and stay in Unverified places.',
+      'Enterable shops, venues and other buildings with confirmed names — 77 here. Houses and apartments that can be broken into live in Breakable homes; 385 places in total carry the enterable tag in GTADB, and the rest of them are unnamed, so they sit in Unverified places.',
     category: 'activity',
     visible: false,
     order: 80,
     source: 'GTADB / Map GTA · CC BY 4.0',
     style: { color: '#e8b64c', radius: 6 },
     icon: 'pin',
+    interactive: true,
+  },
+  {
+    id: 'breakable',
+    name: 'Breakable homes',
+    description:
+      'Houses, apartments and trailers you can break into — 33 tagged in GTADB (none in Capri), the 13 Capri rob-house candidates, the Port Gellhorn trailer park, and guide-named examples like Parlor Apartments and the Lost Vista trailers. Not every breakable home: most houses have no tag in the data. On the in-game map, dark blue means you can go in, light blue means closed.',
+    category: 'activity',
+    visible: false,
+    order: 75,
+    source: 'GTADB / Map GTA · CC BY 4.0; robbery guides: GameRant, HowToVideoGame',
+    style: { color: '#e07a5f', radius: 7 },
+    icon: 'home',
     interactive: true,
   },
   {
@@ -88,9 +110,9 @@ export const DEFAULT_LAYERS: LayerDefinition[] = [
   },
   {
     id: 'gyms',
-    name: 'Gyms / Strength',
+    name: 'Gyms',
     description:
-      'Member gyms in Vice City. 8 gyms; 2 have no verified coordinates yet. House gyms and workout gear inside houses are not in the public data yet — add your own marker when you find one.',
+      'Member gyms in Vice City only — 8 gyms, 2 with no verified coordinates yet. These are clubs you pay to join. Free workout equipment (beach gear, home gyms, benches) is the separate Workout equipment layer, not this one.',
     category: 'activity',
     visible: false,
     order: 60,
@@ -100,23 +122,23 @@ export const DEFAULT_LAYERS: LayerDefinition[] = [
     interactive: true,
   },
   {
-    id: 'gyms-outdoor',
-    name: 'Free outdoor equipment',
+    id: 'equipment',
+    name: 'Workout equipment',
     description:
-      'Free public workout gear — Muscle Sands beach gym and Jason’s house deck (Chapter 1 only). No other outdoor spots have a verified position yet.',
+      'Free public workout equipment — Muscle Sands beach gym, Jason’s house deck (Chapter 1 only) and the Starlet Motel bench by the pool (Chapter 2 only, listed by name — no verified pin yet). No other free spots have a verified position yet. Equipment in a garage in a house is in no public source: mark a house yourself and it becomes an equipment pin on your map.',
     category: 'activity',
     visible: false,
     order: 55,
     source: 'GTA6 GPS / GTADB · approximate',
     style: { color: '#7ddb8a', radius: 7 },
-    icon: 'gym',
+    icon: 'weight',
     interactive: true,
   },
   {
     id: 'uncertain',
     name: 'Unverified places',
     description:
-      'Places with no confirmed name or use yet — kept off so they don’t fill the map. Turn on only if you want to see them.',
+      'Places with no confirmed name or use yet — kept off so they don’t fill the map. Turn on only if you want to see them. Breakable houses with an enterable or residential tag moved to Breakable homes, even when unnamed.',
     category: 'community',
     visible: false,
     order: 30,

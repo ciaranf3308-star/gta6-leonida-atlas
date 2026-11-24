@@ -13,6 +13,11 @@ const filters: Filters = {
   countyId: null,
   hideFound: false,
   remainingOnly: false,
+  enterableOnly: false,
+  lootableOnly: false,
+  interiorHouseOnly: false,
+  venueType: 'all',
+  sortNearest: false,
 };
 const place: Place = {
   id: 'L1',

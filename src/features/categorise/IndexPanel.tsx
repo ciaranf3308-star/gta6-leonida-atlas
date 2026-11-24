@@ -5,8 +5,14 @@ import { isUnnamedPlace } from "../../domain/types";
 import { getAskApiKey, getAskModel } from "../ask/openai";
 import { indexJobCounts, useAiIndexStore } from "./store";
 import { remainingUnnamedPlaces, runIndexJob } from "./runner";
-import { AI_CATEGORIES, aiCategoryShortLabel } from "./categories";
+import {
+  AI_CATEGORIES,
+  aiCategoryShortLabel,
+  effectiveAiCategory,
+} from "./categories";
+import { nameCounts } from "../onboarding/onboarding";
 import { PlaceIcon, iconKeyForAiCategory } from "../map/place-icons";
+import { tagResolutionCounts } from "../../domain/resolve-tags";
 
 export interface IndexPanelProps {
   /** All catalogue places (named + unnamed). */
@@ -45,6 +51,24 @@ export default function IndexPanel(props: IndexPanelProps) {
     [unnamed, job.attemptedPlaceIds],
   );
   const hasKey = getAskApiKey().length > 0;
+  /** Real totals, from the snapshot itself: 2,768 places have no
+   * confirmed name; 2,732 of them are still "?" (this job's scope) and
+   * 36 show a tentative name with a "?". There is no "5k". */
+  const names = nameCounts(props.places);
+  /** "?" places the map data's own tags already resolve to a type — no
+   * AI needed, no guessing. These already show as "? · House" etc. in
+   * Find; the job below is for the rest, which have nothing to read. */
+  const tagCounts = useMemo(() => tagResolutionCounts(props.places), [props.places]);
+  /** What the job has resolved each "?" INTO so far — a count per type,
+   * plus the not-sure ones. A type is a suggestion, never a fact. */
+  const typeCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const record of Object.values(categories)) {
+      const type = effectiveAiCategory(record);
+      if (type) counts.set(type, (counts.get(type) ?? 0) + 1);
+    }
+    return counts;
+  }, [categories]);
   const percent =
     unnamed.length > 0
       ? Math.round((counts.attempted / unnamed.length) * 100)
@@ -104,12 +128,45 @@ export default function IndexPanel(props: IndexPanelProps) {
         <Sparkles size={16} /> Sort the unnamed places
       </h3>
       <p className="panel-intro">
-        {unnamed.length.toLocaleString()} places are still “?” with no name yet.
-        This asks the AI to suggest what kind of place each one is — house,
-        shop, gym, petrol station and so on — from what the map already knows
-        about it. Suggestions are labelled “AI suggested”, never facts, and a
-        name is never invented.
+        {names.unknown.toLocaleString()} places have no confirmed name —{' '}
+        {unnamed.length.toLocaleString()} are still “?” and this job sorts
+        those. This asks the AI to suggest what kind of place each one is —
+        house, shop, gym, petrol station and so on — from what the map
+        already knows about it. Suggestions are labelled “AI suggested”,
+        never facts, and a name is never invented. Low-confidence answers
+        stay “not sure” instead of guessed: with no tag and no analogue
+        address there is nothing to read, so a house with no evidence
+        never becomes a gym.
       </p>
+      {counts.attempted === 0 && (
+        <p className="panel-intro" role="status">
+          <strong>0 sorted so far — this job has never run on this phone.</strong>{' '}
+          Nothing is indexed yet. No real AI call has ever run: the job
+          only starts when you add your key and tap Start below.
+        </p>
+      )}
+      <p className="panel-intro">
+        <strong>
+          {tagCounts.resolved.toLocaleString()} of the {unnamed.length.toLocaleString()}{' '}
+          “?” places already have a type from the map data's own tags
+        </strong>{' '}
+        — houses, shops, petrol stations and more, no AI needed, and they
+        already show as “? · House” in Find. {tagCounts.remaining.toLocaleString()}{' '}
+        still have nothing to read (no tags, or only notes like “can go
+        inside”), and those are the ones this job is for.
+      </p>
+      <div className="index-types" aria-label="Types resolved from the map data's tags">
+        {AI_CATEGORIES.map((category) => {
+          const count = tagCounts.byCategory[category] ?? 0;
+          if (count === 0) return null;
+          return (
+            <span key={category}>
+              <PlaceIcon icon={iconKeyForAiCategory(category)} size={13} />
+              {aiCategoryShortLabel(category)} · {count.toLocaleString()} from the map data
+            </span>
+          );
+        })}
+      </div>
       <div className="index-progress" role="status">
         <div className="index-counts">
           <strong>
@@ -127,13 +184,23 @@ export default function IndexPanel(props: IndexPanelProps) {
           style={{ "--progress": `${percent}%` } as CSSProperties}
         />
       </div>
-      <div className="index-types" aria-label="Types the AI can suggest">
-        {AI_CATEGORIES.map((category) => (
-          <span key={category}>
-            <PlaceIcon icon={iconKeyForAiCategory(category)} size={13} />
-            {aiCategoryShortLabel(category)}
+      <div className="index-types" aria-label="Types the AI can suggest, with how many it has suggested so far">
+        {AI_CATEGORIES.map((category) => {
+          const count = typeCounts.get(category) ?? 0;
+          return (
+            <span key={category}>
+              <PlaceIcon icon={iconKeyForAiCategory(category)} size={13} />
+              {aiCategoryShortLabel(category)}
+              {count > 0 ? ` · ${count.toLocaleString()}` : ""}
+            </span>
+          );
+        })}
+        {counts.unsure > 0 && (
+          <span>
+            <PlaceIcon icon="question" size={13} />
+            Not sure · {counts.unsure.toLocaleString()}
           </span>
-        ))}
+        )}
       </div>
       {job.error && (
         <p className="inline-error" role="alert">

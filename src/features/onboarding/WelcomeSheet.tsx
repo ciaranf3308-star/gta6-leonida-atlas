@@ -7,10 +7,11 @@ import { PlaceIcon, iconKeyForLayer } from '../map/place-icons';
 import { DEFAULT_LAYERS } from '../map/layers';
 import {
   QUICK_START_LAYERS,
-  countUnnamedPlaces,
   layerCounts,
+  nameCounts,
   totalMappedPlaces,
 } from './onboarding';
+import { tagResolutionCounts } from '../../domain/resolve-tags';
 
 export interface WelcomeSheetProps {
   places: Place[];
@@ -32,7 +33,8 @@ export default function WelcomeSheet(props: WelcomeSheetProps) {
   const counts = layerCounts(props.places, props.layers);
   const byId = new Map(counts.map((count) => [count.layerId, count]));
   const total = totalMappedPlaces(props.places);
-  const unnamed = countUnnamedPlaces(props.places);
+  const names = nameCounts(props.places);
+  const tagCounts = tagResolutionCounts(props.places);
   const cardCounts = counts.filter((count) => count.layerId.startsWith('cards:'));
   const cardPins = cardCounts.reduce((sum, count) => sum + count.positioned, 0);
 
@@ -44,7 +46,16 @@ export default function WelcomeSheet(props: WelcomeSheetProps) {
   }
 
   return (
-    <Modal title="Welcome to Leonida" onClose={props.onClose}>
+    <Modal
+      title="Welcome to Leonida"
+      titleClassName="display-title"
+      onClose={props.onClose}
+      footer={
+        <button type="button" className="button" onClick={props.onClose}>
+          {keySaved ? 'Done' : 'Skip for now — explore the blank map'}
+        </button>
+      }
+    >
       <p className="panel-intro">
         Your map starts blank on purpose — so nothing is spoiled. But the
         places <strong>are</strong> mapped: <strong>{total.toLocaleString()} places</strong>{' '}
@@ -93,10 +104,14 @@ export default function WelcomeSheet(props: WelcomeSheetProps) {
           </li>
         </ul>
         <p className="help-text">
-          {unnamed.toLocaleString()} places are still “?” with no name yet — many already say
-          what kind of place they are (house, shop, petrol station). Turn on Unverified places
-          in Layers to see them. Layers can also ask the AI to suggest a type for each
-          unnamed place, on this device only, using your OpenAI key.
+          {names.known.toLocaleString()} places have a confirmed name.{' '}
+          {names.unknown.toLocaleString()} do not yet — {names.questionMark.toLocaleString()}{' '}
+          are still “?” and {names.tentative} show a name with a “?” because the name itself
+          is not confirmed. {tagCounts.resolved.toLocaleString()} of the “?” places already
+          have a type from the map data's own tags (house, shop, petrol station), so they
+          show as “? · House” in Find. {tagCounts.remaining.toLocaleString()} still have
+          nothing to read — those are what the AI job in Layers is for, or your own marks.
+          Turn on Unverified places in Layers to see them.
         </p>
       </section>
       <section className="detail-section">
@@ -171,11 +186,6 @@ export default function WelcomeSheet(props: WelcomeSheetProps) {
           </div>
         )}
       </section>
-      <div className="button-row">
-        <button type="button" className="button" onClick={props.onClose}>
-          {keySaved ? 'Done' : 'Skip for now — explore the blank map'}
-        </button>
-      </div>
       <p className="help-text">
         You can reopen this at any time from the ? button on the map, and turn layers on or off
         from Layers.

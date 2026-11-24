@@ -6,9 +6,15 @@ import { DEFAULT_ASK_MODEL } from "../ask/openai";
 /**
  * AI categorisation of the unnamed "?" places — the index job.
  *
- * 2,732 of the 3,754 GTADB records have no name. 1,042 of them already
- * carry a tag that says what they are (house, shop, petrol station) and
- * 1,108 carry no tag at all. This job asks the user's own OpenAI key
+ * 2,768 of the 3,754 GTADB records have no confirmed name; 2,732 of
+ * them are still "?" and are this job's scope (the other 36 show a
+ * tentative name with a "?"). 1,042 of the 2,732 already carry a tag
+ * that says what they are (house, shop, petrol station) and 1,108 carry
+ * no tag at all — and with no tag and no analogue address there is
+ * nothing for the AI to read, so those stay "not sure" rather than
+ * guessed. A gym tag, for instance, appears on exactly one record in
+ * the whole snapshot (Ajax Gym, L1869): the AI cannot find gym
+ * equipment in Capri houses because no evidence for it exists. This job asks the user's own OpenAI key
  * (the same BYOK setup as Ask Nylah — key in localStorage only, default
  * model gpt-4o-mini, sent only to api.openai.com) to suggest a TYPE for
  * each unnamed place, from the fixed set below, using everything the app
@@ -179,8 +185,25 @@ export function aiCategoryMatchesLayer(
 ): boolean {
   const category = effectiveAiCategory(record);
   if (!category) return false;
-  if (layerId === "gyms" || layerId === "gyms-outdoor")
+  if (layerId === "gyms" || layerId === "equipment")
     return category === "gym";
+  // A "?" the AI suggested is a house answers a breakable-home question
+  // — labelled "AI suggested" in the results, never a verified fact.
+  if (layerId === "breakable") return category === "house";
+  if (layerId === "interiors") {
+    // An AI-suggested house / shop / bar / gym is an enterable building
+    // only when the record itself is tagged enterable — the AI type
+    // alone never claims an interior.
+    if (!place.tags.includes("enterable")) return false;
+    return (
+      category === "house" ||
+      category === "shop" ||
+      category === "restaurant" ||
+      category === "bar" ||
+      category === "gym" ||
+      category === "services"
+    );
+  }
   if (layerId === "shops") {
     return (
       category === "shop" ||

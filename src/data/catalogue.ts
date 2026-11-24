@@ -1,6 +1,7 @@
 import type { Category, PersonalMarker, Place } from '../domain/types';
 import { COLLECTABLE_CARD_PLACES } from './collectables';
-import { GYM_PLACES, OUTDOOR_GYM_PLACES } from './gyms';
+import { BREAKABLE_HOME_PLACES } from './breakable-homes';
+import { EQUIPMENT_PLACES, GYM_PLACES } from './gyms';
 import { getLocalStreetPlaces } from '../features/street-leonida/page-data';
 import {
   GTADB_LICENSE,
@@ -77,15 +78,18 @@ function categoryFor(tags: readonly string[]): Category {
 
 /**
  * Layer precedence for a GTADB record. Uncertain records stay in
- * 'uncertain' whatever their tags say — an unknown name is not a shop.
- * Otherwise a robbable enterable shop is 'lootable', any other shop is
- * 'shops', any other enterable building is 'interiors', the rest is
- * 'community'.
+ * 'uncertain' whatever their tags say — an unknown name is not a shop —
+ * except breakable houses: a residential+enterable record, a Capri
+ * rob-house candidate, or the Port Gellhorn trailer park is a breakable
+ * home even when its name is still "?". Otherwise a robbable enterable
+ * shop is 'lootable', any other shop is 'shops', any other enterable
+ * building is 'interiors', the rest is 'community'.
  */
 export function layerForGtadbLandmark(
   landmark: GtadbLandmark,
   uncertain: boolean,
 ): string {
+  if (isBreakableGtadbLandmark(landmark)) return 'breakable';
   if (uncertain) return 'uncertain';
   const tags = landmark.tags;
   if (
@@ -98,18 +102,48 @@ export function layerForGtadbLandmark(
   return 'community';
 }
 
+/**
+ * A GTADB record that is a breakable home: residential + enterable
+ * (the 33 houses GTADB tags, none of them in Capri), an unnamed Capri
+ * record that is enterable or residential (the Capri rob-house
+ * candidates — GameRant marked every house and garage you can break
+ * into there, and most Capri houses carry no tags at all), or the
+ * Port Gellhorn trailer park (L1062, residential, named "Trailer
+ * Park"). Breakable homes are systemic — dark blue on the in-game map
+ * means you can go in — so this layer is examples plus tagged houses,
+ * never a complete list.
+ */
+export function isBreakableGtadbLandmark(landmark: GtadbLandmark): boolean {
+  const tags = landmark.tags;
+  if (tags.includes('residential') && tags.includes('enterable')) return true;
+  const address = landmark.inGameAddress;
+  const region = address.split(',').slice(1).join(',').trim();
+  const unnamed = address.trim().startsWith('?');
+  if (
+    unnamed &&
+    region.toLowerCase().startsWith('capri') &&
+    (tags.includes('enterable') || tags.includes('residential'))
+  )
+    return true;
+  if (address.trim().toLowerCase().startsWith('trailer park') && tags.includes('residential'))
+    return true;
+  return false;
+}
+
 function landmarkToPlace(landmark: GtadbLandmark): Place {
   const reasons = classifyGtadbUncertaintyReasons(landmark.inGameAddress, landmark.tags);
   const uncertain = reasons.length > 0;
   const layerId = layerForGtadbLandmark(landmark, uncertain);
   const layerNote =
-    layerId === 'lootable'
-      ? 'Enterable shop — most small stores can be held up; safes and alarms vary by store.'
-      : layerId === 'shops'
-        ? 'Shop / service — enterable business.'
-        : layerId === 'interiors'
-          ? 'Enterable building — has an interior.'
-          : '';
+    layerId === 'breakable'
+      ? 'Breakable house — can be broken into for robbery. On the in-game map, dark blue means you can go in.'
+      : layerId === 'lootable'
+        ? 'Enterable shop — most small stores can be held up; safes and alarms vary by store.'
+        : layerId === 'shops'
+          ? 'Shop / service — enterable business.'
+          : layerId === 'interiors'
+            ? 'Enterable building — has an interior.'
+            : '';
   return {
     id: landmark.id,
     title: landmark.inGameAddress.trim() || `Unnamed community place (${landmark.id})`,
@@ -195,7 +229,8 @@ export function catalogueFromSnapshot(input: unknown): Place[] {
     ...regions,
     ...normalizeGtadbCatalogue(tuples).map(landmarkToPlace),
     ...GYM_PLACES,
-    ...OUTDOOR_GYM_PLACES,
+    ...EQUIPMENT_PLACES,
+    ...BREAKABLE_HOME_PLACES,
     ...COLLECTABLE_CARD_PLACES,
   ];
 }
@@ -232,8 +267,14 @@ export function markerToPlace(marker: PersonalMarker): Place {
     layerId: 'personal',
     tags: [
       marker.icon,
-      // A workout-spot marker is a gym answer for Ask Nylah.
-      ...(marker.kind === 'workout' ? ['gym', 'workout'] : []),
+      // A workout-spot marker is a workout-equipment answer for Ask
+      // Nylah — the user marked it himself, so it is real equipment
+      // on his device, whatever the public data says.
+      ...(marker.kind === 'workout' ? ['gym', 'workout', 'equipment'] : []),
+      // A breakable-home marker is a breakable answer for Ask Nylah —
+      // the user found the house himself, so it is real, whatever the
+      // public data says (most breakable homes have no tag at all).
+      ...(marker.kind === 'breakable' ? ['breakable', 'house'] : []),
       ...(marker.color ? [`color:${marker.color}`] : []),
     ],
     region: 'My markers',

@@ -27,6 +27,7 @@ import {
   Layers,
   Lock,
   MapPin,
+  Map as MapIcon,
   Martini,
   Music,
   Navigation,
@@ -35,6 +36,7 @@ import {
   Pizza,
   Plane,
   Scissors,
+  Search,
   Shield,
   Shirt,
   ShoppingBag,
@@ -48,6 +50,7 @@ import {
   Users,
   UtensilsCrossed,
   Waves,
+  Weight,
   Wine,
   Wrench,
   Zap,
@@ -137,10 +140,13 @@ export type IconKey =
   | 'food'
   | 'waves'
   | 'wine'
+  | 'weight'
   | 'wrench'
   | 'zap'
   | 'brush'
-  | 'key';
+  | 'key'
+  | 'search'
+  | 'map';
 
 export const ICON_COMPONENTS: Record<IconKey, LucideIcon> = {
   anchor: Anchor,
@@ -192,10 +198,13 @@ export const ICON_COMPONENTS: Record<IconKey, LucideIcon> = {
   food: UtensilsCrossed,
   waves: Waves,
   wine: Wine,
+  weight: Weight,
   wrench: Wrench,
   zap: Zap,
   brush: Brush,
   key: KeyRound,
+  search: Search,
+  map: MapIcon,
 };
 
 /** The glyph for one icon key, as a React component (chips, rows, sheets). */
@@ -279,8 +288,10 @@ const TAG_ICONS: Record<string, IconKey> = {
   '#jail': 'lock',
   gym: 'gym',
   fitness: 'gym',
-  workout: 'gym',
+  workout: 'weight',
+  equipment: 'weight',
   strength: 'gym',
+  breakable: 'home',
   residential: 'home',
   hotel: 'bed',
   retail: 'store',
@@ -354,7 +365,7 @@ export function iconKeyForLayer(layerId: string): IconKey {
     shops: 'store',
     lootable: 'dollarsign',
     gyms: 'gym',
-    'gyms-outdoor': 'gym',
+    equipment: 'weight',
     uncertain: 'question',
     personal: 'star',
   };
@@ -378,6 +389,7 @@ export function iconKeyForPlace(
   if (aiCategory) return iconKeyForAiCategory(aiCategory.category, aiCategory.shopType);
   if (place.layerId === 'personal') {
     if (place.kind === 'workout') return 'gym';
+    if (place.kind === 'breakable') return 'home';
     if (place.icon === 'star') return 'star';
     if (place.icon === 'flag') return 'flag';
     return 'pin';

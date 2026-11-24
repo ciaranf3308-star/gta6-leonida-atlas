@@ -1,6 +1,6 @@
 {
   "name": "gta6-leonida-atlas",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "private": false,
   "type": "module",
   "license": "AGPL-3.0-only",
@@ -15,8 +15,8 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build && node scripts/finalize-build.mjs",
-    "preview": "vite preview --host 127.0.0.1 --port 4330",
-    "start": "vite preview --host 127.0.0.1 --port 4330",
+    "preview": "ATLAS_BASE_PATH=/gta6-leonida-atlas/ vite preview --host 127.0.0.1 --port 4330",
+    "start": "ATLAS_BASE_PATH=/gta6-leonida-atlas/ vite preview --host 127.0.0.1 --port 4330",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

@@ -2,15 +2,18 @@ import { readFile } from 'node:fs/promises';
 import { expect, test, type Page, type TestInfo } from '@playwright/test';
 import type { Backup } from '../../src/domain/types';
 
-const sidebar = (page: Page) => page.getByRole('complementary', { name: 'Atlas sidebar' });
+const sidebar = (page: Page) => page.getByRole('complementary', { name: 'Atlas panel' });
 const details = (page: Page) => page.getByRole('complementary', { name: 'Place details' });
 const search = (page: Page) =>
   page.getByRole('searchbox', { name: 'Search places, regions, tags' });
 
-async function openSidebar(page: Page): Promise<void> {
-  if (!(await sidebar(page).isVisible())) {
-    await page.getByRole('button', { name: 'Open sidebar', exact: true }).click();
-  }
+async function openPanel(
+  page: Page,
+  tab: 'find' | 'layers' | 'saved' | 'ask',
+): Promise<void> {
+  // One place to go: the labelled bottom-nav tabs open the panel.
+  const label = tab === 'find' ? 'Find' : tab === 'layers' ? 'Layers' : tab === 'saved' ? 'Saved' : 'Ask';
+  await page.locator('.bottom-nav').getByRole('button', { name: label }).click();
   await expect(sidebar(page)).toBeVisible();
 }
 
@@ -24,19 +27,43 @@ async function expectTilesLoaded(page: Page): Promise<void> {
   ).toBeGreaterThan(0);
 }
 
+async function dismissWelcome(page: Page): Promise<void> {
+  // Tests that navigate directly (no openAtlas) still land on the first-
+  // launch welcome dialog, which blocks the nav underneath until skipped.
+  // The welcome mounts once persistence has loaded, which can lag the
+  // map by a second or two — a single isVisible snapshot races it, so
+  // wait for it to appear before deciding there is nothing to skip.
+  const welcome = page.getByRole('dialog', { name: 'Welcome to Leonida' });
+  const appeared = await welcome
+    .waitFor({ state: 'visible', timeout: 5000 })
+    .then(() => true)
+    .catch(() => false);
+  if (!appeared) return;
+  // Dismiss with Escape, not a click: in headless WebKit a normal click
+  // inside a showModal top-layer dialog never completes its
+  // actionability checks (the button is visible, stable and the hit
+  // target — a force click works — but the plain click hangs). Escape
+  // fires the dialog's cancel handler, which is the same onClose path.
+  await page.keyboard.press('Escape');
+  await expect(welcome).not.toBeVisible();
+}
+
 async function openAtlas(page: Page): Promise<void> {
-  await page.goto('/');
+  await page.goto('');
   await expect(page).toHaveTitle(/Leonida Atlas/);
   await expect(
     page.getByRole('region', { name: 'Leonida interactive map', exact: true }),
   ).toBeVisible();
   await expectTilesLoaded(page);
+  // First launch shows the welcome sheet as a modal dialog — it blocks
+  // the bottom nav underneath until dismissed. Skip it (blank map, all
+  // layers off) so the test starts from the spoiler-free defaults.
+  await dismissWelcome(page);
   await expect(page.getByRole('button', { name: 'Add marker', exact: true })).toBeEnabled();
 }
 
 async function enableLayer(page: Page, name: string): Promise<void> {
-  await openSidebar(page);
-  await sidebar(page).getByRole('button', { name: 'Layers', exact: true }).click();
+  await openPanel(page, 'layers');
   const checkbox = page.getByRole('checkbox', { name: new RegExp(`^${name}`) });
   if (!(await checkbox.isChecked())) await checkbox.check();
 }
@@ -44,9 +71,8 @@ async function enableLayer(page: Page, name: string): Promise<void> {
 async function selectRegion(page: Page, name = 'Ambrosia'): Promise<void> {
   // Spoiler-free defaults start with every public layer off.
   await enableLayer(page, 'Named regions');
-  await openSidebar(page);
-  await sidebar(page).getByRole('button', { name: 'Explore', exact: true }).click();
-  await page.getByLabel('Browse categories').selectOption('region');
+  await openPanel(page, 'find');
+  await page.getByLabel('Show one kind of place').selectOption('region');
   await search(page).fill(name);
   await page
     .locator('.place-results')
@@ -56,20 +82,19 @@ async function selectRegion(page: Page, name = 'Ambrosia'): Promise<void> {
 }
 
 async function createCollection(page: Page, name: string): Promise<void> {
-  await openSidebar(page);
-  await sidebar(page).getByRole('button', { name: 'Saved', exact: true }).click();
+  await openPanel(page, 'saved');
   await page.getByLabel('Collection name', { exact: true }).fill(name);
   await page.getByRole('button', { name: 'Create collection', exact: true }).click();
   await expect(page.getByRole('button', { name: `Rename ${name}`, exact: true })).toBeVisible();
 }
 
 async function createMarker(page: Page, title: string): Promise<void> {
-  if (await page.getByRole('button', { name: 'Close sidebar', exact: true }).isVisible()) {
-    await page.getByRole('button', { name: 'Close sidebar', exact: true }).click();
+  if (await page.getByRole('button', { name: 'Close panel', exact: true }).isVisible()) {
+    await page.getByRole('button', { name: 'Close panel', exact: true }).click();
   }
   await page.getByRole('button', { name: 'Add marker', exact: true }).click();
   await page.getByRole('button', { name: 'Enter coordinates', exact: true }).click();
-  const editor = page.getByRole('dialog', { name: 'New personal marker', exact: true });
+  const editor = page.getByRole('dialog', { name: 'New marker', exact: true });
   await expect(editor).toBeVisible();
   await editor.getByLabel('Title', { exact: true }).fill(title);
   await editor.getByLabel('Description', { exact: true }).fill('A private map annotation');
@@ -87,7 +112,7 @@ async function openBackup(page: Page): Promise<void> {
   if (await details(page).isVisible()) {
     await page.getByRole('button', { name: 'Close place details', exact: true }).click();
   }
-  await openSidebar(page);
+  await openPanel(page, 'find');
   await sidebar(page).getByRole('button', { name: 'Backup', exact: true }).click();
   await expect(page.getByRole('dialog', { name: 'Your local backup', exact: true })).toBeVisible();
 }
@@ -145,9 +170,9 @@ test('the map opens without an account, filters public evidence, and toggles vis
     path: testInfo.outputPath(`atlas-qa-${testInfo.project.name}-initial-map.png`),
     fullPage: true,
   });
-  await openSidebar(page);
+  await openPanel(page, 'find');
   await expect(
-    sidebar(page).getByRole('heading', { name: 'LEONIDA ATLAS', exact: true }),
+    sidebar(page).getByRole('heading', { name: 'Leonida Atlas', exact: true }),
   ).toBeVisible();
   await expect(page.locator('vite-error-overlay')).toHaveCount(0);
   // Spoiler-free defaults start with every public layer off; opt in before
@@ -155,23 +180,23 @@ test('the map opens without an account, filters public evidence, and toggles vis
   await enableLayer(page, 'Named regions');
   await enableLayer(page, 'Community places');
   await enableLayer(page, 'Unverified places');
-  await openSidebar(page);
-  await sidebar(page).getByRole('button', { name: 'Explore', exact: true }).click();
-  await page.getByLabel('Browse categories').selectOption('region');
+  await openPanel(page, 'find');
+  await page.getByLabel('Show one kind of place').selectOption('region');
   await expect(page.locator('.place-results .place-result').first()).toContainText(
     'Region · approximate',
   );
-  await page.getByLabel('Evidence filter').selectOption('uncertain');
+  // 'My markers' has no places yet in a fresh profile, so it is the
+  // category that yields no results with these layers on.
+  await page.getByLabel('Show one kind of place').selectOption('personal');
   await expect(page.getByText('No places match these filters.', { exact: false })).toBeVisible();
-  await page.getByLabel('Browse categories').selectOption('all');
-  await expect(page.locator('.place-results .place-result').first()).toContainText(
-    'Uncertain · approximate',
-  );
-  await page.getByRole('button', { name: 'Reset filters', exact: true }).click();
+  await page.getByLabel('Show one kind of place').selectOption('all');
+  // The list repopulates — regions sort first now, so assert on the list
+  // being back rather than on which kind of place is first.
+  await expect(page.locator('.place-results .place-result').first()).toBeVisible();
+  await page.getByRole('button', { name: 'Clear all', exact: true }).click();
   await selectRegion(page);
   await page.getByRole('button', { name: 'Close place details', exact: true }).click();
-  await openSidebar(page);
-  await sidebar(page).getByRole('button', { name: 'Layers', exact: true }).click();
+  await openPanel(page, 'layers');
   // Only the region pin should be in view for the caption assertions below.
   const communityLayer = page.getByRole('checkbox', { name: /^Community places/ });
   if (await communityLayer.isChecked()) await communityLayer.uncheck();
@@ -262,7 +287,7 @@ test('a personal marker can be edited, moved and deleted with its saved referenc
     details(page).getByRole('button', { name: 'Remove from Personal trip', exact: true }),
   ).toBeVisible();
   await details(page).getByRole('button', { name: 'Edit marker', exact: true }).click();
-  let editor = page.getByRole('dialog', { name: 'Edit personal marker', exact: true });
+  let editor = page.getByRole('dialog', { name: 'Edit my marker', exact: true });
   await editor.getByLabel('Title', { exact: true }).fill('Quiet beach overlook');
   await editor.getByRole('button', { name: 'Save marker', exact: true }).click();
   await expect(
@@ -270,13 +295,13 @@ test('a personal marker can be edited, moved and deleted with its saved referenc
   ).toBeVisible();
   await details(page).getByRole('button', { name: 'Move', exact: true }).click();
   await page.getByRole('button', { name: 'Enter coordinates', exact: true }).click();
-  editor = page.getByRole('dialog', { name: 'Edit personal marker', exact: true });
+  editor = page.getByRole('dialog', { name: 'Edit my marker', exact: true });
   await editor.getByLabel('Game X', { exact: true }).fill('-1000');
   await editor.getByLabel('Game Y', { exact: true }).fill('1200');
   await editor.getByRole('button', { name: 'Save marker', exact: true }).click();
   await expect(details(page)).toContainText('-1000.0, 1200.0');
   await page.reload();
-  await openSidebar(page);
+  await openPanel(page, 'find');
   await search(page).fill('Quiet beach overlook');
   await page
     .locator('.place-results')
@@ -284,7 +309,7 @@ test('a personal marker can be edited, moved and deleted with its saved referenc
     .click();
   await expect(details(page)).toContainText('-1000.0, 1200.0');
   await details(page).getByRole('button', { name: 'Edit marker', exact: true }).click();
-  editor = page.getByRole('dialog', { name: 'Edit personal marker', exact: true });
+  editor = page.getByRole('dialog', { name: 'Edit my marker', exact: true });
   await editor.getByRole('button', { name: 'Delete marker', exact: true }).click();
   await editor.getByRole('button', { name: 'Confirm deletion', exact: true }).click();
   await expect(editor).not.toBeVisible();
@@ -365,7 +390,7 @@ test('the installed app reloads offline with its saved preferences and personal 
   await openAtlas(page);
   await createMarker(page, 'Offline stop');
   await page.getByRole('button', { name: 'Close place details', exact: true }).click();
-  await openSidebar(page);
+  await openPanel(page, 'find');
   await sidebar(page).getByRole('button', { name: 'Settings', exact: true }).click();
   const reducedMotion = page.getByRole('checkbox', { name: /^Reduce motion/ });
   await reducedMotion.click();
@@ -408,7 +433,7 @@ test('the installed app reloads offline with its saved preferences and personal 
         ),
       ),
     ).toBe(true);
-    await openSidebar(page);
+    await openPanel(page, 'find');
     await search(page).fill('Offline stop');
     await page
       .locator('.place-results')
@@ -471,11 +496,12 @@ test('blocked local storage keeps the public map usable and never reports a succ
       },
     });
   });
-  await page.goto('/');
+  await page.goto('');
   await expect(
     page.getByRole('region', { name: 'Leonida interactive map', exact: true }),
   ).toBeVisible();
-  await openSidebar(page);
+  await dismissWelcome(page);
+  await openPanel(page, 'find');
   await expect(page.getByText('Local storage needs attention', { exact: true })).toBeVisible();
   await expect(page.getByText('Local data saved', { exact: true })).not.toBeVisible();
   await expect(page.getByRole('button', { name: 'Add marker', exact: true })).toBeDisabled();
@@ -517,7 +543,8 @@ test('clean note editors synchronize across tabs without overwriting newer saved
 });
 
 test('a dismissed direct link stays closed when local data refreshes', async ({ page, context }) => {
-  await page.goto('/?place=region%3Avice-city');
+  await page.goto('?place=region%3Avice-city');
+  await dismissWelcome(page);
   const heading = details(page).getByRole('heading', { name: 'Vice City', exact: true });
   await expect(heading).toBeVisible();
   await page.getByRole('button', { name: 'Close place details', exact: true }).click();
@@ -526,7 +553,7 @@ test('a dismissed direct link stays closed when local data refreshes', async ({ 
   try {
     await openAtlas(other);
     await createMarker(other, 'Second tab update');
-    await openSidebar(page);
+    await openPanel(page, 'find');
     await search(page).fill('Second tab update');
     await expect(page.getByRole('button', { name: /^Second tab update My marker/ })).toBeVisible();
     await expect(heading).not.toBeVisible();

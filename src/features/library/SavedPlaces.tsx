@@ -31,7 +31,7 @@ export function SavedPlaces({
       personalOnly: kind === 'personal',
       collectionId: id,
     });
-    useUiStore.getState().setTab('explore');
+    useUiStore.getState().setNavTab('explore');
   }
   async function save() {
     const trimmed = name.trim();
@@ -96,7 +96,7 @@ export function SavedPlaces({
                 useUiStore
                   .getState()
                   .setFilters({ remainingOnly: true, collectionId: null });
-                useUiStore.getState().setTab('explore');
+                useUiStore.getState().setNavTab('explore');
               }}
             >
               <span className="progress-name">

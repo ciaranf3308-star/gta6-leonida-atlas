@@ -3,8 +3,9 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { catalogueFromSnapshot } from "../../src/data/catalogue";
+import { BREAKABLE_HOME_PLACES } from "../../src/data/breakable-homes";
 import { COLLECTABLE_CARD_PLACES } from "../../src/data/collectables";
-import { GYM_PLACES, OUTDOOR_GYM_PLACES } from "../../src/data/gyms";
+import { GYM_PLACES, EQUIPMENT_PLACES } from "../../src/data/gyms";
 import { filterPlaces } from "../../src/domain/filter";
 import ExplorerView from "../../src/features/explorer/ExplorerView";
 import RegionalResearch from "../../src/features/library/RegionalResearch";
@@ -113,7 +114,8 @@ describe("regional source discoveries", () => {
       snapshot.landmarks.length +
         6 +
         GYM_PLACES.length +
-        OUTDOOR_GYM_PLACES.length +
+        EQUIPMENT_PLACES.length +
+        BREAKABLE_HOME_PLACES.length +
         COLLECTABLE_CARD_PLACES.length,
     );
     const raw = snapshot.landmarks.find(
@@ -143,6 +145,11 @@ describe("regional source discoveries", () => {
           countyId: null,
           hideFound: false,
           remainingOnly: false,
+          enterableOnly: false,
+          lootableOnly: false,
+          interiorHouseOnly: false,
+          venueType: 'all',
+          sortNearest: false,
         },
         [],
         [],

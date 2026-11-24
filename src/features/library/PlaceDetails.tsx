@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
-import { Bookmark, Check, ExternalLink, MapPin, Move, Pencil, Sparkles, Star, X } from 'lucide-react';
+import { Bookmark, Check, Dumbbell, ExternalLink, Home, MapPin, Move, Pencil, Sparkles, Star, X } from 'lucide-react';
 import type { Place, Position } from '../../domain/types';
 import { isUnnamedPlace } from '../../domain/types';
 import {
   displayTagsFor,
-  isEnterablePlace,
   placeStatusLine,
   placeTypeLine,
 } from '../../domain/tags';
+import { DARK_BLUE_RULE, interiorInfoFor } from '../../domain/interiors';
+import { tagResolutionFor } from '../../domain/resolve-tags';
 import {
   AI_CATEGORIES,
   AI_CATEGORY_LABELS,
@@ -34,10 +35,20 @@ import RegionalResearch from './RegionalResearch';
 export default function PlaceDetails({
   place,
   onAddMarkerHere,
+  onMarkWorkout,
+  onMarkBreakable,
 }: {
   place: Place;
   /** Start a My marker at this place's position (for "?" places the user identifies). */
   onAddMarkerHere?: (position: Position) => void;
+  /** Start a workout-equipment marker at this place's position — the
+   * equipment is in a garage in a house, and only the user knows which
+   * house, so marking it here is how it becomes a real pin. */
+  onMarkWorkout?: (place: Place) => void;
+  /** Start a breakable-home marker at this place's position — the user
+   * found a house / apartment / trailer he can break into, and most
+   * breakable homes have no tag in the public data at all. */
+  onMarkBreakable?: (place: Place) => void;
 }) {
   const favorite = useUserStore((s) => s.favorites.some((f) => f.placeId === place.id));
   const found = useUserStore((s) => s.visited.some((v) => v.placeId === place.id));
@@ -81,6 +92,14 @@ export default function PlaceDetails({
     : place.description;
   const layerColor =
     DEFAULT_LAYERS.find((l) => l.id === place.layerId)?.style.color ?? '#e8823a';
+  // Interior status, in plain words at the top of the sheet: enterable /
+  // unknown (never a false no), what kind of venue, what you do inside,
+  // and whether it is a breakable house. A house with no enterable tag
+  // is "check the in-game map", not "closed".
+  const interior = interiorInfoFor(place);
+  // What the map data's tags say this "?" is — a resolved type from the
+  // tags, never a name. The name stays "?" until a source names it.
+  const tagResolution = tagResolutionFor(place);
   const [correcting, setCorrecting] = useState(false);
   const [correctChoice, setCorrectChoice] = useState<AiCategoryId>('house');
   const [correctShopType, setCorrectShopType] = useState('');
@@ -171,6 +190,46 @@ export default function PlaceDetails({
             uncategorised.
           </p>
         )}
+        <section className="detail-section" aria-label="Interior">
+          <h3>Inside</h3>
+          <p className="help-text">
+            <strong>{interior.label}.</strong>
+            {interior.activity ? ` ${interior.activity}` : ''}
+          </p>
+          {interior.status === 'unknown' &&
+            (interior.venueType === 'house' ||
+              interior.venueType === 'apartment' ||
+              interior.venueType === 'trailer' ||
+              interior.possibleBreakable) && (
+              <p className="help-text">
+                Breakable? {DARK_BLUE_RULE} Most ordinary houses are decoration in
+                free roam — the Capri rob houses and story safehouses are the
+                exceptions.
+              </p>
+            )}
+          {interior.possibleBreakable && !interior.breakable && (
+            <p className="help-text">
+              <strong>Possible enterable house — check it.</strong> This house has no
+              tags in the data, so it reads as unknown, not closed.
+            </p>
+          )}
+          {place.position && onMarkBreakable && !interior.breakable && (
+            <>
+              <button
+                type="button"
+                className="button"
+                onClick={() => onMarkBreakable(place)}
+              >
+                <Home size={16} /> Mark as a breakable home
+              </button>
+              <p className="help-text">
+                Found you can break into this house, apartment or trailer? Mark it
+                and it becomes a Breakable home pin on your map, with your loot
+                notes (safe, jewellery, special car in the garage).
+              </p>
+            </>
+          )}
+        </section>
         {isUnnamedPlace(place) && (
           <section className="detail-section" aria-label="What is known about this place">
             <h3>What we know</h3>
@@ -185,9 +244,23 @@ export default function PlaceDetails({
                   <dd>{place.region}</dd>
                 </div>
               )}
+              {tagResolution && (
+                <div>
+                  <dt>What it is</dt>
+                  <dd>
+                    {tagResolution.label} — resolved from the map data's tags, not
+                    a name. The name is still unknown.
+                  </dd>
+                </div>
+              )}
               <div>
                 <dt>You can go inside</dt>
-                <dd>{isEnterablePlace(place) ? 'Yes' : 'Not known'}</dd>
+                <dd>
+                  {interior.label}
+                  {interior.possibleBreakable && !interior.breakable
+                    ? ' — possible enterable house, check it'
+                    : ''}
+                </dd>
               </div>
               {placeTypeLine(place) && (
                 <div>
@@ -214,6 +287,22 @@ export default function PlaceDetails({
               >
                 <MapPin size={16} /> Add my own marker here
               </button>
+            )}
+            {place.position && onMarkWorkout && (
+              <button
+                type="button"
+                className="button primary"
+                onClick={() => onMarkWorkout(place)}
+              >
+                <Dumbbell size={16} /> Workout equipment in the garage — mark it
+              </button>
+            )}
+            {place.position && onMarkWorkout && (
+              <p className="help-text">
+                Know there is workout equipment here — in a garage in a house?
+                Mark it and it becomes a Workout Equipment pin on your map,
+                with your note (e.g. bench in garage).
+              </p>
             )}
           </section>
         )}
@@ -499,7 +588,7 @@ export default function PlaceDetails({
               disabled={!ready}
               onClick={() => {
                 useMapStore.getState().setEditor('move');
-                useUiStore.getState().setSidebar(false);
+                useUiStore.getState().setNavTab('map');
               }}
             >
               <Move size={16} />

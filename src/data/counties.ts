@@ -79,6 +79,23 @@ function rectContains(bounds: MapBounds, position: Position): boolean {
   );
 }
 
+/** The county whose estimated extent contains a map position, if any. */
+export function countyIdForPosition(position: Position): string | null {
+  const matches = COUNTIES.filter((county) => rectContains(county.bounds, position));
+  if (matches.length === 0) return null;
+  if (matches.length === 1) return matches[0]!.id;
+  let best = matches[0]!;
+  let bestDistance = rectCentreDistanceSquared(best.bounds, position);
+  for (const county of matches.slice(1)) {
+    const distance = rectCentreDistanceSquared(county.bounds, position);
+    if (distance < bestDistance) {
+      best = county;
+      bestDistance = distance;
+    }
+  }
+  return best.id;
+}
+
 function rectCentreDistanceSquared(bounds: MapBounds, position: Position): number {
   const cx = (bounds.west + bounds.east) / 2;
   const cy = (bounds.south + bounds.north) / 2;

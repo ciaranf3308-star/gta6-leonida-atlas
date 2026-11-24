@@ -1,5 +1,8 @@
 import type { Collection, Filters, Place, PlaceNote } from './types';
 import { countyForPlace } from '../data/counties';
+import { isEnterablePlace } from './tags';
+import { venueTypeFor } from './interiors';
+import { tagResolutionSearchWords } from './resolve-tags';
 import {
   aiCategorySearchWords,
   type AiCategoryRecord,
@@ -38,6 +41,29 @@ export function filterPlaces(
   const hideFound = filters.hideFound || filters.remainingOnly;
   return places.filter((place) => {
     if (hideFound && visited.has(place.id)) return false;
+    if (
+      filters.enterableOnly &&
+      !isEnterablePlace(place) &&
+      place.layerId !== 'interiors' &&
+      // Breakable homes are enterable by definition — the Capri
+      // rob-house candidates carry a residential tag, not the
+      // enterable one, and must still show under "Can go inside".
+      place.layerId !== 'breakable'
+    )
+      return false;
+    if (filters.lootableOnly && place.layerId !== 'lootable') return false;
+    if (
+      filters.interiorHouseOnly &&
+      !(place.tags.includes('residential') && isEnterablePlace(place))
+    )
+      return false;
+    if (filters.venueType !== 'all') {
+      // A venue type is a kind of INTERIOR: it only ever matches
+      // enterable places. (Seeded breakable examples carry the
+      // 'enterable' tag, so they match too.)
+      if (!isEnterablePlace(place) || venueTypeFor(place) !== filters.venueType)
+        return false;
+    }
     if (filters.countyId) {
       if (!place.position) return false;
       if (countyForPlace(place) !== filters.countyId) return false;
@@ -55,6 +81,9 @@ export function filterPlaces(
         place.region,
         place.description,
         ...place.tags,
+        // A "?" the tags resolve to a type is searchable by that type:
+        // "house" finds a residential "?", "petrol" finds a #gas "?".
+        ...tagResolutionSearchWords(place),
         ...aiCategorySearchWords(aiCategories?.[place.id]),
         noteIndex.get(place.id) ?? '',
       ].join(' '),

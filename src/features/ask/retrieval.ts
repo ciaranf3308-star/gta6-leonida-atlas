@@ -2,6 +2,15 @@ import type { Filters, LayerDefinition, Place } from '../../domain/types';
 import { isUnnamedPlace } from '../../domain/types';
 import { COUNTIES, countyForPlace, countyIdFromText } from '../../data/counties';
 import { ROBBABLE_SHOP_TAGS, SHOP_TAGS } from '../../data/catalogue';
+import { housesToCheck, isWorkoutMarker } from '../../domain/gym-check';
+import {
+  BREAKABLE_GAP_NOTE,
+  DARK_BLUE_RULE,
+  isBreakableMarker,
+} from '../../domain/interiors';
+
+/** Re-exported for callers that already import it from here. */
+export { isWorkoutMarker, isBreakableMarker };
 import {
   aiCategoryMatchesLayer,
   type AiCategoryRecord,
@@ -84,6 +93,24 @@ export interface AskRetrievalResult {
   areaMismatch: boolean;
   /** Eligible records before the area scope and the 30 cap. */
   totalInScope: number;
+  /**
+   * Houses in the asked area worth checking for gym equipment — unnamed
+   * "?" places tagged enterable or residential, nearest-first. Only ever
+   * set for a gym question in an area with no gym near it. These are
+   * CANDIDATES, never verified gyms: no source says they have equipment.
+   * Empty unless a gym was asked for in a named area or county.
+   */
+  housesToCheck: Place[];
+  /** All such houses in the area, before the display cap. */
+  housesToCheckTotal: number;
+  /** The area the houses are in ("Capri", "Vice-Dale County"), or null. */
+  housesAreaName: string | null;
+  /**
+   * What the houses are candidates for: 'equipment' when workout
+   * equipment was asked for, 'gym' when a member gym was, null when
+   * there are no houses. The answer copy follows this, never the other.
+   */
+  housesKind: 'equipment' | 'gym' | null;
 }
 
 export function normalizeAsk(text: string): string {
@@ -113,34 +140,88 @@ export function layersRequestedByQuestion(
   const ids = new Set<string>();
   const has = (layerId: string) => layers.some((l) => l.id === layerId) && ids.add(layerId);
 
-  const gymWords = [
-    'gym', 'workout', 'strength', 'gains', 'lift', 'weight', 'fitness', 'muscle',
-    'bench', 'squat', 'kettlebell', 'cardio', 'exercise',
+  // Gyms vs workout equipment (user correction, 2026-11-23): "workout",
+  // "equipment", "bench", "weights" or "gym equipment" asks for the free
+  // gear — never the member clubs. A bare "gym" (or "train", "fitness")
+  // asks for the member gyms. A question that asks for both ("a gym near
+  // Capri or somewhere I can hit some strength workouts") asks for both
+  // layers. Only the equipment PHRASES consume the word "gym": in "gym
+  // equipment", "home gym", "free gym" or "Muscle Sands" the gym word
+  // belongs to the equipment phrase, so it is stripped before the gym
+  // check runs.
+  const equipmentWords = [
+    'workout', 'equipment', 'bench', 'weights', 'weight', 'kettlebell',
+    'dumbbell', 'squat', 'deadlift', 'calisthenics',
   ];
-  const trainWord = hasWord(q, 'train') || hasWord(q, 'training');
-  if (gymWords.some((w) => hasWord(q, w) || hasPhrase(q, w)) || trainWord) {
-    has('gyms');
-    has('gyms-outdoor');
-  }
+  const equipmentPhrases = [
+    'work out', 'working out', 'gym equipment', 'home gym', 'outdoor gym',
+    'free gym', 'free workout', 'public equipment', "jason's house",
+    'jason house', 'muscle sands', 'punching bag', 'pull-up', 'pull up',
+  ];
   if (
-    ['outdoor', 'muscle sands', "jason's house", 'jason house', 'home gym', 'public equipment', 'calisthenics', 'free gym', 'free workout'].some(
-      (p) => hasPhrase(q, p),
-    ) ||
+    equipmentWords.some((w) => hasWord(q, w) || hasPhrase(q, w)) ||
+    equipmentPhrases.some((p) => hasPhrase(q, p)) ||
     (hasWord(q, 'free') && (hasWord(q, 'gym') || hasWord(q, 'workout')))
   ) {
-    has('gyms-outdoor');
+    has('equipment');
+  }
+  const gymWords = [
+    'gym', 'fitness', 'strength', 'gains', 'lift', 'exercise', 'cardio',
+    'muscle', 'train', 'training',
+  ];
+  const qWithoutEquipmentPhrases = equipmentPhrases.reduce(
+    (acc, phrase) => acc.split(phrase).join(' '),
+    q,
+  );
+  if (
+    gymWords.some(
+      (w) => hasWord(qWithoutEquipmentPhrases, w) || hasPhrase(qWithoutEquipmentPhrases, w),
+    )
+  ) {
+    has('gyms');
   }
   const lootPhrases = [
     'burglar', 'burglary', 'burglaries', 'loot', 'rob', 'robbery', 'robberies',
     'hold up', 'holdup', 'steal', 'break in', 'break-in', 'hit tonight',
     'houses i can hit', 'can i rob', 'can be robbed', 'held up',
   ];
-  if (lootPhrases.some((p) => hasPhrase(q, p))) has('lootable');
   const shopWords = [
     'shop', 'store', 'clothes', 'clothing', 'guns', 'ammo', 'food', 'gas',
     'supermarket', 'pharmacy', 'tattoo', 'tattoos', 'hair', 'shoes',
     'electronics', 'vendor', 'restaurant',
   ];
+  const houseWords = [
+    'house', 'houses', 'home', 'homes', 'apartment', 'apartments', 'apts',
+    'trailer', 'trailers', 'mansion', 'mansions', 'mobile home',
+  ];
+  const asksHouses =
+    houseWords.some((w) => hasWord(q, w) || hasPhrase(q, w)) &&
+    !shopWords.some((w) => hasWord(q, w));
+  // A robbery question about HOUSES asks for breakable homes, not shops:
+  // "apartments I can break into in Vice City" is houses, "rob a store"
+  // is shops. 'lootable' (shops) only joins when the question is not a
+  // house question.
+  if (lootPhrases.some((p) => hasPhrase(q, p)) && !asksHouses) has('lootable');
+  // Breakable homes are systemic, not a list: the question asks for the
+  // Breakable homes layer — the 33 GTADB-tagged houses, the Capri rob
+  // houses, the trailer parks, the guide examples, and the user's own
+  // marked homes — plus the dark-blue rule in the summary. "Enterable
+  // houses" asks for breakable homes AND interiors (a house interior is
+  // both); trailers ask for breakable homes only.
+  const breakablePhrases = [
+    'breakable', 'break into', 'break-in', 'break in', 'rob a house',
+    'rob houses', 'rob a home', 'rob homes', 'houses i can break into',
+    'apartments i can break into', 'trailer', 'trailers', 'mobile home',
+    'enterable house', 'enterable houses', 'enterable home', 'enterable homes',
+    'interior house', 'interior houses', 'house interior', 'house interiors',
+    'houses i can enter', 'house i can enter', 'apartments i can enter',
+    'houses i can hit', 'house i can hit',
+    // "Lootable houses" is houses you can loot — breakable homes, not
+    // the lootable SHOPS layer (which is "lootable buildings").
+    'lootable house', 'lootable houses', 'lootable home', 'lootable homes',
+    'lootable apartment', 'lootable apartments',
+  ];
+  if (breakablePhrases.some((p) => hasPhrase(q, p))) has('breakable');
   if (
     shopWords.some((w) => hasWord(q, w)) ||
     hasPhrase(q, 'buy') ||
@@ -271,7 +352,9 @@ export function areaAnchorForWord(
 /** Plain noun for the asked layer(s), for the proximity verdict. */
 function placeNounForLayers(layerIds: readonly string[]): string {
   if (layerIds.length === 1) {
-    if (layerIds[0] === 'gyms' || layerIds[0] === 'gyms-outdoor') return 'gym';
+    if (layerIds[0] === 'equipment') return 'workout equipment';
+    if (layerIds[0] === 'gyms') return 'gym';
+    if (layerIds[0] === 'breakable') return 'breakable home';
     if (layerIds[0] === 'lootable') return 'lootable building';
     if (layerIds[0] === 'shops') return 'shop';
     if (layerIds[0] === 'interiors') return 'enterable building';
@@ -279,7 +362,9 @@ function placeNounForLayers(layerIds: readonly string[]): string {
     if (layerIds[0] === 'personal') return 'marker of yours';
     return 'place';
   }
-  if (layerIds.includes('gyms') || layerIds.includes('gyms-outdoor')) return 'gym';
+  if (layerIds.includes('gyms')) return 'gym';
+  if (layerIds.includes('equipment')) return 'workout equipment';
+  if (layerIds.includes('breakable')) return 'breakable home';
   return 'place';
 }
 
@@ -329,8 +414,20 @@ function proximitySummaryFor(
  */
 export function tagMatchesLayer(place: Place, layerId: string): boolean {
   const tags = place.tags;
-  if (layerId === 'gyms' || layerId === 'gyms-outdoor')
-    return tags.some((tag) => ['gym', 'fitness', 'workout', 'strength', 'exercise'].includes(tag));
+  // Gyms and equipment never leak into each other through tags: the
+  // free-gear places carry a 'gym' tag (they are gyms in the loose
+  // sense), but a gym question must not answer from them, and a member
+  // club must not answer an equipment question.
+  if (layerId === 'gyms')
+    return (
+      place.layerId !== 'equipment' &&
+      tags.some((tag) => ['gym', 'fitness'].includes(tag))
+    );
+  if (layerId === 'equipment')
+    return (
+      place.layerId !== 'gyms' &&
+      tags.some((tag) => ['equipment', 'workout'].includes(tag))
+    );
   if (layerId === 'shops') return tags.some((tag) => (SHOP_TAGS as readonly string[]).includes(tag));
   if (layerId === 'lootable')
     return (
@@ -338,22 +435,15 @@ export function tagMatchesLayer(place: Place, layerId: string): boolean {
       tags.some((tag) => (ROBBABLE_SHOP_TAGS as readonly string[]).includes(tag))
     );
   if (layerId === 'interiors') return tags.includes('enterable');
+  // Breakable homes: the tag, or residential + enterable (the 33 GTADB
+  // houses). The Capri rob-house candidates carry the layer itself, so
+  // they match through allowed.has(layerId) rather than through tags.
+  if (layerId === 'breakable')
+    return (
+      tags.includes('breakable') ||
+      (tags.includes('residential') && tags.includes('enterable'))
+    );
   return false;
-}
-
-/**
- * A My marker counts as a workout answer only when the user marked it as
- * one (a "workout spot" marker, or gym/workout words in its title or
- * notes). Without this, a photo-spot marker near Capri would be returned
- * as a gym just because it is near — the user's own markers are never
- * spoilers, but they still have to be the thing asked for.
- */
-export function isWorkoutMarker(place: Place): boolean {
-  if (place.layerId !== 'personal') return false;
-  if (place.tags.some((tag) => ['gym', 'workout', 'strength', 'fitness'].includes(tag)))
-    return true;
-  const text = normalizeAsk(`${place.title} ${place.description}`);
-  return ['gym', 'workout', 'strength', 'weights', 'home gym'].some((p) => text.includes(p));
 }
 
 export function retrieveForAsk(input: AskRetrievalInput): AskRetrievalResult {
@@ -372,8 +462,15 @@ export function retrieveForAsk(input: AskRetrievalInput): AskRetrievalResult {
   );
   const visited = new Set(input.visitedIds ?? []);
   const hideFound = input.filters.hideFound || input.filters.remainingOnly;
-  const asksWorkout =
-    requestedLayerIds.includes('gyms') || requestedLayerIds.includes('gyms-outdoor');
+  const asksGyms = requestedLayerIds.includes('gyms');
+  const asksEquipment = requestedLayerIds.includes('equipment');
+  const asksWorkout = asksGyms || asksEquipment;
+  const asksBreakable = requestedLayerIds.includes('breakable');
+  // A marker-kind question only takes matching markers from My markers:
+  // a workout question takes workout markers, a breakable question takes
+  // breakable markers, a question asking for both takes either. A
+  // general question takes all of them — they are the user's own notes.
+  const asksMarkerKind = asksWorkout || asksBreakable;
 
   const eligible = places.filter(
     (place) =>
@@ -389,8 +486,14 @@ export function retrieveForAsk(input: AskRetrievalInput): AskRetrievalResult {
             aiCategoryMatchesLayer(input.aiCategories?.[place.id], place, id),
           ))) &&
       !(hideFound && visited.has(place.id)) &&
-      // A workout question only takes workout markers from My markers.
-      !(asksWorkout && place.layerId === 'personal' && !isWorkoutMarker(place)),
+      !(
+        asksMarkerKind &&
+        place.layerId === 'personal' &&
+        !(
+          (asksWorkout && isWorkoutMarker(place)) ||
+          (asksBreakable && isBreakableMarker(place))
+        )
+      ),
   );
   const totalInScope = eligible.length;
 
@@ -507,6 +610,41 @@ export function retrieveForAsk(input: AskRetrievalInput): AskRetrievalResult {
     .map((id) => layers.find((l) => l.id === id)?.name)
     .filter((name): name is string => Boolean(name));
 
+  // Houses to check: a gym question in a named area or county with no
+  // gym near it. Capri is the case that matters — 0 gym tags in the
+  // whole snapshot outside Ajax Gym, no guide lists a gym there, and
+  // most Capri "?" records carry no tag at all — so the honest answer is
+  // the nearest verified gym PLUS the enterable/residential "?" houses
+  // in that area, as candidates to check, never as gyms. They are not
+  // sent to the AI and never presented as verified.
+  let houses: Place[] = [];
+  let housesTotal = 0;
+  let housesAreaName: string | null = null;
+  const housesKind: 'equipment' | 'gym' | null =
+    asksEquipment && !asksGyms ? 'equipment' : asksGyms ? 'gym' : null;
+  if (asksWorkout && nearCount === 0 && anchorPosition && (areaWord || county)) {
+    const inAreaWord = (place: Place) =>
+      areaWord !== null &&
+      normalizeAsk(`${place.title} ${place.region}`).includes(areaWord);
+    const matchesArea = areaWord
+      ? inAreaWord
+      : (place: Place) => county !== undefined && county !== null && countyForPlace(place) === county.id;
+    // The area word is normalised lowercase ("capri"); display it
+    // with a capital, like the county names already are.
+    housesAreaName =
+      areaWord !== null
+        ? areaWord.charAt(0).toUpperCase() + areaWord.slice(1)
+        : (county?.name ?? null);
+    const found = housesToCheck(
+      places,
+      anchorPosition,
+      (place) =>
+        matchesArea(place) && !records.some((record) => record.id === place.id),
+    );
+    houses = found.places;
+    housesTotal = found.total;
+  }
+
   const noun = placeNounForLayers(requestedLayerIds);
   let proximitySummary: string | null = null;
   if (areaLabel && (anchorPosition || anchor)) {
@@ -517,13 +655,32 @@ export function retrieveForAsk(input: AskRetrievalInput): AskRetrievalResult {
       anchorDistances,
       anchorPosition,
     );
-    // House-level gap, stated honestly: no source lists gym gear inside
-    // houses, so the public list is never the whole picture for workouts.
-    // A user-marked house gym is already in the records above when it is
-    // near — this line says where to get one when there is none.
+    // House-level gap, stated honestly: no source lists workout gear
+    // inside houses, so the public list is never the whole picture for
+    // workouts. A user-marked house gym is already in the records above
+    // when it is near — this line says where to get one when there is
+    // none. Equipment the user knows about is in a garage in a house:
+    // the houses below are the ones to check, not a guessed pin.
     if (asksWorkout && nearCount === 0 && proximitySummary) {
-      proximitySummary +=
-        ' House gyms and workout gear inside houses are not in the public map data yet — no source lists them. If you mark a house gym yourself, Ask will use your marker next time.';
+      if (asksEquipment && !asksGyms) {
+        proximitySummary +=
+          ' Workout equipment in a garage in a house is not in the public map data yet — no source lists it. If you mark a house yourself, Ask will use your marker next time.';
+      } else {
+        proximitySummary +=
+          ' House gyms and workout gear inside houses are not in the public map data yet — no source lists them. If you mark a house gym yourself, Ask will use your marker next time.';
+      }
+      if (housesTotal > 0 && housesAreaName) {
+        proximitySummary +=
+          asksEquipment && !asksGyms
+            ? ` ${housesTotal} house${housesTotal === 1 ? '' : 's'} in ${housesAreaName} ${housesTotal === 1 ? 'is' : 'are'} worth checking — listed below. None of them is verified workout equipment.`
+            : ` ${housesTotal} house${housesTotal === 1 ? '' : 's'} in ${housesAreaName} ${housesTotal === 1 ? 'is' : 'are'} worth checking — listed below. None of them is a verified gym.`;
+      }
+    }
+    // Breakable homes are systemic: the in-game map is the source of
+    // truth, and the list is examples plus tagged houses, never a count
+    // of every breakable home. Say the rule in the answer itself.
+    if (asksBreakable && proximitySummary) {
+      proximitySummary += ` ${DARK_BLUE_RULE} ${BREAKABLE_GAP_NOTE}`;
     }
   }
 
@@ -540,5 +697,9 @@ export function retrieveForAsk(input: AskRetrievalInput): AskRetrievalResult {
     areaLabel,
     areaMismatch,
     totalInScope,
+    housesToCheck: houses,
+    housesToCheckTotal: housesTotal,
+    housesAreaName,
+    housesKind: houses.length > 0 ? housesKind : null,
   };
 }

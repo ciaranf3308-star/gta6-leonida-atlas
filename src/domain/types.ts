@@ -28,8 +28,12 @@ export interface PersonalMarker {
    * inside a house in Capri). Ask Nylah treats these as workout answers;
    * the public map data has no house gyms at all, so the user's own marks
    * are the only way they get on the map.
+   * "breakable" = a house / apartment / trailer the user found he can
+   * break into. Ask Nylah treats these as breakable-home answers; most
+   * breakable homes have no tag in the public data at all, so the user's
+   * own marks are the only way they get on the map.
    */
-  kind?: 'workout';
+  kind?: 'workout' | 'breakable';
   /** Optional marker colour (hex from the editor palette). Defaults to the layer colour. */
   color?: string;
   createdAt: string;
@@ -102,6 +106,23 @@ export interface Filters {
   hideFound: boolean;
   /** Show only places not yet marked as found (the 99% case). Implies hideFound. */
   remainingOnly: boolean;
+  /** Show only places you can go inside (tag `enterable`, or the Interiors layer). */
+  enterableOnly: boolean;
+  /** Show only lootable buildings (the Lootable layer). */
+  lootableOnly: boolean;
+  /**
+   * Show only enterable houses — residential + enterable ("Interior
+   * house"). The 33 places GTADB tags that way, none of them in Capri;
+   * Capri rob houses live in the Breakable homes layer instead.
+   */
+  interiorHouseOnly: boolean;
+  /**
+   * Narrow enterable places by venue type (house / apartment / trailer /
+   * shop / bar / other). 'all' means no venue narrowing.
+   */
+  venueType: 'all' | 'house' | 'apartment' | 'trailer' | 'shop' | 'bar' | 'gym' | 'other';
+  /** In the Find list, nearest to the map centre first. */
+  sortNearest: boolean;
 }
 export const DEFAULT_PREFERENCES: Preferences = {
   reducedMotion: false,
@@ -111,8 +132,10 @@ export const DEFAULT_PREFERENCES: Preferences = {
 
 /**
  * An unnamed GTADB record: its in-game address starts with "?" — e.g.
- * "?, Washington Beach, Vice Beach". 2,732 of the 3,754 records at GTADB
- * revision d406fea are unnamed (only 1,022 have a real name). They stay on
+ * "?, Washington Beach, Vice Beach". 2,768 of the 3,754 records at GTADB
+ * revision d406fea have no confirmed name (986 do); 2,732 of the 2,768 are
+ * still "?" and the other 36 show a tentative name with a "?" ("Parsons
+ * Hotel?"). They stay on
  * the map, in the unverified layer: no name is ever invented for them, and
  * the only way back in is a verified name from GTADB or another trusted
  * source. What a "?" record DOES often already carry is tags saying what

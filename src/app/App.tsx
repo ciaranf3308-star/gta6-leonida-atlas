@@ -1,10 +1,11 @@
 import { lazy, Suspense, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
-import { Box, HelpCircle, Info, Layers, MapPinPlus, Menu, X } from 'lucide-react';
+import { Dumbbell, Home, MapPinPlus, X } from 'lucide-react';
 import { loadCatalogue, markerToPlace } from '../data/catalogue';
 import { filterPlaces } from '../domain/filter';
 import { DEFAULT_LAYERS, filterByVisibleLayers } from '../features/map/layers';
 import MapView from '../features/map/MapView';
-import MapOverlay from '../features/map/MapOverlay';
+import BottomNav from './BottomNav';
+import FilterBar from './FilterBar';
 import {
   loadSavedMapView,
   mapViewFromState,
@@ -29,7 +30,7 @@ import {
 import { Sidebar } from './Sidebar';
 import { resolveRoute } from './routes';
 import { updateAtlasHead } from './seo';
-import type { Position } from '../domain/types';
+import type { Place, Position } from '../domain/types';
 
 const PlaceDetails = lazy(() => import('../features/library/PlaceDetails'));
 const MarkerEditor = lazy(() => import('../features/editor/MarkerEditor'));
@@ -59,9 +60,10 @@ export default function App() {
   const collections = useUserStore((s) => s.collections);
   const preferences = useUserStore((s) => s.preferences);
   const filters = useUiStore((s) => s.filters);
+  const navTab = useUiStore((s) => s.navTab);
   const dialog = useUiStore((s) => s.dialog);
   const editorOpen = useUiStore((s) => s.editorOpen);
-  const sidebarOpen = useUiStore((s) => s.sidebarOpen);
+  const askOpen = useUiStore((s) => s.askOpen);
   const selectedId = useMapStore((s) => s.selectedId);
   const layers = useMapStore((s) => s.layers);
   const highlightIds = useMapStore((s) => s.highlightIds);
@@ -158,6 +160,11 @@ export default function App() {
   );
   const select = useCallback(
     (id: string) => {
+      // One sheet at a time: a place pick closes Ask, and on a phone it
+      // closes the panel too — the detail is the sheet now open.
+      useUiStore.getState().setAskOpen(false);
+      if (useUiStore.getState().navTab === 'ask' || window.innerWidth < 1000)
+        useUiStore.getState().setNavTab('map');
       const place = allPlaces.find((p) => p.id === id);
       if (place) {
         // An explicit tap is the user choosing to reveal that place: turn its
@@ -175,11 +182,54 @@ export default function App() {
           }
         }
         useMapStore.getState().select(place);
-        if (window.innerWidth < 1000) useUiStore.getState().setSidebar(false);
       }
     },
     [allPlaces],
   );
+  /** Bottom-nav navigation, with the single-sheet rule. Ask opens as
+   * the one sheet (the place detail closes); a panel tab closes Ask
+   * and, on a phone, the detail. */
+  const goToTab = useCallback((tab: 'map' | 'explore' | 'layers' | 'saved' | 'ask') => {
+    if (tab === 'ask') {
+      useMapStore.getState().select(null);
+      useUiStore.getState().setAskOpen(true);
+      useUiStore.getState().setNavTab('ask');
+      return;
+    }
+    useUiStore.getState().setAskOpen(false);
+    useUiStore.getState().setNavTab(tab);
+    if (tab !== 'map' && window.innerWidth < 1000) useMapStore.getState().select(null);
+  }, []);
+  const closeAsk = useCallback(() => {
+    useUiStore.getState().setAskOpen(false);
+    if (useUiStore.getState().navTab === 'ask') useUiStore.getState().setNavTab('map');
+  }, []);
+  /** One tap on a house-to-check (Ask, the Find hint, or a place
+   * detail): start a workout-equipment marker at that place's position.
+   * The observation becomes real data; nothing is invented. */
+  const markWorkoutAt = useCallback((place: Place) => {
+    if (!place.position) return;
+    closeAsk();
+    useUiStore.getState().setNavTab('map');
+    useMapStore.getState().setMarkerKindPreset('workout');
+    useMapStore.getState().setEditor('create');
+    useMapStore.getState().setPosition(place.position);
+    useUiStore.getState().setEditorOpen(true);
+  }, [closeAsk]);
+  /** One tap on a house (place detail): start a breakable-home marker
+   * at that place's position, with the loot notes in the description.
+   * Breakable homes are systemic — dark blue on the in-game map means
+   * you can go in — so the user's own marks are the only way the
+   * untagged ones get on the map. */
+  const markBreakableAt = useCallback((place: Place) => {
+    if (!place.position) return;
+    closeAsk();
+    useUiStore.getState().setNavTab('map');
+    useMapStore.getState().setMarkerKindPreset('breakable');
+    useMapStore.getState().setEditor('create');
+    useMapStore.getState().setPosition(place.position);
+    useUiStore.getState().setEditorOpen(true);
+  }, [closeAsk]);
   const placePosition = useCallback((position: Position) => {
     useMapStore.getState().setPosition(position);
     useUiStore.getState().setEditorOpen(true);
@@ -202,15 +252,23 @@ export default function App() {
   function beginMarker() {
     useMapStore.getState().setMarkerKindPreset(null);
     useMapStore.getState().setEditor('create');
-    if (window.innerWidth < 1000) useUiStore.getState().setSidebar(false);
+    if (window.innerWidth < 1000) useUiStore.getState().setNavTab('map');
   }
-  /** Map overlay "+ Workout spot": enter placement mode with the workout
+  /** "+ Workout spot": enter placement mode with the workout
       preset. The editor opens only once the user taps the map (or "Use
       map center") — opening the form first would save the marker at 0,0. */
   const beginWorkoutSpot = useCallback(() => {
     useMapStore.getState().setMarkerKindPreset('workout');
     useMapStore.getState().setEditor('create');
-    if (window.innerWidth < 1000) useUiStore.getState().setSidebar(false);
+    if (window.innerWidth < 1000) useUiStore.getState().setNavTab('map');
+  }, []);
+  /** Big "+ Add here" for breakable homes: the map centre is the
+   * position, so marking a house he found takes one tap, not a
+   * precise long-press. */
+  const beginBreakableSpot = useCallback(() => {
+    useMapStore.getState().setMarkerKindPreset('breakable');
+    useMapStore.getState().setEditor('create');
+    if (window.innerWidth < 1000) useUiStore.getState().setNavTab('map');
   }, []);
   /** Long-press / right-click on the map: start a marker right there. */
   const beginMarkerAt = useCallback((position: Position) => {
@@ -218,7 +276,7 @@ export default function App() {
     useMapStore.getState().setEditor('create');
     useMapStore.getState().setPosition(position);
     useUiStore.getState().setEditorOpen(true);
-    if (window.innerWidth < 1000) useUiStore.getState().setSidebar(false);
+    if (window.innerWidth < 1000) useUiStore.getState().setNavTab('map');
   }, []);
   useEffect(() => {
     useAiIndexStore.getState().load();
@@ -241,6 +299,8 @@ export default function App() {
         favoritesOnly: saved.favoritesOnly,
         evidence: saved.evidence,
         category: saved.category,
+        enterableOnly: saved.enterableOnly,
+        lootableOnly: saved.lootableOnly,
       });
       const county = COUNTIES.find((c) => c.id === saved.countyId);
       if (county) useMapStore.getState().setBoundsFocus(county.bounds);
@@ -270,7 +330,7 @@ export default function App() {
           event.target.isContentEditable);
       if (event.key === '/' && !editing && !document.querySelector('dialog[open]')) {
         event.preventDefault();
-        useUiStore.getState().setSidebar(true);
+        useUiStore.getState().setNavTab('explore');
         requestAnimationFrame(() => document.getElementById('atlas-search')?.focus());
       }
       if (event.key === 'Escape' && !document.querySelector('dialog[open]')) {
@@ -353,7 +413,17 @@ export default function App() {
       <a className="skip-link" href="#atlas-map-region">
         Skip to map
       </a>
-      <Sidebar places={filtered} allPlaces={allPlaces} progress={progress} anyPublicLayerVisible={anyPublicLayerVisible} />
+      <div className="atlas-main">
+      <Sidebar
+        places={filtered}
+        allPlaces={allPlaces}
+        progress={progress}
+        anyPublicLayerVisible={anyPublicLayerVisible}
+        showingCount={showingCount}
+        onNavigate={navigate}
+        onShowWelcome={() => setWelcomeOpen(true)}
+        onSelect={select}
+      />
       <section className="map-workspace" id="atlas-map-region" aria-label="Interactive Leonida map">
         <MapView
           places={mapPlaces}
@@ -369,14 +439,11 @@ export default function App() {
           onSelect={select}
           onPlacePosition={placePosition}
           onAddMarkerAt={beginMarkerAt}
+          onViewport={(viewport) => useMapStore.getState().setMapCenter(viewport.center)}
         />
-        <MapOverlay
-          layers={layers}
-          allPlaces={allPlaces}
-          showingCount={showingCount}
-          anyPublicLayerVisible={anyPublicLayerVisible}
-          onAddWorkoutSpot={beginWorkoutSpot}
-        />
+        {(navTab === 'map' || navTab === 'ask') && (
+          <FilterBar allPlaces={allPlaces} showingCount={showingCount} />
+        )}
         <AskPanel
           places={allPlaces}
           layers={layers}
@@ -388,50 +455,23 @@ export default function App() {
           onClearHighlights={() => useMapStore.getState().clearHighlights()}
           highlightIds={highlightSet}
           onOpenSettings={() => useUiStore.getState().setDialog('settings')}
+          open={askOpen}
+          onClose={closeAsk}
+          onMarkWorkout={markWorkoutAt}
         />
-        <div className="map-topbar">
-          <button
-            className="button sidebar-toggle"
-            aria-label={sidebarOpen ? 'Hide sidebar' : 'Open sidebar'}
-            onClick={() => useUiStore.getState().setSidebar(!sidebarOpen)}
-          >
-            <Menu size={18} />
-            <span>Explore</span>
+        <div className="map-add-buttons">
+          <button className="button primary" disabled={!ready} onClick={beginMarker}>
+            <MapPinPlus size={18} />
+            <span>Add marker</span>
           </button>
-          <div className="map-actions">
-            <button className="button" disabled={!ready} onClick={beginMarker}>
-              <MapPinPlus size={18} />
-              <span>Add marker</span>
-            </button>
-            <button className="button" onClick={() => navigate('3d')}>
-              <Box size={18} />
-              <span>3D explorer</span>
-            </button>
-            <button
-              className="icon-button"
-              aria-label="Layers — turn places on and off"
-              onClick={() => {
-                useUiStore.getState().setTab('layers');
-                useUiStore.getState().setSidebar(true);
-              }}
-            >
-              <Layers size={19} />
-            </button>
-            <button
-              className="icon-button"
-              aria-label="Welcome — what is mapped and how to show it"
-              onClick={() => setWelcomeOpen(true)}
-            >
-              <HelpCircle size={19} />
-            </button>
-            <button
-              className="icon-button map-about"
-              aria-label="About this atlas"
-              onClick={() => navigate('about')}
-            >
-              <Info size={19} />
-            </button>
-          </div>
+          <button className="button" onClick={beginWorkoutSpot}>
+            <Dumbbell size={18} />
+            <span>Add workout spot</span>
+          </button>
+          <button className="button" onClick={beginBreakableSpot}>
+            <Home size={18} />
+            <span>Add breakable home</span>
+          </button>
         </div>
         {status === 'error' && (
           <div className="map-notice inline-error" role="alert">
@@ -473,12 +513,16 @@ export default function App() {
             key={selected.id}
             place={selected}
             onAddMarkerHere={beginMarkerAt}
+            onMarkWorkout={markWorkoutAt}
+            onMarkBreakable={markBreakableAt}
           />
         )}
         {editorOpen && <MarkerEditor position={draftPosition} onClose={closeEditor} />}
         {dialog === 'backup' && <BackupDialog onClose={closeDialog} />}
         {dialog === 'settings' && <SettingsDialog onClose={closeDialog} />}
       </Suspense>
+      </div>
+      <BottomNav onNavigate={goToTab} />
       {welcomeOpen && (
         <WelcomeSheet places={allPlaces} layers={layers} onQuickStart={quickStart} onClose={closeWelcome} />
       )}

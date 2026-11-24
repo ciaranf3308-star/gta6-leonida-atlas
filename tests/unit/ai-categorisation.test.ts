@@ -89,12 +89,12 @@ function aiRecord(
 }
 
 describe("AI categorisation — real counts (no invented figures)", () => {
-  it("counts the catalogue honestly: 3,775 places in-app, 3,754 GTADB records, 2,732 unnamed", () => {
+  it("counts the catalogue honestly: 3,781 places in-app, 3,754 GTADB records, 2,732 unnamed, 986 named", () => {
     const places = catalogueFromSnapshot(snapshot);
-    expect(places).toHaveLength(3775);
-    // 3,754 GTADB + 6 regions + 8 member gyms + 2 free outdoor + 5 card pins.
+    expect(places).toHaveLength(3781);
+    // 3,754 GTADB + 6 regions + 8 member gyms + 3 free outdoor + 5 card pins.
     expect(places.filter((p) => p.layerId === "gyms")).toHaveLength(8);
-    expect(places.filter((p) => p.layerId === "gyms-outdoor")).toHaveLength(2);
+    expect(places.filter((p) => p.layerId === "equipment")).toHaveLength(3);
     expect(places.filter((p) => p.layerId === "regions")).toHaveLength(6);
     const audit = unnamedTagAudit(places);
     expect(audit.unnamed).toBe(2732);

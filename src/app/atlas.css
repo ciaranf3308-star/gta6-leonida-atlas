@@ -1,7 +1,24 @@
-/* Cormorant Garamond — the elegant serif for headings (Soho House /
-   Hume register). Self-hosted in src/app/fonts/ so the PWA stays
-   offline-capable; OFL licence, Google Fonts. 500 and 600 are the same
-   file for this family, so one weight range covers both. */
+/* Anton — the heavy condensed display for the GTA VI wordmark and big
+   headings (the Pricedown-adjacent read, without shipping Rockstar's
+   font). Self-hosted, OFL licence, Google Fonts. */
+@font-face {
+  font-family: 'Anton';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/anton-400-latin.woff2') format('woff2');
+}
+/* Oswald — the condensed sans for labels, chips, nav and buttons (the
+   GTA label read). Self-hosted variable font, OFL licence, Google
+   Fonts; one file covers 400–600. Before this it was referenced but
+   never bundled, so every label fell back to Inter on the phone. */
+@font-face {
+  font-family: 'Oswald';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('./fonts/oswald-400-latin.woff2') format('woff2');
+}
 @font-face {
   font-family: 'Cormorant Garamond';
   font-style: normal;
@@ -35,6 +52,8 @@
   --border: #453c2d;
   --danger: #ffae9f;
   --serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --display: 'Anton', 'Arial Narrow', sans-serif;
+  --condensed: 'Oswald', 'Arial Narrow', sans-serif;
   color-scheme: dark;
 }
 * {
@@ -93,7 +112,7 @@ textarea {
   border: 1px solid #6b5d4a;
   border-radius: 4px;
   padding: 11px 12px;
-  min-height: 42px;
+  min-height: 48px;
 }
 textarea {
   resize: vertical;
@@ -119,6 +138,18 @@ h3,
 p {
   margin-top: 0;
 }
+/* The cover title — the welcome sheet's big GTA VI moment: Anton,
+   uppercase, gold. Every other sheet title stays Cormorant. */
+.display-title {
+  font-family: var(--display) !important;
+  font-weight: 400;
+  font-size: 34px !important;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  line-height: 1.05;
+  color: var(--gold);
+}
+
 h2 {
   font-family: var(--serif);
   font-weight: 600;
@@ -154,14 +185,15 @@ h3 {
 }
 .brand-header h1 {
   font:
-    600 40px/1.05 var(--serif);
-  letter-spacing: 0.2px;
+    400 34px/1.05 var(--display);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
   margin: 0 0 9px;
   white-space: nowrap;
 }
 .brand-header h1 em {
-  font-style: italic;
-  font-weight: 500;
+  font-style: normal;
+  font-weight: 400;
   color: var(--accent);
 }
 .brand-header p {
@@ -205,9 +237,13 @@ h3 {
   align-items: center;
   justify-content: center;
   gap: 7px;
-  font-size: 12px;
+  font-family: var(--condensed);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
   flex: 1;
-  padding: 13px 0;
+  padding: 17px 0;
   border: 0;
   border-bottom: 2px solid transparent;
   background: none;
@@ -252,8 +288,8 @@ h3 {
 .compact-select {
   font-size: 11px;
   max-width: 140px;
-  padding: 8px 5px;
-  min-height: 36px;
+  padding: 12px 5px;
+  min-height: 48px;
 }
 .results-count {
   display: flex;
@@ -268,7 +304,10 @@ h3 {
   background: none;
   color: var(--accent);
   font-size: 11px;
-  padding: 7px 0;
+  /* 48px hit area: the visible label stays small, the padding around it
+     is the tap target (the negative margin keeps the layout the same). */
+  padding: 17px 0;
+  margin: -10px 0;
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -326,7 +365,7 @@ h3 {
 }
 .load-more {
   width: 100%;
-  min-height: 44px;
+  min-height: 48px;
   border: 1px solid var(--border);
   background: none;
   margin-top: 15px;
@@ -364,6 +403,10 @@ h3 {
 .status-error > svg {
   color: var(--danger);
 }
+/* Buttons and icon buttons — 48px minimum, no exceptions (the
+   "baby hands" fix). The label type is Oswald, the GTA condensed
+   register, uppercase for actions. Press feedback: a small scale
+   down, so every tap feels answered. */
 .button,
 .icon-button {
   display: inline-flex;
@@ -373,15 +416,29 @@ h3 {
   background: transparent;
   border: 1px solid #6b5d4a;
   border-radius: 4px;
-  min-height: 42px;
-  padding: 10px 13px;
-  font-size: 12px;
+  min-height: 48px;
+  padding: 12px 13px;
+  font-family: var(--condensed);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.4px;
   line-height: 1.3;
   text-decoration: none;
+  transition:
+    transform 120ms ease,
+    background-color 150ms ease;
 }
 .button:hover,
 .icon-button:hover {
   background: #322a1e;
+}
+.button:active,
+.icon-button:active,
+.filter-chip:active,
+.bottom-nav button:active,
+.place-result:active,
+.layer-row:active {
+  transform: scale(0.97);
 }
 .button.primary {
   color: #241a10;
@@ -395,8 +452,8 @@ h3 {
   background: #2b251d;
 }
 .icon-button {
-  width: 38px;
-  min-width: 38px;
+  width: 48px;
+  min-width: 48px;
   padding: 7px;
   border-color: transparent;
 }
@@ -570,7 +627,7 @@ h3 {
 }
 .membership .icon-button {
   margin-left: auto;
-  min-height: 32px;
+  min-height: 48px;
 }
 .detail-scroll > .button-row {
   margin-top: 22px;
@@ -584,6 +641,11 @@ h3 {
   width: min(520px, calc(100vw - 28px));
   max-height: calc(100dvh - 40px);
   box-shadow: 0 24px 80px #0008;
+  /* Flex column: header on top, body scrolls, footer pinned below.
+     (position: sticky for the footer does not stick inside a <dialog>
+     in WebKit — the dismiss action ended up 1,200px below the fold.) */
+  display: flex;
+  flex-direction: column;
 }
 .atlas-dialog::backdrop {
   background: #120e0ab8;
@@ -594,6 +656,16 @@ h3 {
 .dialog-body {
   padding: 22px;
   overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+.dialog-footer {
+  border-top: 1px solid var(--border);
+  padding: 12px 22px;
+  background: var(--surface);
+}
+.dialog-footer .button {
+  width: 100%;
 }
 .panel-intro,
 .help-text {
@@ -657,9 +729,11 @@ h3 {
   margin-top: -9px;
 }
 .layer-row .icon-button {
-  min-height: 30px;
-  width: 27px;
-  min-width: 27px;
+  /* 48px hit area, same as every other icon button — the row's label
+     is the main target, this is the row's own action. */
+  min-height: 48px;
+  width: 48px;
+  min-width: 48px;
 }
 .county-picker {
   padding: 4px 0 8px;
@@ -954,6 +1028,9 @@ h3 {
   z-index: 1000;
   background: var(--surface);
   padding: 15px;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
 }
 .skip-link:focus {
   top: 10px;
@@ -1292,7 +1369,7 @@ h3 {
   width: 100%;
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
   gap: 10px;
   text-align: left;
   border: 1px solid #5d5142;
@@ -1302,11 +1379,21 @@ h3 {
   background: #2e2820;
   font: inherit;
   cursor: pointer;
+  /* A long title + long meta must never push the row past the sheet:
+     the title shrinks, the meta wraps right-aligned. */
+  overflow: hidden;
+}
+.ask-results button strong {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .ask-results button small {
   color: var(--muted);
   font-size: 11px;
-  white-space: nowrap;
+  flex-shrink: 0;
+  max-width: 46%;
+  text-align: right;
 }
 .ask-suggestions {
   display: flex;
@@ -1334,7 +1421,8 @@ h3 {
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  width: 42px;
+  width: 48px;
+  min-height: 48px;
   border: 1px solid #e8823a;
   border-radius: 4px;
   color: #1b1815;
@@ -2033,6 +2121,431 @@ h3 {
   font-weight: 600;
 }
 .eyebrow {
-  font-family: Oswald, Inter, sans-serif;
+  font-family: var(--condensed);
   letter-spacing: 1.6px;
+}
+
+/* ---- Navigation-first rebuild (v0.10.0) ---- */
+/* One bottom nav, one filter bar, one sheet at a time. The app is a
+   column: the main area (panel + map + detail) above the bottom nav.
+   Dead rules for the old top bar / overlay / FAB remain above but match
+   no element anymore. */
+
+:root {
+  --nav-height: 64px;
+}
+
+.atlas-app {
+  flex-direction: column;
+}
+.atlas-main {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+/* Bottom navigation — five labelled tabs, big targets, obvious active. */
+.bottom-nav {
+  display: flex;
+  flex-shrink: 0;
+  background: #211c15;
+  border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  z-index: 700;
+}
+.bottom-nav button {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: var(--nav-height);
+  padding: 8px 2px 7px;
+  border: 0;
+  background: none;
+  color: #a89a80;
+  font-family: var(--condensed);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  line-height: 1.1;
+  transition:
+    transform 120ms ease,
+    background-color 150ms ease;
+}
+.bottom-nav button.active {
+  color: var(--accent);
+  background: #2b251d;
+  box-shadow: inset 0 3px 0 var(--accent);
+}
+.bottom-nav-icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 24px;
+}
+.bottom-nav-badge {
+  position: absolute;
+  top: -6px;
+  right: -12px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #1b1815;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 17px;
+  text-align: center;
+}
+.bottom-nav-label {
+  white-space: nowrap;
+}
+
+/* The one filter bar — same bar on the map and at the top of Find. */
+.filter-bar {
+  position: absolute;
+  z-index: 450;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  display: grid;
+  gap: 8px;
+  pointer-events: none;
+}
+.filter-bar > * {
+  pointer-events: auto;
+}
+.filter-bar-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.filter-count-pill {
+  background: #1b1815e0;
+  border: 1px solid #6b5d4a;
+  border-radius: 999px;
+  color: #ece3d2;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 12px;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px #120e0a40;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.filter-clear-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: #1b1815e6;
+  color: var(--accent);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  min-height: 48px;
+  padding: 8px 12px;
+  box-shadow: 0 2px 8px #120e0a40;
+  white-space: nowrap;
+}
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.filter-chip {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid #6b5d4a;
+  border-radius: 999px;
+  background: #1b1815e6;
+  color: #ece3d2;
+  font: inherit;
+  font-family: var(--condensed);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  min-height: 48px;
+  padding: 9px 12px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #120e0a40;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition:
+    transform 120ms ease,
+    background-color 150ms ease;
+}
+.filter-chip.active {
+  background: #e8823a;
+  border-color: #e8823a;
+  color: #1b1815;
+  box-shadow: 0 2px 10px #e8823a55;
+}
+.filter-chip-count {
+  font-size: 11px;
+  font-weight: 700;
+  opacity: 0.75;
+}
+.filter-chip-more {
+  border-style: dashed;
+  color: #f2d897;
+}
+.filter-narrow {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.filter-narrow::-webkit-scrollbar {
+  display: none;
+}
+.filter-narrow .filter-chip {
+  min-height: 48px;
+  padding: 8px 11px;
+}
+.filter-select-wrap select {
+  width: auto;
+  max-width: 170px;
+  appearance: none;
+  background: #1b1815ef;
+  border: 1px solid #6b5d4a;
+  border-radius: 999px;
+  color: #ece3d2;
+  font-size: 12px;
+  font-weight: 600;
+  min-height: 48px;
+  padding: 8px 12px;
+  box-shadow: 0 2px 8px #120e0a40;
+  white-space: nowrap;
+}
+.filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #e8823a;
+  color: #1b1815;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 5px 5px 11px;
+}
+.filter-pill button {
+  display: grid;
+  place-items: center;
+  /* content-box: the 20px × plus 14px of padding on every side is a
+     48px hit area. (Under the global border-box the padding would be
+     swallowed and the target would stay 20px.) The negative margin
+     keeps the pill itself the same size. */
+  box-sizing: content-box;
+  width: 20px;
+  height: 20px;
+  padding: 14px;
+  margin: -14px;
+  border: 0;
+  border-radius: 50%;
+  background: #1b181533;
+  color: #1b1815;
+}
+/* In the Find panel the bar is in normal flow, not overlaid. */
+.sidebar .filter-bar {
+  position: static;
+  margin: 0 18px 10px;
+}
+
+/* Panel title under the brand header. */
+.panel-title {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 26px;
+  line-height: 1.15;
+  padding: 0 20px 14px;
+  margin: 0;
+}
+
+/* Find results: badges under the meta line, nearest-first toggle. */
+.result-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+.result-badges span {
+  border: 1px solid #5d5142;
+  border-radius: 999px;
+  background: #2b251d;
+  color: #e8dcc4;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+}
+.text-button.selected-sort {
+  font-weight: 700;
+}
+
+/* Gym search with no gym near — the honest hint card. */
+.gym-hint {
+  border: 1px solid #8a6d2f;
+  border-radius: 14px;
+  background: #231f10;
+  padding: 14px;
+  margin-bottom: 12px;
+  display: grid;
+  gap: 8px;
+}
+.gym-hint p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #e8dcc4;
+}
+.gym-hint .button {
+  justify-self: start;
+}
+
+/* Ask answers: houses in the area to check — candidates, never gyms. */
+.ask-houses {
+  border: 1px solid #8a6d2f;
+  border-radius: 12px;
+  background: #231f10;
+  padding: 12px;
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+.ask-houses > strong {
+  font-size: 13px;
+}
+.ask-houses p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.ask-house-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.ask-house-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  border: 1px solid #5d5142;
+  border-radius: 8px;
+  padding: 8px;
+  color: #f3ead9;
+  background: #2e2820;
+  font: inherit;
+}
+.ask-house-name {
+  flex: 1;
+  min-width: 0;
+}
+.ask-house-name strong {
+  display: block;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.ask-house-name small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 2px;
+}
+.ask-house-row .button {
+  /* The mark-it button gets its own line, full width, thumb-sized —
+     it must never squeeze the house name to nothing. (It used to sit
+     beside the name in the same flex row, and the shared .ask-results
+     button rule gave it width: 100%, crushing the name to 0px.) */
+  flex-shrink: 0;
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 10px;
+  font-size: 11px;
+}
+
+/* Map: two big labelled add buttons, bottom-left above the caption. */
+.map-add-buttons {
+  position: absolute;
+  z-index: 450;
+  left: 12px;
+  bottom: 76px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+.map-add-buttons .button {
+  background: #1b1815ef;
+  border: 1px solid #6b5d4a;
+  /* The primary button's dark text would be unreadable on this dark
+     background — the add buttons all read light here. */
+  color: #f3ead9;
+  box-shadow: 0 2px 8px #120e0a40;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Ask panel: one sheet, above the bottom nav — never stacked on the
+   place detail, so no 52dvh offset is needed anymore. */
+.ask-panel {
+  bottom: 12px;
+}
+
+@media (max-width: 999px) {
+  /* The panel is a bottom sheet above the bottom nav, not a left drawer. */
+  .sidebar {
+    inset: auto 0 0 0;
+    width: 100%;
+    height: min(76dvh, 720px);
+    border-radius: 16px 16px 0 0;
+    border-bottom: 0;
+    box-shadow: 0 -5px 25px #0004;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .brand-header {
+    padding: 16px 20px 12px;
+  }
+  .brand-header h1 {
+    font-size: 30px;
+  }
+  .panel-title {
+    font-size: 24px;
+    padding-bottom: 12px;
+  }
+  /* The map's filter bar is tighter on a phone. */
+  .filter-bar {
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    gap: 6px;
+  }
+  .filter-select-wrap select {
+    max-width: 150px;
+  }
+  .map-add-buttons {
+    left: 10px;
+    bottom: 74px;
+  }
 }

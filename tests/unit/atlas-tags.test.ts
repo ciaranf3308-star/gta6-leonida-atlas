@@ -40,10 +40,12 @@ describe('Unnamed "?" records — tags are the halfway point', () => {
         p.tags.some((t) => ['gym', 'fitness', 'workout', 'strength'].includes(t)),
       ),
     ).toHaveLength(0);
-    // The only gym-tagged places in the catalogue are the 10 curated gyms.
+    // The only gym-tagged places in the catalogue are the 11 curated
+    // gyms/free spots (8 member gyms, Muscle Sands, Jason's deck, the
+    // Starlet Motel bench).
     expect(
       places.filter((p) => p.tags.includes('gym')),
-    ).toHaveLength(10);
+    ).toHaveLength(11);
   });
 
   it('translates source tags to plain English and strips internal notes', () => {

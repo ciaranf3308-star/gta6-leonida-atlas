@@ -6,11 +6,13 @@ import { isUnnamedPlace } from './types';
  * records.
  *
  * A "?" record does not need a full proper name to be useful: a correct
- * TAG says what it is. 1,624 of the 2,732 unnamed records already carry
+ * TAG says what it is. 1,624 of the 2,732 still-"?" records already carry
  * some tag in the GTADB data — but 582 of those carry only internal
  * notes (map-level tags like l4, or //notes), so 1,042 carry a tag that
  * actually says what the place is (residential 332, enterable 218,
  * retail 93, hotel 41, shop types, …) — and 1,108 carry no tag at all.
+ * (2,768 records have no confirmed name in total; the other 36 show a
+ * tentative name with a "?".)
  * The app just never showed any of them in plain words. No tags are
  * invented here: these labels only translate tags the source already
  * supplied. GTADB's own newer data is byte-identical to the pinned

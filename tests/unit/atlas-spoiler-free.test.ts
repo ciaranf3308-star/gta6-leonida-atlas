@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { catalogueFromSnapshot } from "../../src/data/catalogue";
-import { GYM_PLACES, OUTDOOR_GYM_PLACES } from "../../src/data/gyms";
+import { GYM_PLACES, EQUIPMENT_PLACES } from "../../src/data/gyms";
 import { filterPlaces } from "../../src/domain/filter";
 import { DEFAULT_FILTERS } from "../../src/stores/atlas";
 import type { Place } from "../../src/domain/types";
@@ -40,7 +40,7 @@ describe("Spoiler-free defaults", () => {
     expect(byId.get("community")?.visible).toBe(false);
     expect(byId.get("uncertain")?.visible).toBe(false);
     expect(byId.get("gyms")?.visible).toBe(false);
-    expect(byId.get("gyms-outdoor")?.visible).toBe(false);
+    expect(byId.get("equipment")?.visible).toBe(false);
     expect(byId.get("interiors")?.visible).toBe(false);
     expect(byId.get("shops")?.visible).toBe(false);
     expect(byId.get("lootable")?.visible).toBe(false);
@@ -68,7 +68,7 @@ describe("Spoiler-free defaults", () => {
   });
 });
 
-describe("Gyms / Strength layer", () => {
+describe("Gyms and Workout equipment layers", () => {
   it("lists eight member gyms with a source on every pin", () => {
     expect(GYM_PLACES).toHaveLength(8);
     expect(new Set(GYM_PLACES.map((g) => g.id)).size).toBe(8);
@@ -87,33 +87,45 @@ describe("Gyms / Strength layer", () => {
     expect(unpositioned.sort()).toEqual(["gym:venus", "gym:vice-seven"]);
   });
 
-  it("keeps the free outdoor gym and Jason's house deck in their own layer", () => {
-    expect(OUTDOOR_GYM_PLACES.map((g) => g.id).sort()).toEqual([
+  it("keeps the free workout equipment in its own layer, separate from the member gyms", () => {
+    expect(EQUIPMENT_PLACES.map((g) => g.id).sort()).toEqual([
       "gym:jason-house-deck",
       "gym:muscle-sands",
+      "gym:starlet-motel-bench",
     ]);
-    for (const gym of OUTDOOR_GYM_PLACES) {
-      expect(gym.layerId).toBe("gyms-outdoor");
+    for (const gym of EQUIPMENT_PLACES) {
+      expect(gym.layerId).toBe("equipment");
       expect(gym.tags).toContain("free");
-      expect(gym.position).not.toBeNull();
+      // Equipment answers an equipment search; member gyms must not.
+      expect(gym.tags).toContain("equipment");
+      expect(gym.tags).toContain("workout");
     }
     // Nine gyms in total: eight member gyms plus free Muscle Sands.
     expect(GYM_PLACES.length + 1).toBe(9);
   });
 
+  it("lists the Starlet Motel bench by name only — no invented pin", () => {
+    const bench = EQUIPMENT_PLACES.find((g) => g.id === "gym:starlet-motel-bench");
+    expect(bench).toBeDefined();
+    expect(bench!.position).toBeNull();
+    expect(bench!.region).toMatch(/Port Gellhorn/);
+    expect(bench!.description).toMatch(/No verified coordinates yet/);
+  });
+
   it("merges the gyms into the catalogue alongside the community records", () => {
     const places = catalogueFromSnapshot(snapshot);
-    expect(places).toHaveLength(3775);
-    expect(places.filter((p) => p.position === null)).toHaveLength(93);
+    expect(places).toHaveLength(3781);
+    expect(places.filter((p) => p.position === null)).toHaveLength(99);
     expect(places.filter((p) => p.layerId === "gyms")).toHaveLength(8);
-    expect(places.filter((p) => p.layerId === "gyms-outdoor")).toHaveLength(2);
-    expect(places.filter((p) => p.layerId === "interiors")).toHaveLength(81);
+    expect(places.filter((p) => p.layerId === "equipment")).toHaveLength(3);
+    expect(places.filter((p) => p.layerId === "interiors")).toHaveLength(77);
+    expect(places.filter((p) => p.layerId === "breakable")).toHaveLength(52);
     expect(places.filter((p) => p.layerId === "shops")).toHaveLength(39);
     expect(places.filter((p) => p.layerId === "lootable")).toHaveLength(52);
     expect(
       places.filter((p) => p.layerId.startsWith("cards:")),
     ).toHaveLength(5);
-    expect(new Set(places.map((p) => p.id)).size).toBe(3775);
+    expect(new Set(places.map((p) => p.id)).size).toBe(3781);
   });
 });
 

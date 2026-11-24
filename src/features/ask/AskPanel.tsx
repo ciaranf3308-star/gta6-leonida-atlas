@@ -34,12 +34,23 @@ export interface AskPanelProps {
   onClearHighlights: () => void;
   highlightIds: ReadonlySet<string>;
   onOpenSettings: () => void;
+  /** Controlled by the bottom nav — Ask is one sheet, never stacked on
+   * a place detail. Opening it closes the detail; picking a place
+   * closes Ask. */
+  open: boolean;
+  onClose: () => void;
+  /** One tap on a house-to-check: start a workout-spot marker there. */
+  onMarkWorkout: (place: Place) => void;
 }
 
 interface AskMessage {
   role: 'user' | 'assistant';
   text: string;
   placeIds: string[];
+  /** Houses in the asked area worth checking for workout equipment —
+   * candidates, never verified equipment. 'equipment' when equipment was
+   * asked for, 'gym' when a member gym was. */
+  houses?: { placeIds: string[]; areaName: string; total: number; kind: 'equipment' | 'gym' };
 }
 
 const SUGGESTED_PROMPTS = [
@@ -49,7 +60,6 @@ const SUGGESTED_PROMPTS = [
 ];
 
 export default function AskPanel(props: AskPanelProps) {
-  const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<AskMessage[]>([]);
   const [busy, setBusy] = useState(false);
@@ -71,6 +81,24 @@ export default function AskPanel(props: AskPanelProps) {
   }
 
   const placeById = new Map(props.places.map((place) => [place.id, place]));
+
+  /** Houses to check ride on the answer message — never sent to the AI,
+   * never presented as verified gyms. */
+  function housesFor(result: {
+    housesToCheck: Place[];
+    housesToCheckTotal: number;
+    housesAreaName: string | null;
+    housesKind: 'equipment' | 'gym' | null;
+  }): AskMessage['houses'] {
+    if (result.housesToCheck.length === 0 || !result.housesAreaName || !result.housesKind)
+      return undefined;
+    return {
+      placeIds: result.housesToCheck.map((place) => place.id),
+      areaName: result.housesAreaName,
+      total: result.housesToCheckTotal,
+      kind: result.housesKind,
+    };
+  }
 
   /** Show the answer on the map: highlight the places and pan to them. */
   function showOnMap(highlight: Place[]) {
@@ -118,14 +146,20 @@ export default function AskPanel(props: AskPanelProps) {
         const scope = result.requestedLayerNames.length
           ? ` for ${result.requestedLayerNames.join(', ')}`
           : '';
+        const houses = housesFor(result);
         setMessages((prev) => [
           ...prev,
           {
             role: 'assistant',
-            text: result.areaMismatch
-              ? `Nothing${scope} in that area in the map data — the nearest matching places are shown below instead.`
-              : `Nothing${scope} in the map data for that. I won't guess — try turning a layer on, or drop your own marker when you find one.`,
+            text: houses
+              ? houses.kind === 'equipment'
+                ? `No verified workout equipment in ${houses.areaName} in any public data — and no gym tag anywhere in the map data outside Ajax Gym. The equipment is in a garage in a house, so the houses below are worth checking instead.`
+                : `No verified gym in ${houses.areaName} in any public data — and no gym tag anywhere in the map data outside Ajax Gym. The houses below are worth checking instead.`
+              : result.areaMismatch
+                ? `Nothing${scope} in that area in the map data — the nearest matching places are shown below instead.`
+                : `Nothing${scope} in the map data for that. I won't guess — try turning a layer on, or drop your own marker when you find one.`,
             placeIds: [],
+            houses,
           },
         ]);
         props.onClearHighlights();
@@ -143,6 +177,7 @@ export default function AskPanel(props: AskPanelProps) {
               ? `${result.proximitySummary} Matching places from the map (${result.records.length} shown${result.totalInScope > result.records.length ? ` of ${result.totalInScope}` : ''}):`
               : `Here are the matching places from the map (${result.records.length} shown${result.totalInScope > result.records.length ? ` of ${result.totalInScope}` : ''}${result.areaMismatch ? ' — nothing in that exact area, so these are the nearest' : ''}). Add your OpenAI key in Settings for a written answer.`,
             placeIds: result.records.map((place) => place.id),
+            houses: housesFor(result),
           },
         ]);
         return;
@@ -167,6 +202,7 @@ export default function AskPanel(props: AskPanelProps) {
           role: 'assistant',
           text: answer,
           placeIds: highlight.map((place) => place.id),
+          houses: housesFor(result),
         },
       ]);
     } catch (error) {
@@ -186,19 +222,7 @@ export default function AskPanel(props: AskPanelProps) {
     }
   }
 
-  if (!open) {
-    return (
-      <button
-        type="button"
-        className="ask-fab"
-        aria-label="Ask Nylah"
-        onClick={() => setOpen(true)}
-      >
-        <Sparkles size={18} />
-        <span>Ask Nylah</span>
-      </button>
-    );
-  }
+  if (!props.open) return null;
 
   return (
     <section className="ask-panel" aria-label="Ask Nylah">
@@ -212,7 +236,7 @@ export default function AskPanel(props: AskPanelProps) {
           className="icon-button"
           aria-label="Close Ask Nylah"
           onClick={() => {
-            setOpen(false);
+            props.onClose();
             props.onClearHighlights();
           }}
         >
@@ -266,6 +290,71 @@ export default function AskPanel(props: AskPanelProps) {
                   );
                 })}
               </ul>
+            )}
+            {message.houses && message.houses.placeIds.length > 0 && (
+              <div className="ask-houses">
+                <strong>
+                  Houses in {message.houses.areaName} to check
+                  {message.houses.total > message.houses.placeIds.length
+                    ? ` (${message.houses.placeIds.length} of ${message.houses.total} shown)`
+                    : ` (${message.houses.total})`}
+                </strong>
+                {message.houses.kind === 'equipment' ? (
+                  <p>
+                    No verified workout equipment here — the equipment is in
+                    a garage in a house, so these are the houses in{' '}
+                    {message.houses.areaName} worth checking. Not verified
+                    equipment. If you find gear in one, mark it and Ask
+                    will use it next time.
+                  </p>
+                ) : (
+                  <p>
+                    No verified gym here — these are the enterable houses and
+                    homes in {message.houses.areaName}. Not verified gyms.
+                    If you find equipment in one, mark it and Ask will use
+                    it next time.
+                  </p>
+                )}
+                <ul className="ask-house-list">
+                  {message.houses.placeIds.map((id) => {
+                    const place = placeById.get(id);
+                    if (!place) return null;
+                    return (
+                      <li key={id}>
+                        <span className="ask-house-row">
+                          <span className="ask-result-icon" aria-hidden="true">
+                            <PlaceIcon
+                              icon={
+                                iconKeyForAiRecord(props.aiCategories[id]) ??
+                                iconKeyForPlace(place)
+                              }
+                              size={15}
+                            />
+                          </span>
+                          <span className="ask-house-name">
+                            <strong>{place.title}</strong>
+                            <small>
+                              {place.region || 'Leonida'}
+                              {isUnnamedPlace(place) && displayTagsFor(place).length > 0
+                                ? ` · ${displayTagsFor(place).join(' · ')}`
+                                : ''}
+                            </small>
+                          </span>
+                          <button
+                            type="button"
+                            className="button"
+                            onClick={() => props.onMarkWorkout(place)}
+                          >
+                            {message.houses?.kind === 'equipment'
+                              ? 'Workout equipment in the garage — mark it'
+                              : 'Mark as workout spot'}
+                          </button>
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
             )}
             {message.role === 'assistant' && message.placeIds.length === 0 && !hasKey && (
               <button type="button" className="text-button" onClick={props.onOpenSettings}>

@@ -24,14 +24,16 @@
 .atlas-map-marker {
   border: 0;
   background: transparent;
+  /* The marker box is the 48px hit area; the visible blip face is
+     centred inside it (28px pins, 38px clusters). */
+  display: grid;
+  place-items: center;
 }
 .atlas-pin-face,
 .atlas-cluster-face {
   position: relative;
   display: grid;
   place-items: center;
-  width: 100%;
-  height: 100%;
   border-radius: 50%;
   color: #fff;
   background: var(--pin-color, #e8823a);
@@ -40,6 +42,14 @@
     0 2px 8px #120e0a80,
     inset 0 0 0 1px #ffffff2e;
   font: 700 18px/1 sans-serif;
+}
+.atlas-pin-face {
+  width: 28px;
+  height: 28px;
+}
+.atlas-cluster-face {
+  width: 38px;
+  height: 38px;
 }
 /* The glyph inside the blip: white, same stroke everywhere. */
 .atlas-pin-face svg {
@@ -128,8 +138,8 @@
 .atlas-map-navigation button {
   display: grid;
   place-items: center;
-  width: 42px;
-  height: 42px;
+  width: 48px;
+  height: 48px;
   border: 0;
   padding: 0;
   color: #f3ead9;
@@ -177,6 +187,12 @@
   border-radius: 5px;
   background: #1b1815e6;
   color: #a89a80;
+  /* One line, always — it used to wrap to two and the second line was
+     clipped by the bottom of the map. Clear of the zoom controls. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: calc(100% - 90px);
   font-size: 9px;
   line-height: 1.4;
   max-width: min(85%, 440px);

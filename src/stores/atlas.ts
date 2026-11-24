@@ -22,6 +22,11 @@ export const DEFAULT_FILTERS: Filters = {
   countyId: null,
   hideFound: false,
   remainingOnly: false,
+  enterableOnly: false,
+  lootableOnly: false,
+  interiorHouseOnly: false,
+  venueType: 'all',
+  sortNearest: false,
 };
 export const useDomainStore = create<{
   places: Place[];
@@ -45,17 +50,21 @@ export const useMapStore = create<{
   editorMode: 'none' | 'create' | 'move';
   draftPosition: Position | null;
   /** New-marker preset from the map overlay ("+ Workout spot"). */
-  markerKindPreset: 'workout' | null;
+  markerKindPreset: 'workout' | 'breakable' | null;
   /** Ask Nylah highlights — ids the last answer pointed at. Never a layer. */
   highlightIds: string[];
+  /** The map centre, from the map's own viewport reports — the Find list
+   * sorts nearest-first from here. Null until the map reports. */
+  mapCenter: Position | null;
   setLayers: (layers: LayerDefinition[]) => void;
   select: (place: Place | null) => void;
   setEditor: (mode: 'none' | 'create' | 'move') => void;
   setPosition: (position: Position) => void;
-  setMarkerKindPreset: (kind: 'workout' | null) => void;
+  setMarkerKindPreset: (kind: 'workout' | 'breakable' | null) => void;
   setBoundsFocus: (bounds: MapBounds) => void;
   setHighlights: (ids: string[]) => void;
   clearHighlights: () => void;
+  setMapCenter: (center: Position) => void;
 }>((set) => ({
   selectedId: null,
   focus: null,
@@ -65,6 +74,7 @@ export const useMapStore = create<{
   draftPosition: null,
   markerKindPreset: null,
   highlightIds: [],
+  mapCenter: null,
   setLayers: (layers) => set({ layers }),
   select: (place) => {
     set((state) => ({
@@ -86,30 +96,40 @@ export const useMapStore = create<{
     })),
   setHighlights: (highlightIds) => set({ highlightIds }),
   clearHighlights: () => set({ highlightIds: [] }),
+  setMapCenter: (mapCenter) => set({ mapCenter }),
 }));
-export type SidebarTab = 'explore' | 'layers' | 'saved';
+/**
+ * Bottom navigation — the one way around the app. Five labelled tabs for
+ * the five real jobs: Map, Find, Layers, Saved, Ask. The panel tabs
+ * (Find / Layers / Saved) open the panel; Map closes it; Ask opens the
+ * Ask sheet. One sheet at a time: opening a panel tab or Ask closes any
+ * place detail on a phone, and picking a place closes the panel and Ask.
+ */
+export type NavTab = 'map' | 'explore' | 'layers' | 'saved' | 'ask';
 export const useUiStore = create<{
   filters: Filters;
-  tab: SidebarTab;
-  sidebarOpen: boolean;
+  navTab: NavTab;
+  /** Ask Nylah sheet open — controlled here so the bottom nav, the panel
+   * and place selection can never stack two sheets. */
+  askOpen: boolean;
   dialog: 'settings' | 'backup' | null;
   editorOpen: boolean;
   setFilters: (filters: Partial<Filters>) => void;
   resetFilters: () => void;
-  setTab: (tab: SidebarTab) => void;
-  setSidebar: (open: boolean) => void;
+  setNavTab: (tab: NavTab) => void;
+  setAskOpen: (open: boolean) => void;
   setDialog: (dialog: 'settings' | 'backup' | null) => void;
   setEditorOpen: (open: boolean) => void;
 }>((set) => ({
   filters: DEFAULT_FILTERS,
-  tab: 'explore',
-  sidebarOpen: typeof window === 'undefined' || window.innerWidth >= 800,
+  navTab: 'map',
+  askOpen: false,
   dialog: null,
   editorOpen: false,
   setFilters: (filters) => set((state) => ({ filters: { ...state.filters, ...filters } })),
   resetFilters: () => set({ filters: DEFAULT_FILTERS }),
-  setTab: (tab) => set({ tab }),
-  setSidebar: (sidebarOpen) => set({ sidebarOpen }),
+  setNavTab: (navTab) => set({ navTab }),
+  setAskOpen: (askOpen) => set({ askOpen }),
   setDialog: (dialog) => set({ dialog }),
   setEditorOpen: (editorOpen) => set({ editorOpen }),
 }));
@@ -184,7 +204,8 @@ export function switchLocalWorkspace(workspaceId: string | null): Promise<void> 
     dialog: null,
     editorOpen: false,
     filters: DEFAULT_FILTERS,
-    tab: 'explore',
+    navTab: 'map',
+    askOpen: false,
   });
   useMapStore.setState({ selectedId: null, focus: null, boundsFocus: null, editorMode: 'none', draftPosition: null, markerKindPreset: null, highlightIds: [] });
   const operation = writeQueue.then(async () => {

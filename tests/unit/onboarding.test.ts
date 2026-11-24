@@ -36,19 +36,20 @@ describe('onboarding audit — the places really are mapped', () => {
   const places = catalogueFromSnapshot(snapshot);
   const counts = new Map(layerCounts(places, DEFAULT_LAYERS).map((c) => [c.layerId, c]));
 
-  it('has 3,775 places in the catalogue', () => {
-    expect(places.length).toBe(3775);
-    expect(totalMappedPlaces(places)).toBe(3775);
+  it('has 3,781 places in the catalogue', () => {
+    expect(places.length).toBe(3781);
+    expect(totalMappedPlaces(places)).toBe(3781);
   });
 
   it('matches the counts the UI claims per layer', () => {
-    expect(counts.get('interiors')).toMatchObject({ total: 81, positioned: 80, unpositioned: 1 });
+    expect(counts.get('interiors')).toMatchObject({ total: 77, positioned: 76, unpositioned: 1 });
+    expect(counts.get('breakable')).toMatchObject({ total: 52, positioned: 47, unpositioned: 5 });
     expect(counts.get('shops')).toMatchObject({ total: 39, positioned: 36, unpositioned: 3 });
     expect(counts.get('lootable')).toMatchObject({ total: 52, positioned: 52, unpositioned: 0 });
     expect(counts.get('gyms')).toMatchObject({ total: 8, positioned: 6, unpositioned: 2 });
-    expect(counts.get('gyms-outdoor')).toMatchObject({ total: 2, positioned: 2, unpositioned: 0 });
-    expect(counts.get('community')).toMatchObject({ total: 680, positioned: 647 });
-    expect(counts.get('uncertain')).toMatchObject({ total: 2902, positioned: 2848 });
+    expect(counts.get('equipment')).toMatchObject({ total: 3, positioned: 2, unpositioned: 1 });
+    expect(counts.get('community')).toMatchObject({ total: 679, positioned: 646 });
+    expect(counts.get('uncertain')).toMatchObject({ total: 2860, positioned: 2806 });
     expect(counts.get('regions')).toMatchObject({ total: 6, positioned: 6 });
   });
 
@@ -66,6 +67,8 @@ describe('onboarding audit — the places really are mapped', () => {
     }
     expect(QUICK_START_LAYERS.map((q) => q.layerId)).toEqual([
       'gyms',
+      'equipment',
+      'breakable',
       'lootable',
       'interiors',
       'shops',

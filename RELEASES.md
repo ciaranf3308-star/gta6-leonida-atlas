@@ -2,6 +2,21 @@
 
 Release history, newest first.
 
+## v0.10.0 — 2026-11-24
+
+**Released: navigation-first rebuild, breakable homes, interiors on tap, and the 10/10 pass — thumb-sized everywhere, honest about what the data does not know.**
+
+- Navigation first: a labelled bottom nav (Map / Find / Layers / Saved / Ask), one filter system shared by the map and Find ("X places showing" + removable filter pills + one-tap Clear all), Explore as a first-class searchable list, and one sheet at a time — Ask never stacks on a place detail.
+- Every tappable thing is at least 48px on a phone — chips, buttons, layer rows, list rows, map pins, bottom nav, filter pills, close buttons — with press feedback. The 390px walk measures it and fails the build if anything is under.
+- Gyms and workout equipment are separate layers, filters and icons (dumbbell vs kettlebell). Equipment searches and Ask answer from the free gear first, never the member gyms. The Capri garage-in-a-house flow: tap a house in Capri → "Workout equipment in the garage — mark it" → a real Workout Equipment pin with your note. Nothing invented — no public source lists equipment in Capri.
+- Breakable homes are systemic, not a 33-item list: a Breakable homes layer (52 places — the 33 GTADB-tagged residential-enterable, 13 Capri rob-house candidates, the Port Gellhorn trailer park, plus 5 seeded guide examples), the dark-blue in-game rule in plain words ("dark blue on the in-game map = can go in, light blue = closed, Focus shows the doors"), "Possible enterable house — check it" for untagged houses, and mark-any-house-as-breakable with loot notes.
+- Interiors on tap: every place detail has an "Inside" section (Enterable / Interior unknown, venue type, what you do inside), an Interiors layer (77 places, 385 enterable in GTADB) filterable by venue type, and an "Interior houses" filter (33 tagged in GTADB — labelled as tagged, not as the real total).
+- Resolve every POI: 581 of the 2,732 "?" places already have a type from the map data's own tags (house 332, shop 106, landmark 47, transport 37, leisure 25, services 17, restaurant 15, petrol 2), shown as "? · House — from its tags" in search and detail; 2,151 still have nothing to read, and the AI indexing job is the way to close them (0 indexed so far — it only runs on your phone with your key).
+- Data, honestly merged: GTADB is current at d406fea (verified against the repo — no newer revision exists); FullSweep's 1,534 landmarks add nothing new (all already in the snapshot, and its 75 locations are pre-release predictions, not imported); GTABase and GTA6GPS have no public data file, so they stay reference-only; the shop gap is named, not hidden (e.g. bars 3 of 122, clothing 9 of 67 in GTADB tags). Total 3,781 places. No 5k anywhere.
+- 10/10 visuals: Anton display type + Oswald condensed labels, self-hosted (OFL) — no Rockstar font is legally bundleable; GTA blip roundels in the bottom nav; a real service worker (the app registered one that did not exist, so every load logged a console error — now it caches the shell and tiles for offline use).
+- Fixed in this pass, found by looking at the screenshots, not the assertions: the Ask "houses to check" cards crushed the house name to 0px wide; Ask result rows clipped past the sheet edge; the Find empty state rendered 200px below the fold in a 35px slit (the filter bar now scrolls with the results); the map credit line wrapped and clipped; the "Add marker" button read as disabled (dark text on a dark background).
+- The welcome sheet's Skip button now sits in a pinned footer below the sheet instead of at the end of ~1,900px of scrolling content. The e2e suite was repaired alongside: it now dismisses the welcome, uses the current layer/dialog/category names, and the mobile-safari project needs its system libraries installed to launch in a fresh sandbox.
+
 ## v0.9.0 — 2026-11-23
 
 **Released: authentic map blips and a warmer companion redesign.**

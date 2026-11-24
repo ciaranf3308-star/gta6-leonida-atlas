@@ -45,7 +45,7 @@ const FIXTURES: Place[] = [
   place({
     id: 'gym:muscle-sands',
     title: 'Muscle Sands',
-    layerId: 'gyms-outdoor',
+    layerId: 'equipment',
     position: { x: 2019, y: 407 },
     region: 'Ocean Beach',
     tags: ['gym', 'free', 'outdoor'],
@@ -91,6 +91,23 @@ const FIXTURES: Place[] = [
     region: 'Kelly County',
     tags: ['enterable', 'hotel'],
   }),
+  // Breakable homes: a Capri rob-house candidate and one in Vice City.
+  place({
+    id: 'L3001',
+    title: '?, Capri',
+    layerId: 'breakable',
+    position: { x: -6800, y: 200 },
+    region: 'Capri',
+    tags: ['enterable', 'residential'],
+  }),
+  place({
+    id: 'L3002',
+    title: 'Venture Apts North, Rockridge, Vice City',
+    layerId: 'breakable',
+    position: { x: -1325, y: 713 },
+    region: 'Rockridge, Vice City',
+    tags: ['enterable', 'residential'],
+  }),
 ];
 
 describe('Ask Nylah — the spoiler rule', () => {
@@ -103,7 +120,21 @@ describe('Ask Nylah — the spoiler rule', () => {
     });
     expect(result.requestedLayerIds).toContain('gyms');
     expect(result.records.map((p) => p.id)).toContain('gym:dynamix');
+    // "gains" asks for a member gym — the free equipment (Muscle Sands)
+    // is a different question and stays out of a gym answer.
+    expect(result.records.map((p) => p.id)).not.toContain('gym:muscle-sands');
+  });
+
+  it('asking for workout equipment opts the equipment layer in, not the gyms', () => {
+    const result = retrieveForAsk({
+      question: 'Where is there workout equipment nearby?',
+      places: FIXTURES,
+      layers: layers(),
+      filters: { hideFound: false, remainingOnly: false, countyId: null },
+    });
+    expect(result.requestedLayerIds).toEqual(['equipment']);
     expect(result.records.map((p) => p.id)).toContain('gym:muscle-sands');
+    expect(result.records.map((p) => p.id)).not.toContain('gym:dynamix');
   });
 
   it('a named area scopes the answer to that area', () => {
@@ -128,7 +159,7 @@ describe('Ask Nylah — the spoiler rule', () => {
     expect(result.records.map((p) => p.id)).toEqual(['gym:north-gym']);
   });
 
-  it('a burglary question returns lootable records only — never card names', () => {
+  it('a burglary question about HOUSES returns breakable homes — never card names', () => {
     const result = retrieveForAsk({
       question:
         'Thinking of hitting some burglaries in Capri — highlight all the houses I can hit tonight.',
@@ -136,12 +167,19 @@ describe('Ask Nylah — the spoiler rule', () => {
       layers: layers(),
       filters: { hideFound: false, remainingOnly: false, countyId: null },
     });
-    expect(result.requestedLayerIds).toEqual(['lootable']);
-    expect(result.records.map((p) => p.id).sort()).toEqual(['L1001', 'L1002']);
+    // Houses you can hit are breakable homes, not the lootable SHOPS
+    // layer — the split the user asked for ("apartments I can break
+    // into" is houses, "rob a store" is shops).
+    expect(result.requestedLayerIds).toEqual(['breakable']);
+    expect(result.records.map((p) => p.id).sort()).toEqual(['L3001']);
     // The card at the same building is never in the records, so the AI
     // cannot volunteer it — and neither can the result list.
     expect(result.records.map((p) => p.title).join(' ')).not.toMatch(/Vicki|Delights/);
     expect(layersRequestedByQuestion('highlight the houses I can hit tonight', layers())).toEqual([
+      'breakable',
+    ]);
+    // The same words about STORES still route to the lootable shops.
+    expect(layersRequestedByQuestion('highlight the stores I can hit tonight', layers())).toEqual([
       'lootable',
     ]);
   });
@@ -170,7 +208,8 @@ describe('Ask Nylah — the spoiler rule', () => {
     // No gym is in Kelly, so it falls back to the nearest gyms and says so
     // — it must not answer a gym question with a Kelly interior.
     expect(result.areaMismatch).toBe(true);
-    expect(result.records.every((p) => ['gyms', 'gyms-outdoor'].includes(p.layerId))).toBe(true);
+    // "train" asks for a member gym — never the free equipment layer.
+    expect(result.records.every((p) => p.layerId === 'gyms')).toBe(true);
     expect(result.records.map((p) => p.id)).toContain('gym:dynamix');
     expect(result.records.map((p) => p.id)).not.toContain('L2001');
   });
@@ -211,9 +250,79 @@ describe('Ask Nylah — the spoiler rule', () => {
       layers: layers(),
       filters: { hideFound: false, remainingOnly: false, countyId: null },
     });
+    // "Lootable houses" is houses you can loot — breakable homes, not
+    // the lootable shops layer.
+    expect(result.requestedLayerIds).toEqual(['breakable']);
     expect(result.areaMismatch).toBe(true);
     expect(result.records.length).toBeGreaterThan(0);
-    expect(result.records.every((p) => p.layerId === 'lootable')).toBe(true);
+    expect(result.records.every((p) => p.layerId === 'breakable')).toBe(true);
+  });
+
+  it('apartments I can break into in Vice City answers from breakable homes, nearest first', () => {
+    const result = retrieveForAsk({
+      question: 'What apartments can I break into in Vice City?',
+      places: FIXTURES,
+      layers: layers(),
+      filters: { hideFound: false, remainingOnly: false, countyId: null },
+    });
+    expect(result.requestedLayerIds).toContain('breakable');
+    expect(result.records.map((p) => p.id)).toEqual(['L3002']);
+    // The answer says the in-game rule — dark blue means you can go in.
+    expect(result.proximitySummary).toMatch(/dark blue/);
+  });
+
+  it('enterable houses near Capri answers from the tagged houses + Capri rob houses', () => {
+    const result = retrieveForAsk({
+      question: 'Enterable houses near Capri?',
+      places: FIXTURES,
+      layers: layers(),
+      filters: { hideFound: false, remainingOnly: false, countyId: null },
+    });
+    expect(result.requestedLayerIds).toContain('breakable');
+    expect(result.records.map((p) => p.id)).toContain('L3001');
+    expect(result.proximitySummary).toMatch(/dark blue/);
+  });
+
+  it('trailers near an area answers from breakable homes, and says the list is not exhaustive', () => {
+    const result = retrieveForAsk({
+      question: 'Trailers near Vice City?',
+      places: FIXTURES,
+      layers: layers(),
+      filters: { hideFound: false, remainingOnly: false, countyId: null },
+    });
+    expect(result.requestedLayerIds).toEqual(['breakable']);
+    expect(result.proximitySummary).toMatch(/not every breakable home/);
+  });
+
+  it('a user-marked breakable home answers a breakable question; a workout marker does not', () => {
+    const marked = place({
+      id: 'personal:capri-house',
+      title: 'Capri house with a garage',
+      layerId: 'personal',
+      position: { x: -6800, y: 200 },
+      region: 'My markers',
+      tags: ['breakable', 'house'],
+      evidence: 'personal',
+      description: 'Safe upstairs, special car in the garage',
+    });
+    const workout = place({
+      id: 'personal:capri-gym',
+      title: 'Capri garage gym',
+      layerId: 'personal',
+      position: { x: -6800, y: 200 },
+      region: 'My markers',
+      tags: ['gym', 'workout', 'equipment'],
+      evidence: 'personal',
+      description: 'Bench in the garage',
+    });
+    const result = retrieveForAsk({
+      question: 'Houses I can break into near Capri?',
+      places: [...FIXTURES, marked, workout],
+      layers: layers(),
+      filters: { hideFound: false, remainingOnly: false, countyId: null },
+    });
+    expect(result.records.map((p) => p.id)).toContain('personal:capri-house');
+    expect(result.records.map((p) => p.id)).not.toContain('personal:capri-gym');
   });
 
   it('caps records at 30', () => {
@@ -233,8 +342,8 @@ describe('Ask Nylah — the spoiler rule', () => {
 
 describe('Ask Nylah — OpenAI client', () => {
   it('system prompt scopes to the asked layers and forbids extras', () => {
-    const prompt = buildAskSystemPrompt(['Gyms / Strength']);
-    expect(prompt).toContain('Gyms / Strength');
+    const prompt = buildAskSystemPrompt(['Gyms']);
+    expect(prompt).toContain('Gyms');
     expect(prompt).not.toContain('Cards');
     expect(prompt).not.toContain('Lootable');
     expect(prompt).toMatch(/only what was asked/i);
@@ -281,7 +390,7 @@ describe('Ask Nylah — OpenAI client', () => {
       askOpenAi({
         question: 'Where can I train?',
         records: FIXTURES.slice(0, 1),
-        requestedLayerNames: ['Gyms / Strength'],
+        requestedLayerNames: ['Gyms'],
         apiKey: 'sk-bad',
         fetchImpl: fetchImpl as unknown as typeof fetch,
       }),
@@ -337,7 +446,7 @@ describe('Ask Nylah — real proximity (the Capri gyms case)', () => {
     place({
       id: 'gym:muscle-sands',
       title: 'Muscle Sands',
-      layerId: 'gyms-outdoor',
+      layerId: 'equipment',
       position: { x: 2019, y: 407 },
       region: 'Ocean Beach, Vice Beach',
       tags: ['gym', 'free', 'outdoor'],
@@ -345,7 +454,7 @@ describe('Ask Nylah — real proximity (the Capri gyms case)', () => {
     place({
       id: 'gym:jason-house-deck',
       title: "Jason's house deck (home gym)",
-      layerId: 'gyms-outdoor',
+      layerId: 'equipment',
       position: { x: -2353, y: -5532 },
       region: 'Key Lento, Leonida Keys',
       tags: ['gym', 'free', 'outdoor', 'home'],
@@ -389,6 +498,8 @@ describe('Ask Nylah — real proximity (the Capri gyms case)', () => {
   });
 
   it('the follow-up keeps the Capri anchor instead of re-listing the far gyms', () => {
+    // "workout" is an equipment question now — the follow-up answers
+    // from the free gear, nearest first, still anchored on Capri.
     const result = retrieveForAsk({
       question: 'is there nowhere else I can workout?',
       places: CAPRI_PLACES,
@@ -398,9 +509,9 @@ describe('Ask Nylah — real proximity (the Capri gyms case)', () => {
     });
     expect(result.anchorPlace?.region).toBe('Capri');
     expect(result.nearCount).toBe(0);
-    expect(result.records[0]?.id).toBe('gym:grand-majestic');
+    expect(result.records[0]?.id).toBe('gym:jason-house-deck');
     expect(result.records[0]?.id).not.toBe('gym:muscle-sands');
-    expect(result.proximitySummary).toMatch(/no gym near capri/i);
+    expect(result.proximitySummary).toMatch(/no workout equipment near capri/i);
   });
 
   it('a house gym the user marked near Capri answers first, before the far gyms', () => {

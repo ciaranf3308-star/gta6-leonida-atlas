@@ -5,7 +5,7 @@ import { markerToPlace } from '../../data/catalogue';
 import { MARKER_COLORS } from '../../db/backup';
 import { saveLocal, useMapStore, useUiStore, useUserStore } from '../../stores/atlas';
 import { Modal } from '../../app/Modal';
-import { CATEGORIES } from '../../app/Sidebar';
+import { CATEGORIES } from '../../app/FilterBar';
 
 const MARKER_COLOR_NAMES: Record<string, string> = {
   '#c9a9ef': 'Purple',
@@ -33,9 +33,13 @@ export default function MarkerEditor({
   const [category, setCategory] = useState<Category>(marker?.category ?? 'personal');
   const [icon, setIcon] = useState<PersonalMarker['icon']>(marker?.icon ?? 'pin');
   const presetKind = useMapStore((s) => s.markerKindPreset);
-  const [kind, setKind] = useState<'general' | 'workout'>(
-    marker?.kind === 'workout' ? 'workout' : presetKind === 'workout' ? 'workout' : 'general',
-  );
+  const [kind, setKind] = useState<'general' | 'workout' | 'breakable'>(() => {
+    if (marker?.kind === 'workout') return 'workout';
+    if (marker?.kind === 'breakable') return 'breakable';
+    if (presetKind === 'workout') return 'workout';
+    if (presetKind === 'breakable') return 'breakable';
+    return 'general';
+  });
   const [color, setColor] = useState<string>(marker?.color ?? MARKER_COLORS[0]);
   const [x, setX] = useState(String(position?.x ?? marker?.position.x ?? 0));
   const [y, setY] = useState(String(position?.y ?? marker?.position.y ?? 0));
@@ -70,6 +74,7 @@ export default function MarkerEditor({
       icon,
       color,
       ...(kind === 'workout' ? { kind: 'workout' as const } : {}),
+      ...(kind === 'breakable' ? { kind: 'breakable' as const } : {}),
       position: coords,
       createdAt: marker?.createdAt ?? now,
       updatedAt: now,
@@ -146,22 +151,41 @@ export default function MarkerEditor({
         <select
           id="marker-kind"
           value={kind}
-          onChange={(e) => setKind(e.target.value as 'general' | 'workout')}
+          onChange={(e) => setKind(e.target.value as 'general' | 'workout' | 'breakable')}
         >
           <option value="general">General marker</option>
-          <option value="workout">Workout spot — house gym / gym gear</option>
+          <option value="workout">Workout equipment — gear in a house / garage</option>
+          <option value="breakable">
+            Breakable home — house / apartment / trailer I can enter
+          </option>
         </select>
         <p className="help-text">
-          Workout spots are how house gyms get on the map: the public data lists no gym gear
-          inside houses, so a place you mark here is what Ask Nylah will use when you ask
-          where to work out nearby.
+          Workout equipment is how house gyms get on the map: the public data lists no gym
+          gear inside houses — not even a garage in a house — so a place you mark here is
+          what Ask Nylah will use when you ask where to work out nearby.
         </p>
+        {kind === 'breakable' && (
+          <p className="help-text">
+            A breakable home is how the houses you can enter get on the map: most of them
+            have no tag in the public data at all. On the in-game map, dark blue means you
+            can go in, light blue means closed. Say what is inside in the description —
+            safe, jewellery, special car in the garage — and Ask Nylah will use it when
+            you ask about houses you can break into nearby.
+          </p>
+        )}
         <label htmlFor="marker-description">Description</label>
         <textarea
           id="marker-description"
           value={description}
           maxLength={10000}
           rows={3}
+          placeholder={
+            kind === 'breakable'
+              ? 'What is inside? e.g. safe upstairs, jewellery, special car in the garage'
+              : kind === 'workout'
+                ? 'What equipment is here? e.g. bench in the garage'
+                : 'Notes about this place'
+          }
           onChange={(e) => setDescription(e.target.value)}
         />
         <div className="form-grid">

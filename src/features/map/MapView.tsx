@@ -78,7 +78,10 @@ function markerIcon(
       content.append(badge);
     }
   }
-  const size = cluster ? 38 : Math.max(24, (layer?.style.radius ?? 6) * 2 + 10);
+  // The hit area is 48px on every pin — a thumb-sized target, not the
+  // 24px roundel. The visible blip face stays 28px (38px for clusters)
+  // centred inside it, via map.css. The map still shows the same pins.
+  const size = 48;
   return L.divIcon({
     html: content,
     className: `atlas-map-marker ${cluster ? 'is-cluster' : ''} ${selected ? 'is-selected' : ''} ${found && !cluster ? 'is-found' : ''} ${highlighted ? 'is-highlighted' : ''} ${group.places[0]?.layerId === 'regions' ? 'is-region' : ''}`,

@@ -84,11 +84,25 @@ GTADB data CC BY 4.0). Personal use. Live at
 
 All derived from GTADB tags at revision `d406fea`; uncertain records
 (unknown name / unconfirmed / demolished / may-not-exist) stay in Uncertain
-records whatever their tags say, so the counts below are the certain subset:
+records whatever their tags say, except breakable houses (see below), so
+the counts are the certain subset:
 
-- **Interiors / Enterable** — 81 certain enterable buildings (80 positioned).
-  GTADB tags 385 records `enterable` in total (384 positioned); the other
-  304 are uncertain and stay in Uncertain records.
+- **Interiors / Enterable** — 77 certain enterable buildings (76 positioned).
+  GTADB tags 385 records `enterable` in total; the other 308 are uncertain
+  and stay in Unverified places, except the breakable houses below.
+- **Breakable homes** — 52 houses, apartments and trailers you can break
+  into (47 positioned, 5 guide examples searchable-only). The 33
+  residential+enterable records GTADB tags (none in Capri), the 13 Capri
+  rob-house candidates (10 enterable + 3 residential "?" records), the
+  Port Gellhorn Trailer Park (L1062), and 5 guide-named examples with no
+  verified pin (Parlor Apartments Rockridge, Bayside apartment, Ambrosia
+  houses, Lost Vista trailers, Scattered Pines trailer). This is examples
+  plus tagged houses, NOT every breakable home: breakable homes are
+  systemic — on the in-game map a building drawn dark blue has an interior
+  you can enter, light blue is closed (HowToVideoGame, DualShockers,
+  TheGamer). No open dataset has a fixed count, so the app never presents
+  one, and the detail sheet says so. See `src/data/breakable-homes.ts`
+  and `src/domain/interiors.ts`.
 - **Shops & services** — 39 certain shops (36 positioned), by type
   (`#gas`, `#supermarket`, `#clothes`, `#hair`, `#guns`, `#food`, `#vendor`,
   `#electronics`, `#shoes`, `#tattoos`, `#fastfood`, `#bar`, `#stripclub`,
@@ -103,11 +117,72 @@ records whatever their tags say, so the counts below are the certain subset:
 - No pawn-shop / bank / jewellery / liquor-store tags exist in GTADB, so no
   separate pawn/bank layer was built — those shops appear in Shops /
   Lootable only where their GTADB tags put them.
+- **Shop gap, honestly:** GTADB tags far fewer shops than the guides
+  count. TheGamesWiki's enterable-building counts vs GTADB tags at
+  d406fea: gas 19 of 57, clothing 9 of 67, footwear 3 of 17, electronics
+  3 of 15, fast food 2 of 21, restaurants 29 of 87 cafes/takeout, bars
+  3 of 122, tattoos 2 of 11, hair 9 of 18, gun shops 6 of 24, mod shops
+  4 of 14, Pay 'n' Spray 2 of 19, strip clubs 2 of 3. The missing shops
+  have no verified position in any pullable source (see "Data sources"
+  below) and are NOT invented — the gap is shown, not hidden.
+
+## Data sources — what was pulled, what is still missing (checked 2026-11-23)
+
+- **GTADB (github.com/rolux/gtadb.org)** — the base. Snapshot is
+  revision `d406fea`, 3,754 records, 986 named. Upstream HEAD on
+  2026-11-23 is `d406fea` — there is no newer revision to pull; the
+  snapshot is current. MIT code / CC BY 4.0 data.
+- **FullSweep (fullsweepmap.com, free API, CC BY 4.0)** — checked
+  2026-11-23. Its 75 "locations" are pre-release guesses ("pure
+  prediction", "exact spot TBC") and were NOT imported — importing them
+  would be inventing pins. Its 1,534 landmarks are all already in our
+  snapshot (0 new records; they cite GTADB L-ids). Its per-record
+  `kind` adds nothing: the kinds are derived from the same GTADB tags
+  (102 of our 2,151 unresolved "?" get a kind, mostly hotel/industrial).
+- **GTABase (gtabase.com/gta-6/map)** — 3,994 pins, closed site, no
+  public data file or API found. Reference-only for counts: 87 safes,
+  105 hidden packages, 227 yellow loot boxes, 22 banks, 130 stunt jumps.
+- **GTA6GPS / Gamersky (gta6gps.com)** — 3,208 pins in 73 categories,
+  closed, no public data file. Reference-only: 242 aerial stunts, 33
+  landmarks, 14 main missions.
+- **GTADB.net collectibles guide** — a separate project from gtadb.org,
+  no public data file or licence found. Reference-only: 819
+  collectible/exploration entries mapped (475 trading cards of 480, 50
+  Cocaine Flamingos of 125, 23 magazines/books, 7 book swaps, 10
+  meditations, 66 WAiNK scans, 104 stunt jumps, 40 knife flights, 25
+  BASE jumps) — but gamemapa.com reports only 63 of the 480 cards have
+  known locations, so the 475 is mostly named-area leads, not pins.
+  Our 5 verified card pins stand; the rest are NOT placed by guess.
+- **Sixth Star (sixthstar.net)** — 3,800+ places on Rockstar's official
+  map, closed. Reference-only: 204 ATMs, 86 safes, 99 towable ATMs, 24
+  gun shops, 84 clothing/shoes, 121 bars, 130 stunt jumps, 222 yellow
+  loot boxes, 269 cards, 77 unique weapons.
+- **gtamap.io** — 4,062 markers, 755 claimed confirmed interiors,
+  closed. Reference-only for the interiors gap; the "700+" figure is
+  a rumour, not Rockstar (Rockstar only said "hundreds"). Our honest
+  count is 385 enterable in GTADB.
+- **gta-vi.duckdns.org** — 4,336 locations in 102 categories, closed.
+  Reference-only: 105 hidden packages, 227 yellow loot boxes, 71
+  meteorites, 202 under-the-bridge, 56 Ahol street art, 25 BASE jumps,
+  40 knife flights, 15 luxury watches.
+- **PlanetGTA6** — 932 sourced places, 148 at exact official-map spot,
+  plus 89 WAiNK, 111 items, 70 cards, 145 stunts, 126 heists/jobs.
+  Reference-only.
+- **Resolving the "?" places** — 581 of 2,732 "?" resolve to a type
+  from the map data's own tags (house 332, shop 106, landmark 47,
+  transport 37, leisure 25, services 17, restaurant 15, petrol 2);
+  they show as "? · House" in Find, labelled "from its tags". 2,151
+  still have nothing to read (1,108 no tags, 942 only internal notes,
+  101 hotel/industrial). Those are what the in-app AI job is for (see
+  below) or the user's own marks — never guessed.
 
 ## Gyms / Strength layer (was missing)
 
-9 gyms, all in the Vice City area. Verified 23 Nov 2026 against two
-independent post-launch guides (PowerPyx gym list; GTA6 GPS gym pages):
+8 member gyms, all in the Vice City area, plus free workout equipment
+as a SEPARATE layer (user correction, 2026-11-23: "I'm not looking for
+gyms I'm looking for workout equipment!!"). Verified 23 Nov 2026
+against two independent post-launch guides (PowerPyx gym list; GTA6
+GPS gym pages):
 
 - 8 member gyms in **Gyms / Strength**; 6 have published coordinates
   (GTA6 GPS per-gym pages; Ajax Gym is tagged `#gym` in the bundled GTADB
