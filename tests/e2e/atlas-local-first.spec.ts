@@ -79,9 +79,11 @@ async function selectRegion(page: Page, name = 'Ambrosia'): Promise<void> {
   await openPanel(page, 'find');
   await page.getByLabel('Show one kind of place').selectOption('region');
   await search(page).fill(name);
+  // v0.14.0 minimal cards: the card face is title + area + distance only,
+  // so the button name starts with the place title, not "Name Region".
   await page
     .locator('.place-results')
-    .getByRole('button', { name: new RegExp(`^${name} Region`) })
+    .getByRole('button', { name: new RegExp(`^${name}`) })
     .click();
   await expect(details(page).getByRole('heading', { name, exact: true })).toBeVisible();
 }
@@ -119,7 +121,10 @@ async function openBackup(page: Page): Promise<void> {
     await page.getByRole('button', { name: 'Close place details', exact: true }).click();
   }
   await openPanel(page, 'find');
-  await sidebar(page).getByRole('button', { name: 'Backup', exact: true }).click();
+  // Backup moved into the Settings dialog (v0.12.0 redesign): Find no
+  // longer carries a Backup button.
+  await sidebar(page).getByRole('button', { name: 'Settings', exact: true }).click();
+  await page.getByRole('button', { name: 'Backup', exact: true }).click();
   await expect(page.getByRole('dialog', { name: 'Your local backup', exact: true })).toBeVisible();
 }
 
@@ -188,8 +193,11 @@ test('the map opens without an account, filters public evidence, and toggles vis
   await enableLayer(page, 'Unverified places');
   await openPanel(page, 'find');
   await page.getByLabel('Show one kind of place').selectOption('region');
+  // v0.14.0 minimal cards: no evidence/category line on the card face,
+  // so the first region-kind result is identified by its title — Vice City
+  // sorts first from the default centre.
   await expect(page.locator('.place-results .place-result').first()).toContainText(
-    'Region · approximate',
+    'Vice City',
   );
   // 'My markers' has no places yet in a fresh profile, so it is the
   // category that yields no results with these layers on.
@@ -612,6 +620,10 @@ test('3D explorer spawns at the selected Ambrosia position instead of Vice City'
   page.on('pageerror', (error) => pageErrors.push(error.message));
   await openAtlas(page);
   await selectRegion(page, 'Ambrosia');
+  // 3D explorer moved into the Settings dialog (v0.15.0): open Settings
+  // from the panel footer — the Ambrosia selection survives the dialog,
+  // so navigate('3d') still carries region:ambrosia.
+  await sidebar(page).getByRole('button', { name: 'Settings', exact: true }).click();
   await page.getByRole('button', { name: '3D explorer', exact: true }).click();
   await expect(page).toHaveURL(/view=3d&place=region%3Aambrosia/);
   const world = page.locator('[data-walk-world]');
@@ -660,6 +672,8 @@ test('3D explorer spawns at the selected Ambrosia position instead of Vice City'
 
   await page.getByRole('button', { name: 'Back to atlas', exact: true }).click();
   await selectRegion(page, 'Leonida Keys');
+  // 3D explorer lives in the Settings dialog (v0.15.0) — see above.
+  await sidebar(page).getByRole('button', { name: 'Settings', exact: true }).click();
   await page.getByRole('button', { name: '3D explorer', exact: true }).click();
   await expect(world).toHaveAttribute('data-walk-runtime', 'ready', { timeout: 60_000 });
   await expect(world).toHaveAttribute('data-walk-map-travel-id', 'region:leonida-keys');
@@ -752,7 +766,8 @@ test('forced indexing onboarding appears on a fresh profile, and Skip leaves a o
   await search(page).fill('Ambrosia');
   await page
     .locator('.place-results')
-    .getByRole('button', { name: /^Ambrosia Region/ })
+    // Minimal card (v0.14.0): button name starts with the place title.
+    .getByRole('button', { name: /^Ambrosia/ })
     .click();
   await expect(details(page).getByRole('heading', { name: 'Ambrosia', exact: true })).toBeVisible();
   await page.screenshot({
