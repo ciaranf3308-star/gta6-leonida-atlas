@@ -186,6 +186,14 @@ export default function MapView(props: MapViewProps) {
       // which sets _tileZoom undefined and loads nothing below zoom 0.
       // No zoomOffset / minNativeZoom / maxNativeZoom: those clamp the
       // tile zoom Leaflet computes, which would break the mapping.
+      // v0.20.0: the redrawn tiles are 512x512 files served at
+      // tileSize 256, so each tile displays at 256 CSS px from 512
+      // real pixels — 1:1 device pixels on a DPR 2 phone, 1.5x on
+      // DPR 3 (v0.19's 256px tiles were stretched 2-3x by the
+      // browser, the main cause of his "so blurry" verdict).
+      // Leaflet's detectRetina is deliberately NOT used: it clamps
+      // the layer minZoom to 0 and this map lives at -5..1, so tiles
+      // below Leaflet zoom 0 would vanish on his phone.
       const tiles = L.tileLayer('', {
         tileSize: 256,
         minZoom: MIN_ZOOM,

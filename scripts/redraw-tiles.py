@@ -1,52 +1,84 @@
 #!/usr/bin/env python3
-"""TRUE REDRAW of the Leonida basemap (v0.19.0) — an ILLUSTRATION drawn
-from the real geography, not a recolour of the game-map photo.
+"""TRUE REDRAW of the Leonida basemap — v0.20.0, the BLUR FIX.
 
-v0.18 "rebuilt" the tiles only by recolouring the same GTADB day-map
-pixels (same image, new colours, coral road highlights). The user
-clocked it — rightly — and the zoomed-in screenshot proved the road
-grade had gone too far: EVERY street was a thick bright-pink neon line.
+v0.19.0 drew a new illustrated map, but the user verdict was
+"Wow it's so blurry .. you say 7 I say 3." Root causes, measured:
 
-This script draws a NEW map. Every output pixel is painted from a
-classification of the source, never copied from it:
+  1. DPR UPSCALE (dominant, MapView/Leaflet side): the pyramid was
+     256px tiles served at tileSize 256 with no retina handling, so
+     on his phone every tile pixel was stretched 2x (DPR 2) to 3x
+     (DPR 3) by the browser. Measured live: naturalWidth 256,
+     displayed 256 CSS px, devicePxPerTile 512 @ DPR2 / 768 @ DPR3.
+     Leaflet's detectRetina cannot fix this: it clamps the layer
+     minZoom to 0 (Leaflet 1.9.4 TileLayer.initialize), and this map
+     lives at Leaflet zoom -5..1 — tiles below zoom 0 would vanish.
+  2. BAKED BLUR in this script: every classification mask was
+     gaussian-blurred (water sigma 2, green sigma 2, sand sigma 1),
+     the relief shade was sigma 6 at +/-5%, and the output was
+     JPEG quality 88. Measured on the z0 island tile: redrawn
+     mean |gradient| 3.86 vs 8.99 for the day source — the redraw
+     was less than half as sharp as the photo it was drawn from.
 
-  SOURCE OF TRUTH (only): the GTADB In-Game Day tiles
-  (public/assets/gta6-leonida-atlas/tiles/day/, z0-z6, same grid).
-  Coastline, water, sand, land, urban ground and roads all come from
-  THAT data. No invented coastline, road, city or place.
+v0.20.0 fix (this script) — PIXEL BY PIXEL, provably:
+  * Renders every tile at 512x512 (2x display density) from the same
+    256px GTADB source. Leaflet tileSize stays 256, so a 512px tile
+    displays at 256 CSS px: 1:1 device pixels at DPR 2, 1.5x at
+    DPR 3 (was 3x), downsampled-crisp at DPR 1. Same filenames,
+    coordinates and zooms — no map-code zoom change, no pin moves.
+  * NO blur step anywhere in the image path. No gaussian on any
+    mask, NO relief shade at all (the "blurred luminance base" is
+    deleted, not reduced), no bilinear resampling of image data.
+    Every output pixel is decided individually: its class comes
+    from exactly ONE source pixel (nearest-neighbour lookup, never
+    a blend of neighbours), its colour is a flat fill for that
+    class. Coastline, forest edge and beach are hard 1-2px steps.
+  * Roads are vector centrelines extracted from the road mask
+    (skeletonize — geometry extraction, not a blur) and drawn as
+    hard strokes at 512 with doubled widths, so strokes keep their
+    true widths with hard edges. JPEG quality 92 (was 88).
+  * The only soft things left, disclosed: (a) the sea depth bands
+    are a smooth gradient by design, sampled from a continuous
+    global shore-distance field (not from image pixels); (b) clouds
+    at z0-z2 are soft puffs by design — real clouds are soft, and
+    they cover water only; (c) the major-vs-minor road decision
+    smooths the measured road-width field along the skeleton so a
+    junction spike cannot turn a crossing coral — a classification
+    decision only, it touches no painted pixel directly. Neither
+    touches land, roads or blocks.
+  * No step downsamples and no step upscales image data: the 512
+    canvas is display density only — each of its pixels reads
+    exactly one 256 source pixel. The source's finest detail is
+    z6 (1 px per canonical unit); nothing here invents detail
+    above it, and the report states the pixel counts to prove it.
 
-  WHAT IS PAINTED (artistic interpretation):
-  * Flat illustrated fills per surface — deep-teal sea in depth bands,
-    rich green land, warm sand, warm-grey city blocks — modulated only
-    by a heavily blurred relief shade taken from the source luminance
-    (hillshade feel, no photo texture). Source photographic detail is
-    deliberately flattened away; that is what makes it a redraw.
-  * Roads are VECTOR strokes over the flat land, drawn from skeleton
-    centrelines of the source road network: casing + core. MAJOR roads
-    (wide skeleton, half-width >= 5 tile-px at z5, scaled per zoom)
-    and highways get a thin coral / sunset core with a soft glow.
-    MINOR streets get a cream core, NO pink — at street zoom the map
-    must read like a clean street map, pink only on the routes that
-    matter. This is the pink-mess fix, built into the redraw.
-  * Clouds at z0-z2 are large soft puffs over WATER only, in global
-    coordinates so they never seam; v0.18's 6% alpha read as no clouds
-    at all, these are clustered puffs at 70% core alpha, not a wash.
-  * Sea depth bands come from distance-to-land in the source land
-    mask, not from bathymetry (there is none): shore turquoise ->
-    mid teal -> deep teal. A styling device, labelled as such. The
-    distance field is GLOBAL (scripts/build-shore-distance.py, one
-    z2 map sampled by every tile) — a per-tile transform seamed at
-    borders in the 390px walk.
+SOURCE OF TRUTH (only): the GTADB In-Game Day tiles
+(public/assets/gta6-leonida-atlas/tiles/day/, z0-z6, same grid).
+Coastline, water, sand, land, urban ground and roads all come from
+THAT data. No invented coastline, road, city or place. The ungraded
+originals stay in `tiles/day/`; the redrawn pyramid is
+`tiles/redrawn/` with the same filenames, coordinates and zooms.
 
-  WHAT STAYS REAL: tile filenames, coordinates and zooms are
-  unchanged, so every place coordinate lands in exactly the same
-  spot. A pin that was on a road is still on that road.
+WHAT IS PAINTED (artistic interpretation):
+* Flat illustrated fills per surface — deep-teal sea in depth bands,
+  rich green land, warm sand, warm-grey city blocks. NO relief
+  shade: v0.19's blurred-luminance base is deleted outright, not
+  reduced. A flat fill is the sharpest possible fill — every pixel
+  of one surface is exactly the same colour.
+* Roads are VECTOR strokes over the flat land, drawn from skeleton
+  centrelines of the source road network: casing + core. MAJOR roads
+  and highways get a thin coral / sunset core with a soft glow.
+  MINOR streets get a cream core, NO pink.
+* Clouds at z0-z2 are large soft puffs over WATER only, in global
+  coordinates so they never seam.
+* Sea depth bands come from distance-to-land in the source land
+  mask, not from bathymetry (there is none): shore turquoise ->
+  mid teal -> deep teal. A styling device, labelled as such.
 
-Output: public/assets/gta6-leonida-atlas/tiles/redrawn/<z>/ — a new
-pyramid the app serves instead of tiles/styled/.
+Output: public/assets/gta6-leonida-atlas/tiles/redrawn/<z>/ — 512px
+tiles the app serves instead of tiles/styled/.
 
 Run:
-  python3 scripts/redraw-tiles.py --preview   # sample sheets, /tmp/v019
+  python3 scripts/redraw-tiles.py --preview   # sample sheets, /tmp/v020
   python3 scripts/redraw-tiles.py --all       # full pyramid, 31,022 tiles
   python3 scripts/redraw-tiles.py --zooms 0 1 2
 """
@@ -64,7 +96,9 @@ from skimage.morphology import skeletonize
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "public/assets/gta6-leonida-atlas/tiles/day")
 DST = os.path.join(ROOT, "public/assets/gta6-leonida-atlas/tiles/redrawn")
-QUALITY = 88
+QUALITY = 92
+OUT = 512  # v0.20.0: 2x supersampled tiles (source is 256px)
+
 
 # --- After Hours illustrated palette ---
 CORAL = np.array([255.0, 82.0, 127.0])     # #FF527F major-road core
@@ -92,6 +126,17 @@ def _paint(dst, mask, rgb, alpha=1.0):
     """Blend flat rgb onto dst where mask (float 0..1) says so."""
     w = (mask * alpha)[..., None]
     dst[:] = dst * (1.0 - w) + rgb[None, None, :] * w
+
+
+def _up2_nearest(a):
+    """256 -> 512, NEAREST: hard step edges, no blur. Classification
+    masks, skeletons and block masks go through here — the class
+    boundary is where it is, and a hard step at 512px is the
+    sharpest true edge the source supports. Each output pixel reads
+    exactly ONE source pixel; no pixel is ever a blend of neighbours.
+    This is the only "upscale" in the pipeline and it cannot blur:
+    nearest-neighbour copies values, it never mixes them."""
+    return np.repeat(np.repeat(a, 2, axis=0), 2, axis=1)
 
 
 def _road_skeleton(light):
@@ -155,14 +200,14 @@ def _road_skeleton(light):
     return skel, dist
 
 
-def _shore_distance(zoom, tile_y, tile_x):
-    """Distance to land in TILE pixels, from the GLOBAL shore-distance
+def _shore_distance(zoom, tile_y, tile_x, n=OUT):
+    """Distance to land in OUTPUT pixels, from the GLOBAL shore-distance
     map (scripts/build-shore-distance.py, z2 grid, 1 px = 8 units).
     Per-tile distance transforms seam at borders (a tile's water far
     from land *inside that tile* paints abyss against a neighbour's
     bands); the global field is continuous by construction. Falls
     back to a per-tile transform if the map is missing.
-    Returns a float 256x256 array."""
+    Returns a float nxn array. v0.20.0: sampled at 512 steps."""
     global _SHORE
     if _SHORE is None:
         try:
@@ -174,12 +219,11 @@ def _shore_distance(zoom, tile_y, tile_x):
             _SHORE = False
     if _SHORE is False:
         return None
-    scale = 2.0 ** (2 - zoom)  # tile px -> z2 px
-    # BILINEAR sample: nearest-neighbour on the 8-unit grid paints
-    # 8px blocks into the shore bands at street zoom. Fractional
-    # coords + bilinear weights keep the bands smooth.
-    gy_f = (tile_y * 256 + np.arange(256, dtype=np.float32)) * scale
-    gx_f = (tile_x * 256 + np.arange(256, dtype=np.float32)) * scale
+    # Output pixel i sits at 256-scale coordinate (i + 0.5) / 2 inside
+    # the tile; the z2 grid is 2^(2-zoom) z2-px per 256-tile-px.
+    pos = (np.arange(n, dtype=np.float32) + 0.5) / 2.0
+    gy_f = (tile_y * 256 + pos) * (2.0 ** (2 - zoom))
+    gx_f = (tile_x * 256 + pos) * (2.0 ** (2 - zoom))
     y0 = np.clip(np.floor(gy_f).astype(int), 0, 4094)
     x0 = np.clip(np.floor(gx_f).astype(int), 0, 3070)
     fy = np.clip(gy_f - np.floor(gy_f), 0.0, 1.0)[:, None]
@@ -187,39 +231,40 @@ def _shore_distance(zoom, tile_y, tile_x):
     top = _SHORE[np.ix_(y0, x0)] * (1.0 - fx) + _SHORE[np.ix_(y0, x0 + 1)] * fx
     bot = _SHORE[np.ix_(y0 + 1, x0)] * (1.0 - fx) + _SHORE[np.ix_(y0 + 1, x0 + 1)] * fx
     dist_z2 = top * (1.0 - fy) + bot * fy
-    return dist_z2 * (2.0 ** (zoom - 2))  # z2 px -> tile px
+    return dist_z2 * (2.0 ** (zoom - 1))  # z2 px -> OUT px (x2 vs 256)
 
 
 _SHORE = None
 
 
-def _sea_from_distance(dist_tile_px, zoom):
-    """Sea RGB from distance-to-land in tile px. Bands are in tile px
+def _sea_from_distance(dist_px, zoom, px_scale=2.0):
+    """Sea RGB from distance-to-land in output px. Bands are in tile px
     and scale with zoom: a shore band is ~10 canonical units wide at
-    every zoom, not 45 tile-px at z0."""
-    h, w = dist_tile_px.shape
+    every zoom, not 45 tile-px at z0. px_scale is OUT/256 (2.0)."""
+    h, w = dist_px.shape
     zscale = 2.0 ** (zoom - 5)
-    shore_hi = max(1.5, 10.0 * zscale)
-    mid_hi = max(5.0, 32.0 * zscale)
+    shore_hi = max(1.5, 10.0 * zscale) * px_scale
+    mid_hi = max(5.0, 32.0 * zscale) * px_scale
     sea = np.tile(SEA_ABYSS, (h, w, 1)).astype(np.float32)
-    band_mid = _smoothstep(dist_tile_px, mid_hi, mid_hi * 0.35)
-    band_shore = _smoothstep(dist_tile_px, shore_hi, shore_hi * 0.3)
+    band_mid = _smoothstep(dist_px, mid_hi, mid_hi * 0.35)
+    band_shore = _smoothstep(dist_px, shore_hi, shore_hi * 0.3)
     _paint(sea, band_mid, SEA_MID)
     _paint(sea, band_shore, SEA_SHORE)
-    far = _smoothstep(dist_tile_px, mid_hi * 2.0, mid_hi * 4.0)
+    far = _smoothstep(dist_px, mid_hi * 2.0, mid_hi * 4.0)
     _paint(sea, far * 0.5, SEA_DEEP)
     return sea
 
 
-def _cloud_field(zoom, tile_y, tile_x):
+def _cloud_field(zoom, tile_y, tile_x, n=OUT):
     """Cloud puffs in GLOBAL coordinates (seamless by construction),
     z0 scale. A low-frequency envelope clusters them into patches
     with clear sea between — the reference sea is fringed with
     clouds at the edges, not polka-dotted all over. Returns float
-    0..1 field, 256x256."""
+    0..1 field, nxn. v0.20.0: sampled at 512, sigma 8 (was 4 @ 256)."""
     scale = 2.0**zoom
-    gx = (tile_x * 256.0 + np.arange(256, dtype=np.float32)[None, :]) / scale
-    gy = (tile_y * 256.0 + np.arange(256, dtype=np.float32)[:, None]) / scale
+    pos = (np.arange(n, dtype=np.float32) + 0.5) / 2.0
+    gx = (tile_x * 256.0 + pos[None, :]) / scale
+    gy = (tile_y * 256.0 + pos[:, None]) / scale
     envelope = _smoothstep(
         np.sin(gx * 0.0028 + 0.6) * np.sin(gy * 0.0023 + 2.1), 0.05, 0.55
     )
@@ -230,21 +275,26 @@ def _cloud_field(zoom, tile_y, tile_x):
         + 0.25 * np.sin(gx * 0.061 + gy * 0.053 + 0.9)
     )
     cloud = _smoothstep(field, 0.90, 1.50) * envelope
-    return ndi.gaussian_filter(cloud, 4.0)
+    return ndi.gaussian_filter(cloud, 8.0)
 
 
 def redraw(arr, zoom, tile_y, tile_x):
-    """arr: uint8 HxWx3 RGB source day tile. Returns uint8 redrawn tile."""
+    """arr: uint8 256x256x3 RGB source day tile.
+    Returns uint8 512x512x3 redrawn tile (v0.20.0: 2x supersample).
+
+    Classification happens at 256 (the source resolution — nothing
+    is invented above it); painting happens at 512 with hard edges.
+    Masks are NEVER gaussian-blurred in v0.20.0: that blur was baked
+    into every v0.19 tile and read as blur on the phone."""
     f = arr.astype(np.float32)
     r, g, b = f[..., 0], f[..., 1], f[..., 2]
-    h, w = r.shape
     lum = (0.30 * r + 0.50 * g + 0.20 * b) / 255.0
 
-    # --- masks (same measured rules as the v0.18 dissection) ---
-    # Water first: most tiles are open ocean, and they return here
-    # before any other mask, relief or road work is done.
+    # --- masks at 256 (same measured rules as the v0.18 dissection).
+    # v0.20.0: NO gaussian_filter on any mask — the v0.19 sigmas
+    # (water 2, green 2, sand 1) softened every coastline, forest
+    # edge and beach by 4-5px before the phone ever saw them. ---
     water = _smoothstep(b - r, 35.0, 55.0) * _smoothstep(b - g, 5.0, 20.0)
-    water = ndi.gaussian_filter(water, 2.0)
     land = 1.0 - water
 
     # --- fast path: open ocean — sea bands from the GLOBAL distance
@@ -253,10 +303,10 @@ def redraw(arr, zoom, tile_y, tile_x):
     if water.mean() > 0.985:
         dist = _shore_distance(zoom, tile_y, tile_x)
         if dist is None:
-            dist = ndi.distance_transform_edt(water > 0.5)
+            dist = ndi.distance_transform_edt(water > 0.5) * 2.0
         out = _sea_from_distance(dist, zoom)
         if zoom <= 2:
-            cloud = _cloud_field(zoom, tile_y, tile_x) * 0.70 * water
+            cloud = _cloud_field(zoom, tile_y, tile_x) * 0.70 * _up2_nearest(water)
             _paint(out, cloud, np.array([255.0, 255.0, 255.0]))
         return np.clip(out, 0, 255).astype(np.uint8)
 
@@ -266,7 +316,6 @@ def redraw(arr, zoom, tile_y, tile_x):
         # "unknown" mean is green-grey): loosen the rule or the whole
         # island paints as urban cream.
         green_s = _smoothstep(g - r, 0.0, 8.0) * _smoothstep(g - b, 2.0, 12.0) * land
-    green_s = ndi.gaussian_filter(green_s, 2.0)
     sand_src = (
         _smoothstep(r - b, 15.0, 30.0)
         * _smoothstep(g - b, 5.0, 15.0)
@@ -274,7 +323,6 @@ def redraw(arr, zoom, tile_y, tile_x):
         * land
         * (1.0 - green_s)
     )
-    sand_src = ndi.gaussian_filter(sand_src, 1.0)
     mn = np.minimum(np.minimum(r, g), b)
     mx = np.maximum(np.maximum(r, g), b)
     light = (mn > 192) & ((mx - mn) < 22) & ((b - r) < 16) & (land > 0.5)
@@ -282,42 +330,55 @@ def redraw(arr, zoom, tile_y, tile_x):
         (r > 205) & (g > 195) & ((r - b) > 25) & ((r - b) < 60) & ((mx - mn) > 20) & (land > 0.5)
     )
 
-    # --- relief: heavily blurred source luminance, smooth (never
-    # quantised — v1's steps read as JPEG blocks at low zoom). ---
-    relief_blur = ndi.gaussian_filter(lum, 6.0)
-    relief = np.clip(0.95 + 0.10 * np.clip((relief_blur - 0.50) / 0.30, -1.0, 1.0), 0.95, 1.05)
-    relief_urban = 1.0 + (relief - 1.0) * 0.3  # city ground stays flat
+    # --- relief: DELETED in v0.20.0. v0.19 modulated every flat fill
+    # by a heavily blurred source luminance (sigma 6, +/-5%) — a
+    # cloudy mottling baked over the whole map. The user asked for
+    # pixel by pixel with no blurred luminance base, so there is no
+    # relief step at all now: flat fills are flat. ---
 
-    out = np.zeros((h, w, 3), dtype=np.float32)
+    # --- upscale to 512 for painting. Class boundaries NEAREST
+    # (hard step). Water is thresholded so the coastline is a hard
+    # edge, not a 4px ramp. No bilinear anywhere in the image path. ---
+    water512 = (_up2_nearest(water) > 0.5).astype(np.float32)
+    land512 = 1.0 - water512
+    green512 = _up2_nearest(green_s)
+    sand512 = _up2_nearest(sand_src)
+    lum512 = _up2_nearest(lum)
+    light512 = _up2_nearest(light)
+    highway512 = _up2_nearest(highway)
+
+    out = np.zeros((OUT, OUT, 3), dtype=np.float32)
 
     # --- sea: depth bands by distance to land, from the GLOBAL field
     # (continuous across tile borders — see _shore_distance). ---
     dist_to_land = _shore_distance(zoom, tile_y, tile_x)
     if dist_to_land is None:
-        dist_to_land = ndi.distance_transform_edt(water > 0.5)
+        dist_to_land = ndi.distance_transform_edt(water > 0.5) * 2.0
     sea = _sea_from_distance(dist_to_land, zoom)
-    _paint(out, water, np.array([0.0, 0.0, 0.0]))  # placeholder, replaced below
-    out = out * (1.0 - water[..., None]) + sea * water[..., None]
+    out = out * (1.0 - water512[..., None]) + sea * water512[..., None]
 
-    # --- land base: flat illustrated fills, relief-modulated ---
-    green_rgb = GREEN_FLAT[None, None, :] * relief[..., None]
-    forest_rgb = FOREST_FLAT[None, None, :] * relief[..., None]
-    land_rgb = green_rgb * (1.0 - green_s[..., None]) + forest_rgb * green_s[..., None]
+    # --- land base: flat illustrated fills, NO relief modulation ---
+    green_rgb = GREEN_FLAT[None, None, :]
+    forest_rgb = FOREST_FLAT[None, None, :]
+    land_rgb = green_rgb * (1.0 - green512[..., None]) + forest_rgb * green512[..., None]
     # Urban ground where the land is not green and not sand.
-    urban_w = land * (1.0 - green_s) * (1.0 - sand_src)
-    urban_rgb = URBAN_FLAT[None, None, :] * relief_urban[..., None]
+    urban_w = land512 * (1.0 - green512) * (1.0 - sand512)
+    urban_rgb = URBAN_FLAT[None, None, :]
     land_rgb = land_rgb * (1.0 - urban_w[..., None]) + urban_rgb * urban_w[..., None]
-    out = out * (1.0 - land[..., None]) + land_rgb * land[..., None]
+    out = out * (1.0 - land512[..., None]) + land_rgb * land512[..., None]
 
-    # --- sand: source sand + a coast band (land within ~5px of water) ---
+    # --- sand: source sand + a coast band (land within 5px of water,
+    # HARD step — v0.19's smoothstep ramp softened the beach edge) ---
     dist_to_water = ndi.distance_transform_edt(land > 0.5)
-    coast_band = _smoothstep(5.0 - dist_to_water, 0.0, 3.0) * land * (1.0 - green_s)
+    coast_band = (dist_to_water <= 5.0).astype(np.float32) * land * (1.0 - green_s)
     sand_w = np.clip(sand_src + coast_band, 0.0, 1.0)
-    _paint(out, sand_w * land, SAND_FLAT * np.array([1.0, 1.0, 1.0]))
+    sand_w512 = _up2_nearest(sand_w)
+    _paint(out, sand_w512 * land512, SAND_FLAT * np.array([1.0, 1.0, 1.0]))
 
     # --- city blocks: light compact blobs that are NOT road get flat
     # block tones (two steps from quantised luminance) — the city reads
-    # as drawn blocks, not photo rooftops. ---
+    # as drawn blocks, not photo rooftops. Classified at 256, painted
+    # at 512 with hard edges. ---
     if zoom >= 4:
         skel, dist = _road_skeleton(light.copy())
         road_area = ndi.binary_dilation(skel, np.ones((7, 7), dtype=bool))
@@ -325,25 +386,26 @@ def redraw(arr, zoom, tile_y, tile_x):
         blocks = ndi.binary_erosion(blocks, np.ones((3, 3), dtype=bool))
         if blocks.any():
             block_lum = np.clip((lum - 0.55) / 0.30, 0.0, 1.0)
-            dark = blocks & (block_lum < 0.5)
-            lite = blocks & (block_lum >= 0.5)
-            _paint(out, dark.astype(np.float32) * land, BLOCK_DARK)
-            _paint(out, lite.astype(np.float32) * land, BLOCK_LIGHT)
+            dark = _up2_nearest(blocks & (block_lum < 0.5)).astype(np.float32)
+            lite = _up2_nearest(blocks & (block_lum >= 0.5)).astype(np.float32)
+            _paint(out, dark * land512, BLOCK_DARK)
+            _paint(out, lite * land512, BLOCK_LIGHT)
     else:
         skel, dist = None, None
 
     # --- roads: vector strokes over the flat land ---
     if zoom <= 3:
         # Sub-pixel at these zooms: highways sunset, other light lines
-        # a faint coral — never a wash. No skeleton, no glow.
-        hwy_f = ndi.gaussian_filter(highway.astype(np.float32), 0.8)
+        # a faint coral — never a wash. No skeleton, no glow. Hard
+        # per-pixel values, nearest-upscaled — no gaussian anywhere.
+        hwy_f = _up2_nearest(highway.astype(np.float32))
         _paint(out, hwy_f * 0.85, SUNSET)
         faint = (
             _smoothstep(mn, 208.0, 220.0)
             * _smoothstep(20.0 - (mx - mn), 0.0, 10.0)
             * land
         )
-        _paint(out, faint * (0.12 if zoom <= 1 else 0.22), CORAL)
+        _paint(out, _up2_nearest(faint) * (0.12 if zoom <= 1 else 0.22), CORAL)
     else:
         if skel is None:
             skel, dist = _road_skeleton(light.copy())
@@ -385,31 +447,37 @@ def redraw(arr, zoom, tile_y, tile_x):
         major = major | hwy_skel
         minor = minor & ~hwy_skel
 
+        # Paint at 512: skeletons upscaled NEAREST (2px-wide hard
+        # lines), dilation widths doubled vs v0.19 (glow 10, core 6,
+        # minor 6) so strokes keep their true widths with hard edges.
         def dil(mask, size):
             return ndi.binary_dilation(mask, np.ones((size, size), dtype=bool))
 
+        major512 = _up2_nearest(major)
+        minor512 = _up2_nearest(minor)
+        hwy_skel512 = _up2_nearest(hwy_skel)
         # Major: soft glow, thin coral core — no casing (v1's casing
         # made the line read thicker than its core). Minor: cream.
-        if major.any():
-            _paint(out, dil(major, 5).astype(np.float32) * 0.12, CORAL)
-            _paint(out, dil(major, 3).astype(np.float32) * 0.80, CORAL)
+        if major512.any():
+            _paint(out, dil(major512, 10).astype(np.float32) * 0.12, CORAL)
+            _paint(out, dil(major512, 6).astype(np.float32) * 0.80, CORAL)
         # Highway cores overpaint in sunset (same geometry, warmer).
-        if hwy_skel.any():
-            _paint(out, dil(hwy_skel, 5).astype(np.float32) * 0.12, SUNSET)
-            _paint(out, dil(hwy_skel, 3).astype(np.float32) * 0.80, SUNSET)
+        if hwy_skel512.any():
+            _paint(out, dil(hwy_skel512, 10).astype(np.float32) * 0.12, SUNSET)
+            _paint(out, dil(hwy_skel512, 6).astype(np.float32) * 0.80, SUNSET)
         # Minor: cream core only — NO pink, NO glow. The pink-mess fix.
-        if minor.any():
-            _paint(out, dil(minor, 3).astype(np.float32) * 0.95, CREAM)
+        if minor512.any():
+            _paint(out, dil(minor512, 6).astype(np.float32) * 0.95, CREAM)
         # Wide non-skeleton highway ribbons (aprons/interchanges) sunset.
-        if highway.any():
-            hwy_f = ndi.gaussian_filter(highway.astype(np.float32), 0.8)
+        if highway512.any():
+            hwy_f = _up2_nearest(highway.astype(np.float32))
             _paint(out, hwy_f * 0.8, SUNSET)
 
     # --- clouds: z0-z2, large puffs over water only, 30% max alpha.
     # v0.18's 6% was invisible on his phone; the reference sea is
     # fringed with real clouds. ---
     if zoom <= 2:
-        cloud = _cloud_field(zoom, tile_y, tile_x) * 0.70 * water
+        cloud = _cloud_field(zoom, tile_y, tile_x) * 0.70 * water512
         _paint(out, cloud, np.array([255.0, 255.0, 255.0]))
 
     return np.clip(out, 0, 255).astype(np.uint8)
@@ -418,6 +486,16 @@ def redraw(arr, zoom, tile_y, tile_x):
 def _render_one(args):
     src, dst, zoom, ty, tx = args
     try:
+        # Resumable: a 512px tile on disk is done — skip it, so a
+        # killed or interrupted run picks up where it left off
+        # instead of re-rendering 31,022 tiles from scratch.
+        if os.path.exists(dst):
+            try:
+                with Image.open(dst) as done:
+                    if done.size == (OUT, OUT):
+                        return (src, os.path.getsize(dst), None)
+            except Exception:
+                pass
         arr = np.asarray(Image.open(src).convert("RGB"))
         out = redraw(arr, zoom, ty, tx)
         os.makedirs(os.path.dirname(dst), exist_ok=True)
@@ -441,7 +519,7 @@ def _tile_jobs(zooms):
 
 
 def preview():
-    os.makedirs("/tmp/v019", exist_ok=True)
+    os.makedirs("/tmp/v020", exist_ok=True)
     samples = {
         "vc-city": "5/5,62,69.jpg",
         "vc-waterfront": "5/5,59,67.jpg",
@@ -467,8 +545,8 @@ def preview():
     sheet = Image.new("RGB", (384 * len(cols), 384 * 2 + 8))
     for i, c in enumerate(cols):
         sheet.paste(c, (384 * i, 0))
-    sheet.save("/tmp/v019/preview-v5.png")
-    print("saved /tmp/v019/preview-v5.png")
+    sheet.save("/tmp/v020/preview-v6.png")
+    print("saved /tmp/v020/preview-v6.png")
 
     # Full-island z0 composite, before vs after.
     for label, do_redraw in (("orig", False), ("redrawn", True)):
@@ -478,21 +556,23 @@ def preview():
                 p = os.path.join(SRC, "0", f"0,{ty},{tx}.jpg")
                 tile = Image.open(p).convert("RGB")
                 if do_redraw:
-                    tile = Image.fromarray(redraw(np.asarray(tile), 0, ty, tx))
+                    tile = Image.fromarray(redraw(np.asarray(tile), 0, ty, tx)).resize(
+                        (256, 256), Image.NEAREST
+                    )
                 comp.paste(tile, (tx * 256, ty * 256))
-        comp.save(f"/tmp/v019/z0-{label}.png")
-    print("saved /tmp/v019/z0-orig.png /tmp/v019/z0-redrawn.png")
+        comp.save(f"/tmp/v020/z0-{label}.png")
+    print("saved /tmp/v020/z0-orig.png /tmp/v020/z0-redrawn.png")
 
     # Street-zoom composite: 2x2 z5 tiles over Vice City (the pink-mess view).
-    comp = Image.new("RGB", (512, 512))
+    comp = Image.new("RGB", (1024, 1024))
     for dy, ty in enumerate((61, 62)):
         for dx, tx in enumerate((68, 69)):
             p = os.path.join(SRC, "5", f"5,{ty},{tx}.jpg")
             tile = Image.fromarray(redraw(np.asarray(Image.open(p).convert("RGB")), 5, ty, tx))
-            comp.paste(tile, (dx * 256, dy * 256))
+            comp.paste(tile, (dx * 512, dy * 512))
     comp = comp.resize((768, 768), Image.NEAREST)
-    comp.save("/tmp/v019/vc-street-z5.png")
-    print("saved /tmp/v019/vc-street-z5.png")
+    comp.save("/tmp/v020/vc-street-z5.png")
+    print("saved /tmp/v020/vc-street-z5.png")
 
 
 def main():

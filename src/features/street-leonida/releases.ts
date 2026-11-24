@@ -11,6 +11,26 @@ export interface LeonidaAtlasRelease {
 /** Retained public history starts at v0.5.0; the newest release stays first. */
 export const LEONIDA_ATLAS_RELEASES: readonly LeonidaAtlasRelease[] = [
   {
+    version: 'v0.20.0',
+    date: '2026-11-24',
+    title: 'Fix the blur: the map is drawn pixel by pixel, for real this time',
+    summary:
+      'His verdict on v0.19.0 — “Wow it’s so blurry .. you say 7 I say 3” — and then, the fourth time he has asked for the same thing: “this is the 4th fucking time to ask to build the map pixel by pixel. That level of blur means it was not pixel by pixel.” He is right. v0.19 claimed a redraw and still blurred every mask (water sigma 2, green sigma 2, relief sigma 6) and served 256px tiles that his phone stretched 2-3x. v0.20 removes every blur step and renders every tile at 512x512, each output pixel decided individually from exactly one source pixel, so the map is sharp at phone DPR. The receipts are in scripts/redraw-report.md, not just the claim.',
+    status: 'public',
+    highlights: [
+      'Pixel by pixel, with the receipts: scripts/redraw-tiles.py re-renders all 31,022 tiles (z0 12, z1 30, z2 99, z3 374, z4 1,496, z5 5,829, z6 23,182) from the GTADB day tiles — 2,033,057,792 source pixels in, 8,132,231,168 output pixels out. No gaussian on any mask, no relief shade at all (v0.19\'s blurred-luminance base is deleted, not reduced), no bilinear resampling of image data anywhere: every output pixel\'s class comes from exactly one source pixel by nearest lookup, never a blend of neighbours, and its colour is a flat fill for that class. Coastline, forest edge and beach are hard 1-2px steps, measured: the strongest edge in the Vice City street tiles is 1px wide at 512, against 4-17px in the v0.19 files.',
+      'Sharp on his phone, not just on a desktop: the tiles are 512x512 files served at Leaflet tileSize 256, so each tile displays at 256 CSS px from 512 real pixels — 1:1 device pixels at DPR 2, 1.5x at DPR 3. Measured live before the fix: v0.19 tiles were naturalWidth 256 displayed at 256 CSS px, i.e. every tile pixel stretched 2x at DPR 2 and 3x at DPR 3. Leaflet detectRetina is deliberately not used — it clamps the layer minZoom to 0 and this map lives at Leaflet zoom -5..1, so tiles below zoom 0 would vanish on his phone.',
+      'The only soft things left are disclosed, not hidden: the sea depth bands are a smooth gradient by design, sampled from a continuous global shore-distance field (not from image pixels); clouds at z0-z2 are soft puffs by design over water only; the major-vs-minor road decision smooths the measured road-width field along the skeleton so a junction spike cannot turn a crossing coral. Nothing soft touches land, roads or city blocks. Same geography, same filenames, coordinates and zooms — a pin that was on a road is still on that road.',
+      'The pink mess stays fixed: roads are vector centrelines from skeleton geometry with hard strokes at 512 (glow 10, core 6), only genuinely wide routes get a thin coral core, highways sunset, minor streets cream with no pink and no glow, junctions cut out of the major mask. v0.18\'s recoloured pyramid (tiles/styled/, 175 MB, superseded and unreferenced since v0.19) is deleted in this release.',
+      'Kept, unchanged: camera gate (opens on the whole of Leonida), slim 56px header, GTA VI text wordmark, 120-marker cap / 24 hero pins, traced county outlines, spoiler-free defaults, real place data only (3,754 GTADB records, 986 named, 2,768 unnamed), backup v3, the Collectibles chip fade.',
+    ],
+    verification: [
+      'Unit tests pass (767 tests, 81 files, including the redrawn-tile URL test and the releases history for v0.20.0). TypeScript and ESLint pass. One-command production build with ATLAS_BASE_PATH=/gta6-leonida-atlas/ exported (tsc + vite build + finalize-build in one command, base /gta6-leonida-atlas/).',
+      'The 390px walk (scripts/check-v020.mjs) passes with zero console errors and zero overflow: every loaded tile asserts naturalWidth 512 at 256 CSS px — 1:1 device pixels at DPR 2 (was 2x upscale) — and a DPR 3 probe shows the same 512px files at 768 device px (1.5x, was 3x); 0 markers on open, 24 hero pins, Vice City sheet, lag check clean (worst long task 55ms), Turn everything off back to 0; at street zoom the sampled redrawn tiles are 0.0007% coral with 1.72% cream streets across 15 tiles, and the sampled ocean pixel is deep teal [5,58,76].',
+      'Before/after 100% crops in /tmp/v020/crops-before|after (coast, streets, blocks, Capri, island): v0.19 files measure 4-17px edge widths, v0.20 files measure 1px at 512. Chromium e2e: 20 passed, 3 failed, 1 skipped — the failures are not the tiles: the 3D-explorer test fails on software-WebGL CPU saturation in this sandbox (trace shows 20-50s per action inside the 3D world, which loads no map tiles, and the hanging click moves between runs), the mobile-Safari marker test fails on a place sheet intercepting the Enter-coordinates button in UI code v0.20 does not touch (passes on Chromium), and the note-sync failure passed on retry.',
+    ],
+  },
+  {
     version: 'v0.19.0',
     date: '2026-11-24',
     title: 'True rebuild: the map is redrawn, not recoloured — and the pink mess is gone',

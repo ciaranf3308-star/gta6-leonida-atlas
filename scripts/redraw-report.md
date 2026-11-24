@@ -1,3 +1,105 @@
+# v0.20.0 — FIX THE BLUR, pixel by pixel (this file's v0.19 section follows)
+
+## The verdict that forced it
+
+v0.19.0 shipped as a "true rebuild" and the user rated it 3/10:
+"Wow it's so blurry .. you say 7 I say 3." Then, the fourth time he
+has asked for the same thing: "No seriously like this is the 4th
+fucking time to ask to build the map pixel by pixel. That level of
+blur means it was not pixel by pixel. Therefore my direct input is
+being ignored." He is right. v0.19 claimed pixel-by-pixel and still
+shipped two blur sources:
+
+1. **DPR upscale (dominant).** 256px tiles at tileSize 256, no
+   retina handling. Measured live on a 390px viewport: naturalWidth
+   256, displayed 256 CSS px, devicePxPerTile 512 at DPR 2 and 768
+   at DPR 3 — every tile pixel stretched 2-3x by the browser.
+   Leaflet's `detectRetina` cannot fix this: it clamps the layer
+   minZoom to 0 (Leaflet 1.9.4 `TileLayer.initialize`) and this map
+   lives at Leaflet zoom -5..1, so tiles below zoom 0 would vanish.
+2. **Baked blur in the renderer.** Every classification mask was
+   gaussian-blurred (water sigma 2, green sigma 2, sand sigma 1),
+   the relief shade was sigma 6 at +/-5%, output JPEG quality 88.
+   Measured on the z0 island tile: redrawn mean |gradient| 3.86 vs
+   8.99 for the day source. Strongest-edge width in the files was
+   4-17px (coast 4px, streets 17px, island 12-17px) — a true hard
+   edge is 1-2px. The blur was in the files before any phone saw
+   them.
+
+## What v0.20.0 does (scripts/redraw-tiles.py, rewritten)
+
+- **512x512 tiles, same pyramid.** Every tile rendered at 512
+  (2x display density) from the same 256px GTADB source; Leaflet
+  tileSize stays 256, so a tile displays at 256 CSS px from 512
+  real pixels: 1:1 device pixels at DPR 2, 1.5x at DPR 3,
+  downsampled-crisp at DPR 1. Same filenames, coordinates, zooms.
+- **No blur step anywhere in the image path.** No gaussian on any
+  mask. NO relief shade at all — the "blurred luminance base" is
+  deleted, not reduced: flat fills are flat. No bilinear
+  resampling of image data. Every output pixel is decided
+  individually: its class comes from exactly ONE source pixel
+  (nearest-neighbour lookup, never a blend of neighbours) and its
+  colour is a flat fill for that class. Coastline, forest edge and
+  beach are hard 1-2px steps.
+- **Roads** are vector centrelines from the road mask (skeletonize
+  is geometry extraction, not a blur), drawn as hard strokes at 512
+  with doubled widths (glow 10, core 6, minor 6). Same major/minor
+  classification as v0.19 (half-width >= 8 tile-px at z5, junction
+  zones cut, fragments < 20px dropped).
+- **The only soft things left, disclosed:** (a) sea depth bands are
+  a smooth gradient by design, sampled from a continuous global
+  shore-distance field (not from image pixels); (b) clouds at z0-z2
+  are soft puffs by design over water only; (c) the major-vs-minor
+  decision smooths the measured road-width field along the skeleton
+  (a classification decision only). Nothing soft touches land,
+  roads or city blocks.
+- **Receipts (measured, not claimed):** 31,022 tiles (z0 12, z1 30,
+  z2 99, z3 374, z4 1,496, z5 5,829, z6 23,182) — 2,033,057,792
+  source pixels in, 8,132,231,168 output pixels out. Strongest edge
+  in the Vice City street tiles: 1px wide at 512 (v0.19: 4-17px).
+  JPEG quality 92. v0.18's recoloured pyramid (tiles/styled/,
+  175 MB, superseded and unreferenced since v0.19) is deleted.
+- **Limits, owned:** the source's finest detail is z6 (1 px per
+  canonical unit) — nothing here invents detail above it; the 512
+  canvas is display density so the phone never upscales, and each
+  of its pixels reads exactly one source pixel. City blocks are
+  still flat two-tone slabs, clouds procedural sine puffs (they read
+  as diagonal grey-white streaks at full zoom-out), header wordmark
+  text. Per-pixel classification with no spatial regularisation
+  leaves occasional single-pixel speckles in the green at z0 —
+  invisible at phone display size, honest at 100%.
+
+## Verification (v0.20.0)
+
+- Render: `python3 scripts/redraw-tiles.py --all` — 31,022 ok, 0 errors,
+  287.7 MB total (was 166 MB at 256px). Every tile on disk verified
+  512x512, per-zoom counts z0 12, z1 30, z2 99, z3 374, z4 1,496,
+  z5 5,829, z6 23,182.
+- `scripts/check-v020.mjs` — the v0.19 walk at 390px DPR 2, plus:
+  every loaded tile asserts naturalWidth 512 at 256 CSS px (1:1
+  device pixels at DPR 2), and a DPR 3 probe (512px files, 768
+  device px = 1.5x, was 3x). Street-zoom coral/cream sampled at
+  native 512: 0.0007% coral, 1.72% cream across 15 tiles. PASS,
+  zero console errors, zero overflow.
+- 100% crops before/after in /tmp/v020/crops-before|after (coast,
+  streets, blocks, Capri, island): v0.19 files soft at 4-17px
+  edges, v0.20 files hard at 1px. Judged by eye at DPR 2: the
+  whole-island open and the street zoom are both sharp now — the
+  v0.19 open was a soft wash, the v0.20 open has hard pixel-step
+  coastlines throughout.
+- Typecheck, lint, unit tests (767/767, 81 files), one-command
+  production build (ATLAS_BASE_PATH exported, base
+  /gta6-leonida-atlas/) — all pass. Chromium e2e: 20 passed,
+  3 failed, 1 skipped — the 3D-explorer failure is software-WebGL
+  CPU saturation in this sandbox (trace: 20-50s per action inside
+  the 3D world, which loads no map tiles; the hanging click moves
+  between runs), the mobile-Safari marker failure is a place sheet
+  intercepting the Enter-coordinates button in UI code v0.20 does
+  not touch (passes on Chromium), and the note-sync failure passed
+  on retry. None of the three is a tile failure; none is hidden.
+
+---
+
 # v0.19.0 true rebuild — redraw report
 
 ## Honest position

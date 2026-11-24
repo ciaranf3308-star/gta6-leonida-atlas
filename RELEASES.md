@@ -2,6 +2,16 @@
 
 Release history, newest first.
 
+## v0.20.0 — 2026-11-24
+
+**Released: Fix the blur — the map is drawn pixel by pixel, for real this time.**
+
+- His verdict on v0.19.0 — "Wow it's so blurry .. you say 7 I say 3" — and then, the fourth time he has asked for the same thing: "this is the 4th fucking time to ask to build the map pixel by pixel. That level of blur means it was not pixel by pixel." He is right: v0.19 blurred every mask (water sigma 2, green sigma 2, relief sigma 6) and served 256px tiles his phone stretched 2-3x. v0.20 removes every blur step: all 31,022 tiles (z0 12, z1 30, z2 99, z3 374, z4 1,496, z5 5,829, z6 23,182) re-rendered at 512x512 from the GTADB day tiles — 2,033,057,792 source pixels in, 8,132,231,168 output pixels out. No gaussian on any mask, no relief shade at all, no bilinear resampling of image data: every output pixel's class comes from exactly one source pixel (nearest lookup, never a blend), its colour a flat fill for that class. Strongest edge in the Vice City street tiles measures 1px wide at 512, against 4-17px in the v0.19 files.
+- Sharp on his phone: 512px tiles served at Leaflet tileSize 256, so each tile displays at 256 CSS px from 512 real pixels — 1:1 device pixels at DPR 2, 1.5x at DPR 3. Measured live before the fix: v0.19 tiles were naturalWidth 256 at 256 CSS px, stretched 2x at DPR 2 and 3x at DPR 3. Leaflet detectRetina is deliberately not used — it clamps the layer minZoom to 0 and this map lives at Leaflet zoom -5..1.
+- The only soft things left are disclosed: sea depth bands are a smooth gradient by design from a continuous global shore-distance field; clouds at z0-z2 are soft puffs by design over water only; the major-vs-minor road decision smooths the measured road-width field along the skeleton. Nothing soft touches land, roads or city blocks. Same geography, filenames, coordinates and zooms — a pin that was on a road is still on that road. v0.18's recoloured pyramid (tiles/styled/, 175 MB) is deleted.
+- Kept, unchanged: camera gate (opens on the whole of Leonida), slim 56px header, GTA VI text wordmark, 120-marker cap / 24 hero pins, traced county outlines, spoiler-free defaults, real place data only (3,754 GTADB records, 986 named, 2,768 unnamed — never invent a name, coordinate, interior or pin).
+- Honest limit: the source's finest detail is z6 (1 px per canonical unit) — nothing here invents detail above it; the 512 canvas is display density so the phone never upscales, and each of its pixels reads exactly one source pixel. City blocks are still flat two-tone slabs, clouds procedural puffs, header wordmark text, not logo art. Method and receipts are in `scripts/redraw-report.md`.
+
 ## v0.19.0 — 2026-11-24
 
 **Released: True rebuild — the map is redrawn, not recoloured, and the pink mess is gone.**

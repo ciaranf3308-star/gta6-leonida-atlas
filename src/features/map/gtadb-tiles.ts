@@ -24,18 +24,25 @@ import type { MapBounds } from './coordinates';
 
 export const GTADB_DAY_TILE_REVISION = 'd406fea099e1df2bce42fd6b87eed04bce646629' as const;
 /**
- * Redrawn tiles (v0.19.0): a NEW illustrated basemap painted from the
+ * Redrawn tiles (v0.20.0): a NEW illustrated basemap painted from the
  * GTADB day tiles by scripts/redraw-tiles.py — flat illustrated fills
  * per surface, vector-drawn roads (cream minor streets, thin coral
  * majors, sunset highways), sea depth bands and clustered clouds.
  * Same filenames, coordinates, zooms and geometry as the day tiles;
  * the geography is real, the shading and detail are artistic.
  * The ungraded originals stay in tiles/day/ as the source of truth.
- * v0.18.0's recoloured pyramid (tiles/styled/) is superseded: it was
- * the same photo in new colours, and its pink road grade covered
- * every street at street zoom.
+ * v0.18.0's recoloured pyramid (tiles/styled/) is deleted in v0.20.0:
+ * superseded, unreferenced, 175 MB.
+ * v0.20.0 re-renders every tile at 512x512 (2x display density),
+ * pixel by pixel with no blur step anywhere: each output pixel's
+ * class comes from exactly one source pixel (nearest lookup, never
+ * a blend), colours are flat fills, roads are hard vector strokes.
+ * Leaflet tileSize stays 256, so a 512px tile displays at 256 CSS
+ * px — 1:1 device pixels on a DPR 2 phone. Leaflet's detectRetina
+ * is deliberately NOT used: it clamps the layer minZoom to 0 and
+ * this map lives at Leaflet zoom -5..1.
  */
-export const GTADB_REDRAWN_TILE_REVISION = 'v0.19.0-redraw-v4' as const;
+export const GTADB_REDRAWN_TILE_REVISION = 'v0.20.0-redraw-512' as const;
 export const GTADB_DAY_TILE_ZOOM_OFFSET = 5 as const;
 export const GTADB_DAY_TILE_MIN_ZOOM = 0 as const;
 export const GTADB_DAY_TILE_MAX_ZOOM = 6 as const;
