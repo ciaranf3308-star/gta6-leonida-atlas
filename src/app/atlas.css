@@ -1,11 +1,15 @@
 /* ==========================================================================
-   LEONIDA ATLAS — v0.13.0 Ask cards + index resolver v2, on the v0.12.0 phone-first sheet.
-   The old sheet (v0.9 / v0.10 / v0.11 layered on top of each other) is
-   gone: this file is the whole design system, phone first, desktop
-   second. The look is GTA VI's own: Vice City sunset — pink, orange,
-   violet night — over the pause map's deep blue water and warm sand.
-   No black pill stack anywhere. The map is the app; chrome lives in
-   the bottom nav and in full screens behind it.
+   LEONIDA ATLAS — AFTER HOURS (v0.15.0).
+   Restrained, map-first, premium: 90% understated, 10% expressive.
+   Midnight #0B1018, Slate #19232F, Ivory #F6F0E5, Coral #FF527F,
+   Sunset #FFB56B. Colour is deliberate, never sprayed: coral/sunset
+   appear only on primary actions, the active tab, toggles on, and the
+   isolation exit — everything else is smoked glass, fine borders,
+   realistic depth. Clean modern sans for function, editorial
+   condensed (Oswald) for regional titles, Anton for the wordmark.
+   The map is the app; chrome lives in the bottom nav and in full
+   screens behind it. No "places showing" banner on the map, no
+   giant brand header, no pink/orange on everything.
    ========================================================================== */
 
 /* Anton — heavy condensed display for the wordmark and big headings
@@ -27,52 +31,36 @@
   font-display: swap;
   src: url('./fonts/oswald-400-latin.woff2') format('woff2');
 }
-@font-face {
-  font-family: 'Cormorant Garamond';
-  font-style: normal;
-  font-weight: 500 600;
-  font-display: swap;
-  src:
-    url('./fonts/cormorant-garamond-500-latin.woff2') format('woff2'),
-    url('./fonts/cormorant-garamond-500-latin-ext.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Cormorant Garamond';
-  font-style: italic;
-  font-weight: 500 600;
-  font-display: swap;
-  src:
-    url('./fonts/cormorant-garamond-500italic-latin.woff2') format('woff2'),
-    url('./fonts/cormorant-garamond-500italic-latin-ext.woff2') format('woff2');
-}
 
 :root {
   font-family: Inter, system-ui, sans-serif;
   font-size: 14px;
-  color: #fff6ec;
-  background: #17102e;
+  color: #f6f0e5;
+  background: #0b1018;
   font-synthesis: none;
   color-scheme: dark;
-  /* Vice City sunset: pink -> orange -> gold, on a violet night. */
-  --sunset: linear-gradient(135deg, #ff2e88 0%, #ff6a3d 52%, #ffb347 100%);
-  --pink: #ff2e88;
-  --pink-soft: #ff8fb3;
-  --orange: #ff7a18;
-  --gold: #ffb347;
-  --violet: #7b5cff;
-  --night: #17102e;
-  --night-2: #1e1538;
-  --surface: #241a45;
-  --surface-raised: #2e2358;
-  --surface-glass: #241a45f2;
-  --text: #fff6ec;
-  --muted: #cbb8f5;
-  --border: #4a3d7d;
-  --border-soft: #3a2f63;
-  --accent: #ff7a18;
-  --accent-deep: #e85d04;
+  /* After Hours: coral -> sunset is the ONLY gradient in the app,
+     and it is spent on primary actions only. Everything else is
+     midnight/slate smoked glass with fine ivory borders. */
+  --sunset: linear-gradient(135deg, #ff527f 0%, #ffb56b 100%);
+  --coral: #ff527f;
+  --pink: #ff527f;
+  --pink-soft: #ff8fab;
+  --orange: #ffb56b;
+  --gold: #ffb56b;
+  --violet: #5b6b8c;
+  --night: #0b1018;
+  --night-2: #101823;
+  --surface: #19232f;
+  --surface-raised: #202e40;
+  --surface-glass: #0b1018d9;
+  --text: #f6f0e5;
+  --muted: #9aa7b8;
+  --border: #2a3648;
+  --border-soft: #1e2938;
+  --accent: #ff527f;
+  --accent-deep: #e0436b;
   --danger: #ff8fa3;
-  --serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
   --display: 'Anton', 'Arial Narrow', sans-serif;
   --condensed: 'Oswald', 'Arial Narrow', sans-serif;
   --nav-height: 72px;
@@ -129,7 +117,7 @@ select,
 textarea {
   width: 100%;
   color: var(--text);
-  background: #17102e;
+  background: #0b1018;
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 11px 12px;
@@ -233,7 +221,7 @@ h3 {
 }
 .button:hover,
 .icon-button:hover {
-  background: #3a2c6b;
+  background: #243244;
 }
 .button:active,
 .icon-button:active,
@@ -244,15 +232,15 @@ h3 {
   transform: scale(0.97);
 }
 .button.primary {
-  color: #241026;
+  color: #1a0e12;
   background: var(--sunset);
   border-color: transparent;
   font-weight: 600;
 }
 .button.selected {
-  color: var(--gold);
-  border-color: var(--pink);
-  background: #3a1c4d;
+  color: var(--text);
+  border-color: var(--coral);
+  background: #ff527f1f;
 }
 .button.danger {
   color: var(--danger);
@@ -329,13 +317,14 @@ h3 {
   pointer-events: auto;
 }
 .map-wordmark {
-  font-family: var(--display);
-  font-size: 26px;
+  font-family: var(--condensed);
+  font-size: 15px;
+  font-weight: 600;
   line-height: 1;
-  letter-spacing: 2px;
+  letter-spacing: 4px;
   text-transform: uppercase;
-  color: #fff;
-  text-shadow: 0 2px 12px #000c;
+  color: var(--text);
+  text-shadow: 0 1px 8px #000c;
   width: fit-content;
 }
 .map-wordmark em {
@@ -350,14 +339,15 @@ h3 {
   align-items: center;
   gap: 10px;
   width: 100%;
-  min-height: 52px;
-  padding: 0 16px;
-  border: 1px solid #ffffff2e;
+  max-width: 340px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid #f6f0e529;
   border-radius: 999px;
-  background: #17102ee6;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 6px 24px #0009;
-  font-size: 14px;
+  background: #0b1018cc;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 16px #0007;
+  font-size: 13px;
   color: var(--text);
   text-align: left;
 }
@@ -375,11 +365,11 @@ h3 {
  * says so in plain words, with one-tap buttons that turn layers on
  * and make pins appear immediately. ---- */
 .empty-map-prompt {
-  background: #17102ee6;
-  backdrop-filter: blur(8px);
-  border: 1px solid var(--pink);
+  background: #0b1018d9;
+  backdrop-filter: blur(12px);
+  border: 1px solid #f6f0e51f;
   border-radius: 16px;
-  padding: 18px;
+  padding: 16px;
   box-shadow: 0 8px 28px #000a;
 }
 .empty-map-prompt strong {
@@ -402,30 +392,22 @@ h3 {
 }
 .empty-map-buttons button {
   min-height: 52px;
-  border: 0;
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 10px 12px;
-  background: linear-gradient(135deg, #ff2e88, #ff7a18);
-  color: #fff;
+  background: var(--surface-raised);
+  color: var(--text);
   font-family: var(--condensed);
   font-size: 15px;
   letter-spacing: 0.8px;
   text-transform: uppercase;
   cursor: pointer;
 }
-/* How many places are showing, on the map itself, in plain words —
- * one tap opens Layers to change it. */
-.map-showing-count {
-  width: fit-content;
-  min-height: 48px;
-  padding: 10px 14px;
-  border: 1px solid #ffffff2e;
-  border-radius: 999px;
-  background: #17102ee6;
-  backdrop-filter: blur(8px);
-  color: #fff;
-  font-size: 13px;
-  cursor: pointer;
+.empty-map-buttons button:first-child {
+  border-color: transparent;
+  background: var(--sunset);
+  color: #1a0e12;
+  font-weight: 600;
 }
 
 /* Transient map notices (placement mode, load errors) — only while active. */
@@ -440,7 +422,7 @@ h3 {
   gap: 12px;
   padding: 12px;
   background: var(--surface-glass);
-  border: 1px solid var(--pink);
+  border: 1px solid var(--border);
   box-shadow: 0 3px 16px #0006;
   border-radius: 12px;
   font-size: 13px;
@@ -470,8 +452,9 @@ h3 {
 .bottom-nav {
   display: flex;
   flex-shrink: 0;
-  background: #120b26;
-  border-top: 1px solid var(--border-soft);
+  background: #0b1018f2;
+  backdrop-filter: blur(12px);
+  border-top: 1px solid #f6f0e51a;
   padding-bottom: env(safe-area-inset-bottom, 0px);
   z-index: 700;
 }
@@ -487,7 +470,7 @@ h3 {
   padding: 10px 2px 9px;
   border: 0;
   background: none;
-  color: #9d8fd0;
+  color: #8b98a9;
   font-family: var(--condensed);
   font-size: 12px;
   font-weight: 500;
@@ -499,12 +482,12 @@ h3 {
     color 150ms ease;
 }
 .bottom-nav button.active {
-  color: #fff;
-  background: linear-gradient(180deg, #ff2e8826, transparent 70%);
-  box-shadow: inset 0 3px 0 var(--pink);
+  color: var(--text);
+  background: none;
+  box-shadow: inset 0 2px 0 var(--coral);
 }
 .bottom-nav button.active .bottom-nav-icon {
-  color: var(--pink-soft);
+  color: var(--coral);
 }
 .bottom-nav-icon {
   position: relative;
@@ -520,8 +503,8 @@ h3 {
   height: 18px;
   padding: 0 5px;
   border-radius: 999px;
-  background: var(--sunset);
-  color: #241026;
+  background: var(--coral);
+  color: #fff;
   font-size: 11px;
   font-weight: 700;
   line-height: 18px;
@@ -542,9 +525,9 @@ h3 {
   overflow: hidden;
 }
 .brand-header {
-  background: var(--sunset);
-  color: #fff;
-  padding: 20px 18px 16px;
+  background: transparent;
+  color: var(--text);
+  padding: 16px 18px 0;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -552,39 +535,39 @@ h3 {
   flex-shrink: 0;
 }
 .brand-header h1 {
-  font-family: var(--display);
-  font-weight: 400;
-  font-size: 34px;
+  font-family: var(--condensed);
+  font-weight: 600;
+  font-size: 20px;
   line-height: 1;
-  letter-spacing: 2px;
+  letter-spacing: 3px;
   text-transform: uppercase;
-  margin: 0 0 6px;
-  color: #fff;
-  text-shadow: 0 2px 10px #0005;
+  margin: 0 0 4px;
+  color: var(--text);
 }
 .brand-header h1 em {
   font-style: normal;
-  color: #ffe9a8;
+  color: var(--coral);
 }
 .brand-header p {
   font-family: var(--condensed);
-  font-size: 11px;
+  font-size: 10px;
   line-height: 1.4;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: #ffffffd9;
+  color: var(--muted);
   margin: 0;
 }
 .brand-header .icon-button {
-  color: #fff;
+  color: var(--muted);
   margin: -6px -6px 0 0;
 }
 .panel-title {
-  font-family: var(--display);
-  font-size: 26px;
-  letter-spacing: 1.5px;
+  font-family: var(--condensed);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  padding: 20px 18px 4px;
+  padding: 16px 18px 4px;
   flex-shrink: 0;
 }
 .sidebar-content {
@@ -595,10 +578,23 @@ h3 {
   padding: 14px 18px 24px;
 }
 .sidebar-footer {
-  padding: 14px 18px calc(16px + env(safe-area-inset-bottom, 0px));
+  padding: 10px 18px calc(14px + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid var(--border-soft);
-  background: var(--night-2);
+  background: transparent;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.sidebar-settings-link {
+  color: var(--muted);
+  font-family: var(--condensed);
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  min-height: 48px;
+  padding: 12px 8px;
 }
 .sidebar-footer .button-row .button {
   flex: 1;
@@ -755,14 +751,14 @@ h3 {
   font-weight: 500;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: var(--gold);
-  border: 1px solid #ffb34766;
+  color: var(--text);
+  border: 1px solid #f6f0e540;
   border-radius: 999px;
   padding: 4px 9px;
 }
 .gym-hint {
   background: var(--surface-raised);
-  border: 1px solid var(--pink);
+  border: 1px solid var(--border);
   border-radius: 16px;
   padding: 16px;
   margin: 0 0 16px;
@@ -808,15 +804,65 @@ h3 {
   gap: 10px;
 }
 .county-card {
+  position: relative;
   background: var(--surface);
   border: 1px solid var(--border-soft);
-  border-radius: 16px;
+  border-radius: 14px;
   padding: 14px;
-  min-height: 64px;
+  min-height: 88px;
   text-align: left;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  justify-content: flex-end;
+  gap: 2px;
+  background-size: cover;
+  background-position: center;
+  color: var(--text);
+  text-shadow: 0 1px 8px #000c;
+  overflow: hidden;
+}
+.county-card.has-photo small {
+  color: #e8e2d4;
+}
+/* Traced county outline over the card art: solid ivory coastline,
+ * dashed estimated edges — the same split the map draws when the
+ * county is isolated. Quiet, so the photograph still leads. */
+.county-outline {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.55;
+}
+.county-outline-coast {
+  fill: none;
+  stroke: #f6f0e5;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+.county-outline-estimate {
+  fill: none;
+  stroke: #f6f0e5;
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+  opacity: 0.6;
+  vector-effect: non-scaling-stroke;
+}
+.county-art-tag {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: #0b1018b3;
+  color: #d8d2c4;
+  font-family: var(--condensed);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  text-shadow: none;
 }
 .county-card strong {
   font-family: var(--condensed);
@@ -831,9 +877,8 @@ h3 {
   line-height: 1.4;
 }
 .county-card.active {
-  border-color: var(--pink);
-  background: linear-gradient(135deg, #ff2e8833, #ff7a1822);
-  box-shadow: 0 0 0 1px var(--pink);
+  border-color: var(--coral);
+  box-shadow: 0 0 0 1px var(--coral);
 }
 .county-cards .help-text {
   margin: 10px 0 0;
@@ -844,14 +889,16 @@ h3 {
   gap: 12px;
   width: 100%;
   text-align: left;
-  background: var(--sunset);
-  color: #241026;
-  border: 0;
+  background: var(--surface-raised);
+  color: var(--text);
+  border: 1px solid var(--border);
   border-radius: 16px;
   padding: 14px 16px;
   min-height: 64px;
   margin-bottom: 20px;
-  box-shadow: 0 4px 18px #ff2e8855;
+}
+.index-reminder svg {
+  color: var(--coral);
 }
 .index-reminder strong {
   display: block;
@@ -1022,7 +1069,7 @@ h3 {
   display: block;
   height: 100%;
   width: var(--progress, 0%);
-  background: var(--sunset);
+  background: var(--coral);
   border-radius: 4px;
 }
 .section-label {
@@ -1159,8 +1206,8 @@ h3 {
   margin-top: 8px;
 }
 .place-hero-icon {
-  width: 72px;
-  height: 72px;
+  width: 56px;
+  height: 56px;
   flex-shrink: 0;
   border-radius: 50%;
   display: grid;
@@ -1187,9 +1234,8 @@ h3 {
   font-weight: 500;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: var(--gold);
-  border: 1px solid #ffb34766;
-  background: #ffb34714;
+  color: var(--text);
+  border: 1px solid #f6f0e540;
   border-radius: 999px;
   padding: 6px 11px;
 }
@@ -1328,8 +1374,8 @@ h3 {
   gap: 7px;
   font-size: 13px;
   color: var(--gold);
-  background: #ffb34714;
-  border: 1px solid #ffb34755;
+  background: #ffb56b14;
+  border: 1px solid #ffb56b55;
   border-radius: 999px;
   padding: 9px 13px;
   margin: 14px 0 0;
@@ -1418,8 +1464,8 @@ h3 {
   background: var(--surface-raised);
 }
 .ask-message.is-user {
-  background: linear-gradient(135deg, #ff2e8833, #ff7a1822);
-  border: 1px solid #ff2e8855;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
 }
 .ask-message p {
   margin: 0 0 8px;
@@ -1437,7 +1483,7 @@ h3 {
   letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--gold);
-  border: 1px solid #ffb34766;
+  border: 1px solid #ffb56b66;
   border-radius: 999px;
   padding: 4px 10px;
   margin-bottom: 8px;
@@ -1448,6 +1494,17 @@ h3 {
 .ask-ai-note {
   color: var(--muted);
   font-size: 13px;
+}
+/* The systemic rule, one quiet line under the verdict (breakable
+ * questions only) — the rule is the answer, not a footnote behind
+ * a tap. Sunset edge, muted text, no glow. */
+.ask-rule-note {
+  margin: 10px 0 0;
+  padding-left: 10px;
+  border-left: 2px solid var(--gold);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
 }
 .ask-cards {
   list-style: none;
@@ -1513,7 +1570,7 @@ h3 {
   min-width: 0;
 }
 .ask-key-onboarding {
-  border: 1px solid var(--pink);
+  border: 1px solid var(--border);
   border-radius: 14px;
   padding: 14px;
 }
@@ -1532,6 +1589,13 @@ h3 {
   justify-content: space-between;
   gap: 10px;
   font-size: 13px;
+}
+/* The small note under a settings label sits on its own line — inline
+ * it runs into the label ("OPENAI API KEYSTORED ONLY IN THIS BROWSER"). */
+.ask-setting-row span small {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
 }
 
 /* ---- Dialogs, editor, settings, backup. ---- */
@@ -1612,7 +1676,7 @@ h3 {
 }
 .backup-preview {
   padding: 16px;
-  border: 1px solid var(--pink);
+  border: 1px solid var(--border);
   border-radius: 12px;
   font-size: 13px;
 }
@@ -1653,11 +1717,11 @@ h3 {
 
 /* ---- Indexing job panel (Layers only). ---- */
 .index-panel {
-  border: 1px solid var(--pink);
+  border: 1px solid var(--border);
   border-radius: 16px;
   padding: 18px;
   margin: 20px 0;
-  background: linear-gradient(135deg, #ff2e8814, #ff7a1810);
+  background: var(--surface);
 }
 .index-panel h3 {
   display: flex;
@@ -1669,7 +1733,7 @@ h3 {
  * "To go" count and get checked again. */
 .index-requeue {
   background: var(--surface-raised);
-  border: 1px solid var(--gold);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 12px 14px;
   margin: 12px 0;
@@ -1713,7 +1777,7 @@ h3 {
   font-size: 12px;
   letter-spacing: 0.8px;
   text-transform: uppercase;
-  border: 1px solid var(--pink);
+  border: 1px solid var(--border);
   border-radius: 999px;
   padding: 6px 10px;
   color: var(--text);
@@ -1935,9 +1999,6 @@ h3 {
   .dialog-body {
     padding: 16px;
   }
-  .brand-header h1 {
-    font-size: 30px;
-  }
 }
 
 /* Small helpers used by Find / Settings / Saved. */
@@ -1991,9 +2052,9 @@ h3 {
   color: var(--muted);
 }
 .narrow-row.active {
-  border-color: var(--pink);
-  background: linear-gradient(135deg, #ff2e8822, #ff7a1814);
-  box-shadow: 0 0 0 1px var(--pink);
+  border-color: var(--coral);
+  background: #ff527f14;
+  box-shadow: 0 0 0 1px var(--coral);
 }
 .narrow-count {
   font-family: var(--condensed);
@@ -2037,4 +2098,91 @@ h3 {
   white-space: nowrap;
   font-size: 12px;
   padding: 12px 8px;
+}
+
+/* ---- Browse by category (Find): quiet tiles, icon + label only. ---- */
+.category-tiles {
+  margin: 4px 0 18px;
+}
+.category-tiles h3 {
+  margin-bottom: 10px;
+}
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.category-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-height: 76px;
+  padding: 12px;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  color: var(--text);
+  font-family: var(--condensed);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+.category-tile svg {
+  color: var(--muted);
+}
+.category-tile.active {
+  border-color: var(--coral);
+  box-shadow: 0 0 0 1px var(--coral);
+}
+.category-tile.active svg {
+  color: var(--coral);
+}
+
+/* ---- Settings "More": the panel footer moved here. ---- */
+.settings-more .button {
+  flex: 1 1 40%;
+}
+
+/* ---- County art (Settings): one row per county, quiet buttons. ---- */
+.county-art-list {
+  display: grid;
+  gap: 10px;
+}
+.county-art-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+}
+.county-art-row > span:first-child {
+  font-family: var(--condensed);
+  font-size: 14px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+.county-art-row > span:first-child small {
+  display: block;
+  margin-top: 2px;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--muted);
+}
+.county-art-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.county-art-actions .button {
+  min-height: 44px;
+  padding: 10px 12px;
+  font-size: 13px;
 }

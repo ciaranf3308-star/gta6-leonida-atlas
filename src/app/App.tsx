@@ -13,6 +13,7 @@ import {
 import { COUNTIES } from '../data/counties';
 import { INITIAL_BOUNDS } from '../features/map/coordinates';
 import { areaIsolation, countyIsolation } from '../features/map/isolation';
+import { saveCamera } from '../features/map/camera-persistence';
 import AskPanel from '../features/ask/AskPanel';
 import { useAiIndexStore } from '../features/categorise/store';
 import WelcomeSheet from '../features/onboarding/WelcomeSheet';
@@ -462,11 +463,6 @@ export default function App() {
         progress={progress}
         anyPublicLayerVisible={anyPublicLayerVisible}
         showingCount={showingCount}
-        onNavigate={navigate}
-        onShowWelcome={() => {
-          setWelcomeForced(false);
-          setWelcomeOpen(true);
-        }}
         onSelect={select}
       />
       <section className="map-workspace" id="atlas-map-region" aria-label="Interactive Leonida map">
@@ -486,7 +482,12 @@ export default function App() {
           onSelect={select}
           onPlacePosition={placePosition}
           onAddMarkerAt={beginMarkerAt}
-          onViewport={(viewport) => useMapStore.getState().setMapCenter(viewport.center)}
+          onViewport={(viewport) => {
+            useMapStore.getState().setMapCenter(viewport.center);
+            // Resume where the player left off: the camera is saved
+            // on every moveend/zoomend and restored on the next open.
+            saveCamera({ center: viewport.center, zoom: viewport.zoom });
+          }}
         />
         {navTab === 'map' && !selected && (
           <div className="map-hero">
@@ -505,7 +506,7 @@ export default function App() {
               }}
             >
               <Search size={18} />
-              <span>Search Leonida — places, gyms, lootable homes</span>
+              <span>Search Leonida…</span>
             </button>
             {status === 'ready' && showingCount === 0 ? (
               !anyPublicLayerVisible ? (
@@ -513,9 +514,8 @@ export default function App() {
                   <strong>Nothing showing yet — pick what to see</strong>
                   <p>
                     {allPlaces.length.toLocaleString()} places are in the
-                    map — nothing is turned on yet, so nothing shows. Pick
-                    one and the pins appear straight away. Nothing here is
-                    a spoiler until you turn it on.
+                    map — nothing is turned on yet. Pick one and the pins
+                    appear straight away.
                   </p>
                   <div className="empty-map-buttons">
                     <button type="button" onClick={() => turnOnLayers(['interiors'])}>
@@ -549,15 +549,6 @@ export default function App() {
                   </div>
                 </div>
               )
-            ) : status === 'ready' && showingCount > 0 ? (
-              <button
-                type="button"
-                className="map-showing-count"
-                onClick={() => goToTab('layers')}
-              >
-                {showingCount.toLocaleString()} place{showingCount === 1 ? '' : 's'} showing
-                {' '}· tap to change in Layers
-              </button>
             ) : null}
           </div>
         )}
@@ -622,7 +613,18 @@ export default function App() {
         )}
         {editorOpen && <MarkerEditor position={draftPosition} onClose={closeEditor} />}
         {dialog === 'backup' && <BackupDialog onClose={closeDialog} />}
-        {dialog === 'settings' && <SettingsDialog onClose={closeDialog} />}
+        {dialog === 'settings' && (
+          <SettingsDialog
+            onClose={closeDialog}
+            onOpenBackup={() => useUiStore.getState().setDialog('backup')}
+            onOpenExplorer={() => navigate('3d')}
+            onOpenAbout={() => navigate('about')}
+            onShowWelcome={() => {
+              setWelcomeForced(false);
+              setWelcomeOpen(true);
+            }}
+          />
+        )}
       </Suspense>
       </div>
       <BottomNav onNavigate={goToTab} />

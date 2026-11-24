@@ -111,6 +111,15 @@ export interface AskRetrievalResult {
    * there are no houses. The answer copy follows this, never the other.
    */
   housesKind: 'equipment' | 'gym' | null;
+  /**
+   * The systemic rule for a breakable question, as one line shown
+   * under the verdict — e.g. "On the in-game map, a building drawn
+   * dark blue has an interior…". The verdict itself is capped at two
+   * sentences (cards first), so the rule would otherwise only live
+   * behind a tap on one place's sheet. Null unless a breakable
+   * question was asked and a proximity verdict exists.
+   */
+  ruleNote: string | null;
 }
 
 export function normalizeAsk(text: string): string {
@@ -683,6 +692,13 @@ export function retrieveForAsk(input: AskRetrievalInput): AskRetrievalResult {
       proximitySummary += ` ${DARK_BLUE_RULE} ${BREAKABLE_GAP_NOTE}`;
     }
   }
+  // The systemic rule, as one line under the verdict (see the
+  // ruleNote field): the verdict is capped at two sentences, so the
+  // full rule in the summary above never reaches the screen.
+  const ruleNote =
+    asksBreakable && proximitySummary
+      ? (DARK_BLUE_RULE.split(/(?<=[.!])\s+/).filter(Boolean)[0] ?? null)
+      : null;
 
   return {
     records,
@@ -701,5 +717,6 @@ export function retrieveForAsk(input: AskRetrievalInput): AskRetrievalResult {
     housesToCheckTotal: housesTotal,
     housesAreaName,
     housesKind: houses.length > 0 ? housesKind : null,
+    ruleNote,
   };
 }

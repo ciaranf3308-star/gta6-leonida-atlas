@@ -11,6 +11,27 @@ export interface LeonidaAtlasRelease {
 /** Retained public history starts at v0.5.0; the newest release stays first. */
 export const LEONIDA_ATLAS_RELEASES: readonly LeonidaAtlasRelease[] = [
   {
+    version: 'v0.15.0',
+    date: '2026-11-24',
+    title: 'After Hours: a map that reads beautiful — traced county outlines, an animated sea, and art painted with your key',
+    summary:
+      'The After Hours redesign, finished the way the reference images demanded: the real GTADB map stays the base, and the treatment sits on top — county boundaries traced from the actual tiles pixel by pixel, a sea that drifts slowly over the real water, smoked-glass sheets, and county photographs you can repaint with your own OpenAI key.',
+    status: 'public',
+    highlights: [
+      'County outlines are traced, not rectangles: the build dissected every z5 tile pixel by pixel (5,829 tiles, 3.1 million cells) and traced the real coastline — 307,527 units of it — inside each county, with inland edges drawn dashed where they are still estimates. Isolate a county and the map dims everything outside the actual landmass, with a delicate ivory coastline and a slim "<County> ×" pill to leave. The same traced outline sits on each county card in Layers.',
+      'The sea is alive, quietly: a canvas over the real water areas drifts light across the ocean at about 8 frames a second, pausing when the tab hides and drawing one still frame when motion is reduced. It is a shimmer on the real water — not a new ocean simulation; a full animated tile layer would cost a phone its battery for a subtle effect.',
+      'County art, painted with your key: each county card carries a dusk landscape in that county\'s mood, labelled "AI image" — art, never a photo of a real place. In Settings → County art, with the same OpenAI key Ask uses, you can paint a fresh one per county; it stays on this device, and "Restore bundled" brings the original back. No key, no problem — the bundled art stays.',
+      'Clusters never overlap: neighbouring clusters closer than a circle\'s own diameter merge into one, so the reference screens\' clean, separated clusters hold on the real map too — the selected place and the regional labels are never absorbed. The isolation dim is cut to the full tile bounds, so fitting a wide county into a portrait phone no longer leaves a bright undimmed strip of ocean past the map edge, and the coastline is drawn as a dark under-stroke with ivory over it so the delicate line reads on bright sand, bright sea and dark forest alike.',
+      'The After Hours system throughout: Midnight and Slate smoked glass, Ivory type, Coral and Sunset used only where they earn it — the wordmark, primary buttons, display titles. The "76 places showing" banner is gone, the brand is a small wordmark, search is one compact pill, the isolation banner is a slim pill with the county title drawn on the map, and Settings, Backup, the 3D explorer and About live in one settings area instead of on every page. The map is at least 85% of the screen.',
+      'Kept, unchanged: spoiler-free first launch, persistence, 48px+ thumb targets, Gyms vs Workout Equipment split, breakable homes as a system, interiors on tap, the Ask spoiler rule + proximity, the index resolver v3, and the empty-map prompt. The bright GTADB day tiles are untouched — no darkening filter, which would muddy the geography.',
+    ],
+    verification: [
+      'Unit tests pass, including new tests for the traced geo (the real artifact read off disk — all five counties with coast and estimate runs inside the tile bounds), the sea overlay (mask math, draw order), and the AI art module (prompts, storage round-trip, mocked gpt-image-1 call with dall-e-3 fallback, 401 → auth error). TypeScript, ESLint and the production build pass.',
+      'The 390px walk passes with zero console errors and zero overflow, and the screenshots were looked at against the references: Capri isolated with its traced coastline and the sea shimmering, Layers with the five photo cards and their outlines and "AI image" tags, Settings with the County art section, and the empty map with its small wordmark and compact search pill.',
+      'Chromium e2e: 11 of 12 pass; the 3D explorer test needs a real GPU (software WebGL is too slow in this sandbox). The WebKit offline-navigation case is explicitly skipped in the suite where Playwright WebKit cannot run it.',
+    ],
+  },
+  {
     version: 'v0.14.0',
     date: '2026-11-24',
     title: 'Minimal cards, not-sure places re-scanned, county and area isolation, and a map that never looks empty',

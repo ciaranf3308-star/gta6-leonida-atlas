@@ -70,7 +70,9 @@ await page.getByText('Welcome to Leonida').waitFor({ timeout: 30000 });
 await shot('01-welcome');
 console.log('01 welcome overflow:', await overflow());
 // Real counts, no 5k: 3,781 places, 986 confirmed names, 2,768 without.
-await page.getByText('3,781 places').waitFor({ timeout: 10000 });
+// (exact: the empty-map prompt behind the sheet says "3,781 places
+// are in the map" in the same sentence, so the loose text matches twice.)
+await page.getByText('3,781 places', { exact: true }).waitFor({ timeout: 10000 });
 await page.getByText(/986 places have a confirmed name/).waitFor({ timeout: 10000 });
 await page.getByText(/2,768 do not yet/).waitFor({ timeout: 10000 });
 console.log('01 real counts shown (3,781 / 986 / 2,768)');
@@ -156,7 +158,10 @@ await page.locator('#ask-nylah-input').fill('Show me a gym near Capri');
 await page.getByRole('button', { name: 'Send', exact: true }).click();
 await page.getByText(/no gym near capri/i).first().waitFor({ timeout: 10000 });
 await page.getByText('Houses in Capri to check').waitFor({ timeout: 10000 });
-await page.getByText(/13 houses in Capri are worth checking/).waitFor({ timeout: 10000 });
+// v0.13.0: the verdict is short on purpose (first two sentences
+// only) — the houses count lives in the section header below the
+// cards, not in the verdict sentence. The section IS the answer.
+await page.getByText('Houses in Capri to check (13)').waitFor({ timeout: 10000 });
 await page.getByRole('button', { name: 'Mark as workout spot' }).first().waitFor({ timeout: 10000 });
 await page.waitForTimeout(1000);
 await shot('06-ask-capri-houses');
@@ -315,15 +320,21 @@ await page.getByRole('button', { name: 'Close place details' }).click();
 
 // Ask with the seeded AI gym: "gym near Capri" must answer from the
 // AI-suggested "?" — nearest first, labelled AI suggested.
+// v0.14.0: the card face stays clean — the label lives behind one tap,
+// in the place sheet ("AI suggested: Gym · 82% sure").
 await nav('Ask').click();
 await page.locator('#ask-nylah-input').fill('Show me a gym near Capri');
 await page.getByRole('button', { name: 'Send', exact: true }).click();
-await page.getByText(/AI suggested: Gym/i).first().waitFor({ timeout: 10000 });
+await page.locator('.ask-card').first().waitFor({ timeout: 10000 });
+await page.locator('.ask-card').first().click();
+await page.getByText(/AI suggested: Gym \/ workout · 82% sure/i).first().waitFor({ timeout: 10000 });
 await page.waitForTimeout(1000);
 await shot('16-ask-ai-gym-capri');
 console.log('16 overflow:', await overflow());
 console.log('16 Ask answered a gym question from the AI-suggested "?" near Capri');
-await page.getByRole('button', { name: 'Close Ask Nylah' }).click();
+await page.getByRole('button', { name: 'Close place details' }).click();
+// Opening the sheet from an Ask card closes the Ask panel — after
+// closing the sheet we are back on the map, nothing left to close.
 
 // Layers tab again: the index panel now shows per-type counts.
 await nav('Layers').click();

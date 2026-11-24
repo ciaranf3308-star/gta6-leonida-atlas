@@ -1,12 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  Box,
   ChevronRight,
-  Database,
   Dumbbell,
-  HelpCircle,
   Home,
-  Info,
   MapPinPlus,
   Search,
   Settings,
@@ -25,12 +21,15 @@ import {
 import { useAiIndexStore } from '../features/categorise/store';
 import { COUNTIES, countyForPlace, countyIdForPosition } from '../data/counties';
 import { areaIsolation, areaOptions, countyIsolation } from '../features/map/isolation';
+import { countyOutlineSvg, useAfterHoursGeo } from '../features/map/after-hours-geo';
+import { useCountyArt } from '../features/art/ai-images';
 import { DEFAULT_LAYERS } from '../features/map/layers';
 import {
   PlaceIcon,
   iconKeyForAiRecord,
   iconKeyForLayer,
   iconKeyForPlace,
+  type IconKey,
 } from '../features/map/place-icons';
 import { SavedPlaces } from '../features/library/SavedPlaces';
 import { Status } from './Status';
@@ -199,6 +198,9 @@ function NarrowFilters({ allPlaces }: { allPlaces: Place[] }) {
 function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allPlaces: Place[] }) {
   const layers = useMapStore((s) => s.layers);
   const offline = usePersistenceStore((s) => s.offline);
+  // Traced county outlines (After Hours geo) and key-painted county art.
+  const geo = useAfterHoursGeo();
+  const countyArt = useCountyArt();
   const totalById = new Map(progress.map((entry) => [entry.layerId, entry.total]));
   const ordered = [...layers].sort((a, b) => b.order - a.order);
   // Trading-card sets live in one group at the bottom: only the sets with
@@ -272,9 +274,7 @@ function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allP
   return (
     <div className="layer-manager">
       <p className="panel-intro">
-        Your map starts blank on purpose — nothing is shown until you choose it. Turn a layer
-        on only when you want to see those places. Your choices are remembered on this device,
-        so the map comes back as you left it.
+        Nothing is shown until you choose it. Your choices are remembered on this device.
       </p>
       <section className="county-cards" aria-label="Isolate one county">
         <h3>Isolate a county</h3>
@@ -288,22 +288,53 @@ function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allP
             <strong>All Leonida</strong>
             <small>The whole map</small>
           </button>
-          {COUNTIES.map((county) => (
-            <button
-              type="button"
-              key={county.id}
-              className={`county-card ${filters.countyId === county.id ? 'active' : ''}`}
-              aria-pressed={filters.countyId === county.id}
-              onClick={() => chooseCounty(county.id)}
-            >
-              <strong>{county.name.replace(' County', '')}</strong>
-              <small>{county.area}</small>
-            </button>
-          ))}
+          {COUNTIES.map((county) => {
+            // Art: a key-painted image wins over the bundled photograph.
+            // Both are AI-generated art (never a photo of a real place),
+            // so the card carries the "AI image" tag either way.
+            const aiRecord = countyArt[county.id];
+            const artSrc = aiRecord
+              ? aiRecord.dataUrl
+              : county.photo
+                ? `${import.meta.env.BASE_URL ?? '/'}${county.photo}`
+                : null;
+            const outline = countyOutlineSvg(county, geo);
+            return (
+              <button
+                type="button"
+                key={county.id}
+                className={`county-card ${artSrc ? 'has-photo' : ''} ${filters.countyId === county.id ? 'active' : ''}`}
+                aria-pressed={filters.countyId === county.id}
+                style={
+                  artSrc
+                    ? {
+                        backgroundImage: `linear-gradient(180deg, #0b101800 30%, #0b1018d9 100%), url(${artSrc})`,
+                      }
+                    : undefined
+                }
+                onClick={() => chooseCounty(county.id)}
+              >
+                {outline && (
+                  <svg
+                    className="county-outline"
+                    viewBox={outline.viewBox}
+                    preserveAspectRatio="xMidYMid slice"
+                    aria-hidden="true"
+                  >
+                    <path d={outline.estimate} className="county-outline-estimate" />
+                    <path d={outline.coast} className="county-outline-coast" />
+                  </svg>
+                )}
+                {artSrc && <span className="county-art-tag">AI image</span>}
+                <strong>{county.name.replace(' County', '')}</strong>
+                <small>{county.area}</small>
+              </button>
+            );
+          })}
         </div>
         <p className="help-text">
-          County edges are estimates — the official map prints county names but no boundary
-          lines.
+          The coastline on each card is traced from the in-game map; inland edges are estimates
+          — the official map prints county names but no boundary lines.
         </p>
       </section>
       {attempted === 0 && unnamedRemaining > 0 && (
@@ -732,10 +763,53 @@ function FindFilters({
         )}
       </div>
       <p className="help-text">
-        Layers live in the Layers tab — turn on Gyms, Interiors, Breakable homes, Lootable
-        and the rest there. {allPlaces.length.toLocaleString()} places in the atlas.
+        {allPlaces.length.toLocaleString()} places in the atlas.
       </p>
     </div>
+  );
+}
+
+/** Browse by category — art-directed tiles, not a select. Tapping
+ * one sets Find's Kind filter; tapping the active one clears it. */
+const CATEGORY_ICONS: Record<string, IconKey> = {
+  all: 'layers',
+  region: 'map',
+  landmark: 'landmark',
+  nature: 'tree',
+  transport: 'train',
+  business: 'store',
+  personal: 'star',
+};
+
+function CategoryTiles() {
+  const filters = useUiStore((s) => s.filters);
+  return (
+    <section className="category-tiles" aria-label="Browse by category">
+      <h3>Browse by category</h3>
+      <div className="category-grid">
+        {CATEGORIES.map((category) => (
+          <button
+            key={category.id}
+            type="button"
+            className={`category-tile ${filters.category === category.id ? 'active' : ''}`}
+            aria-pressed={filters.category === category.id}
+            onClick={() =>
+              useUiStore
+                .getState()
+                .setFilters({
+                  category:
+                    filters.category === category.id
+                      ? 'all'
+                      : (category.id as (typeof CATEGORIES)[number]['id']),
+                })
+            }
+          >
+            <PlaceIcon icon={CATEGORY_ICONS[category.id] ?? 'layers'} size={20} />
+            <span>{category.name}</span>
+          </button>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -751,8 +825,6 @@ export function Sidebar({
   progress,
   anyPublicLayerVisible,
   showingCount,
-  onNavigate,
-  onShowWelcome,
   onSelect,
 }: {
   places: Place[];
@@ -760,8 +832,6 @@ export function Sidebar({
   progress: LayerProgress[];
   anyPublicLayerVisible: boolean;
   showingCount: number;
-  onNavigate: (view: '3d' | 'about') => void;
-  onShowWelcome: () => void;
   onSelect: (id: string) => void;
 }) {
   const navTab = useUiStore((s) => s.navTab);
@@ -774,7 +844,7 @@ export function Sidebar({
           <h1>
             Leonida <em>Atlas</em>
           </h1>
-          <p>GTA VI INDEPENDENT COMMUNITY ATLAS</p>
+          <p>GTA VI · Independent community atlas</p>
         </div>
         <button
           className="icon-button"
@@ -804,7 +874,10 @@ export function Sidebar({
       )}
       <div className="sidebar-content">
         {navTab === 'explore' && (
-          <FindFilters allPlaces={allPlaces} showingCount={showingCount} />
+          <>
+            <FindFilters allPlaces={allPlaces} showingCount={showingCount} />
+            <CategoryTiles />
+          </>
         )}
         {navTab === 'explore' ? (
           <Results places={places} allPlaces={allPlaces} anyPublicLayerVisible={anyPublicLayerVisible} onSelect={onSelect} />
@@ -817,28 +890,13 @@ export function Sidebar({
       <footer className="sidebar-footer">
         <div ref={setAccountEntryTarget} data-atlas-account-slot />
         <Status />
-        <div className="button-row">
-          <button className="button" onClick={() => useUiStore.getState().setDialog('settings')}>
-            <Settings size={17} />
-            Settings
-          </button>
-          <button className="button" onClick={() => useUiStore.getState().setDialog('backup')}>
-            <Database size={17} />
-            Backup
-          </button>
-          <button className="button" onClick={() => onNavigate('3d')}>
-            <Box size={17} />
-            3D explorer
-          </button>
-          <button className="button" onClick={() => onNavigate('about')}>
-            <Info size={17} />
-            About
-          </button>
-          <button className="button" onClick={onShowWelcome}>
-            <HelpCircle size={17} />
-            What is mapped
-          </button>
-        </div>
+        <button
+          className="text-button sidebar-settings-link"
+          onClick={() => useUiStore.getState().setDialog('settings')}
+        >
+          <Settings size={16} />
+          Settings
+        </button>
       </footer>
     </aside>
   );

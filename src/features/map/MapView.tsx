@@ -21,6 +21,9 @@ import {
 } from './place-icons';
 import type { AiCategoryRecord } from '../categorise/categories';
 import type { Isolation } from './isolation';
+import { loadSavedCamera } from './camera-persistence';
+import { runToLatLngs, useAfterHoursGeo } from './after-hours-geo';
+import { drawSeaFrame, maskDrawRect, seaMaskUrl } from './sea-overlay';
 import 'leaflet/dist/leaflet.css';
 import './map.css';
 
@@ -145,7 +148,20 @@ export default function MapView(props: MapViewProps) {
         markerZoomAnimation: !callbacks.current.preferences.reducedMotion,
       });
       const activeMap = instance;
-      activeMap.fitBounds(leafletBounds(INITIAL_BOUNDS), { padding: [24, 24], animate: false });
+      // Resume where the player left off: a saved camera (centre +
+      // zoom, written on every moveend/zoomend) beats the full-map
+      // fit. A saved county isolation still flies there afterwards
+      // via the boundsFocus effect. No saved camera: full Leonida.
+      const savedCamera = loadSavedCamera();
+      if (savedCamera) {
+        activeMap.setView(
+          toMapCoordinate(savedCamera.center),
+          savedCamera.zoom,
+          { animate: false },
+        );
+      } else {
+        activeMap.fitBounds(leafletBounds(INITIAL_BOUNDS), { padding: [24, 24], animate: false });
+      }
       const base = import.meta.env.BASE_URL ?? '/';
       // GTADB In-Game Day tiles — the real in-game map, sharp at max zoom.
       // Leaflet zoom -5..1 maps onto tile zooms 0..6 inside gtadbTileUrl
@@ -329,11 +345,10 @@ export default function MapView(props: MapViewProps) {
               return;
             }
             if (map.getZoom() < MAX_ZOOM) {
-              map.setView(
-                toMapCoordinate(group.position),
-                Math.min(MAX_ZOOM, map.getZoom() + 1.5),
-                { animate: !callbacks.current.preferences.reducedMotion },
-              );
+              // Tap a cluster: the camera flies into it, smoothly.
+              map.flyTo(toMapCoordinate(group.position), Math.min(MAX_ZOOM, map.getZoom() + 1.5), {
+                animate: !callbacks.current.preferences.reducedMotion,
+              });
               return;
             }
             // Coincident source positions cannot separate through zoom; offer their records directly.
@@ -446,56 +461,141 @@ export default function MapView(props: MapViewProps) {
     };
   }, [map, props.focus, props.preferences.reducedMotion]);
 
-  // County picker: fit the map to the chosen county's estimated bounds.
+  // County picker: the camera flies into the chosen county's
+  // estimated bounds — travelling into a region, not jumping to it.
   useEffect(() => {
     if (!map || !props.boundsFocus) return;
-    map.fitBounds(leafletBounds(props.boundsFocus.bounds), {
+    if (callbacks.current.preferences.reducedMotion) {
+      map.fitBounds(leafletBounds(props.boundsFocus.bounds), {
+        padding: [24, 24],
+        animate: false,
+      });
+      return;
+    }
+    map.flyToBounds(leafletBounds(props.boundsFocus.bounds), {
       padding: [24, 24],
-      animate: !callbacks.current.preferences.reducedMotion,
     });
   }, [map, props.boundsFocus]);
 
-  // Area isolation: dim everything outside the isolated bounds. The
-  // mask is one polygon — the whole basemap rect with the isolated
-  // rect cut out as a hole — plus a bright outline around the area
-  // itself, so the lit part reads as the place and the rest reads as
-  // deliberately switched off, not broken. The list filter already
-  // hides the outside places; the mask is what makes it visible.
+  // Area isolation: the surrounding counties desaturate — a dim
+  // mask over everything outside the isolated area, plus a delicate
+  // boundary line around the area itself. No pink, no heavy card:
+  // the lit part reads as the place, the rest as deliberately
+  // switched off, not broken. The list filter already hides the
+  // outside places; the mask is what makes it visible.
+  //
+  // Counties draw the TRACED outline (after-hours-geo.json, built
+  // from the real tiles by scripts/dissect-map.py): the coastline
+  // solid ivory, the estimated rect edges dashed — and the dim mask
+  // is cut to the land rings, so the sea inside the county rect is
+  // not lit as if it were land. Towns/areas keep the rect outline
+  // (no traced data for an arbitrary area), as does a county when
+  // the geo file has not loaded. The outline is what makes a county
+  // feel like a place with a real edge, not a box.
+  //
+  // The mask's outer ring is the full TILE bounds, not the app
+  // bounds: fitting a wide county into a portrait phone shows map
+  // past the app edge (bright ocean.jpg error tiles), and a mask cut
+  // to the app bounds leaves that strip lit — a straight horizontal
+  // cut across the screen. The coastline is drawn twice — a dark
+  // under-stroke, then ivory — so the delicate line reads on bright
+  // sand, bright sea and dark forest alike.
+  const geo = useAfterHoursGeo();
   useEffect(() => {
     if (!map) return;
     const isolation = props.isolation;
     if (!isolation) return;
     const outer: L.LatLngExpression[] = [
-      [BASEMAP_BOUNDS.south, BASEMAP_BOUNDS.west],
-      [BASEMAP_BOUNDS.south, BASEMAP_BOUNDS.east],
-      [BASEMAP_BOUNDS.north, BASEMAP_BOUNDS.east],
-      [BASEMAP_BOUNDS.north, BASEMAP_BOUNDS.west],
+      [GTADB_TILE_BOUNDS.south, GTADB_TILE_BOUNDS.west],
+      [GTADB_TILE_BOUNDS.south, GTADB_TILE_BOUNDS.east],
+      [GTADB_TILE_BOUNDS.north, GTADB_TILE_BOUNDS.east],
+      [GTADB_TILE_BOUNDS.north, GTADB_TILE_BOUNDS.west],
     ];
-    const b = isolation.bounds;
-    const hole: L.LatLngExpression[] = [
-      [b.south, b.west],
-      [b.south, b.east],
-      [b.north, b.east],
-      [b.north, b.west],
-    ];
-    const mask = L.polygon([outer, hole], {
-      color: '#12060f',
-      weight: 0,
-      fillColor: '#12060f',
-      fillOpacity: 0.62,
-      interactive: false,
-    }).addTo(map);
-    const outline = L.rectangle(leafletBounds(b), {
-      color: '#ff2e88',
-      weight: 2,
-      fill: false,
-      interactive: false,
-    }).addTo(map);
+    const added: L.Layer[] = [];
+    const countyGeo = isolation.countyId ? geo?.counties[isolation.countyId] : undefined;
+    if (countyGeo && countyGeo.loops.length > 0) {
+      const mask = L.polygon(
+        [outer, ...countyGeo.loops.map((loop) => runToLatLngs(loop))],
+        {
+          color: '#0b1018',
+          weight: 0,
+          fillColor: '#0b1018',
+          fillOpacity: 0.55,
+          interactive: false,
+        },
+      ).addTo(map);
+      added.push(mask);
+      for (const run of countyGeo.coast) {
+        const latlngs = runToLatLngs(run);
+        added.push(
+          L.polyline(latlngs, {
+            color: '#0b1018',
+            weight: 4,
+            opacity: 0.5,
+            interactive: false,
+          }).addTo(map),
+        );
+        added.push(
+          L.polyline(latlngs, {
+            color: '#f6f0e5',
+            weight: 2,
+            opacity: 0.9,
+            interactive: false,
+          }).addTo(map),
+        );
+      }
+      for (const run of countyGeo.estimate) {
+        const latlngs = runToLatLngs(run);
+        added.push(
+          L.polyline(latlngs, {
+            color: '#0b1018',
+            weight: 3.5,
+            opacity: 0.4,
+            interactive: false,
+          }).addTo(map),
+        );
+        added.push(
+          L.polyline(latlngs, {
+            color: '#f6f0e5',
+            weight: 1.5,
+            opacity: 0.75,
+            dashArray: '5 5',
+            interactive: false,
+          }).addTo(map),
+        );
+      }
+    } else {
+      const b = isolation.bounds;
+      const hole: L.LatLngExpression[] = [
+        [b.south, b.west],
+        [b.south, b.east],
+        [b.north, b.east],
+        [b.north, b.west],
+      ];
+      added.push(
+        L.polygon([outer, hole], {
+          color: '#0b1018',
+          weight: 0,
+          fillColor: '#0b1018',
+          fillOpacity: 0.55,
+          interactive: false,
+        }).addTo(map),
+      );
+      added.push(
+        L.rectangle(leafletBounds(b), {
+          color: '#f6f0e5',
+          weight: 1,
+          opacity: 0.65,
+          dashArray: '5 5',
+          fill: false,
+          interactive: false,
+        }).addTo(map),
+      );
+    }
     return () => {
-      mask.remove();
-      outline.remove();
+      for (const layer of added) layer.remove();
     };
-  }, [map, props.isolation]);
+  }, [map, props.isolation, geo]);
 
   useEffect(() => {
     if (props.editorMode === 'none') {
@@ -527,6 +627,85 @@ export default function MapView(props: MapViewProps) {
       preview.remove();
     };
   }, [map, previewPosition, props.editorMode]);
+
+  // The animated sea: a canvas over the tiles (under the pins) that
+  // shimmers only where the water mask says there is water. Slow
+  // drift, ~8fps, paused when the tab is hidden; reduced motion gets
+  // one static faint frame. See sea-overlay.ts for the honest limit:
+  // a shimmer on real water regions, not a new ocean simulation.
+  const seaCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  useEffect(() => {
+    if (!map) return;
+    const canvas = seaCanvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (!canvas || !ctx) return;
+    const reducedMotion = callbacks.current.preferences.reducedMotion;
+    let mask: HTMLImageElement | null = null;
+    let raf = 0;
+    let lastDraw = 0;
+    let running = !document.hidden;
+    const draw = (phaseSeconds: number) => {
+      if (!mask) return;
+      const size = map.getSize();
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      if (canvas.width !== Math.round(size.x * dpr) || canvas.height !== Math.round(size.y * dpr)) {
+        canvas.width = Math.round(size.x * dpr);
+        canvas.height = Math.round(size.y * dpr);
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const rect = maskDrawRect((lat, lng) => {
+        const p = map.latLngToContainerPoint([lat, lng]);
+        return { x: p.x, y: p.y };
+      });
+      drawSeaFrame(ctx, mask, rect, phaseSeconds, size.x, size.y);
+    };
+    const loop = (now: number) => {
+      if (!running) return;
+      if (now - lastDraw >= 120) {
+        lastDraw = now;
+        draw(now / 1000);
+      }
+      raf = requestAnimationFrame(loop);
+    };
+    const img = new Image();
+    img.onload = () => {
+      mask = img;
+      if (reducedMotion) {
+        draw(0);
+      } else if (running) {
+        raf = requestAnimationFrame(loop);
+      }
+    };
+    img.onerror = () => {
+      // No mask, no sea: the tiles still draw the ocean on their own.
+      mask = null;
+    };
+    img.src = seaMaskUrl(import.meta.env.BASE_URL ?? '/');
+    const onMove = () => {
+      // Re-align on pan/zoom; the loop re-draws within ~120ms anyway.
+      lastDraw = 0;
+      if (reducedMotion) draw(0);
+    };
+    const onVisibility = () => {
+      running = !document.hidden;
+      if (running && !reducedMotion) {
+        lastDraw = 0;
+        raf = requestAnimationFrame(loop);
+      } else {
+        cancelAnimationFrame(raf);
+      }
+    };
+    map.on('move', onMove);
+    map.on('zoom', onMove);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      running = false;
+      cancelAnimationFrame(raf);
+      map.off('move', onMove);
+      map.off('zoom', onMove);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [map]);
 
   const useMapCenter = () => {
     if (!map) return;
@@ -560,16 +739,24 @@ export default function MapView(props: MapViewProps) {
         aria-describedby={descriptionId}
         tabIndex={0}
       />
+      <canvas ref={seaCanvasRef} className="sea-overlay" aria-hidden="true" />
       {props.isolation && (
-        <div className="isolation-banner" role="status">
-          <span>
+        <>
+          <div className="county-map-title" aria-hidden="true">
             <strong>{props.isolation.label}</strong>
-            <small>Only this area — the rest of Leonida is dimmed</small>
-          </span>
-          <button type="button" onClick={() => props.onExitIsolation?.()}>
-            Show all of Leonida
-          </button>
-        </div>
+            <span>{props.isolation.subtitle}</span>
+          </div>
+          <div className="isolation-pill" role="status">
+            <span>{props.isolation.label}</span>
+            <button
+              type="button"
+              aria-label={`Show all of Leonida — leave ${props.isolation.label}`}
+              onClick={() => props.onExitIsolation?.()}
+            >
+              ×
+            </button>
+          </div>
+        </>
       )}
       {props.editorMode !== 'none' ? (
         <div className="atlas-map-editor-hint">

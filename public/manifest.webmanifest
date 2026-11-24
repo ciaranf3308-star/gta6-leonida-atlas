@@ -1,5 +1,5 @@
 {
-  "background_color": "#0b202c",
+  "background_color": "#0b1018",
   "description": "A spoiler-free GTA VI Leonida map. All location layers start off; your own markers, notes and progress stay on this device.",
   "display": "standalone",
   "icons": [
@@ -27,5 +27,5 @@
   "scope": ".",
   "short_name": "Leonida Atlas",
   "start_url": ".",
-  "theme_color": "#0b202c"
+  "theme_color": "#0b1018"
 }

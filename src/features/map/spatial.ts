@@ -76,6 +76,11 @@ export function clusterPlaces(places: readonly Place[], options: ClusterOptions)
       .slice(0, 12)
       .map((place) => place.id),
   );
+  // The selected place and the regional labels are never absorbed into
+  // a cluster — they stay independently focusable. Everything else
+  // may merge (see mergeCloseClusters).
+  const protectedMemberIds = new Set<string>(referenceIds);
+  if (options.selectedId) protectedMemberIds.add(options.selectedId);
   let groups: PlaceCluster[] = [];
   // Doubling cell size converges to at most four spatial quadrants plus the selected place.
   for (let pass = 0; pass < 32; pass++) {
@@ -100,8 +105,62 @@ export function clusterPlaces(places: readonly Place[], options: ClusterOptions)
       ),
       places: members,
     }));
-    if (groups.length <= maxMarkers) return groups;
+    if (groups.length <= maxMarkers) return mergeCloseClusters(groups, options, protectedMemberIds);
     cellSize *= 2;
   }
-  return groups;
+  return mergeCloseClusters(groups, options, protectedMemberIds);
+}
+
+/**
+ * Neighbouring grid buckets can still sit almost on top of each other
+ * when their centroids land near a shared cell edge, so their circles
+ * overlap on screen — the one thing the reference screens never do.
+ * Merge any two clusters closer than a cluster's own diameter
+ * (48 screen px, a 40px circle plus breathing room), repeating until
+ * every pair is separated or the pass budget runs out. Merging never
+ * drops a place: the merged cluster carries both member lists.
+ */
+function mergeCloseClusters(
+  groups: PlaceCluster[],
+  options: ClusterOptions,
+  protectedMemberIds: ReadonlySet<string>,
+): PlaceCluster[] {
+  const zoom = Number.isFinite(options.zoom) ? options.zoom : 0;
+  const minSeparation = 48 / Math.pow(2, zoom);
+  const merged = [...groups];
+  for (let pass = 0; pass < 8; pass++) {
+    let didMerge = false;
+    for (let i = 0; i < merged.length && !didMerge; i++) {
+      const a = merged[i]!;
+      // A group holding the selected place or a regional label is
+      // never absorbed — its id is the plain place id for a single,
+      // so the check is on its members, not the bucket id.
+      if (a.places.some((place) => protectedMemberIds.has(place.id))) continue;
+      for (let j = i + 1; j < merged.length; j++) {
+        const b = merged[j]!;
+        if (b.places.some((place) => protectedMemberIds.has(place.id))) continue;
+        const dx = a.position.x - b.position.x;
+        const dy = a.position.y - b.position.y;
+        if (dx * dx + dy * dy < minSeparation * minSeparation) {
+          const members = [...a.places, ...b.places];
+          merged[i] = {
+            id: `merged:${a.id}+${b.id}`,
+            position: members.reduce(
+              (sum, place) => ({
+                x: sum.x + place.position.x / members.length,
+                y: sum.y + place.position.y / members.length,
+              }),
+              { x: 0, y: 0 },
+            ),
+            places: members,
+          };
+          merged.splice(j, 1);
+          didMerge = true;
+          break;
+        }
+      }
+    }
+    if (!didMerge) return merged;
+  }
+  return merged;
 }

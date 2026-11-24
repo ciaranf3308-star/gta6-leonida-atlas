@@ -9,13 +9,41 @@ import {
   setAskApiKey,
   setAskModel,
 } from '../ask/openai';
+import { COUNTIES } from '../../data/counties';
+import {
+  AiImageError,
+  clearCountyArt,
+  generateCountyArt,
+  saveCountyArt,
+  useCountyArt,
+} from '../art/ai-images';
 
-export default function SettingsDialog({ onClose }: { onClose: () => void }) {
+export default function SettingsDialog({
+  onClose,
+  onOpenBackup,
+  onOpenExplorer,
+  onOpenAbout,
+  onShowWelcome,
+}: {
+  onClose: () => void;
+  /** The panel footer used to carry these on every page — they live
+   * here now, in the one dedicated settings area. All optional: the
+   * dialog also works standalone (tests, deep links). */
+  onOpenBackup?: () => void;
+  onOpenExplorer?: () => void;
+  onOpenAbout?: () => void;
+  onShowWelcome?: () => void;
+}) {
   const preferences = useUserStore((s) => s.preferences);
   const ready = usePersistenceStore((s) => s.ready);
   const [storageMessage, setStorageMessage] = useState('');
   const [askApiKey, setAskApiKeyState] = useState(() => getAskApiKey());
   const [askModel, setAskModelState] = useState(() => getAskModel());
+  // County art (After Hours): one AI-painted image per county, made with
+  // the key above, stored on this device, labelled "AI image".
+  const countyArt = useCountyArt();
+  const [generatingCountyId, setGeneratingCountyId] = useState<string | null>(null);
+  const [artMessage, setArtMessage] = useState('');
   return (
     <Modal title="Atlas settings" onClose={onClose}>
       <div className="settings-list">
@@ -120,6 +148,83 @@ export default function SettingsDialog({ onClose }: { onClose: () => void }) {
         )}
       </section>
       <section className="detail-section">
+        <h3>County art</h3>
+        <p className="help-text">
+          The county photographs are AI-generated art — dusk landscapes in each county&apos;s
+          mood, not photos of real places. With your OpenAI key (the same one above) you can
+          paint a fresh one for any county. It stays on this device, is labelled &ldquo;AI
+          image&rdquo; on the card, and OpenAI charges per image on your key. The bundled art
+          comes back any time you restore it.
+        </p>
+        <div className="county-art-list">
+          {COUNTIES.map((county) => {
+            const record = countyArt[county.id];
+            const generating = generatingCountyId === county.id;
+            return (
+              <div className="county-art-row" key={county.id}>
+                <span>
+                  {county.name}
+                  <small>
+                    {record
+                      ? `AI image · ${new Date(record.createdAt).toLocaleDateString()}`
+                      : 'Bundled art'}
+                  </small>
+                </span>
+                <span className="county-art-actions">
+                  <button
+                    className="button"
+                    type="button"
+                    disabled={!askApiKey || generating}
+                    onClick={async () => {
+                      setArtMessage('');
+                      setGeneratingCountyId(county.id);
+                      try {
+                        const painted = await generateCountyArt({ county });
+                        saveCountyArt(painted);
+                        setArtMessage(`${county.name} repainted — it is on the card now.`);
+                      } catch (error) {
+                        setArtMessage(
+                          error instanceof AiImageError
+                            ? error.message
+                            : 'The image could not be painted. The bundled art is untouched.',
+                        );
+                      } finally {
+                        setGeneratingCountyId(null);
+                      }
+                    }}
+                  >
+                    {generating ? 'Painting…' : 'Generate with AI'}
+                  </button>
+                  {record && (
+                    <button
+                      className="button"
+                      type="button"
+                      disabled={generating}
+                      onClick={() => {
+                        clearCountyArt(county.id);
+                        setArtMessage(`${county.name} is back to the bundled art.`);
+                      }}
+                    >
+                      Restore bundled
+                    </button>
+                  )}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+        {!askApiKey && (
+          <p className="help-text">
+            Add your OpenAI key in Ask Nylah above to paint county art.
+          </p>
+        )}
+        {artMessage && (
+          <p role="status" className="help-text">
+            {artMessage}
+          </p>
+        )}
+      </section>
+      <section className="detail-section">
         <h3>Storage on this device</h3>
         <p className="help-text">
           Your browser stores personal data in IndexedDB. Backups protect your work if browser data
@@ -154,6 +259,33 @@ export default function SettingsDialog({ onClose }: { onClose: () => void }) {
           mouse.
         </p>
       </section>
+      {(onOpenBackup || onOpenExplorer || onOpenAbout || onShowWelcome) && (
+        <section className="detail-section">
+          <h3>More</h3>
+          <div className="button-row settings-more">
+            {onOpenBackup && (
+              <button className="button" type="button" onClick={() => { onClose(); onOpenBackup(); }}>
+                Backup
+              </button>
+            )}
+            {onOpenExplorer && (
+              <button className="button" type="button" onClick={() => { onClose(); onOpenExplorer(); }}>
+                3D explorer
+              </button>
+            )}
+            {onOpenAbout && (
+              <button className="button" type="button" onClick={() => { onClose(); onOpenAbout(); }}>
+                About
+              </button>
+            )}
+            {onShowWelcome && (
+              <button className="button" type="button" onClick={() => { onClose(); onShowWelcome(); }}>
+                What is mapped
+              </button>
+            )}
+          </div>
+        </section>
+      )}
     </Modal>
   );
 }

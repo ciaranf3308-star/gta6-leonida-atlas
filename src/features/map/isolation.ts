@@ -25,7 +25,13 @@ import type { MapBounds } from "./coordinates";
 export interface Isolation {
   /** "Capri", "Vice-Dale County", "Vice City" — shown on the map. */
   label: string;
+  /** "North · Mount Kalaga", or "196 places" — the map title's second line. */
+  subtitle: string;
   bounds: MapBounds;
+  /** County id when this is a county isolation — the map then draws the
+   * traced coastline from after-hours-geo.json instead of the rect.
+   * Undefined for towns/areas, which keep the rect outline. */
+  countyId?: string;
 }
 
 function pad(bounds: MapBounds, fraction = 0.12): MapBounds {
@@ -66,7 +72,12 @@ export function matchesArea(place: Place, area: string): boolean {
 
 /** Isolation for one county, from its estimated bounds. */
 export function countyIsolation(county: County): Isolation {
-  return { label: county.name, bounds: county.bounds };
+  return {
+    label: county.name,
+    subtitle: county.area,
+    bounds: county.bounds,
+    countyId: county.id,
+  };
 }
 
 /** Isolation for one town/city/area, from its own places. Null when
@@ -75,11 +86,14 @@ export function areaIsolation(
   area: string,
   places: readonly Place[],
 ): Isolation | null {
-  const bounds = boundsForPlaces(
-    places.filter((place) => matchesArea(place, area)),
-  );
+  const inArea = places.filter((place) => matchesArea(place, area));
+  const bounds = boundsForPlaces(inArea);
   if (!bounds) return null;
-  return { label: area, bounds };
+  return {
+    label: area,
+    subtitle: `${inArea.length.toLocaleString()} places`,
+    bounds,
+  };
 }
 
 export interface AreaOption {

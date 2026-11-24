@@ -78,6 +78,9 @@ interface AskMessage {
    * candidates, never verified equipment. 'equipment' when equipment was
    * asked for, 'gym' when a member gym was. */
   houses?: { placeIds: string[]; areaName: string; total: number; kind: 'equipment' | 'gym' };
+  /** The systemic rule for a breakable question, one line under the
+   * verdict (from retrieval ruleNote). */
+  ruleNote?: string | null;
 }
 
 const SUGGESTED_PROMPTS = [
@@ -239,6 +242,7 @@ export default function AskPanel(props: AskPanelProps) {
             totalInScope: cards.total,
             anchorLabel,
             houses: housesFor(result),
+            ruleNote: result.ruleNote,
           },
           requestId,
         );
@@ -268,6 +272,7 @@ export default function AskPanel(props: AskPanelProps) {
           totalInScope: cards.total,
           anchorLabel,
           houses: housesFor(result),
+          ruleNote: result.ruleNote,
         },
         requestId,
       );
@@ -338,6 +343,9 @@ export default function AskPanel(props: AskPanelProps) {
             </p>
             {message.role === 'assistant' && message.aiNote && (
               <p className="ask-ai-note">{message.aiNote}</p>
+            )}
+            {message.role === 'assistant' && message.ruleNote && (
+              <p className="ask-rule-note">{message.ruleNote}</p>
             )}
             {message.cards.length > 0 && (
               <ul className="ask-cards">

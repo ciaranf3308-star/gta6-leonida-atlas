@@ -2,6 +2,16 @@
 
 Release history, newest first.
 
+## v0.15.0 — 2026-11-24
+
+**Released: After Hours — a map that reads beautiful: traced county outlines, an animated sea, and art painted with your key.**
+
+- County outlines are traced, not rectangles: the build dissected every z5 tile pixel by pixel (5,829 tiles, 3.1 million cells) and traced the real coastline — 307,527 units of it — inside each county, with inland edges drawn dashed where they are still estimates. Isolate a county and the map dims everything outside the actual landmass, with a delicate ivory coastline and a slim "&lt;County&gt; ×" pill to leave. The same traced outline sits on each county card in Layers.
+- The sea is alive, quietly: a canvas over the real water areas drifts light across the ocean at about 8 frames a second, pausing when the tab hides and drawing one still frame when motion is reduced. It is a shimmer on the real water — not a new ocean simulation; a full animated tile layer would cost a phone its battery for a subtle effect.
+- County art, painted with your key: each county card carries a dusk landscape in that county's mood, labelled "AI image" — art, never a photo of a real place. In Settings → County art, with the same OpenAI key Ask uses, you can paint a fresh one per county; it stays on this device, and "Restore bundled" brings the original back. No key, no problem — the bundled art stays.
+- The After Hours system throughout: Midnight and Slate smoked glass, Ivory type, Coral and Sunset used only where they earn it — the wordmark, primary buttons, display titles. The "76 places showing" banner is gone, the brand is a small wordmark, search is one compact pill, the isolation banner is a slim pill with the county title drawn on the map, and Settings, Backup, the 3D explorer and About live in one settings area instead of on every page. The map is at least 85% of the screen.
+- Kept, unchanged: spoiler-free first launch, persistence, 48px+ thumb targets, Gyms vs Workout Equipment split, breakable homes as a system, interiors on tap, the Ask spoiler rule + proximity, the index resolver v3, and the empty-map prompt. The bright GTADB day tiles are untouched — no darkening filter, which would muddy the geography. Positions remain APPROXIMATE and absent coverage UNKNOWN.
+
 ## v0.14.0 — 2026-11-24
 
 **Released: Minimal cards, not-sure places re-scanned, county and area isolation, and a map that never looks empty.**

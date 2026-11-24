@@ -62,6 +62,20 @@ describe('Atlas viewport grid', () => {
     expect(far[0]?.position).toEqual({ x: 12, y: 2 });
     expect(clusterPlaces(places, { zoom: 3, enabled: true })).toHaveLength(2);
   });
+  it('merges clusters whose circles would overlap on screen, without dropping a place', () => {
+    // Two places straddling a cell boundary at zoom 0 (cells are 60
+    // units wide): the grid puts them in different buckets, but their
+    // centroids are 2 units apart — their 40px circles would overlap.
+    const places = [place('a', 59, 2), place('b', 61, 2)];
+    const groups = clusterPlaces(places, { zoom: 0, enabled: true });
+    expect(groups).toHaveLength(1);
+    expect(groups[0]?.places.map((p) => p.id).sort()).toEqual(['a', 'b']);
+  });
+  it('never absorbs the selected marker into a neighbouring cluster', () => {
+    const places = [place('a', 59, 2), place('b', 61, 2)];
+    const groups = clusterPlaces(places, { zoom: 0, enabled: true, selectedId: 'b' });
+    expect(groups.some((group) => group.places.length === 1 && group.places[0]?.id === 'b')).toBe(true);
+  });
   it('keeps the selected marker independently focusable and honors the clustering preference at ordinary density', () => {
     const places = [place('a', 2, 2), place('b', 22, 2), place('c', 24, 2)];
     expect(clusterPlaces(places, { zoom: -2, enabled: true, selectedId: 'b' }).some(group => group.places.length === 1 && group.places[0]?.id === 'b')).toBe(true);

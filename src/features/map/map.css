@@ -13,8 +13,19 @@
   background: #1e1a15;
   font-family: inherit;
 }
+/* The animated sea: canvas over the tiles (z-index 300 — above the
+ * tile pane at 200, below the overlay pane at 400 and the markers at
+ * 600), pointer-transparent so taps still reach the map. */
+.sea-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 300;
+  pointer-events: none;
+}
 .atlas-map-canvas:focus-visible {
-  outline: 2px solid #e8823a;
+  outline: 2px solid var(--coral);
   outline-offset: -3px;
 }
 .atlas-map-view.is-editing .atlas-map-canvas,
@@ -37,7 +48,7 @@
   border-radius: 50%;
   color: #fff;
   background: var(--pin-color, #e8823a);
-  border: 2px solid #1b1815e6;
+  border: 2px solid #0b1018e6;
   box-shadow:
     0 2px 8px #120e0a80,
     inset 0 0 0 1px #ffffff2e;
@@ -59,8 +70,8 @@
   filter: drop-shadow(0 1px 1px #0006);
 }
 .atlas-cluster-face {
-  background: var(--sunset, linear-gradient(135deg, #ff7a18, #ff2e88));
-  border: 2px solid #1b1815e6;
+  background: var(--coral, #ff527f);
+  border: 2px solid #0b1018e6;
   color: #fff;
   font-size: 12px;
   text-shadow: 0 1px 2px #0008;
@@ -123,60 +134,76 @@
   color: #fff;
   font-weight: 700;
 }
-/* ---- Area isolation (v0.14.0): the isolated area is named on the
- * map, with one big exit back to all of Leonida. Bottom-centre, above
- * the bottom nav and clear of the zoom column on the right (the top
- * is the wordmark + search pill's space). ---- */
-.isolation-banner {
+/* ---- Area isolation (v0.15.0 After Hours): a geographical title
+ * rendered onto the map itself, plus one slim dismissible pill.
+ * No card, no explanation paragraph, no giant exit button. ---- */
+.county-map-title {
   position: absolute;
-  z-index: 500;
-  bottom: 76px;
   left: 50%;
+  top: 76px;
   transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 10px;
-  width: min(320px, calc(100% - 92px));
-  background: #201b14f2;
-  border: 1px solid #ff2e88;
-  border-radius: 16px;
-  padding: 12px;
-  box-shadow: 0 4px 18px #000a;
-  color: #f3ead9;
+  z-index: 430;
+  pointer-events: none;
+  text-align: center;
+  text-shadow: 0 1px 10px #000d, 0 0 24px #0009;
 }
-.isolation-banner > span {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-.isolation-banner strong {
+.county-map-title strong {
+  display: block;
   font-family: var(--condensed, 'Oswald', sans-serif);
-  font-size: 16px;
-  letter-spacing: 0.8px;
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 4px;
   text-transform: uppercase;
-  white-space: nowrap;
+  color: var(--text, #f6f0e5);
 }
-.isolation-banner small {
+.county-map-title span {
+  display: block;
+  margin-top: 4px;
+  font-family: var(--condensed, 'Oswald', sans-serif);
   font-size: 12px;
-  color: #d8c9b8;
-  line-height: 1.4;
-}
-.isolation-banner button {
-  width: 100%;
-  min-height: 48px;
-  padding: 10px 14px;
-  border: 0;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #ff2e88, #ff7a18);
-  color: #fff;
-  font-family: var(--condensed, 'Oswald', sans-serif);
-  font-size: 14px;
-  letter-spacing: 0.8px;
+  letter-spacing: 3px;
   text-transform: uppercase;
+  color: #e8e2d4;
+}
+.isolation-pill {
+  position: absolute;
+  left: 12px;
+  bottom: calc(var(--nav-height) + 10px);
+  z-index: 470;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 6px 6px 14px;
+  background: #0b1018d9;
+  backdrop-filter: blur(12px);
+  border: 1px solid #f6f0e52e;
+  border-radius: 999px;
+  box-shadow: 0 4px 16px #0009;
+  font-family: var(--condensed, 'Oswald', sans-serif);
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text, #f6f0e5);
+}
+.isolation-pill button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  min-height: 28px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--surface-raised, #202e40);
+  color: var(--text, #f6f0e5);
+  font-size: 18px;
+  line-height: 1;
   cursor: pointer;
-  white-space: nowrap;
+}
+.isolation-pill button:hover {
+  background: var(--coral, #ff527f);
+  color: #fff;
 }
 .atlas-map-navigation {
   position: absolute;
@@ -186,10 +213,10 @@
   display: flex;
   flex-direction: column;
   gap: 1px;
-  border: 1px solid #4a4030;
+  border: 1px solid #f6f0e529;
   border-radius: 9px;
   overflow: hidden;
-  box-shadow: 0 4px 16px #120e0a40;
+  box-shadow: 0 4px 16px #0009;
 }
 .atlas-map-navigation button {
   display: grid;
@@ -198,14 +225,14 @@
   height: 48px;
   border: 0;
   padding: 0;
-  color: #f3ead9;
-  background: #201b14;
+  color: #f6f0e5;
+  background: #0b1018d9;
   font: 400 25px/1 sans-serif;
   cursor: pointer;
 }
 .atlas-map-navigation button:hover {
-  background: #322a1e;
-  color: #f6c48d;
+  background: #19232f;
+  color: #ffb56b;
 }
 .atlas-map-navigation button:disabled {
   opacity: 0.45;
@@ -224,8 +251,8 @@
   bottom: 12px;
   padding: 5px 8px;
   border-radius: 5px;
-  background: #1b1815e6;
-  color: #a89a80;
+  background: #0b1018e6;
+  color: #7c8a9c;
   /* One line, always — it used to wrap to two and the second line was
      clipped by the bottom of the map. Clear of the zoom controls. */
   white-space: nowrap;
@@ -359,8 +386,9 @@
   }
 }
 @media (max-width: 599px) {
-  .atlas-app[data-details='true'] .atlas-map-navigation {
-    bottom: calc(52dvh + 16px);
+  /* Pinch-to-zoom replaces permanent zoom buttons on phones. */
+  .atlas-map-navigation {
+    display: none;
   }
   .atlas-app[data-details='true'] .atlas-map-attribution {
     display: none;

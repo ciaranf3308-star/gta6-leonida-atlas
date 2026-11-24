@@ -16,6 +16,10 @@ export interface County {
   name: string;
   area: string;
   bounds: MapBounds;
+  /** Art-directed regional photograph (After Hours), relative to the
+   * app base. Null while a county has no photograph yet — the card
+   * falls back to a slate surface, never to a stock image. */
+  photo: string | null;
 }
 
 export const COUNTIES: County[] = [
@@ -23,30 +27,35 @@ export const COUNTIES: County[] = [
     id: 'lummox',
     name: 'Lummox County',
     area: 'North · Mount Kalaga',
+    photo: 'assets/after-hours/county-lummox.jpg',
     bounds: { west: -8279, east: -100, south: 5205, north: 8929 },
   },
   {
     id: 'kelly',
     name: 'Kelly County',
     area: 'West · Port Gellhorn, Hamlet',
+    photo: 'assets/after-hours/county-kelly.jpg',
     bounds: { west: -9382, east: -3023, south: 596, north: 5626 },
   },
   {
     id: 'leonard',
     name: 'Leonard County',
     area: 'Centre-east · Ambrosia',
+    photo: 'assets/after-hours/county-leonard.jpg',
     bounds: { west: -2690, east: 1240, south: 1039, north: 6173 },
   },
   {
     id: 'vice-dale',
     name: 'Vice-Dale County',
     area: 'South-east · Vice City',
+    photo: 'assets/after-hours/county-vice-dale.jpg',
     bounds: { west: -3779, east: 2559, south: -2650, north: 3235 },
   },
   {
     id: 'mariana',
     name: 'Mariana County',
     area: 'South · Leonida Keys',
+    photo: 'assets/after-hours/county-mariana.jpg',
     bounds: { west: -8336, east: 85, south: -7928, north: 187 },
   },
 ];

@@ -566,6 +566,47 @@ describe('Ask Nylah — real proximity (the Capri gyms case)', () => {
   });
 });
 
+describe('Ask Nylah — the breakable rule rides with the answer', () => {
+  it('a breakable question returns the dark-blue rule as one line, and a gym question does not', () => {
+    const breakable = retrieveForAsk({
+      question: 'What apartments can I break into in Vice City?',
+      places: [
+        place({
+          id: 'apt:venture',
+          title: 'Venture Apartments',
+          layerId: 'breakable',
+          position: { x: 1500, y: 1800 },
+          region: 'Vice City',
+          tags: ['residential', 'enterable'],
+        }),
+      ],
+      layers: layers(),
+      filters: { hideFound: false, remainingOnly: false, countyId: null },
+    });
+    expect(breakable.ruleNote).toMatch(/dark blue has an interior/i);
+    expect(breakable.ruleNote).toMatch(/light blue means it is closed/i);
+    // One line, not the whole rule paragraph.
+    expect(breakable.ruleNote?.split(/(?<=[.!])\s+/).filter(Boolean)).toHaveLength(1);
+
+    const gym = retrieveForAsk({
+      question: 'Show me a gym near Capri',
+      places: [
+        place({
+          id: 'gym:grand-majestic',
+          title: 'Grand Majestic Gym',
+          layerId: 'gyms',
+          position: { x: -1035, y: -1249 },
+          region: 'Tequesta, Vice City',
+          tags: ['gym'],
+        }),
+      ],
+      layers: layers(),
+      filters: { hideFound: false, remainingOnly: false, countyId: null },
+    });
+    expect(gym.ruleNote).toBeNull();
+  });
+});
+
 describe('Ask Nylah — answers from tags, not just names', () => {
   const TAGGED: Place[] = [
     place({
