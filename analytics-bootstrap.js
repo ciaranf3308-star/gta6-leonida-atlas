@@ -1,5 +1,5 @@
 (function(){
-  var id="",expectedOrigin="",parentOrigin="",base="/";
+  var id="",expectedOrigin="",parentOrigin="",base="/gta6-leonida-atlas/";
   // Only the dedicated, different origin may run the tag, and only inside a frame.
   if(!id||!expectedOrigin||!parentOrigin||expectedOrigin===parentOrigin||window.parent===window||window.origin!==expectedOrigin||location.origin!==expectedOrigin)return;
   // An empty hidden page must not manufacture Enhanced Measurement scroll events.
