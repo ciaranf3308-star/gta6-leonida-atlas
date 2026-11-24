@@ -17,7 +17,7 @@ const marker = (id = 'custom:beach'): PersonalMarker => ({
 });
 const incoming = (): Backup => ({
   format: 'leonida-atlas',
-  version: 2,
+  version: 3,
   exportedAt: time,
   favorites: [{ placeId: 'L42', createdAt: time }],
   notes: [{ placeId: 'L42', text: 'Imported note', updatedAt: time }],
@@ -25,6 +25,24 @@ const incoming = (): Backup => ({
   markers: [marker()],
   visited: [{ placeId: 'L42', visitedAt: time }],
   preferences: { reducedMotion: true, showLabels: false, clusterMarkers: false },
+  aiCategories: [
+    {
+      placeId: 'L1',
+      aiCategory: 'house',
+      confidence: 0.9,
+      reason: 'Imported suggestion.',
+      model: 'test',
+      indexedAt: time,
+      status: 'suggested',
+      source: 'ai',
+    },
+  ],
+  aiIndexJob: {
+    status: 'done',
+    attemptedPlaceIds: ['L1'],
+    resolverVersion: 3,
+    updatedAt: time,
+  },
 });
 
 let db: AtlasDatabase;
@@ -145,7 +163,7 @@ describe('local atlas repository', () => {
       clusterMarkers: false,
     });
     const exported = await db.exportBackup();
-    expect(exported).toMatchObject({ format: 'leonida-atlas', version: 2 });
+    expect(exported).toMatchObject({ format: 'leonida-atlas', version: 3 });
     exported.markers[0]!.title = 'Mutated export';
     expect((await db.load()).markers[0]?.title).toBe('Beach stop');
   });

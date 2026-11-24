@@ -19,6 +19,7 @@ import {
   type IndexJobState,
   type StorageLike,
 } from "./storage";
+import { mergeAiCategories, mergeIndexJob } from "../backup/ai-merge";
 
 /**
  * The AI index, as app state. Categories and job progress live in
@@ -60,6 +61,18 @@ interface AiIndexStoreState {
     category: AiCategoryId,
     shopType?: string,
   ) => void;
+  /**
+   * Merge a restored AI index with the one on this phone (see
+   * ai-merge.ts for the rules: the user's corrections win, confirmed
+   * beats suggested, "not sure" never overwrites a type). Safe to
+   * call while the job is running — the runner always reads the
+   * live state, and the merge keeps the local job status, so a
+   * restore never pauses or stops a run in progress.
+   */
+  mergeImportedAi: (
+    records: readonly AiCategoryRecord[],
+    job: IndexJobState | null,
+  ) => { added: number; updated: number; keptLocal: number; addedAttempted: number };
   /** Re-check the ones the AI was not sure about (clears only `unsure` attempts). */
   retryUnsure: () => void;
   clearAll: (storage?: StorageLike | null) => void;
@@ -156,6 +169,21 @@ export const useAiIndexStore = create<AiIndexStoreState>()((set, get) => ({
     };
     set({ categories });
     saveAiCategories(categories, activeStorage);
+  },
+  mergeImportedAi: (records, job) => {
+    const categoriesResult = mergeAiCategories(get().categories, records);
+    const jobResult = job
+      ? mergeIndexJob(get().job, job)
+      : { job: get().job, addedAttempted: 0 };
+    set({ categories: categoriesResult.merged, job: jobResult.job });
+    saveAiCategories(categoriesResult.merged, activeStorage);
+    if (job) saveIndexJob(jobResult.job, activeStorage);
+    return {
+      added: categoriesResult.added,
+      updated: categoriesResult.updated,
+      keptLocal: categoriesResult.keptLocal,
+      addedAttempted: jobResult.addedAttempted,
+    };
   },
   retryUnsure: () => {
     const unsure = new Set(

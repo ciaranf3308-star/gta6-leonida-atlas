@@ -20,6 +20,7 @@ import {
   parsePreferences,
   parseText,
 } from './backup';
+import { RESOLVER_VERSION } from '../features/categorise/storage';
 
 type PreferencesRecord = { key: 'preferences'; value: Preferences };
 
@@ -167,7 +168,7 @@ export class AtlasDatabase extends Dexie {
     parseBackup({
       ...(await this.snapshot()),
       format: 'leonida-atlas',
-      version: 2,
+      version: 3,
       exportedAt: new Date().toISOString(),
     });
   }
@@ -331,11 +332,22 @@ export class AtlasDatabase extends Dexie {
   }
 
   async exportBackup(): Promise<Backup> {
+    // The AI index lives in localStorage, not in this database — the
+    // store layer (exportWorkspaceBackup) fills aiCategories and
+    // aiIndexJob from the live index before the file is written, so a
+    // direct database export honestly reports an empty index here.
     return parseBackup({
       ...(await this.load()),
       format: 'leonida-atlas',
-      version: 2,
+      version: 3,
       exportedAt: new Date().toISOString(),
+      aiCategories: [],
+      aiIndexJob: {
+        status: 'idle',
+        attemptedPlaceIds: [],
+        resolverVersion: RESOLVER_VERSION,
+        updatedAt: new Date().toISOString(),
+      },
     });
   }
 

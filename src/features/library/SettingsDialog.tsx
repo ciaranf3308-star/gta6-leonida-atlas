@@ -89,6 +89,37 @@ export default function SettingsDialog({
         ))}
       </div>
       <section className="detail-section">
+        <h3>Back up my Atlas</h3>
+        <p className="help-text">
+          Everything you make here lives only on this phone — your markers, notes, saved places,
+          collections, and the AI index (every &ldquo;?&rdquo; place the job has sorted). A phone
+          wipe, clearing browser data, uninstalling the app or moving to a new phone loses all of
+          it unless you export. One file, <strong>leonida-atlas-backup-YYYY-MM-DD.json</strong>,
+          keeps it forever. Your OpenAI key is never in the file — it stays on the device you
+          typed it on, and you add it again on a new phone.
+        </p>
+        <button
+          className="button primary"
+          type="button"
+          disabled={!ready || !onOpenBackup}
+          onClick={() => {
+            if (onOpenBackup) {
+              onClose();
+              onOpenBackup();
+            }
+          }}
+        >
+          Back up my Atlas
+        </button>
+        <p className="help-text">
+          Where my stuff lives: markers, notes and saved places in this browser&apos;s storage;
+          the AI index in this browser too, saved after every batch while indexing. The map
+          itself and the app can reopen offline after the first complete load. Nothing is
+          stored in an account anywhere — there is no account — so the backup file is the
+          only copy that survives this phone.
+        </p>
+      </section>
+      <section className="detail-section">
         <h3>Ask Nylah (AI)</h3>
         <p className="help-text">
           Ask Nylah answers only from this map, and only about what you asked for. Your OpenAI
@@ -227,8 +258,9 @@ export default function SettingsDialog({
       <section className="detail-section">
         <h3>Storage on this device</h3>
         <p className="help-text">
-          Your browser stores personal data in IndexedDB. Backups protect your work if browser data
-          is cleared. The map and app can reopen offline after the first complete load; The 3D view and its textures
+          Your browser stores personal data in IndexedDB, and the AI index in this browser too.
+          Backups protect your work if browser data is cleared — without one, the AI index is
+          lost with it. The map and app can reopen offline after the first complete load; The 3D view and its textures
           are cached as you explore.
         </p>
         <button

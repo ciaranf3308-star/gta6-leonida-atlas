@@ -6,6 +6,15 @@ import { getAskApiKey, getAskModel } from "../ask/openai";
 import { indexJobCounts, useAiIndexStore } from "./store";
 import { remainingUnnamedPlaces, runIndexJob } from "./runner";
 import { resolutionSourceCounts } from "./resolver";
+import { useWorkspaceStore } from "../../stores/atlas";
+import {
+  dismissBackupNudge,
+  downloadAtlasBackup,
+  readLastBackup,
+  readNudgeDismissedUntil,
+  shouldShowBackupNudge,
+  type LastBackup,
+} from "../backup/atlas-backup";
 import {
   AI_CATEGORIES,
   aiCategoryShortLabel,
@@ -52,6 +61,30 @@ export default function IndexPanel(props: IndexPanelProps) {
     [props.places],
   );
   const counts = indexJobCounts(categories, job, unnamed.length);
+  // Done means nothing never-run is left — "not sure" places still
+  // sit in "To go" for a re-scan, so they never block "done".
+  const done = unnamed.length > 0 && counts.pending === 0 && !running;
+  const workspaceId = useWorkspaceStore((s) => s.workspaceId);
+  /** The "Backed up yet?" nudge: the index lives only on this phone,
+   * and a wipe loses hours of sorting. It fires after a finished run
+   * that was never backed up, or every 100 newly sorted places since
+   * the last backup — never while the job is running, never twice for
+   * the same work. Export reads a snapshot; it never pauses the job. */
+  const [lastBackup, setLastBackup] = useState<LastBackup | null>(() =>
+    readLastBackup(),
+  );
+  const [nudgeDismissedUntil, setNudgeDismissedUntil] = useState<number>(() =>
+    readNudgeDismissedUntil(),
+  );
+  const [backupMessage, setBackupMessage] = useState("");
+  const showBackupNudge =
+    !running &&
+    shouldShowBackupNudge({
+      categorised: counts.categorised,
+      done,
+      lastBackup,
+      dismissedUntilCount: nudgeDismissedUntil,
+    });
   const remaining = useMemo(
     () => remainingUnnamedPlaces(unnamed, job.attemptedPlaceIds),
     [unnamed, job.attemptedPlaceIds],
@@ -89,9 +122,6 @@ export default function IndexPanel(props: IndexPanelProps) {
     unnamed.length > 0
       ? Math.round((counts.attempted / unnamed.length) * 100)
       : 0;
-  // Done means nothing never-run is left — "not sure" places still
-  // sit in "To go" for a re-scan, so they never block "done".
-  const done = unnamed.length > 0 && counts.pending === 0 && !running;
 
   async function start() {
     if (running || runningRef.current) return;
@@ -284,6 +314,56 @@ export default function IndexPanel(props: IndexPanelProps) {
           </span>
         )}
       </div>
+      {showBackupNudge && (
+        <div className="backup-nudge" role="status">
+          <p>
+            <strong>Backed up yet?</strong> Your index lives on this phone
+            only — a wipe, a browser-data clear or a new phone loses it.
+            {lastBackup
+              ? ` Last backup had ${lastBackup.aiCategories.toLocaleString()} sorted place${lastBackup.aiCategories === 1 ? "" : "s"}.`
+              : " Nothing is backed up yet."}
+          </p>
+          <div className="button-row">
+            <button
+              type="button"
+              className="button primary"
+              onClick={async () => {
+                try {
+                  const result = await downloadAtlasBackup(workspaceId);
+                  setLastBackup({
+                    exportedAt: new Date().toISOString(),
+                    aiCategories: result.aiCategories,
+                  });
+                  setBackupMessage(
+                    `Backup downloaded — ${result.aiCategories.toLocaleString()} AI-sorted places kept safe.`,
+                  );
+                } catch {
+                  setBackupMessage(
+                    "Could not read local data for export. Retry after checking storage.",
+                  );
+                }
+              }}
+            >
+              Back up now
+            </button>
+            <button
+              type="button"
+              className="button"
+              onClick={() => {
+                dismissBackupNudge(counts.categorised);
+                setNudgeDismissedUntil(counts.categorised);
+              }}
+            >
+              Not now
+            </button>
+          </div>
+        </div>
+      )}
+      {backupMessage && (
+        <p className="success-message" role="status">
+          {backupMessage}
+        </p>
+      )}
       {job.error && (
         <p className="inline-error" role="alert">
           Indexing stopped: {job.error} Nothing was lost — the places already
@@ -383,7 +463,8 @@ export default function IndexPanel(props: IndexPanelProps) {
         Places the map data, a same-spot match, a guide pin or the analogue
         address already resolve never reach the AI at all, so those cost
         nothing. Turn on Unverified places to see the “?” places on the map,
-        with their suggested type.
+        with their suggested type. Saved after every batch on this phone — back
+        up in Settings to keep it forever, past a wipe or a new phone.
       </p>
     </section>
   );

@@ -1,4 +1,7 @@
 /** Coordinates are GTADB game units, never real-world latitude/longitude. */
+import type { AiCategoryRecord } from '../features/categorise/categories';
+import type { IndexJobState } from '../features/categorise/storage';
+
 export interface Position {
   x: number;
   y: number;
@@ -73,10 +76,19 @@ export interface UserData {
   visited: VisitedPlace[];
   preferences: Preferences;
 }
+/**
+ * The AI index, carried in the same backup file as everything else
+ * (v3). Categories and job state live in localStorage on the phone;
+ * without this, a phone wipe, browser-data clear, PWA uninstall or
+ * new phone would lose hours of indexing. The OpenAI key is NEVER in
+ * a backup — it stays on the device it was typed on.
+ */
 export interface Backup extends UserData {
   format: 'leonida-atlas';
-  version: 2;
+  version: 3;
   exportedAt: string;
+  aiCategories: AiCategoryRecord[];
+  aiIndexJob: IndexJobState;
 }
 export interface LayerDefinition {
   id: string;

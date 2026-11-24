@@ -12,6 +12,10 @@ import {
 } from '../db/repository';
 import { atlasRegistry } from '../plugins/registry';
 import { parseBackup } from '../db/backup';
+import {
+  loadAiCategories,
+  loadIndexJob,
+} from '../features/categorise/storage';
 
 export const DEFAULT_FILTERS: Filters = {
   query: '',
@@ -275,7 +279,16 @@ export async function exportWorkspaceBackup(workspaceId: string | null) {
   assertWorkspace(workspaceId, expectedGeneration);
   const backup = await atlasRepository.exportBackup();
   assertWorkspace(workspaceId, expectedGeneration);
-  return backup;
+  // The AI index lives in localStorage, not in the database — attach
+  // a read-only snapshot here. Two plain reads, no writes: safe while
+  // the indexing job is running, and the file is validated before it
+  // is handed to the download, so a half-written batch can never
+  // produce a corrupt backup.
+  return parseBackup({
+    ...backup,
+    aiCategories: Object.values(loadAiCategories()),
+    aiIndexJob: loadIndexJob(),
+  });
 }
 
 export async function importWorkspaceBackup(

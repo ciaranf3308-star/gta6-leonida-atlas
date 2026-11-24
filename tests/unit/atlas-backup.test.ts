@@ -47,7 +47,7 @@ describe('portable backup validation', () => {
     expect(input.collections[0]!.placeIds).toEqual(['L42', 'custom:beach']);
   });
 
-  it.each([null, [], 'text', {}, { ...backup(), format: 'other' }, { ...backup(), version: 3 }])(
+  it.each([null, [], 'text', {}, { ...backup(), format: 'other' }, { ...backup(), version: 4 }])(
     'rejects invalid envelopes and unsupported versions (%j)',
     (input) => {
       expect(() => parseBackup(input)).toThrow(/backup|format|version/i);
@@ -140,7 +140,7 @@ describe('portable backup validation', () => {
     );
   });
 
-  it('migrates a v1 backup with missing introduced fields into a complete v2 backup', () => {
+  it('migrates a v1 backup with missing introduced fields into a complete v3 backup', () => {
     const result = parseBackup({
       format: 'leonida-atlas',
       version: 1,
@@ -151,7 +151,9 @@ describe('portable backup validation', () => {
       collections: [{ id: 'trip', name: 'Old trip', placeIds: ['custom:old'] }],
       preferences: { showLabels: false },
     });
-    expect(result.version).toBe(2);
+    expect(result.version).toBe(3);
+    expect(result.aiCategories).toEqual([]);
+    expect(result.aiIndexJob.attemptedPlaceIds).toEqual([]);
     expect(result.favorites).toEqual([{ placeId: 'L42', createdAt: time }]);
     expect(result.notes).toEqual([{ placeId: 'L42', text: 'Remember', updatedAt: time }]);
     expect(result.markers[0]).toEqual({

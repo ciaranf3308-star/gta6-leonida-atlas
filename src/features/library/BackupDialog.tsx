@@ -4,12 +4,18 @@ import type { Backup } from '../../domain/types';
 import { atlasRepository } from '../../db/repository';
 import { MAX_BACKUP_BYTES, parseBackup } from '../../db/backup';
 import {
-  exportWorkspaceBackup,
   saveLocal,
   usePersistenceStore,
   useWorkspaceStore,
 } from '../../stores/atlas';
+import { useAiIndexStore } from '../categorise/store';
+import { downloadAtlasBackup } from '../backup/atlas-backup';
 import { Modal } from '../../app/Modal';
+
+/** "1 AI-sorted place", "3 AI-sorted places" — the counts in this dialog are user-facing. */
+function count(n: number, singular: string, plural = `${singular}s`): string {
+  return `${n.toLocaleString()} ${n === 1 ? singular : plural}`;
+}
 
 export default function BackupDialog({ onClose }: { onClose: () => void }) {
   const ready = usePersistenceStore((s) => s.ready);
@@ -19,16 +25,16 @@ export default function BackupDialog({ onClose }: { onClose: () => void }) {
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
   async function exportData() {
+    setError('');
+    setMessage('');
     try {
-      const backup = await exportWorkspaceBackup(workspaceId);
-      const blob = new Blob([JSON.stringify(backup)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement('a');
-      anchor.href = url;
-      anchor.download = `leonida-atlas-backup-${new Date().toISOString().slice(0, 10)}.json`;
-      anchor.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-      setMessage('Backup downloaded. Store it somewhere safe.');
+      const result = await downloadAtlasBackup(workspaceId);
+      setMessage(
+        `Backup downloaded — ${count(result.aiCategories, 'AI-sorted place')}, ` +
+          `${count(result.markers, 'marker')}, ${count(result.notes, 'note')}, ` +
+          `${count(result.favorites, 'saved place')}. Store it somewhere safe — ` +
+          `your OpenAI key is never in the file.`,
+      );
     } catch {
       setError('Could not read local data for export. Retry after checking storage.');
     }
@@ -54,16 +60,38 @@ export default function BackupDialog({ onClose }: { onClose: () => void }) {
     if (!preview) return;
     setBusy(true);
     const ok = await saveLocal(() => atlasRepository.importBackup(preview));
-    setBusy(false);
     if (ok) {
+      // The markers/notes half is in; now merge the AI index the same
+      // way — corrections win, confirmed beats suggested, "not sure"
+      // never overwrites a type. Safe while the job runs: the merge
+      // keeps the live job's status, so a restore never pauses or
+      // stops a run in progress.
+      const ai = useAiIndexStore
+        .getState()
+        .mergeImportedAi(preview.aiCategories, preview.aiIndexJob);
+      setBusy(false);
       setPreview(null);
-      setMessage('Backup merged. Your local data is saved.');
-    } else setError('Import failed. Existing data is preserved. Retry after checking storage.');
+      setMessage(
+        `Backup merged. AI index: ${ai.added.toLocaleString()} new, ` +
+          `${ai.updated.toLocaleString()} updated, ` +
+          `${ai.keptLocal.toLocaleString()} kept as yours. ` +
+          `${count(preview.markers.length, 'marker')}, ` +
+          `${count(preview.notes.length, 'note')}, ` +
+          `${count(preview.favorites.length, 'saved place')}. ` +
+          `Your local data is saved.`,
+      );
+    } else {
+      setBusy(false);
+      setError('Import failed. Existing data is preserved. Retry after checking storage.');
+    }
   }
   return (
     <Modal title="Your local backup" onClose={onClose}>
       <p className="panel-intro">
-        Export your favorites, collections, notes, markers and preferences. No account is needed.
+        Export everything yours — favorites, collections, notes, markers and the AI index (the
+        sorted &ldquo;?&rdquo; places and how far the job got). No account is needed, and your
+        OpenAI key is never in the file. The job saves after every batch on this phone — back
+        up to keep it forever, past a wipe, a browser-data clear, a PWA uninstall or a new phone.
       </p>
       <button className="button primary" disabled={!ready} onClick={() => void exportData()}>
         <Download size={18} />
@@ -90,11 +118,16 @@ export default function BackupDialog({ onClose }: { onClose: () => void }) {
         <section className="backup-preview" aria-label="Backup preview">
           <h3>Ready to merge</h3>
           <p>
-            {preview.favorites.length} favorites · {preview.collections.length} collections ·{' '}
-            {preview.notes.length} notes · {preview.markers.length} markers
+            {count(preview.aiCategories.length, 'AI-sorted place')} ·{' '}
+            {count(preview.aiIndexJob.attemptedPlaceIds.length, 'place')} the job has
+            been through · {count(preview.favorites.length, 'favorite')} ·{' '}
+            {count(preview.collections.length, 'collection')} ·{' '}
+            {count(preview.notes.length, 'note')} · {count(preview.markers.length, 'marker')}
           </p>
           <p className="help-text">
-            Imported display preferences will replace current preferences.
+            Imported display preferences will replace current preferences. Your corrections
+            always win: a place you corrected or confirmed keeps your word, and a &ldquo;not
+            sure&rdquo; in the file never overwrites a type.
           </p>
           <button className="button primary" disabled={busy} onClick={() => void merge()}>
             {busy ? 'Importing…' : 'Merge backup'}

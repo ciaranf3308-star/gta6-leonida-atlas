@@ -10,6 +10,19 @@ import type {
   VisitedPlace,
 } from '../domain/types';
 import { CANONICAL_BOUNDS } from '../features/street-leonida/leonida-coordinates';
+import {
+  AI_CATEGORIES,
+  type AiCategoryId,
+  type AiCategoryRecord,
+  type AiCategoryStatus,
+  type ResolutionSource,
+} from '../features/categorise/categories';
+import {
+  EMPTY_INDEX_JOB,
+  RESOLVER_VERSION,
+  type IndexJobState,
+  type IndexJobStatus,
+} from '../features/categorise/storage';
 
 /** The file picker should check this before reading or JSON-parsing a file. */
 export const MAX_BACKUP_BYTES = 10 * 1024 * 1024;
@@ -211,12 +224,114 @@ export function parseCollection(
   };
 }
 
+/**
+ * One AI-sorted "?" place, whitelisted the same way as every other
+ * backup entry: only known fields survive, in known shapes. A record
+ * the job never wrote (bad category, bad confidence, bad status) is
+ * dropped, never trusted as a type. Unknown keys — including anything
+ * that looks like an API key — are ignored, so a key can never ride
+ * along in a backup file.
+ */
+export function parseAiCategoryRecord(input: unknown, path = 'aiCategory'): AiCategoryRecord {
+  const item = record(input, path);
+  const placeId = parseId(item.placeId, `${path}.placeId`);
+  if (
+    typeof item.aiCategory !== 'string' ||
+    !(AI_CATEGORIES as readonly string[]).includes(item.aiCategory)
+  )
+    invalid(`${path}.aiCategory`, 'is unsupported');
+  const confidence = item.confidence;
+  if (typeof confidence !== 'number' || !Number.isFinite(confidence) || confidence < 0 || confidence > 1)
+    invalid(`${path}.confidence`, 'must be a number between 0 and 1');
+  const status = item.status;
+  if (
+    typeof status !== 'string' ||
+    !['suggested', 'unsure', 'confirmed', 'corrected'].includes(status)
+  )
+    invalid(`${path}.status`, 'is unsupported');
+  const userCategory =
+    item.userCategory === undefined
+      ? undefined
+      : (AI_CATEGORIES as readonly string[]).includes(item.userCategory as string)
+        ? (item.userCategory as AiCategoryId)
+        : invalid(`${path}.userCategory`, 'is unsupported');
+  const source =
+    item.source === undefined
+      ? undefined
+      : ['coordinate', 'tag', 'guide', 'analogue', 'ai'].includes(item.source as string)
+        ? (item.source as ResolutionSource)
+        : invalid(`${path}.source`, 'is unsupported');
+  const shopType =
+    item.shopType === undefined
+      ? undefined
+      : parseText(item.shopType, `${path}.shopType`, 60);
+  const userShopType =
+    item.userShopType === undefined
+      ? undefined
+      : parseText(item.userShopType, `${path}.userShopType`, 60);
+  const matchedFrom =
+    item.matchedFrom === undefined
+      ? undefined
+      : parseText(item.matchedFrom, `${path}.matchedFrom`, 200);
+  return {
+    placeId,
+    aiCategory: item.aiCategory as AiCategoryId,
+    ...(shopType ? { shopType } : {}),
+    confidence,
+    reason: parseText(item.reason, `${path}.reason`, 1000),
+    model: parseText(item.model, `${path}.model`, 128),
+    indexedAt: timestamp(item.indexedAt, `${path}.indexedAt`),
+    status: status as AiCategoryStatus,
+    ...(userCategory ? { userCategory } : {}),
+    ...(userShopType ? { userShopType } : {}),
+    ...(source ? { source } : {}),
+    ...(matchedFrom ? { matchedFrom } : {}),
+  };
+}
+
+/**
+ * The index job's progress, as stored in the backup. A "running" job
+ * in a file was interrupted when it was exported — it reads as
+ * paused, never as still running, so a restore never claims a job is
+ * going when it is not.
+ */
+export function parseAiIndexJob(input: unknown): IndexJobState {
+  const item = record(input, 'aiIndexJob');
+  const status = item.status;
+  if (
+    typeof status !== 'string' ||
+    !['idle', 'running', 'paused', 'done', 'error'].includes(status)
+  )
+    invalid('aiIndexJob.status', 'is unsupported');
+  const attemptedPlaceIds = list(item.attemptedPlaceIds, 'aiIndexJob.attemptedPlaceIds').map(
+    (id, index) => parseId(id, `aiIndexJob.attemptedPlaceIds[${index}]`),
+  );
+  const resolverVersion =
+    item.resolverVersion === undefined
+      ? RESOLVER_VERSION
+      : typeof item.resolverVersion === 'number' &&
+          Number.isFinite(item.resolverVersion) &&
+          item.resolverVersion >= 1 &&
+          item.resolverVersion <= 99
+        ? Math.floor(item.resolverVersion)
+        : invalid('aiIndexJob.resolverVersion', 'must be a number between 1 and 99');
+  return {
+    status: (status === 'running' ? 'paused' : status) as IndexJobStatus,
+    attemptedPlaceIds: [...new Set(attemptedPlaceIds)],
+    resolverVersion,
+    updatedAt: timestamp(item.updatedAt, 'aiIndexJob.updatedAt'),
+    ...(typeof item.error === 'string'
+      ? { error: parseText(item.error, 'aiIndexJob.error', 500) }
+      : {}),
+  };
+}
+
 /** Returns a new, whitelisted value. Never mutates input or touches browser storage. */
 export function parseBackup(input: unknown): Backup {
   const data = record(input, 'backup');
   if (data.format !== 'leonida-atlas') invalid('format', 'must be leonida-atlas');
-  if (data.version !== 1 && data.version !== 2)
-    invalid('version', 'is unsupported (supported versions: 1 and 2)');
+  if (data.version !== 1 && data.version !== 2 && data.version !== 3)
+    invalid('version', 'is unsupported (supported versions: 1, 2 and 3)');
   const exportedAt = timestamp(data.exportedAt, 'exportedAt');
   const legacyTime = data.version === 1 ? exportedAt : undefined;
   const markers = unique(
@@ -290,7 +405,7 @@ export function parseBackup(input: unknown): Backup {
   for (const item of visited) checkReference(item.placeId);
   const result: Backup = {
     format: 'leonida-atlas',
-    version: 2,
+    version: 3,
     exportedAt,
     favorites,
     notes,
@@ -298,6 +413,19 @@ export function parseBackup(input: unknown): Backup {
     markers,
     visited,
     preferences: parsePreferences(data.preferences, Boolean(legacyTime)),
+    // v1/v2 files never had the AI index — they restore with an empty
+    // one, and the job simply starts from scratch. v3 files carry it.
+    aiCategories: unique(
+      list(data.aiCategories === undefined ? [] : data.aiCategories, 'aiCategories').map(
+        (item, index) => parseAiCategoryRecord(item, `aiCategories[${index}]`),
+      ),
+      (item) => item.placeId,
+      'aiCategories',
+    ),
+    aiIndexJob:
+      data.aiIndexJob === undefined
+        ? { ...EMPTY_INDEX_JOB, attemptedPlaceIds: [], updatedAt: exportedAt }
+        : parseAiIndexJob(data.aiIndexJob),
   };
   // Count only whitelisted data: ignored keys cannot become stored executable content.
   if (new TextEncoder().encode(JSON.stringify(result)).byteLength > MAX_BACKUP_BYTES)
