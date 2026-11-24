@@ -35,6 +35,12 @@ interface AiIndexStoreState {
   categories: Record<string, AiCategoryRecord>;
   job: IndexJobState;
   loaded: boolean;
+  /** Session-only counter, never persisted: the forced onboarding's
+   * "Start sorting" bumps it, and the Layers panel starts the job
+   * when it sees the bump. Lets the job start from the onboarding
+   * sheet, where the run controls themselves don't live. */
+  startRequestId: number;
+  requestIndexStart: () => void;
   load: (storage?: StorageLike | null) => void;
   /** Apply one finished batch: results become records, ids become attempted. */
   applyResults: (results: ParsedCategorisationResult[], model?: string) => void;
@@ -57,6 +63,9 @@ export const useAiIndexStore = create<AiIndexStoreState>()((set, get) => ({
   categories: {},
   job: { ...EMPTY_INDEX_JOB, attemptedPlaceIds: [] },
   loaded: false,
+  startRequestId: 0,
+  requestIndexStart: () =>
+    set((state) => ({ startRequestId: state.startRequestId + 1 })),
   load: (storage = browserStorage()) => {
     activeStorage = storage;
     set({

@@ -8,6 +8,7 @@ export function Modal({
   children,
   titleClassName,
   footer,
+  dismissable = true,
 }: {
   title: string;
   onClose: () => void;
@@ -17,6 +18,10 @@ export function Modal({
   /** Optional footer, pinned below the scrolling body — the dismiss
       action must never sit below the fold inside the scroll area. */
   footer?: ReactNode;
+  /** Forced dialogs (first-launch onboarding) have no × and no
+      Escape-to-close: the only way out is an explicit choice in the
+      dialog itself (Start or Skip for now). */
+  dismissable?: boolean;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -32,14 +37,16 @@ export function Modal({
     <dialog ref={ref} className="atlas-dialog" aria-label={title}
       onCancel={(event) => {
         event.preventDefault();
-        onClose();
+        if (dismissable) onClose();
       }}
     >
       <header className="panel-heading">
         <h2 className={titleClassName}>{title}</h2>
-        <button className="icon-button" aria-label="Close dialog" onClick={onClose}>
-          <X size={20} />
-        </button>
+        {dismissable && (
+          <button className="icon-button" aria-label="Close dialog" onClick={onClose}>
+            <X size={20} />
+          </button>
+        )}
       </header>
       <div className="dialog-body">{children}</div>
       {footer ? <footer className="dialog-footer">{footer}</footer> : null}

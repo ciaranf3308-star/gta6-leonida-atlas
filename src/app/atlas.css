@@ -54,6 +54,12 @@
   --serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
   --display: 'Anton', 'Arial Narrow', sans-serif;
   --condensed: 'Oswald', 'Arial Narrow', sans-serif;
+  /* GTA VI sunset: the official art's pink-to-orange, not generic dark
+     UI. Anton + Oswald are self-hosted OFL Google Fonts (see the
+     @font-face rules above) — no Rockstar font is legally bundleable. */
+  --pink: #ff2e88;
+  --pink-soft: #ff8fb3;
+  --sunset: linear-gradient(135deg, #ff7a18 0%, #ff2e88 100%);
   color-scheme: dark;
 }
 * {
@@ -2207,7 +2213,12 @@ h3 {
   white-space: nowrap;
 }
 
-/* The one filter bar — same bar on the map and at the top of Find. */
+/* The one filter bar — same bar on the map and at the top of Find.
+   v0.11.0: TWO rows, no more. Row 1 is the single count pill, the
+   indexing reminder, and Clear all. Row 2 is ONE horizontally
+   scrolling strip — no wrapping second row, no pills row repeating
+   the active filters. The map dominates; the bar is glass, not a
+   stack of black pills. */
 .filter-bar {
   position: absolute;
   z-index: 450;
@@ -2215,7 +2226,7 @@ h3 {
   left: 10px;
   right: 10px;
   display: grid;
-  gap: 8px;
+  gap: 6px;
   pointer-events: none;
 }
 .filter-bar > * {
@@ -2224,8 +2235,16 @@ h3 {
 .filter-bar-top {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.filter-bar-top::-webkit-scrollbar {
+  display: none;
+}
+.filter-bar-top > * {
+  flex-shrink: 0;
 }
 .filter-count-pill {
   background: #1b1815e0;
@@ -2256,10 +2275,40 @@ h3 {
   box-shadow: 0 2px 8px #120e0a40;
   white-space: nowrap;
 }
+/* The indexing reminder: one sunset pill, on the map until the job
+   has run at least once. One tap opens Layers at the job. */
+.filter-reminder-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--sunset);
+  color: #241a10;
+  font: inherit;
+  font-family: var(--condensed);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  min-height: 48px;
+  padding: 8px 14px;
+  box-shadow: 0 2px 12px #ff2e8855;
+  white-space: nowrap;
+  cursor: pointer;
+}
+/* Row 2: ONE horizontally scrolling strip — layer chips, narrowing
+   chips, county/kind/interior selects, More layers. No wrapping, no
+   second row. */
 .filter-chips {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.filter-chips::-webkit-scrollbar {
+  display: none;
 }
 .filter-chip {
   flex-shrink: 0;
@@ -2286,10 +2335,10 @@ h3 {
     background-color 150ms ease;
 }
 .filter-chip.active {
-  background: #e8823a;
-  border-color: #e8823a;
-  color: #1b1815;
-  box-shadow: 0 2px 10px #e8823a55;
+  background: var(--sunset);
+  border-color: transparent;
+  color: #241a10;
+  box-shadow: 0 2px 10px #ff2e8855;
 }
 .filter-chip-count {
   font-size: 11px;
@@ -2300,19 +2349,8 @@ h3 {
   border-style: dashed;
   color: #f2d897;
 }
-.filter-narrow {
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  padding-bottom: 2px;
-}
-.filter-narrow::-webkit-scrollbar {
-  display: none;
-}
-.filter-narrow .filter-chip {
-  min-height: 48px;
-  padding: 8px 11px;
+.filter-select-wrap {
+  flex-shrink: 0;
 }
 .filter-select-wrap select {
   width: auto;
@@ -2328,39 +2366,6 @@ h3 {
   padding: 8px 12px;
   box-shadow: 0 2px 8px #120e0a40;
   white-space: nowrap;
-}
-.filter-pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.filter-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: #e8823a;
-  color: #1b1815;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 5px 5px 5px 11px;
-}
-.filter-pill button {
-  display: grid;
-  place-items: center;
-  /* content-box: the 20px × plus 14px of padding on every side is a
-     48px hit area. (Under the global border-box the padding would be
-     swallowed and the target would stay 20px.) The negative margin
-     keeps the pill itself the same size. */
-  box-sizing: content-box;
-  width: 20px;
-  height: 20px;
-  padding: 14px;
-  margin: -14px;
-  border: 0;
-  border-radius: 50%;
-  background: #1b181533;
-  color: #1b1815;
 }
 /* In the Find panel the bar is in normal flow, not overlaid. */
 .sidebar .filter-bar {
@@ -2485,24 +2490,26 @@ h3 {
   font-size: 11px;
 }
 
-/* Map: two big labelled add buttons, bottom-left above the caption. */
+/* Map: ONE "+ Add" button, bottom-left above the credit line. The
+   sheet holds the three add actions — marker, workout spot, breakable
+   home — so the map is never covered by three buttons. */
 .map-add-buttons {
   position: absolute;
   z-index: 450;
   left: 12px;
-  bottom: 76px;
+  bottom: 44px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 8px;
 }
 .map-add-buttons .button {
-  background: #1b1815ef;
-  border: 1px solid #6b5d4a;
-  /* The primary button's dark text would be unreadable on this dark
-     background — the add buttons all read light here. */
-  color: #f3ead9;
-  box-shadow: 0 2px 8px #120e0a40;
+  background: var(--sunset);
+  border-color: transparent;
+  /* Dark on the bright sunset gradient — the old dark-on-dark add
+     buttons read as disabled; white would fail on the orange end. */
+  color: #241a10;
+  box-shadow: 0 4px 16px #ff2e8855;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
@@ -2546,6 +2553,88 @@ h3 {
   }
   .map-add-buttons {
     left: 10px;
-    bottom: 74px;
+    bottom: 44px;
   }
+}
+
+/* ---- v0.11.0: forced indexing onboarding + de-clutter + GTA VI vibes ---- */
+/* The map dominates: two filter rows, one count, one "+ Add". The chrome
+   is the in-game pause-map's own language — deep blue water / muted
+   green land / warm sand is the basemap itself — with the official art's
+   pink-to-orange sunset as the accent. Anton (display) + Oswald
+   (labels) are self-hosted OFL fonts; no Rockstar font is shipped. */
+
+/* Primary actions wear the sunset gradient. */
+.button.primary {
+  background: var(--sunset);
+  border-color: transparent;
+  color: #241a10;
+  box-shadow: 0 4px 16px #ff2e8855;
+}
+
+/* The wordmark: LEONIDA in cream, ATLAS in the sunset gradient. */
+.brand-header h1 em {
+  background: var(--sunset);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.brand-header p {
+  color: var(--pink-soft);
+}
+
+/* Dialog cover titles: gold into sunset, Anton, uppercase. */
+.display-title {
+  background: linear-gradient(90deg, var(--gold) 0%, #ff7a18 55%, var(--pink) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Glass sheets: sidebar, place detail, dialogs — the map shows through
+   the edges instead of flat black plates. */
+.sidebar,
+.detail-panel {
+  background: #1b1815f2;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.atlas-dialog {
+  background: #211c15f5;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* The onboarding footer holds two full actions side by side: Start
+   sorting (primary) and Skip for now. */
+.dialog-footer .button-row .button {
+  flex: 1;
+  width: auto;
+}
+
+/* The "+ Add" sheet: three big stacked actions, label + plain-words
+   sub-line, left-aligned. */
+.add-sheet-options {
+  display: grid;
+  gap: 8px;
+}
+.add-sheet-options .button {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+  padding: 12px 14px;
+}
+.add-sheet-options .button span {
+  display: grid;
+  gap: 2px;
+}
+.add-sheet-options .button small {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.add-sheet-options .button.primary small {
+  color: #ffe9d6;
 }

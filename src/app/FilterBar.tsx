@@ -1,15 +1,15 @@
 import { useMemo } from 'react';
-import { Layers, X } from 'lucide-react';
+import { Layers, Sparkles, X } from 'lucide-react';
 import type { Category, Place } from '../domain/types';
 import { filterPlaces } from '../domain/filter';
 import { COUNTIES } from '../data/counties';
 import { INITIAL_BOUNDS } from '../features/map/coordinates';
 import { useMapStore, useUiStore, useUserStore } from '../stores/atlas';
 import { useAiIndexStore } from '../features/categorise/store';
+import { tagResolutionCounts } from '../domain/resolve-tags';
 import { PlaceIcon, type IconKey } from '../features/map/place-icons';
 import type { LayerDefinition } from '../domain/types';
 import {
-  VENUE_TYPE_LABELS,
   VENUE_TYPE_OPTIONS,
   venueTypeCounts,
   type VenueType,
@@ -17,23 +17,32 @@ import {
 
 /**
  * THE one filter system — the same bar on the map and at the top of Find.
- * Everything that decides what shows lives here, and only here:
+ * Everything that decides what shows lives here, and only here. v0.11.0:
+ * TWO rows, and only two — the map must dominate, so the old four-row
+ * stack (count + Clear all, wrapping layer chips, a second scrolling
+ * narrow row, active-filter pills) is gone:
  *
- * - Quick chips turn whole layers on and off (Gyms, Workout equipment,
- *   Lootable, Shops, Interiors, Breakable homes, Cards, My markers). Gyms
- *   and Workout equipment are separate chips on purpose: a member club is
- *   not free gear, and a search for equipment must not answer from the
- *   gyms. Breakable homes is separate from Interiors on purpose too: a
- *   house you can break into is not a shop interior. Each chip says how
- *   many places it would put on the map, so a tap never surprises.
- * - Narrowing chips narrow what is already showing: Can go inside,
- *   Interior houses, Not found yet, Saved only, My markers only — plus
- *   Lootable only, which appears while the Lootable layer is on, and the
- *   Interior type picker, which appears while an interiors layer is on.
- * - County and kind narrow by place, and apply instantly to the map.
- * - The top row always says how many places are showing, and Clear all
- *   puts the map back to blank in one tap. Every active narrowing filter
- *   also gets its own pill with an ×, so nothing is hidden.
+ * - Row 1: the ONE place count ("76 places" — the map caption's
+ *   "76 places in view" was the same number twice, so the caption is
+ *   gone), the indexing reminder pill while the job has never run, and
+ *   Clear all when anything is active.
+ * - Row 2: ONE horizontally scrolling strip — county, kind, layer
+ *   chips, narrowing chips, the interior-type picker, More layers.
+ *   Active filters read from the chips themselves (active state, select
+ *   value); there is no pills row repeating them.
+ *
+ * Quick chips turn whole layers on and off (Gyms, Workout equipment,
+ * Lootable, Shops, Interiors, Breakable homes, Cards, My markers). Gyms
+ * and Workout equipment are separate chips on purpose: a member club is
+ * not free gear, and a search for equipment must not answer from the
+ * gyms. Breakable homes is separate from Interiors on purpose too: a
+ * house you can break into is not a shop interior. Each chip says how
+ * many places it would put on the map, so a tap never surprises.
+ * Narrowing chips narrow what is already showing: Can go inside,
+ * Interior houses, Not found yet, Saved only, My markers only — plus
+ * Lootable only, which appears while the Lootable layer is on, and the
+ * Interior type picker, which appears while an interiors layer is on.
+ * County and kind narrow by place, and apply instantly to the map.
  *
  * Nothing here is buried in a sidebar that starts closed: on a phone the
  * bar sits on the map itself, and the same bar tops the Find list.
@@ -87,6 +96,7 @@ export default function FilterBar({
   const collections = useUserStore((s) => s.collections);
   const visited = useUserStore((s) => s.visited);
   const aiCategories = useAiIndexStore((s) => s.categories);
+  const attempted = useAiIndexStore((s) => s.job.attemptedPlaceIds.length);
   const byId = useMemo(() => new Map(layers.map((l) => [l.id, l])), [layers]);
   const visibleIds = useMemo(
     () => new Set(layers.filter((l) => l.visible).map((l) => l.id)),
@@ -99,6 +109,16 @@ export default function FilterBar({
   const cardsOn = cardLayerIds.some((id) => byId.get(id)?.visible);
   const favoriteIds = useMemo(() => favorites.map((f) => f.placeId), [favorites]);
   const visitedIds = useMemo(() => visited.map((v) => v.placeId), [visited]);
+
+  /** "?" places the map data's own tags cannot resolve — the indexing
+   * job's real remaining work (2,151 on a fresh phone: 581 of the 2,732
+   * "?" already have a type from their tags, so they never needed the
+   * job). The reminder pill shows this number until the job has run at
+   * least once, then it is gone for good. */
+  const unnamedRemaining = useMemo(
+    () => tagResolutionCounts(allPlaces).remaining,
+    [allPlaces],
+  );
 
   /** Positioned places in a layer, matching every other current filter. */
   const layerCounts = useMemo(() => {
@@ -206,74 +226,19 @@ export default function FilterBar({
     byId.get('interiors')?.visible === true ||
     byId.get('breakable')?.visible === true ||
     filters.enterableOnly;
-  const county = COUNTIES.find((c) => c.id === filters.countyId);
-  const categoryName =
-    CATEGORIES.find((c) => c.id === filters.category)?.name ?? 'All kinds';
-  const activePills: { key: string; label: string; clear: () => void }[] = [];
-  if (county)
-    activePills.push({
-      key: 'county',
-      label: county.name,
-      clear: () => chooseCounty(null),
-    });
-  if (filters.category !== 'all')
-    activePills.push({
-      key: 'category',
-      label: categoryName,
-      clear: () => useUiStore.getState().setFilters({ category: 'all' }),
-    });
-  if (filters.query)
-    activePills.push({
-      key: 'query',
-      label: `“${filters.query}”`,
-      clear: () => useUiStore.getState().setFilters({ query: '' }),
-    });
-  if (filters.enterableOnly)
-    activePills.push({
-      key: 'enterable',
-      label: 'Can go inside',
-      clear: () => useUiStore.getState().setFilters({ enterableOnly: false }),
-    });
-  if (filters.lootableOnly)
-    activePills.push({
-      key: 'lootable',
-      label: 'Lootable only',
-      clear: () => useUiStore.getState().setFilters({ lootableOnly: false }),
-    });
-  if (filters.interiorHouseOnly)
-    activePills.push({
-      key: 'interiorHouse',
-      label: 'Interior houses',
-      clear: () => useUiStore.getState().setFilters({ interiorHouseOnly: false }),
-    });
-  if (filters.venueType !== 'all')
-    activePills.push({
-      key: 'venueType',
-      label: `${VENUE_TYPE_LABELS[filters.venueType as VenueType]} interiors`,
-      clear: () => useUiStore.getState().setFilters({ venueType: 'all' }),
-    });
-  if (filters.remainingOnly || filters.hideFound)
-    activePills.push({
-      key: 'remaining',
-      label: 'Not found yet',
-      clear: () =>
-        useUiStore.getState().setFilters({ remainingOnly: false, hideFound: false }),
-    });
-  if (filters.favoritesOnly)
-    activePills.push({
-      key: 'favorites',
-      label: 'Saved only',
-      clear: () => useUiStore.getState().setFilters({ favoritesOnly: false }),
-    });
-  if (filters.personalOnly)
-    activePills.push({
-      key: 'personal',
-      label: 'My markers only',
-      clear: () => useUiStore.getState().setFilters({ personalOnly: false }),
-    });
   const anythingActive =
     anyLayerOn ||
-    activePills.length > 0 ||
+    filters.countyId !== null ||
+    filters.category !== 'all' ||
+    filters.query !== '' ||
+    filters.enterableOnly ||
+    filters.lootableOnly ||
+    filters.interiorHouseOnly ||
+    filters.venueType !== 'all' ||
+    filters.remainingOnly ||
+    filters.hideFound ||
+    filters.favoritesOnly ||
+    filters.personalOnly ||
     filters.collectionId !== null;
 
   function clearAll() {
@@ -300,14 +265,28 @@ export default function FilterBar({
     useUiStore.getState().setFilters(patch);
   }
 
+  function openIndexJob() {
+    useUiStore.getState().setAskOpen(false);
+    useUiStore.getState().setNavTab('layers');
+  }
+
   return (
     <div className="filter-bar" aria-label="Filter what the map shows">
       <div className="filter-bar-top">
         <span className="filter-count-pill" role="status">
-          {anyLayerOn || showingCount > 0
-            ? `${showingCount.toLocaleString()} place${showingCount === 1 ? '' : 's'} showing`
-            : 'Nothing showing — tap a chip below'}
+          {showingCount.toLocaleString()} place{showingCount === 1 ? '' : 's'}
         </span>
+        {attempted === 0 && unnamedRemaining > 0 && (
+          <button
+            type="button"
+            className="filter-reminder-pill"
+            onClick={openIndexJob}
+            aria-label={`Sort the unnamed places — ${unnamedRemaining.toLocaleString()} still unnamed`}
+          >
+            <Sparkles size={14} />
+            {unnamedRemaining.toLocaleString()} still unnamed — Sort them
+          </button>
+        )}
         {anythingActive && (
           <button type="button" className="filter-clear-all" onClick={clearAll}>
             <X size={14} /> Clear all
@@ -315,32 +294,6 @@ export default function FilterBar({
         )}
       </div>
       <div className="filter-chips" role="group" aria-label="Show or hide kinds of places">
-        {LAYER_CHIPS.map((chip) => {
-          const active = chipActive(chip);
-          return (
-            <button
-              key={chip.key}
-              type="button"
-              className={`filter-chip ${active ? 'active' : ''}`}
-              aria-pressed={active}
-              onClick={() => toggleChip(chip)}
-            >
-              <PlaceIcon icon={chip.icon} size={15} />
-              {chip.label}
-              <span className="filter-chip-count">{chipCount(chip)}</span>
-            </button>
-          );
-        })}
-        <button
-          type="button"
-          className="filter-chip filter-chip-more"
-          onClick={() => useUiStore.getState().setNavTab('layers')}
-        >
-          <Layers size={15} />
-          More layers
-        </button>
-      </div>
-      <div className="filter-narrow" role="group" aria-label="Narrow what is showing">
         <label className="filter-select-wrap">
           <span className="map-sr-only">Isolate one county</span>
           <select
@@ -372,6 +325,22 @@ export default function FilterBar({
             ))}
           </select>
         </label>
+        {LAYER_CHIPS.map((chip) => {
+          const active = chipActive(chip);
+          return (
+            <button
+              key={chip.key}
+              type="button"
+              className={`filter-chip ${active ? 'active' : ''}`}
+              aria-pressed={active}
+              onClick={() => toggleChip(chip)}
+            >
+              <PlaceIcon icon={chip.icon} size={15} />
+              {chip.label}
+              <span className="filter-chip-count">{chipCount(chip)}</span>
+            </button>
+          );
+        })}
         <button
           type="button"
           className={`filter-chip narrow ${filters.enterableOnly ? 'active' : ''}`}
@@ -450,23 +419,15 @@ export default function FilterBar({
           My markers only
           <span className="filter-chip-count">{narrowCounts.personal}</span>
         </button>
+        <button
+          type="button"
+          className="filter-chip filter-chip-more"
+          onClick={() => useUiStore.getState().setNavTab('layers')}
+        >
+          <Layers size={15} />
+          More layers
+        </button>
       </div>
-      {activePills.length > 0 && (
-        <div className="filter-pills" aria-label="Active filters — tap × to remove one">
-          {activePills.map((pill) => (
-            <span key={pill.key} className="filter-pill">
-              {pill.label}
-              <button
-                type="button"
-                aria-label={`Remove filter ${pill.label}`}
-                onClick={pill.clear}
-              >
-                <X size={13} />
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

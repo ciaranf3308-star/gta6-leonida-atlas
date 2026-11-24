@@ -13,6 +13,14 @@ import { isUnnamedPlace } from '../../domain/types';
 
 export const WELCOME_SEEN_STORAGE_KEY = 'leonida-welcome-seen';
 
+/**
+ * v0.11.0 forced indexing onboarding — a NEW key on purpose. Everyone
+ * sees it once after this update, including users who already dismissed
+ * the old welcome sheet: the old sheet never forced the indexing job,
+ * so "seen the welcome" must not count as "seen the indexing job".
+ */
+export const INDEX_ONBOARDING_SEEN_STORAGE_KEY = 'leonida-index-onboarding-seen';
+
 export interface StorageLike {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
@@ -36,6 +44,27 @@ export function markWelcomeSeen(storage: StorageLike | null = browserStorage()):
     storage?.setItem(WELCOME_SEEN_STORAGE_KEY, '1');
   } catch {
     // Storage unavailable — the sheet just shows again next launch.
+  }
+}
+
+/** First launch after v0.11.0 shows the forced indexing onboarding. */
+export function hasSeenIndexOnboarding(
+  storage: StorageLike | null = browserStorage(),
+): boolean {
+  try {
+    return storage?.getItem(INDEX_ONBOARDING_SEEN_STORAGE_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+export function markIndexOnboardingSeen(
+  storage: StorageLike | null = browserStorage(),
+): void {
+  try {
+    storage?.setItem(INDEX_ONBOARDING_SEEN_STORAGE_KEY, '1');
+  } catch {
+    // Storage unavailable — the onboarding just shows again next launch.
   }
 }
 

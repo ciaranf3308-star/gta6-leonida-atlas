@@ -83,7 +83,7 @@ console.log('01 bottom nav: Map / Find / Layers / Saved / Ask all labelled');
 
 // (a) Turn on Lootable in 2 taps: welcome quick start, then the map.
 await page.getByRole('button', { name: /^Show lootable/ }).click();
-await page.getByText(/52 places showing/).waitFor({ timeout: 10000 });
+await page.getByText('52 places', { exact: true }).waitFor({ timeout: 10000 });
 await page.waitForTimeout(1500);
 await shot('02-map-lootable');
 console.log('02 overflow:', await overflow());
@@ -92,14 +92,18 @@ await measureTapTargets('02 Map (Lootable on)');
 
 // (b) Filter to enterable lootable only: one tap on "Can go inside".
 await page.getByRole('button', { name: /^Can go inside \d+$/ }).click();
-await page.getByText(/52 places showing/).waitFor({ timeout: 10000 });
+await page.getByText('52 places', { exact: true }).waitFor({ timeout: 10000 });
 await page.waitForTimeout(1200);
 await shot('03-enterable-lootable');
 console.log('03 overflow:', await overflow());
-// The active filter is visible as a pill with an × — and Clear all is there.
-await page.getByText('Can go inside', { exact: false }).first().waitFor({ timeout: 10000 });
+// v0.11.0: no pills row repeating the active filters — the chip itself
+// shows active (aria-pressed), and Clear all is there.
+const enterablePressed = await page
+  .getByRole('button', { name: /^Can go inside \d+$/ })
+  .getAttribute('aria-pressed');
+if (enterablePressed !== 'true') process.exit(1);
 await page.getByRole('button', { name: 'Clear all' }).waitFor({ timeout: 10000 });
-console.log('03 active filter pill + Clear all visible');
+console.log('03 active chip + Clear all visible');
 
 // (c) Search "workout equipment", nearest first — from Find, same filter
 // bar. Gyms and workout equipment are separate now: "gym" answers from
@@ -121,7 +125,8 @@ await measureTapTargets('04 Find');
 // The enterable filter from (b) is still on, so only the enterable gear
 // lists — the Starlet bench has no enterable tag. Removing just that
 // one pill (×) brings it back: it is searchable even with no pin.
-await page.getByRole('button', { name: 'Remove filter Can go inside' }).click();
+// v0.11.0: no pills row — tap the chip again to turn the filter off.
+await page.getByRole('button', { name: /^Can go inside \d+$/ }).click();
 await page.waitForTimeout(1200);
 await page.getByText('Starlet Motel bench').waitFor({ timeout: 10000 });
 console.log('04 Starlet Motel bench found by search (no pin, listed by name)');
@@ -189,7 +194,7 @@ console.log('08 overflow:', await overflow());
 // (f) Clear all filters in one tap, from the map.
 await nav('Map').click();
 await page.getByRole('button', { name: 'Clear all' }).click();
-await page.getByText('Nothing showing').waitFor({ timeout: 10000 });
+await page.getByText('0 places', { exact: true }).waitFor({ timeout: 10000 });
 await page.waitForTimeout(1200);
 await shot('09-cleared');
 console.log('09 overflow:', await overflow());
@@ -224,10 +229,15 @@ console.log('12 overflow:', await overflow());
 await measureTapTargets('12 Layers');
 console.log('12 index panel says plainly: never run, 0 sorted, 2,768 unnamed');
 
-// "+ Add workout spot" -> placement mode, then "Use map center" opens
-// the editor with the workout kind preset and a real position (never 0,0).
+// "+ Add" -> "Add workout spot" in the sheet -> placement mode, then
+// "Use map center" opens the editor with the workout kind preset and a
+// real position (never 0,0).
 await nav('Map').click();
-await page.getByRole('button', { name: 'Add workout spot' }).click();
+await page.getByRole('button', { name: '+ Add', exact: true }).click();
+await page
+  .getByRole('dialog', { name: 'Add to the map', exact: true })
+  .getByRole('button', { name: /^Add workout spot/ })
+  .click();
 await page.getByRole('button', { name: 'Use map center' }).click();
 await page.waitForTimeout(800);
 await shot('13-workout-spot-editor');
@@ -322,14 +332,14 @@ console.log('17 index panel shows what each ? was resolved into (Gym 1, House 1)
 await nav('Map').click();
 await page.getByRole('button', { name: 'Clear all' }).click();
 await page.getByRole('button', { name: /^Breakable homes \d+$/ }).click();
-await page.getByText(/47 places showing/).waitFor({ timeout: 10000 });
+await page.getByText('47 places', { exact: true }).waitFor({ timeout: 10000 });
 await page.waitForTimeout(1200);
 await shot('18-breakable-homes');
 console.log('18 overflow:', await overflow());
 await measureTapTargets('18 Map (Breakable homes)');
 // Interior houses filter: 33 places, all residential + enterable.
 await page.getByRole('button', { name: /^Interior houses \d+$/ }).click();
-await page.getByText(/33 places showing/).waitFor({ timeout: 10000 });
+await page.getByText('33 places', { exact: true }).waitFor({ timeout: 10000 });
 await page.waitForTimeout(800);
 await shot('19-interior-houses');
 console.log('19 overflow:', await overflow());

@@ -29,22 +29,24 @@ async function expectTilesLoaded(page: Page): Promise<void> {
 
 async function dismissWelcome(page: Page): Promise<void> {
   // Tests that navigate directly (no openAtlas) still land on the first-
-  // launch welcome dialog, which blocks the nav underneath until skipped.
-  // The welcome mounts once persistence has loaded, which can lag the
-  // map by a second or two — a single isVisible snapshot races it, so
-  // wait for it to appear before deciding there is nothing to skip.
+  // launch onboarding dialog, which blocks the nav underneath until an
+  // explicit choice is made. The onboarding mounts once persistence has
+  // loaded, which can lag the map by a second or two — a single isVisible
+  // snapshot races it, so wait for it to appear before deciding there
+  // is nothing to skip.
   const welcome = page.getByRole('dialog', { name: 'Welcome to Leonida' });
   const appeared = await welcome
     .waitFor({ state: 'visible', timeout: 5000 })
     .then(() => true)
     .catch(() => false);
   if (!appeared) return;
-  // Dismiss with Escape, not a click: in headless WebKit a normal click
-  // inside a showModal top-layer dialog never completes its
-  // actionability checks (the button is visible, stable and the hit
-  // target — a force click works — but the plain click hangs). Escape
-  // fires the dialog's cancel handler, which is the same onClose path.
-  await page.keyboard.press('Escape');
+  // Forced onboarding (v0.11.0): there is no × and Escape does nothing —
+  // "Skip for now" is the explicit way out. Force-click: in headless
+  // WebKit a normal click inside a showModal top-layer dialog never
+  // completes its actionability checks (the button is visible, stable
+  // and the hit target — a force click works — but the plain click
+  // hangs).
+  await welcome.getByRole('button', { name: /^Skip for now/ }).click({ force: true });
   await expect(welcome).not.toBeVisible();
 }
 
@@ -55,11 +57,10 @@ async function openAtlas(page: Page): Promise<void> {
     page.getByRole('region', { name: 'Leonida interactive map', exact: true }),
   ).toBeVisible();
   await expectTilesLoaded(page);
-  // First launch shows the welcome sheet as a modal dialog — it blocks
-  // the bottom nav underneath until dismissed. Skip it (blank map, all
-  // layers off) so the test starts from the spoiler-free defaults.
+  // First launch shows the forced onboarding as a modal dialog — it blocks
+  // the bottom nav underneath until an explicit choice (Start or Skip).
   await dismissWelcome(page);
-  await expect(page.getByRole('button', { name: 'Add marker', exact: true })).toBeEnabled();
+  await expect(page.getByRole('button', { name: '+ Add', exact: true })).toBeEnabled();
 }
 
 async function enableLayer(page: Page, name: string): Promise<void> {
@@ -92,7 +93,11 @@ async function createMarker(page: Page, title: string): Promise<void> {
   if (await page.getByRole('button', { name: 'Close panel', exact: true }).isVisible()) {
     await page.getByRole('button', { name: 'Close panel', exact: true }).click();
   }
-  await page.getByRole('button', { name: 'Add marker', exact: true }).click();
+  await page.getByRole('button', { name: '+ Add', exact: true }).click();
+  await page
+    .getByRole('dialog', { name: 'Add to the map', exact: true })
+    .getByRole('button', { name: /^Add marker/ })
+    .click();
   await page.getByRole('button', { name: 'Enter coordinates', exact: true }).click();
   const editor = page.getByRole('dialog', { name: 'New marker', exact: true });
   await expect(editor).toBeVisible();
@@ -197,7 +202,7 @@ test('the map opens without an account, filters public evidence, and toggles vis
   await selectRegion(page);
   await page.getByRole('button', { name: 'Close place details', exact: true }).click();
   await openPanel(page, 'layers');
-  // Only the region pin should be in view for the caption assertions below.
+  // Only the region pin should be in view for the count assertions below.
   const communityLayer = page.getByRole('checkbox', { name: /^Community places/ });
   if (await communityLayer.isChecked()) await communityLayer.uncheck();
   const uncertainLayer = page.getByRole('checkbox', { name: /^Unverified places/ });
@@ -206,13 +211,21 @@ test('the map opens without an account, filters public evidence, and toggles vis
   await expect(regionLayer).toBeChecked();
   await regionLayer.uncheck();
   await expect(regionLayer).not.toBeChecked();
-  await expect(page.locator('.atlas-map-caption')).toHaveText('0 places in view');
-  await regionLayer.check();
-  await expect(page.locator('.atlas-map-caption')).toHaveText('1 places in view');
   await page.screenshot({
     path: testInfo.outputPath(`atlas-qa-${testInfo.project.name}-layers.png`),
     fullPage: true,
   });
+  // One count, in the filter bar — the map caption's duplicate
+  // ("N places in view") is gone in v0.11.0. The bar only renders on
+  // the Map tab (the Layers panel has per-layer counts instead), so go
+  // there to read it.
+  const mapTab = page.locator('.bottom-nav').getByRole('button', { name: 'Map' });
+  await mapTab.click();
+  await expect(page.locator('.filter-count-pill')).toHaveText('0 places');
+  await openPanel(page, 'layers');
+  await page.getByRole('checkbox', { name: /^Named regions/ }).check();
+  await mapTab.click();
+  await expect(page.locator('.filter-count-pill')).toHaveText('1 place');
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
     page.viewportSize()!.width,
   );
@@ -504,7 +517,7 @@ test('blocked local storage keeps the public map usable and never reports a succ
   await openPanel(page, 'find');
   await expect(page.getByText('Local storage needs attention', { exact: true })).toBeVisible();
   await expect(page.getByText('Local data saved', { exact: true })).not.toBeVisible();
-  await expect(page.getByRole('button', { name: 'Add marker', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: '+ Add', exact: true })).toBeDisabled();
   await page.getByRole('button', { name: 'Retry storage', exact: true }).click();
   await expect(page.getByText('Local storage needs attention', { exact: true })).toBeVisible();
   await selectRegion(page);
@@ -652,4 +665,95 @@ test('3D explorer spawns at the selected Ambrosia position instead of Vice City'
   await expect(world).toHaveAttribute('data-walk-runtime', 'ready', { timeout: 60_000 });
   await expect(world).toHaveAttribute('data-walk-map-travel-id', 'region:leonida-keys');
   expect(pageErrors).toEqual([]);
+});
+
+test('forced indexing onboarding appears on a fresh profile, and Skip leaves a one-tap reminder', async ({
+  page,
+}, testInfo) => {
+  const runtimeErrors: string[] = [];
+  const consoleErrors: string[] = [];
+  page.on('pageerror', (error) => runtimeErrors.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error') consoleErrors.push(message.text());
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('');
+  await expect(page).toHaveTitle(/Leonida Atlas/);
+  await expect(
+    page.getByRole('region', { name: 'Leonida interactive map', exact: true }),
+  ).toBeVisible();
+  await expectTilesLoaded(page);
+  const welcome = page.getByRole('dialog', { name: 'Welcome to Leonida' });
+  await expect(welcome).toBeVisible();
+  // Forced: no ×, and Escape does nothing — the only way out is an
+  // explicit choice in the dialog itself.
+  await expect(welcome.getByRole('button', { name: 'Close dialog' })).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  await expect(welcome).toBeVisible();
+  // Plain words, real numbers: 2,151 still need sorting, 8 at a time,
+  // gpt-4o-mini, 0 sorted on a fresh phone.
+  await expect(welcome.getByText(/2,151 places still need sorting/)).toBeVisible();
+  await expect(welcome.getByText(/8 at a time/)).toBeVisible();
+  await expect(welcome.getByText(/gpt-4o-mini/)).toBeVisible();
+  await expect(welcome.getByText(/0 are sorted/)).toBeVisible();
+  // Start is disabled with no key; pasting one enables it (no real
+  // OpenAI call is made in this test).
+  const start = welcome.getByRole('button', { name: 'Start sorting', exact: true });
+  await expect(start).toBeDisabled();
+  await welcome.getByLabel('OpenAI API key').fill('sk-test-key');
+  await expect(start).toBeEnabled();
+  await page.screenshot({
+    path: testInfo.outputPath(`atlas-qa-${testInfo.project.name}-onboarding.png`),
+    fullPage: true,
+  });
+  // Skip is an explicit choice, not a missed ×.
+  await welcome.getByRole('button', { name: /^Skip for now/ }).click({ force: true });
+  await expect(welcome).not.toBeVisible();
+  // The map after onboarding: ONE count pill, the reminder pill, one
+  // "+ Add" — no duplicate count, no stack of add buttons, no caption.
+  await expect(page.locator('.filter-count-pill')).toHaveText('0 places');
+  const reminder = page.getByRole('button', { name: /Sort the unnamed places/ });
+  await expect(reminder).toBeVisible();
+  await expect(reminder).toContainText('2,151 still unnamed');
+  await expect(page.getByRole('button', { name: '+ Add', exact: true })).toBeVisible();
+  await expect(page.locator('.atlas-map-caption')).toHaveCount(0);
+  await expect(page.locator('.filter-bar .filter-chip')).toHaveCount(14);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+    390,
+  );
+  await page.screenshot({
+    path: testInfo.outputPath(`atlas-qa-${testInfo.project.name}-map-after-onboarding.png`),
+    fullPage: true,
+  });
+  // One tap on the reminder opens Layers at the job.
+  await reminder.click();
+  await expect(page.getByText('Sort the unnamed places')).toBeVisible();
+  await expect(page.getByText('0 sorted so far')).toBeVisible();
+  await page.screenshot({
+    path: testInfo.outputPath(`atlas-qa-${testInfo.project.name}-layers-index.png`),
+    fullPage: true,
+  });
+  // A place detail with interiors, deep-linked.
+  await page.goto('?place=L192');
+  await expect(details(page).getByRole('heading', { name: 'Inside' })).toBeVisible();
+  await page.screenshot({
+    path: testInfo.outputPath(`atlas-qa-${testInfo.project.name}-place-detail-interiors.png`),
+    fullPage: true,
+  });
+  await page.getByRole('button', { name: 'Close place details', exact: true }).click();
+  // Find, from the same single filter bar.
+  await enableLayer(page, 'Named regions');
+  await openPanel(page, 'find');
+  await search(page).fill('Ambrosia');
+  await page
+    .locator('.place-results')
+    .getByRole('button', { name: /^Ambrosia Region/ })
+    .click();
+  await expect(details(page).getByRole('heading', { name: 'Ambrosia', exact: true })).toBeVisible();
+  await page.screenshot({
+    path: testInfo.outputPath(`atlas-qa-${testInfo.project.name}-find.png`),
+    fullPage: true,
+  });
+  expect(runtimeErrors).toEqual([]);
+  expect(consoleErrors).toEqual([]);
 });

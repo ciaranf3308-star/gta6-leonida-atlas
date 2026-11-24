@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { Pause, Play, Sparkles, Square } from "lucide-react";
 import type { Place } from "../../domain/types";
 import { isUnnamedPlace } from "../../domain/types";
@@ -37,9 +37,13 @@ export interface IndexPanelProps {
 export default function IndexPanel(props: IndexPanelProps) {
   const categories = useAiIndexStore((s) => s.categories);
   const job = useAiIndexStore((s) => s.job);
+  const startRequestId = useAiIndexStore((s) => s.startRequestId);
   const [running, setRunning] = useState(false);
   const pauseRef = useRef(false);
   const cancelRef = useRef(false);
+  /** StrictMode double-invokes effects in dev; the ref guard makes a
+   * second auto-start a no-op even before `running` state lands. */
+  const runningRef = useRef(false);
 
   const unnamed = useMemo(
     () => props.places.filter((place) => isUnnamedPlace(place)),
@@ -76,7 +80,7 @@ export default function IndexPanel(props: IndexPanelProps) {
   const done = unnamed.length > 0 && counts.remaining === 0 && !running;
 
   async function start() {
-    if (running) return;
+    if (running || runningRef.current) return;
     const apiKey = getAskApiKey();
     if (!apiKey) return;
     // Read the job fresh from the store — after "check the not-sure ones
@@ -88,6 +92,7 @@ export default function IndexPanel(props: IndexPanelProps) {
     if (todo.length === 0) return;
     pauseRef.current = false;
     cancelRef.current = false;
+    runningRef.current = true;
     setRunning(true);
     try {
       await runIndexJob({
@@ -104,9 +109,23 @@ export default function IndexPanel(props: IndexPanelProps) {
         setJob: (patch) => useAiIndexStore.getState().setJob(patch),
       });
     } finally {
+      runningRef.current = false;
       setRunning(false);
     }
   }
+
+  /** The forced onboarding's "Start sorting" bumps startRequestId;
+   * this panel starts the job when it sees the bump (it mounts when
+   * Layers opens). No key, nothing left, or already running: no-op. */
+  const startRef = useRef(start);
+  startRef.current = start;
+  useEffect(() => {
+    if (startRequestId === 0) return;
+    if (!getAskApiKey()) return;
+    void startRef.current();
+    // Only the request id drives this — start() itself is a ref so the
+    // effect never re-fires on a re-render.
+  }, [startRequestId]);
 
   function pause() {
     pauseRef.current = true;

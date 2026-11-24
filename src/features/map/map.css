@@ -59,10 +59,11 @@
   filter: drop-shadow(0 1px 1px #0006);
 }
 .atlas-cluster-face {
-  background: #2b251d;
-  border: 1px solid #e8823a;
-  color: #f7ecdc;
+  background: var(--sunset, linear-gradient(135deg, #ff7a18, #ff2e88));
+  border: 2px solid #1b1815e6;
+  color: #fff;
   font-size: 12px;
+  text-shadow: 0 1px 2px #0008;
 }
 .atlas-map-marker.is-region .atlas-pin-face {
   border-radius: 8px;
@@ -160,23 +161,6 @@
 .atlas-map-error button:focus-visible {
   outline: 2px solid #fff;
   outline-offset: -4px;
-}
-.atlas-map-caption {
-  position: absolute;
-  z-index: 500;
-  left: 12px;
-  bottom: 40px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 10px;
-  max-width: calc(100% - 75px);
-  color: #e8dcc4;
-  background: #1b1815d9;
-  border: 1px solid #6b5d4a55;
-  border-radius: 5px;
-  padding: 5px 8px;
-  font-size: 10px;
-  pointer-events: none;
 }
 .atlas-map-attribution {
   position: absolute;
@@ -306,10 +290,6 @@
   border: 0;
 }
 @media (max-width: 650px) {
-  .atlas-map-caption {
-    bottom: 40px;
-    left: 10px;
-  }
   .atlas-map-attribution {
     left: 10px;
     bottom: 10px;
@@ -327,7 +307,6 @@
   .atlas-app[data-details='true'] .atlas-map-navigation {
     bottom: calc(52dvh + 16px);
   }
-  .atlas-app[data-details='true'] .atlas-map-caption,
   .atlas-app[data-details='true'] .atlas-map-attribution {
     display: none;
   }

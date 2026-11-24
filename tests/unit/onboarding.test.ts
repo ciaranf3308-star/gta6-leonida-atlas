@@ -4,12 +4,15 @@ import { catalogueFromSnapshot } from '../../src/data/catalogue';
 import { DEFAULT_LAYERS } from '../../src/features/map/layers';
 import {
   QUICK_START_LAYERS,
+  hasSeenIndexOnboarding,
   hasSeenWelcome,
   layerCounts,
+  markIndexOnboardingSeen,
   markWelcomeSeen,
   totalMappedPlaces,
   type StorageLike,
 } from '../../src/features/onboarding/onboarding';
+import { useAiIndexStore } from '../../src/features/categorise/store';
 
 const snapshot = JSON.parse(
   readFileSync(
@@ -96,5 +99,41 @@ describe('welcome seen flag', () => {
     };
     expect(hasSeenWelcome(broken)).toBe(false);
     expect(() => markWelcomeSeen(broken)).not.toThrow();
+  });
+});
+
+describe('forced indexing onboarding (v0.11.0)', () => {
+  it('is unseen until marked, on its own key — the old welcome flag does not count', () => {
+    const storage = fakeStorage();
+    markWelcomeSeen(storage);
+    expect(hasSeenWelcome(storage)).toBe(true);
+    // A user who dismissed the old welcome sheet still gets the forced
+    // indexing onboarding once after this update.
+    expect(hasSeenIndexOnboarding(storage)).toBe(false);
+    markIndexOnboardingSeen(storage);
+    expect(hasSeenIndexOnboarding(storage)).toBe(true);
+    expect(storage.map.get('leonida-index-onboarding-seen')).toBe('1');
+  });
+
+  it('treats broken storage as unseen instead of throwing', () => {
+    const broken: StorageLike = {
+      getItem: () => {
+        throw new Error('no storage');
+      },
+      setItem: () => {
+        throw new Error('no storage');
+      },
+    };
+    expect(hasSeenIndexOnboarding(broken)).toBe(false);
+    expect(() => markIndexOnboardingSeen(broken)).not.toThrow();
+  });
+
+  it('the onboarding Start request bumps the index store trigger', () => {
+    useAiIndexStore.setState({ startRequestId: 0 });
+    expect(useAiIndexStore.getState().startRequestId).toBe(0);
+    useAiIndexStore.getState().requestIndexStart();
+    expect(useAiIndexStore.getState().startRequestId).toBe(1);
+    useAiIndexStore.getState().requestIndexStart();
+    expect(useAiIndexStore.getState().startRequestId).toBe(2);
   });
 });

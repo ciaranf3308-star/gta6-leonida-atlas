@@ -41,13 +41,14 @@ const lootableMarkers = await page.locator('.atlas-map-marker').count();
 console.log('markers on map after Show lootable:', lootableMarkers);
 if (lootableMarkers === 0) process.exit(1);
 // The filter bar pill says how many places are showing, on the map itself.
-await page.getByText(/52 places showing/).waitFor({ timeout: 10000 });
-console.log('filter bar pill shows 52 places showing');
+// v0.11.0: one count pill ("52 places") — the map caption's duplicate is gone.
+await page.getByText('52 places', { exact: true }).waitFor({ timeout: 10000 });
+console.log('filter bar pill shows 52 places');
 // Breakable homes chip: 47 more on the map (52 in the layer, 5 listed
 // by name only), 99 showing — houses, not shops.
 await page.getByRole('button', { name: /^Breakable homes \d+$/ }).click();
-await page.getByText(/99 places showing/).waitFor({ timeout: 10000 });
-console.log('Breakable homes chip on: 99 places showing');
+await page.getByText('99 places', { exact: true }).waitFor({ timeout: 10000 });
+console.log('Breakable homes chip on: 99 places');
 // The filter chips are on the map: tap Shops, pins grow.
 await page.getByRole('button', { name: /^Shops \d+$/ }).click();
 await page.waitForTimeout(1500);
@@ -60,7 +61,9 @@ await page.waitForTimeout(2000);
 const afterReload = await page.locator('.atlas-map-marker').count();
 console.log('markers after reload (layers must persist):', afterReload);
 if (afterReload === 0) process.exit(1);
-await page.getByText(/places showing/).waitFor({ timeout: 10000 });
+const pillAfterReload = await page.locator('.filter-count-pill').textContent();
+console.log('filter count pill after reload:', pillAfterReload);
+if (!/\d+ places/.test(pillAfterReload ?? '')) process.exit(1);
 console.log('layers persisted across reload');
 // Reopen the welcome sheet from the panel footer, then close it.
 await nav('Find').click();

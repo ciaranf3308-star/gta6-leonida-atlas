@@ -11,6 +11,26 @@ export interface LeonidaAtlasRelease {
 /** Retained public history starts at v0.5.0; the newest release stays first. */
 export const LEONIDA_ATLAS_RELEASES: readonly LeonidaAtlasRelease[] = [
   {
+    version: 'v0.11.0',
+    date: '2026-11-24',
+    title: 'Forced indexing onboarding, a de-cluttered map, GTA VI sunset vibes',
+    summary:
+      'The indexing job gets a forced first-launch onboarding, the map gets its space back with a two-row filter bar and one Add button, and the whole app wears the official art’s pink-to-orange sunset.',
+    status: 'public',
+    highlights: [
+      'Forced onboarding before the map is usable: 2,732 places are still “?”, 581 already have a type from the map data’s own tags, 2,151 still have nothing to read, and the only way they get sorted is this job with your own OpenAI key — paste it, tap Start sorting, or explicitly tap Skip for now.',
+      'Skipping is a choice, not a missed ×: the job stays one tap away in Layers (“Sort the unnamed places”) and a reminder pill stays on the map until it has run at least once.',
+      'The filter bar is two rows — one count pill, the reminder, Clear all, then one scrolling strip of chips — and the map caption’s duplicate count is gone.',
+      'One “+ Add” button with a sheet (Add marker / Add workout spot / Add breakable home) instead of three buttons over the map.',
+      'GTA VI sunset accent (pink-to-orange) on primary actions, active chips, the reminder pill and cluster roundels; LEONIDA ATLAS wordmark with ATLAS in the gradient; Anton + Oswald self-hosted; glass bottom sheets.',
+    ],
+    verification: [
+      '681 unit tests passed; TypeScript and the production build passed.',
+      'The 390px walk (22 flows) and the 390px check script pass with zero console errors, zero overflow, and zero tap targets under 48px.',
+      'Chromium e2e: 11 of 12 pass, including the new forced-onboarding test on a fresh profile; the 3D explorer test needs a real GPU (software WebGL is too slow in this sandbox). The WebKit offline-navigation case is explicitly skipped in the suite where Playwright WebKit cannot run it.',
+    ],
+  },
+  {
     version: 'v0.10.0',
     date: '2026-11-24',
     title: 'Navigation first, breakable homes, interiors on tap',

@@ -104,7 +104,6 @@ export default function MapView(props: MapViewProps) {
   const [previewPosition, setPreviewPosition] = useState<Position | null>(null);
   const [placementMessage, setPlacementMessage] = useState('');
   const [zoom, setZoom] = useState(-5);
-  const [counts, setCounts] = useState({ places: 0, groups: 0, groupedForPerformance: false });
   const descriptionId = useId();
   const index = useMemo(() => buildSpatialIndex(props.places), [props.places]);
 
@@ -261,19 +260,6 @@ export default function MapView(props: MapViewProps) {
         zoom: currentZoom,
         enabled: props.preferences.clusterMarkers,
         selectedId: props.selectedId,
-      });
-      setCounts((previous) => {
-        const next = {
-          places: visible.length,
-          groups: groups.length,
-          groupedForPerformance:
-            !props.preferences.clusterMarkers && groups.length < visible.length,
-        };
-        return previous.places === next.places &&
-          previous.groups === next.groups &&
-          previous.groupedForPerformance === next.groupedForPerformance
-          ? previous
-          : next;
       });
       let labelCount = 0;
       for (const group of groups) {
@@ -577,10 +563,6 @@ export default function MapView(props: MapViewProps) {
         >
           ⌖
         </button>
-      </div>
-      <div className="atlas-map-caption">
-        <span>{counts.places.toLocaleString()} places in view</span>
-        {counts.groupedForPerformance ? <span>Grouped for map performance</span> : null}
       </div>
       <div className="atlas-map-attribution">
         <a href="https://map.gtadb.org" target="_blank" rel="noreferrer">

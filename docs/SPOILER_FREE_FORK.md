@@ -270,6 +270,43 @@ GPS gym pages):
   section), the Explore list and Ask results — and the user can confirm it
   or correct it with one tap. A user correction is never overwritten by a
   later run. The AI answer itself is told which records are AI-suggested.
+
+## v0.11.0 — forced indexing onboarding + de-clutter + GTA VI vibes (24 Nov 2026)
+
+- **Forced onboarding.** First launch after this update shows a
+  full-screen onboarding BEFORE the map is usable, with no × and no
+  Escape — Start sorting or Skip for now are the only ways out. It says
+  in plain words that 2,732 places are still "?", 581 already have a type
+  from the map data's own tags, 2,151 still have nothing to read, and the
+  only way they get sorted is this job with the user's own OpenAI key
+  (paste it in the sheet, same key Ask Nylah uses, on-device only, link
+  to platform.openai.com/api-keys). The job as shown: 8 at a time,
+  gpt-4o-mini, each batch saved before the next, pause/stop/resume, "AI
+  suggested" labels, low confidence stays "not sure", 0 sorted on a fresh
+  phone. "Start sorting" closes the sheet, opens Layers, and starts the
+  job (via a session-only `startRequestId` in the AI index store, which
+  the Layers panel watches). Skipping is explicit: the job stays one tap
+  away in Layers and a sunset reminder pill ("2,151 still unnamed — Sort
+  them") stays in the filter bar until the job has run at least once. A
+  NEW seen-key (`leonida-index-onboarding-seen`) means everyone sees it
+  once after this update, including users who dismissed the old welcome
+  sheet; reopening it from the panel footer ("What is mapped") is
+  dismissable again.
+- **De-clutter.** The filter bar is two rows: row 1 is the ONE place
+  count, the reminder pill, and Clear all; row 2 is one horizontally
+  scrolling strip (county, kind, layer chips, narrowing chips,
+  interior-type picker, More layers). No second filter row, no pills row,
+  and the map caption's duplicate count ("N places in view") is gone —
+  the filter pill is the only count. The three add buttons are one "+ Add"
+  button with a sheet (Add marker / Add workout spot / Add breakable
+  home).
+- **GTA VI vibes.** The pause-map palette is the basemap itself (deep
+  blue water, muted green land, warm sand); the accent is the official
+  art's pink-to-orange sunset gradient on primary actions, active chips,
+  the reminder pill and cluster roundels. LEONIDA ATLAS wordmark with
+  ATLAS in the gradient, Anton display + Oswald labels (self-hosted OFL —
+  no Rockstar font is legally bundleable), blip roundels throughout,
+  glass bottom sheets and panels.
 - Search and Ask use AI types like source tags: a confident AI gym for a
   "?" near Capri answers a gym question nearest-first; an AI shop answers
   shops questions, and an enterable AI shop of a robbable kind answers a
