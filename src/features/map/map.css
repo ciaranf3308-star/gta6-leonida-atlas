@@ -17,27 +17,17 @@
   background: linear-gradient(180deg, #04202e 0%, #063042 60%, #094256 100%);
   font-family: inherit;
 }
-/* Rich grade on the real day tiles: a touch darker, more saturated —
- * the flat pale map becomes the deep reference map. Static filter on
- * the tile pane: composited once by the GPU, no per-frame cost. */
-.atlas-map-canvas .leaflet-tile-pane {
-  filter: saturate(1.18) contrast(1.05) brightness(0.93);
-}
-/* The animated sea: canvas in its own Leaflet pane (z-index 300 —
- * above the tile pane at 200, below the overlay pane at 400 and the
- * markers at 600), pointer-transparent so taps still reach the map.
- * v0.16.0 fix: the canvas used to be a sibling of the map with
- * z-index 300 — but Leaflet's map pane itself is z-index 400, so the
- * whole map (tiles included) painted over it and the sea stayed flat
- * pale blue. A real Leaflet pane is the only place between the tiles
- * and the pins. */
+/* v0.18.0: NO filter on the tile pane. The old rule graded the pale
+ * day tiles in the browser (saturate/contrast/brightness) and the
+ * animated sea canvas graded the water on top — two runtime grades
+ * that could seam and double-darken. The styled tiles already carry
+ * the After Hours grade baked in (scripts/restyle-tiles.py), so the
+ * pane must show them exactly as rendered. */
 .sea-overlay {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 300;
-  pointer-events: none;
+  /* Removed in v0.18.0 with the sea canvas (see MapView.tsx): the
+   * class no longer exists in the DOM. Kept as a no-op guard so a
+   * stale cached stylesheet cannot resurrect a floating pane. */
+  display: none;
 }
 .atlas-map-canvas:focus-visible {
   outline: 2px solid var(--coral);

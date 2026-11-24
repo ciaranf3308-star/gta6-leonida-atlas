@@ -2,6 +2,16 @@
 
 Release history, newest first.
 
+## v0.18.0 — 2026-11-24
+
+**Released: The map itself, rebuilt pixel by pixel — deep teal sea, rich green land, pink roads, baked into the tiles.**
+
+- The answer to his question — "why is it the exact same?" — was that v0.15–v0.17 changed everything around the map and never the map: the GTADB day tiles were still the same pale tiles. This build re-renders all 31,022 tiles (z0–z6) offline into the After Hours look and serves the new pyramid: deep teal ocean (#053A4C to #127E94, keeping the tiles' own light variation), rich green forest and grass, warm pale sand with a clean edge against the teal, warm-grey city blocks with a contrast stretch so Vice City reads as a city, coral #FF527F road centrelines and sunset #FFB56B highways, and a few large soft baked clouds over the sea at z0–z1. Same tile coordinates, zooms and geometry — a colour grade of the real tiles, not new geography; unclassifiable pixels keep their real colour.
+- Roads are centrelines, not a pink wash: a road core (209,209,219) and a bright rooftop (202,205,214) are ~7 units apart, so no pixel rule can separate them — v1 painted whole avenues solid pink. The grade thins light-neutral pixels to skeletons, drops compact rooftop blobs and short stubs, and keeps only road-width centrelines (3px coral core, faint glow). At full zoom the city reads pinkish, like the reference.
+- The sea overlay is DELETED, not fixed again. His 4:54pm screenshot proved the v0.17 "seamless sea" fix did not hold — the grade still ended mid-screen with flat teal and a ghost landmass on the right. The colour is now baked into the tiles, so there is no overlay, no mask rect, no canvas and nothing left that can seam. The tile-pane CSS filter is removed too (it would double-darken the styled tiles), and the ocean error tile is re-graded to the styled sea.
+- Kept, unchanged: camera gate (opens on the whole of Leonida), slim 56px header, bottom-bar empty-map prompt, 120-marker cap / 24 hero pins, traced county outlines, spoiler-free defaults, real place data only (3,754 GTADB records, 986 named, 2,768 unnamed — never invent a name, coordinate, interior or pin).
+- Honest limit: this is a recolour of the real in-game map, not new geography and not the AI-rendered reference (which invents places). The styled pyramid is 92 MB of tile bytes alongside the 149 MB originals, which stay in the repo as the source of truth. Palette, method and the five-iteration log (pink wash, lime beach, rooftop speckles, the source tiles' own stitch seam, cloud rash) are in `scripts/restyle-palette-report.md`.
+
 ## v0.17.0 — 2026-11-24
 
 **Released: Opens on Leonida — a saved zoomed-in camera can no longer strand the map, the header is a slim strip, and the sea has no seams.**

@@ -19,7 +19,7 @@ async function openPanel(
 
 async function expectTilesLoaded(page: Page): Promise<void> {
   // GTADB In-Game Day tiles: at least one loaded tile from the bundled set.
-  const tile = page.locator('.leaflet-tile-loaded[src*="tiles/day/"]').first();
+  const tile = page.locator('.leaflet-tile-loaded[src*="tiles/styled/"]').first();
   await expect(tile).toBeVisible();
   await expect(tile).toHaveJSProperty('complete', true);
   expect(
@@ -347,7 +347,7 @@ test('backup validation and preview preserve current data until a confirmed merg
   await openAtlas(page);
   await createMarker(page, 'Keep this marker');
   const original = await exportBackup(page, testInfo, 'original');
-  expect(original).toMatchObject({ format: 'leonida-atlas', version: 2 });
+  expect(original).toMatchObject({ format: 'leonida-atlas', version: 3 });
   expect(original.markers).toHaveLength(1);
   const fileInput = page.getByLabel('Import a backup', { exact: true });
   await fileInput.setInputFiles({
@@ -386,8 +386,13 @@ test('backup validation and preview preserve current data until a confirmed merg
     buffer: Buffer.from(JSON.stringify(imported)),
   });
   await page.getByRole('button', { name: 'Merge backup', exact: true }).click();
+  // v0.18.0: the merge status carries the AI-index summary too
+  // ("Backup merged. AI index: 0 new, … 2 markers, … Your local data
+  // is saved."), so match the stable prefix, not the whole string —
+  // the exact-text expectation predates the summary and the merge
+  // itself succeeds (the status above proves it).
   await expect(
-    page.getByText('Backup merged. Your local data is saved.', { exact: true }),
+    page.getByText('Backup merged.', { exact: false }),
   ).toBeVisible();
   const merged = await exportBackup(page, testInfo, 'after-merge');
   expect(merged.markers.map((marker) => marker.title).sort()).toEqual([

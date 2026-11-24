@@ -23,6 +23,15 @@
 import type { MapBounds } from './coordinates';
 
 export const GTADB_DAY_TILE_REVISION = 'd406fea099e1df2bce42fd6b87eed04bce646629' as const;
+/**
+ * Styled tiles (v0.18.0): the same GTADB day tiles, recoloured offline
+ * into the After Hours look by scripts/restyle-tiles.py — deep teal
+ * sea, rich green land, warm sand, coral road centrelines, baked
+ * clouds at z0-z1. Same filenames, coordinates, zooms and geometry as
+ * the day tiles; a colour grade, not new geography. The ungraded
+ * originals stay in tiles/day/ as the source of truth.
+ */
+export const GTADB_STYLED_TILE_REVISION = 'v0.18.0-restyle-v5' as const;
 export const GTADB_DAY_TILE_ZOOM_OFFSET = 5 as const;
 export const GTADB_DAY_TILE_MIN_ZOOM = 0 as const;
 export const GTADB_DAY_TILE_MAX_ZOOM = 6 as const;
@@ -56,7 +65,9 @@ export function gtadbTileFileName(tile: GtadbTileRef): string {
   return `${tile.zoom}/${tile.zoom},${tile.tileY},${tile.tileX}.jpg`;
 }
 
-/** Same-origin tile URL for a Leaflet tile request. */
+/** Same-origin tile URL for a Leaflet tile request.
+ * v0.18.0: serves the styled pyramid (tiles/styled/), not the pale
+ * day tiles — the map itself is the After Hours look now. */
 export function gtadbTileUrl(
   base: string,
   leafletTileX: number,
@@ -64,7 +75,7 @@ export function gtadbTileUrl(
   leafletZoom: number,
 ): string {
   const prefix = base.endsWith('/') ? base : `${base}/`;
-  return `${prefix}assets/gta6-leonida-atlas/tiles/day/${gtadbTileFileName(
+  return `${prefix}assets/gta6-leonida-atlas/tiles/styled/${gtadbTileFileName(
     leafletTileToGtadb(leafletTileX, leafletTileY, leafletZoom),
   )}`;
 }

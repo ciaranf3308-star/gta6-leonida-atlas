@@ -157,7 +157,15 @@ const renderer = await createServer({
   envDir: process.cwd(),
   base,
   optimizeDeps: { noDiscovery: true, include: [] },
-  server: { middlewareMode: true },
+  server: {
+    middlewareMode: true,
+    // v0.18.0: ignore the tile pyramids — ~62k files (day + styled)
+    // exhaust the inotify limit and the watcher spams one ENOSPC error
+    // per file to stderr (4+ MB), which overflowed the calling test's
+    // exec buffer. This server only SSR-renders static pages; it never
+    // needs to watch static assets.
+    watch: { ignored: ['**/tiles/**'] },
+  },
   appType: "custom",
 });
 try {

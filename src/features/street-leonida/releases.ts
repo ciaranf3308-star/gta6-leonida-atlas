@@ -11,6 +11,25 @@ export interface LeonidaAtlasRelease {
 /** Retained public history starts at v0.5.0; the newest release stays first. */
 export const LEONIDA_ATLAS_RELEASES: readonly LeonidaAtlasRelease[] = [
   {
+    version: 'v0.18.0',
+    date: '2026-11-24',
+    title: 'The map itself, rebuilt pixel by pixel: deep teal sea, rich green land, pink roads, baked into the tiles',
+    summary:
+      'The fix for his question — why is it the exact same? — because v0.15–v0.17 changed everything around the map and never the map. All 31,022 GTADB day tiles are re-rendered offline into the After Hours look and the map serves the new pyramid, and the sea overlay that kept seaming on his phone is deleted outright: the colour is baked into the tiles, so there is nothing left that can seam.',
+    status: 'public',
+    highlights: [
+      'The map itself changed: all 31,022 tiles (z0–z6) re-rendered into deep teal ocean, rich green land, warm pale sand, warm-grey city blocks and coral road centrelines with sunset highways, plus a few large soft baked clouds over the sea at full zoom. Same tile coordinates, zooms and geometry — a colour grade of the real tiles, not new geography.',
+      'Roads are thin coral centrelines, not a pink wash: road cores and bright rooftops are ~7 colour units apart, so the grade finds roads by geometry (thinning light-neutral pixels to skeletons, dropping rooftop blobs) instead of by brightness.',
+      'The sea overlay is deleted, not fixed again: his 4:54pm screenshot proved the v0.17 seamless-sea fix did not hold — the grade still ended mid-screen. With the colour baked into the tiles there is no overlay, no mask rect and no canvas left that can seam. The tile-pane CSS filter is removed too, and the ocean error tile is re-graded to the styled sea.',
+      'Kept, unchanged: camera gate (opens on the whole of Leonida), slim 56px header, bottom-bar empty-map prompt, 120-marker cap / 24 hero pins, traced county outlines, spoiler-free defaults, real place data only (3,754 GTADB records, 986 named, 2,768 unnamed).',
+    ],
+    verification: [
+      'Unit tests pass (767 tests, 81 files, including the new styled-tile URL test and the releases history for v0.18.0). TypeScript and ESLint pass. One real side effect of doubling the tile files: Vite’s file watcher exhausted the inotify limit and broke the atlas-security finalize test with 4 MB of ENOSPC spam — fixed by ignoring **/tiles/** in the dev and finalize watchers, since tiles are static assets nothing needs to watch.',
+      'The 390px walk (scripts/check-v018.mjs) passes with zero console errors and zero overflow: styled tiles load at GTADB zoom 0 on open with the saved zoomed-in camera seeded, no sea-overlay canvas exists, the tile pane has no CSS filter, and a sampled styled ocean pixel is deep teal; the v0.17 flows still pass (0 markers on open, hero pins, Vice City sheet, lag check, Turn everything off).',
+      'Before/after screenshots at full zoom, Vice City and Capri were judged by eye against the reference (scripts/restyle-palette-report.md): the land reads rich green, the sea deep teal, the roads pink — after five palette iterations, not one.',
+    ],
+  },
+  {
     version: 'v0.17.0',
     date: '2026-11-24',
     title: 'Opens on Leonida: a saved zoomed-in camera can no longer strand the map, the header is a slim strip, and the sea has no seams',

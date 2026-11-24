@@ -16,7 +16,17 @@ export default defineConfig({
       '@lib': fileURLToPath(new URL('./src/lib', import.meta.url)),
     },
   },
-  server: { host: '127.0.0.1', port: 4330, strictPort: true },
+  server: {
+    host: '127.0.0.1',
+    port: 4330,
+    strictPort: true,
+    // v0.18.0: the styled tile pyramid doubled the repo's tile files to
+    // ~62k. Vite's watcher tries to watch them all and exhausts the
+    // inotify limit (ENOSPC), which broke finalize-build.mjs (its stderr
+    // spam overflowed the test's exec buffer). Tiles are static assets
+    // served from public/ — nothing in dev ever needs to watch them.
+    watch: { ignored: ['**/tiles/**', '**/node_modules/**', '**/dist/**'] },
+  },
   preview: { host: '127.0.0.1', port: 4330, strictPort: true },
   build: { chunkSizeWarningLimit: 650 },
 });

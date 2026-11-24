@@ -23,7 +23,6 @@ import type { AiCategoryRecord } from '../categorise/categories';
 import type { Isolation } from './isolation';
 import { loadSavedCamera, shouldResumeCamera } from './camera-persistence';
 import { runToLatLngs, useAfterHoursGeo } from './after-hours-geo';
-import { buildSeaStencil, drawSeaFrame, maskDrawRect, seaMaskUrl } from './sea-overlay';
 import 'leaflet/dist/leaflet.css';
 import './map.css';
 
@@ -203,19 +202,14 @@ export default function MapView(props: MapViewProps) {
         // Missing tiles are ocean the source never drew; the ocean tile
         // above covers them. Only a wholesale failure is worth surfacing.
       });
-      // The animated sea lives in its own Leaflet pane (z-index 300),
-      // between the tiles and the pins — see map.css for why a sibling
-      // canvas cannot sit there (the map pane itself is z-index 400).
-      // The canvas is created here, not in JSX: React must never own
-      // a node that lives inside a Leaflet pane.
-      const seaPane = activeMap.createPane('seaPane');
-      seaPane.style.zIndex = '300';
-      seaPane.style.pointerEvents = 'none';
-      const seaCanvas = document.createElement('canvas');
-      seaCanvas.className = 'sea-overlay';
-      seaCanvas.setAttribute('aria-hidden', 'true');
-      seaPane.appendChild(seaCanvas);
-      seaCanvasRef.current = seaCanvas;
+      // v0.18.0: NO sea canvas. The sea grade used to live in a canvas
+      // over the tiles (sea-overlay.ts, water-mask stencil) and it
+      // seamed: the grade ended mid-screen where the mask rect ended
+      // and the pale tiles showed through (reported 2026-11-24, the
+      // v0.17 "seamless sea" fix did not hold on the user's phone).
+      // The colour is now baked into the tiles themselves
+      // (tiles/styled/, scripts/restyle-tiles.py), so there is no
+      // overlay, no mask rect and nothing left that can seam.
       const reportViewport = () => {
         setZoom(activeMap.getZoom());
         callbacks.current.onViewport?.({
@@ -266,7 +260,6 @@ export default function MapView(props: MapViewProps) {
         cancelAnimationFrame(resizeFrame);
         tiles.off();
         tiles.remove();
-        seaCanvasRef.current = null;
         activeMap.off('moveend zoomend', reportViewport);
         // Leaflet 1.9's uncancellable 250ms zoom fallback can outlive remove().
         // Clear its guard before the map pane is deleted; preserve internal unload cleanup.
@@ -707,91 +700,9 @@ export default function MapView(props: MapViewProps) {
     };
   }, [map, previewPosition, props.editorMode]);
 
-  // The animated sea: a canvas over the tiles (under the pins) that
-  // shimmers only where the water mask says there is water. Slow
-  // drift, ~8fps, paused when the tab is hidden; reduced motion gets
-  // one static faint frame. See sea-overlay.ts for the honest limit:
-  // a shimmer on real water regions, not a new ocean simulation.
-  const seaCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  useEffect(() => {
-    if (!map) return;
-    const canvas = seaCanvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (!canvas || !ctx) return;
-    const reducedMotion = callbacks.current.preferences.reducedMotion;
-    let mask: HTMLCanvasElement | null = null;
-    let raf = 0;
-    let lastDraw = 0;
-    let running = !document.hidden;
-    const draw = (phaseSeconds: number) => {
-      if (!mask) return;
-      const size = map.getSize();
-      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-      if (canvas.width !== Math.round(size.x * dpr) || canvas.height !== Math.round(size.y * dpr)) {
-        canvas.width = Math.round(size.x * dpr);
-        canvas.height = Math.round(size.y * dpr);
-        // The Leaflet pane has no size of its own, so percentage CSS
-        // sizing collapses the canvas to 0×0 — set it in pixels here,
-        // or the sea draws into a bitmap nobody can see.
-        canvas.style.width = `${size.x}px`;
-        canvas.style.height = `${size.y}px`;
-      }
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const rect = maskDrawRect((lat, lng) => {
-        const p = map.latLngToContainerPoint([lat, lng]);
-        return { x: p.x, y: p.y };
-      });
-      drawSeaFrame(ctx, mask, rect, phaseSeconds, size.x, size.y);
-    };
-    const loop = (now: number) => {
-      if (!running) return;
-      if (now - lastDraw >= 120) {
-        lastDraw = now;
-        draw(now / 1000);
-      }
-      raf = requestAnimationFrame(loop);
-    };
-    const img = new Image();
-    img.onload = () => {
-      // The raw mask has no alpha (see buildSeaStencil): stencil it
-      // once here, or the grade paints a pale veil over the whole map.
-      mask = buildSeaStencil(img);
-      if (reducedMotion) {
-        draw(0);
-      } else if (running) {
-        raf = requestAnimationFrame(loop);
-      }
-    };
-    img.onerror = () => {
-      // No mask, no sea: the tiles still draw the ocean on their own.
-      mask = null;
-    };
-    img.src = seaMaskUrl(import.meta.env.BASE_URL ?? '/');
-    const onMove = () => {
-      // Re-align on pan/zoom; the loop re-draws within ~120ms anyway.
-      lastDraw = 0;
-      if (reducedMotion) draw(0);
-    };
-    const onVisibility = () => {
-      running = !document.hidden;
-      if (running && !reducedMotion) {
-        lastDraw = 0;
-        raf = requestAnimationFrame(loop);
-      } else {
-        cancelAnimationFrame(raf);
-      }
-    };
-    map.on('move', onMove);
-    map.on('zoom', onMove);
-    document.addEventListener('visibilitychange', onVisibility);
-    return () => {
-      running = false;
-      cancelAnimationFrame(raf);
-      map.off('move', onMove);
-      map.off('zoom', onMove);
-      document.removeEventListener('visibilitychange', onVisibility);
-    };
-  }, [map]);
+  // v0.18.0: the animated sea canvas is gone — the sea grade is baked
+  // into the styled tiles themselves, so there is no overlay left
+  // that can seam. See the note at the tile-layer setup above.
 
   const useMapCenter = () => {
     if (!map) return;
