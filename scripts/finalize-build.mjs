@@ -234,25 +234,35 @@ for (const url of [...precache, ...threeDimensionalAssets]) {
 // tiles at the same filenames and the content hash above — which only
 // covers the app shell and precached assets — did not move, so the old
 // cache (and its stale tiles) survived. The fingerprint is the list of
-// enhanced tile paths + sizes: cheap (stat only, no content reads) and
-// it moves on any tile re-render. A tile re-render must ALSO change
-// the tile path (see gtadb-tiles.ts) — both layers, not one hope.
+// tile paths + sizes for BOTH pyramids (enhanced z0-6, illustrated
+// z0-3): cheap (stat only, no content reads) and it moves on any tile
+// re-render. A tile re-render must ALSO change the tile path (see
+// gtadb-tiles.ts) — both layers, not one hope.
 const tileDir = join(outDir, "assets/gta6-leonida-atlas/tiles/enhanced");
+const illustratedDir = join(
+  outDir,
+  "assets/gta6-leonida-atlas/tiles/illustrated",
+);
 try {
-  for (let zoom = 0; zoom <= 6; zoom++) {
-    let names;
-    try {
-      names = (await readdir(join(tileDir, String(zoom)))).sort();
-    } catch {
-      continue; // No tiles at this zoom in this build — not an error.
-    }
-    for (const name of names) {
-      const { size } = await stat(join(tileDir, String(zoom), name));
-      contentHash.update(`${zoom}/${name}:${size}\n`);
+  for (const [dir, topZoom] of [
+    [tileDir, 6],
+    [illustratedDir, 3],
+  ]) {
+    for (let zoom = 0; zoom <= topZoom; zoom++) {
+      let names;
+      try {
+        names = (await readdir(join(dir, String(zoom)))).sort();
+      } catch {
+        continue; // No tiles at this zoom in this build — not an error.
+      }
+      for (const name of names) {
+        const { size } = await stat(join(dir, String(zoom), name));
+        contentHash.update(`${dir === illustratedDir ? "illustrated" : "enhanced"}/${zoom}/${name}:${size}\n`);
+      }
     }
   }
 } catch {
-  // No enhanced pyramid in this build (older checkouts) — the hash
+  // No tile pyramids in this build (older checkouts) — the hash
   // still covers the shell; tiles are not cached from this build.
 }
 const revision = contentHash.digest("hex").slice(0, 12);

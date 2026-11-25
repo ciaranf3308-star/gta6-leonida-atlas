@@ -206,18 +206,27 @@ function Documentation() {
       </Section>
       <Section title="Cartography">
         <p>
-          The 2D basemap is GTADB&apos;s In-Game Day map — the real in-game map
-          tiles (map artwork © Rockstar Games), served as tiles so it stays
-          sharp at full zoom. The tiles pass through one realism filter (deeper
-          teal sea, warmer land, richer greens, warm cream roads, fine grain):
-          the geography is the real GTADB geometry, 1:1 — a pin on a road stays
-          on that road — and the colour and texture are illustrative. The filter
-          never creates a place, a name or a pin; place data stays
-          verified-only. Place positions on it are approximate community data,
-          never official coordinates. The 3D explorer still uses the earlier
-          Yanis v16-derived raster; its land, water, vegetation, roads and
-          building marks are generalized and recolored, and its coastline halo
-          is decorative, not bathymetry.
+          The 2D basemap has two views of the same real geography. The
+          island view (zoomed out) is one AI illustration traced from
+          the real GTADB map: the coastline, the lake, the cities and
+          the airport sit where the real map puts them, and the sea
+          around them is the illustration&apos;s own sea — anything the
+          generator invented out in the open water was cut back to the
+          real coastline, so no invented islands. Zoom in to street
+          level and it is the real in-game map itself — GTADB&apos;s
+          In-Game Day tiles (map artwork © Rockstar Games), served as
+          tiles so it stays sharp at full zoom, through one realism
+          filter (deeper teal sea, warmer land, richer greens, warm
+          cream roads, fine grain): the geography is the real GTADB
+          geometry, 1:1 — a pin on a road stays on that road — and the
+          colour and texture are illustrative. Neither view creates a
+          place, a name or a pin; place data stays verified-only.
+          Place positions on either view are approximate community
+          data, never official coordinates. The 3D explorer still uses
+          the earlier Yanis v16-derived raster; its land, water,
+          vegetation, roads and building marks are generalized and
+          recolored, and its coastline halo is decorative, not
+          bathymetry.
         </p>
         <p>
           Unmapped margins represent absent source coverage, not evidence of

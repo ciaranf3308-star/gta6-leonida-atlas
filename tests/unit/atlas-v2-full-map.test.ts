@@ -47,6 +47,28 @@ describe('GTADB In-Game Day tiles', () => {
     expect(leafletTileToGtadb(-2, -2, -5)).toEqual({ zoom: 0, tileX: 0, tileY: 0 });
     expect(leafletTileToGtadb(0, 1, -5)).toEqual({ zoom: 0, tileX: 2, tileY: 3 });
   });
+
+  it('serves the illustrated island at tile zooms 0-3 and the real map at 4-6', () => {
+    // Island view: one AI illustration traced from the real map, sliced
+    // into tiles for z0-z3 only. Street zoom stays the real enhanced
+    // GTADB tiles. The switch is at tile zoom 3/4, i.e. Leaflet -2/-1.
+    expect(gtadbTileUrl('/gta6-leonida-atlas/', -2, -2, -5)).toBe(
+      '/gta6-leonida-atlas/assets/gta6-leonida-atlas/tiles/illustrated/0/0,0,0.jpg',
+    );
+    expect(gtadbTileUrl('/gta6-leonida-atlas/', 0, 0, -2)).toContain(
+      '/tiles/illustrated/3/',
+    );
+    expect(gtadbTileUrl('/gta6-leonida-atlas/', 0, 0, -1)).toContain(
+      '/tiles/enhanced/4/',
+    );
+    expect(gtadbTileUrl('/gta6-leonida-atlas/', 5, -7, 0)).toBe(
+      '/gta6-leonida-atlas/assets/gta6-leonida-atlas/tiles/enhanced/5/5,57,69.jpg',
+    );
+    // Same tile file name on both sides of the switch: the pin
+    // coordinates never change, only the backdrop does.
+    expect(gtadbTileUrl('/gta6-leonida-atlas/', 0, 0, -2)).toContain('3,');
+    expect(gtadbTileUrl('/gta6-leonida-atlas/', 0, 0, -1)).toContain('4,');
+  });
 });
 
 describe('Counties', () => {

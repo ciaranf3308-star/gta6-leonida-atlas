@@ -12,7 +12,12 @@ import {
   toMapCoordinate,
   type MapBounds,
 } from './coordinates';
-import { GTADB_TILE_BOUNDS, gtadbTileUrl } from './gtadb-tiles';
+import {
+  GTADB_DAY_TILE_ZOOM_OFFSET,
+  GTADB_ILLUSTRATED_MAX_ZOOM,
+  GTADB_TILE_BOUNDS,
+  gtadbTileUrl,
+} from './gtadb-tiles';
 import { buildSpatialIndex, clusterPlaces, querySpatialIndex, selectHeroPlaces, type PlaceCluster } from './spatial';
 import {
   iconKeyForAiRecord,
@@ -125,6 +130,12 @@ export default function MapView(props: MapViewProps) {
   const [previewPosition, setPreviewPosition] = useState<Position | null>(null);
   const [placementMessage, setPlacementMessage] = useState('');
   const [zoom, setZoom] = useState(-5);
+  // Retina (DPR >= 2): the tile layer loads one pyramid level deeper
+  // and displays each 256px tile at 128 CSS px — see the tile-layer
+  // comment in the map effect below. The illustration label must
+  // follow the tiles actually on screen, so it uses the same +1.
+  const retina =
+    typeof window !== "undefined" && window.devicePixelRatio >= 2;
   const descriptionId = useId();
   const index = useMemo(() => buildSpatialIndex(props.places), [props.places]);
 
@@ -188,18 +199,32 @@ export default function MapView(props: MapViewProps) {
       // (coords.z is the Leaflet zoom). The layer MUST declare
       // minZoom/maxZoom in Leaflet zoom: GridLayer defaults minZoom 0,
       // which sets _tileZoom undefined and loads nothing below zoom 0.
-      // No zoomOffset / minNativeZoom / maxNativeZoom: those clamp the
-      // tile zoom Leaflet computes, which would break the mapping.
-      // v0.20.0: the redrawn tiles are 512x512 files served at
-      // tileSize 256, so each tile displays at 256 CSS px from 512
-      // real pixels — 1:1 device pixels on a DPR 2 phone, 1.5x on
-      // DPR 3 (v0.19's 256px tiles were stretched 2-3x by the
-      // browser, the main cause of his "so blurry" verdict).
-      // Leaflet's detectRetina is deliberately NOT used: it clamps
-      // the layer minZoom to 0 and this map lives at -5..1, so tiles
-      // below Leaflet zoom 0 would vanish on his phone.
+      // v0.20.2 retina, restored in v0.22.0: v0.21 dropped it in a
+      // stale stash pop and the walk caught the regression — tiles
+      // went back to 256px files displayed at 256 CSS px, i.e. every
+      // tile pixel stretched 2x on a DPR 2 phone, the v0.19 blur all
+      // over again. The two safe halves of Leaflet's detectRetina,
+      // applied by hand: on DPR >= 2 the layer displays each 256px
+      // tile at 128 CSS px (tileSize 128) AND loads one pyramid
+      // level deeper (coords.z + 1 passed to gtadbTileUrl) — 1:1
+      // device pixels at DPR 2, 1.5x at DPR 3. Both halves are
+      // needed: tileSize alone halves the rendered size WITHOUT
+      // loading deeper tiles, so the fit view shrank to a small
+      // island in a black frame (caught by this walk's framing
+      // check). detectRetina itself is NOT used: it clamps the layer
+      // minZoom to 0 and this map lives at -5..1, so tiles below
+      // Leaflet zoom 0 would vanish on his phone. The zoomOffset
+      // option is NOT set on purpose: the app overrides getTileUrl
+      // and Leaflet hands it coords.z, the tile zoom — the offset
+      // only feeds the default URL builder, which the override
+      // bypasses, so the +1 is passed explicitly here instead.
+      // minZoom / maxZoom stay -5..1, so at map zoom 1 the tile
+      // zoom still clamps to tile zoom 6 (native max). Do not
+      // "simplify" this back to tileSize 256: the walk's dpr2 check
+      // (256px tile at 128 CSS px) and framing check exist to catch
+      // exactly that.
       const tiles = L.tileLayer('', {
-        tileSize: 256,
+        tileSize: retina ? 128 : 256,
         minZoom: MIN_ZOOM,
         maxZoom: MAX_ZOOM,
         bounds: leafletBounds(GTADB_TILE_BOUNDS),
@@ -208,7 +233,7 @@ export default function MapView(props: MapViewProps) {
         keepBuffer: 1,
       });
       tiles.getTileUrl = (coords: L.Coords) =>
-        gtadbTileUrl(base, coords.x, coords.y, coords.z);
+        gtadbTileUrl(base, coords.x, coords.y, coords.z + (retina ? 1 : 0));
       tiles.addTo(activeMap);
       tiles.on('tileerror', () => {
         // Missing tiles are ocean the source never drew; the ocean tile
@@ -850,6 +875,19 @@ export default function MapView(props: MapViewProps) {
           CC BY 4.0
         </a>
         <span> · In-game map © Rockstar Games · Places approximate</span>
+      </div>
+      {/* Island view label (2026-11-25): the island zoom is an AI
+          illustration traced from the real map; street zoom is the
+          real in-game map. Plain, small, and it follows the actual
+          tiles on screen — never present the illustration as the
+          real map. It sits just below the filter chips (map.css):
+          the bottom spot above the attribution is covered by the
+          empty-map prompt on first open. */}
+      <div className="atlas-map-illustration-note">
+        {Math.round(zoom) + (retina ? 1 : 0) + GTADB_DAY_TILE_ZOOM_OFFSET <=
+        GTADB_ILLUSTRATED_MAX_ZOOM
+          ? "Island view: AI illustration traced from the real map"
+          : "Street zoom: the real in-game map"}
       </div>
       {mapError ? (
         <div className="atlas-map-error" role="alert">

@@ -331,6 +331,32 @@
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+/* Island-view label: one small smoked line just below the filter
+   chips, following the tiles actually on screen. It is the honest
+   label for the illustrated island view — never present the
+   illustration as the real map. TOP, not bottom: the bottom spot
+   (above the attribution) sits under the empty-map prompt on first
+   open — the prompt is a sibling overlay in a higher stacking
+   context, so the label's z-index never wins and the first thing
+   the user sees is the illustration with no label at all. Up here
+   nothing covers it. Hidden with the attribution when a place
+   sheet is open on phones. */
+.atlas-map-illustration-note {
+  position: absolute;
+  z-index: 500;
+  left: 12px;
+  top: 176px;
+  padding: 5px 8px;
+  border-radius: 5px;
+  background: #0b1018e6;
+  color: #e8dcc4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: min(85%, 440px);
+  font-size: 9px;
+  line-height: 1.4;
+}
 .atlas-map-editor-hint {
   position: absolute;
   z-index: 550;
@@ -440,6 +466,11 @@
     bottom: 10px;
     font-size: 8px;
   }
+  .atlas-map-illustration-note {
+    left: 10px;
+    top: 172px;
+    font-size: 8px;
+  }
   .atlas-map-navigation {
     right: 12px;
     bottom: 75px;
@@ -458,6 +489,9 @@
     display: grid;
   }
   .atlas-app[data-details='true'] .atlas-map-attribution {
+    display: none;
+  }
+  .atlas-app[data-details='true'] .atlas-map-illustration-note {
     display: none;
   }
   .atlas-app[data-details='true'] .atlas-map-editor-hint {

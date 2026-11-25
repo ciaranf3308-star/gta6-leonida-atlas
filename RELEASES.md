@@ -2,6 +2,19 @@
 
 Release history, newest first.
 
+## v0.22.0 — 2026-11-25
+
+**Released: The island view, illustrated — and the street view stays real.**
+
+- His verdict on v0.20.2, side by side with the reference: "we're still miles away I noticed 0 difference". The grade moved measurements, not the look. His pick: AI-illustrate the island view, keep the real map at street zoom.
+- One AI-illustrated island image, traced from the real GTADB map (scripts/illustrate-island.py): deep teal sea with clouds, rich green land, gold sand, glowing pink roads. The trace-correction cuts the generator's invented sea features back to the real coastline — no extra islets around the Leonida Keys, no redrawn bay islands off Vice City. Sliced into 515 tiles for z0–z3 only; z4–z6 stay the real enhanced GTADB tiles.
+- The zoom switch is honest: tile zooms 0–3 serve tiles/illustrated/, 4–6 serve tiles/enhanced/. Pin coordinates never change, only the backdrop. The z3 → z4 switch pops — same palette family, same coastline, but a visible change, not a morph. The map carries a small label that follows the tiles on screen ("Island view: AI illustration traced from the real map" / "Street zoom: the real in-game map"), and the Cartography section says the same.
+- Honest limits: the generation is 1344×1728, so a z3 tile carries ~79px of generated detail upscaled to 256px — smooth and painterly by design, not sharp linework; the sharp real map takes over at z4. Inside the real land footprint the illustration's internal detail is still the generator's drawing, bounded to the right land. Alignment measured, not eyeballed: land-mask IoU 0.627 after trace-correction (0.491 raw), lake/airport/Vice City crops coincide with the real map, stitched z3 tiles match the source (mean abs diff 1.11, JPEG only).
+- Cache rule extended: finalize-build.mjs folds both tile pyramids into the service-worker cache name, and the illustrated tiles live at a versioned path with their own revision — a future re-render cannot go stale the way v0.20 did.
+- Verified: unit tests (780, including the new zoom-switch test); 390px walk (scripts/check-illustrated.mjs, DPR 2, stale v0.21 profile) PASSED — old v0.21 cache gone after one reload; 84 illustrated tile requests at island zoom, 0 enhanced; label on screen AND topmost at its centre (it was hidden under the empty-map prompt at the bottom, so it moved to just below the filter chips); 256px tile at 128 CSS px; loaded tiles cover the whole map at the fit view; sampled illustrated tile bytes match disk; 0 markers on open; 24 hero pins (cap) landing on the right spots; wheel in i1 → i2 → i3 → e4 with the label flipping to street at e4, wheel back out to i1 with the label flipping back; Turn everything off → 0 markers; zero console errors, zero failed requests. The z3 → z4 switch pops — illustrated to real, same coastline, a visible style change, not a morph — but the geography is continuous and it reads as the same place getting real.
+- Retina regression found and fixed by this walk: v0.21 had dropped v0.20.2's retina handling, and v0.20.2's own retina was broken in a subtler way — tileSize 128 alone halves the rendered size WITHOUT loading deeper tiles, because the getTileUrl override bypasses Leaflet's zoomOffset, so the fit view shrank to a small island in a black frame. Fixed by passing coords.z + 1 to gtadbTileUrl on DPR ≥ 2 (a 128-grid tile at map zoom z covers exactly the ground of a 256-grid tile at z + 1) and using the same +1 in the illustration label. The walk's new framing check (loaded tiles must cover the whole map container) exists to catch exactly this.
+- Kept: ViceWire categories, place card, your tags, spoiler-free defaults, 48px targets, Ask spoiler rule, backup v3.
+
 ## v0.21.0 — 2026-11-24
 
 **Released: ViceWire: the game's own categories, a useful place card, your tags, and a real name.**
