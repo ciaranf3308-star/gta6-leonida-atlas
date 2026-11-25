@@ -7,10 +7,25 @@ const details = (page: Page) => page.getByRole('complementary', { name: 'Place d
 const search = (page: Page) =>
   page.getByRole('searchbox', { name: 'Search places, regions, tags' });
 
+async function dismissPlaceSheet(page: Page): Promise<void> {
+  // v0.26.0: first open shows the Vice City region sheet ("Pick what
+  // to see") on top of the panel controls — on phones it covers the
+  // Layers checkboxes entirely, on desktop it covers "Enter
+  // coordinates". A player taps ×; the spec does the same before
+  // touching any panel chrome, so a standing sheet never blocks a
+  // click the test means to land on a panel control.
+  const close = page.getByRole('button', { name: 'Close place details', exact: true });
+  if (await close.isVisible()) {
+    await close.click();
+    await expect(details(page)).not.toBeVisible();
+  }
+}
+
 async function openPanel(
   page: Page,
   tab: 'find' | 'layers' | 'saved' | 'ask',
 ): Promise<void> {
+  await dismissPlaceSheet(page);
   // One place to go: the labelled bottom-nav tabs open the panel.
   const label = tab === 'find' ? 'Find' : tab === 'layers' ? 'Layers' : tab === 'saved' ? 'Saved' : 'Ask';
   await page.locator('.bottom-nav').getByRole('button', { name: label }).click();
@@ -60,6 +75,10 @@ async function openAtlas(page: Page): Promise<void> {
   // First launch shows the forced onboarding as a modal dialog — it blocks
   // the bottom nav underneath until an explicit choice (Start or Skip).
   await dismissWelcome(page);
+  // First launch also shows the Vice City region sheet once the dialog
+  // is gone — dismiss it too, or it sits on top of the panel chrome
+  // (see dismissPlaceSheet) for the rest of the test.
+  await dismissPlaceSheet(page);
   // v0.12.0: the map is clean — a wordmark and one search pill, no
   // filter bar, no floating Add button (Add lives in Layers now).
   await expect(page.locator('.map-hero-banner')).toBeVisible();
@@ -254,7 +273,7 @@ test('a renamed collection, favorite and note survive a browser reload', async (
   await selectRegion(page);
   await details(page).getByRole('button', { name: 'Add to favorites', exact: true }).click();
   await expect(
-    details(page).getByRole('button', { name: 'Saved to favorites', exact: true }),
+    details(page).getByRole('button', { name: 'Remove from favorites', exact: true }),
   ).toBeVisible();
   await details(page)
     .getByLabel('Notes', { exact: true })
@@ -270,7 +289,7 @@ test('a renamed collection, favorite and note survive a browser reload', async (
   await page.reload();
   await selectRegion(page);
   await expect(
-    details(page).getByRole('button', { name: 'Saved to favorites', exact: true }),
+    details(page).getByRole('button', { name: 'Remove from favorites', exact: true }),
   ).toBeVisible();
   await expect(details(page).getByLabel('Notes', { exact: true })).toHaveValue(
     'Return to Ambrosia before sunset.',
@@ -292,7 +311,7 @@ test('a personal marker can be edited, moved and deleted with its saved referenc
   await createMarker(page, 'Quiet beach');
   await details(page).getByRole('button', { name: 'Add to favorites', exact: true }).click();
   await expect(
-    details(page).getByRole('button', { name: 'Saved to favorites', exact: true }),
+    details(page).getByRole('button', { name: 'Remove from favorites', exact: true }),
   ).toBeVisible();
   await details(page)
     .getByLabel('Notes', { exact: true })
@@ -340,6 +359,15 @@ test('a personal marker can be edited, moved and deleted with its saved referenc
   await editor.getByRole('button', { name: 'Delete marker', exact: true }).click();
   await editor.getByRole('button', { name: 'Confirm deletion', exact: true }).click();
   await expect(editor).not.toBeVisible();
+  // Deleting the last visible place on a fresh profile empties the
+  // map, so the first-open Vice City sheet can fire again (it never
+  // fired after the reload, because the marker was showing) — the
+  // marker's own sheet is gone either way; dismiss the welcome
+  // sheet if it appeared, then the map is clean.
+  await expect(
+    details(page).getByRole('heading', { name: 'Quiet beach overlook', exact: true }),
+  ).toHaveCount(0);
+  await dismissPlaceSheet(page);
   await expect(details(page)).not.toBeVisible();
   const backup = await exportBackup(page, testInfo, 'deleted-marker');
   expect(backup.markers).toEqual([]);
