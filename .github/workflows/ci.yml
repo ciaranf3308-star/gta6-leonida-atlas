@@ -19,7 +19,7 @@ jobs:
   quality:
     name: Quality
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     env:
       VITE_ANALYTICS_ID: ""
       # The base the app actually ships under. The preview server
@@ -44,6 +44,8 @@ jobs:
         run: corepack enable && corepack prepare pnpm@12.18.0 --activate
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Install tile grade dependencies
+        run: python3 -m pip install --user numpy pillow
       - name: Check types
         run: pnpm typecheck
       - name: Lint
@@ -57,16 +59,25 @@ jobs:
       # finalize timeout first — do not silence the failure.
       - name: Run unit tests
         run: pnpm test:unit
+      # The graded tile pyramid is generated, not tracked
+      # (public/assets/gta6-leonida-atlas/tiles/graded/ is gitignored,
+      # ~197 MB of derived JPEGs), so a fresh checkout has NO tiles —
+      # only ocean.jpg. The old smoke test rendered 7 sample tiles
+      # into build/graded-sample/ and the browser tests then failed
+      # 22/23 waiting on a tile that could never load. Render the full
+      # pyramid here, before the build (Vite copies public/ into
+      # dist/), so CI tests the real artifact. No elevation grid in CI
+      # (licence-grey, never vendored), so this grades without
+      # hill-shading — the warning is expected; the tests only need
+      # tiles to exist and load. Same commands as
+      # scripts/build-from-clean.sh, --workers 4 on the 4-vCPU runner.
+      - name: Render graded tile pyramid
+        run: |
+          env -u PYTHONNOUSERSITE python3 scripts/grade-tiles.py --full --workers 4
+          env -u PYTHONNOUSERSITE python3 scripts/grade-tiles.py --fill-ocean
+          env -u PYTHONNOUSERSITE python3 scripts/grade-tiles.py --check
       - name: Build
         run: pnpm build
-      - name: Install tile grade dependencies
-        run: python3 -m pip install --user numpy pillow
-      - name: Tile grade smoke test
-        # Proves the tile pipeline runs in CI (sample render from the
-        # tracked day tiles). No elevation grid in CI, so the sample
-        # grades without hill-shading — the warning is expected. The
-        # full pyramid render lives in tiles.yml.
-        run: env -u PYTHONNOUSERSITE python3 scripts/grade-tiles.py --sample
       - name: Install browser test engines
         run: pnpm exec playwright install --with-deps chromium webkit
       - name: Run browser tests

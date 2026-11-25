@@ -15,7 +15,7 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     env:
       VITE_ANALYTICS_ID: ''
       # Same base alignment as ci.yml: the build must bake the base
@@ -35,6 +35,18 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm test:unit
+      # The graded tile pyramid is generated, not tracked (gitignored),
+      # so a fresh checkout has NO tiles and the browser tests fail
+      # waiting on one that can never load. Render the full pyramid
+      # before the build (Vite copies public/ into dist/). No elevation
+      # grid in CI, so this grades without hill-shading — expected.
+      # Same commands as scripts/build-from-clean.sh.
+      - run: python3 -m pip install --user numpy pillow
+      - name: Render graded tile pyramid
+        run: |
+          env -u PYTHONNOUSERSITE python3 scripts/grade-tiles.py --full --workers 4
+          env -u PYTHONNOUSERSITE python3 scripts/grade-tiles.py --fill-ocean
+          env -u PYTHONNOUSERSITE python3 scripts/grade-tiles.py --check
       - run: pnpm build
       - name: Install browser test engines
         run: pnpm exec playwright install --with-deps chromium webkit

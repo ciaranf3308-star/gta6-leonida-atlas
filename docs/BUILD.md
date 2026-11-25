@@ -115,12 +115,17 @@ ETIMEDOUT on loaded boxes).
 
 `.github/workflows/ci.yml` runs on pushes to `main` **and**
 `spoiler-free-pwa`, plus pull requests: typecheck, lint, the unit
-suite, the production build, then a `--sample` grade-render smoke
-test (proves the tile pipeline runs in CI without paying for the
-full 31k-tile render) and the browser tests. The full pyramid render
-lives in `.github/workflows/tiles.yml` (manual dispatch + weekly):
-full grade + fill + `--check` + fingerprint-stability check. CI does
-not ship tiles; deploys come from the lead's verified local build.
+suite, then the full graded-pyramid render (`--full` + `--fill-ocean`
++ `--check`, `--workers 4`), the production build, and the browser
+tests. The full render is required, not optional: the graded pyramid
+is gitignored, so a fresh checkout has no tiles, and the browser
+tests wait on a loaded tile — with only the old `--sample` smoke
+test (7 tiles into `build/graded-sample/`) they failed 22/23. The
+render grades without hill-shading in CI (no elevation grid there);
+the weekly full render lives in `.github/workflows/tiles.yml`
+(manual dispatch + weekly): full grade + fill + `--check` +
+fingerprint-stability check. CI does not ship tiles; deploys come
+from the lead's verified local build.
 
 ## Docs map
 
