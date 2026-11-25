@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Place } from '../../src/domain/types';
 import { BASEMAP_BOUNDS, fromMapCoordinate, toMapCoordinate, isValidPosition, getFocusCenter } from '../../src/features/map/coordinates';
-import { DEFAULT_LAYERS, getVisiblePlaces } from '../../src/features/map/layers';
+import { DEFAULT_LAYERS, getVisiblePlaces, layersWithCategoryEnabled } from '../../src/features/map/layers';
 import { buildSpatialIndex, clusterPlaces, querySpatialIndex } from '../../src/features/map/spatial';
 
 const place = (id: string, x = 0, y = 0, layerId = 'community'): Place => ({
@@ -46,6 +46,25 @@ describe('Atlas layer visibility', () => {
     expect(getVisiblePlaces([{ ...place('unplaced'), position: null }], visibleCommunity)).toHaveLength(1);
     // Spoiler-free defaults hide public layers, so nothing is visible until opted in.
     expect(getVisiblePlaces([{ ...place('unplaced'), position: null }], DEFAULT_LAYERS)).toHaveLength(0);
+  });
+  it('turns on a kind’s layers when Find picks it — the pick is the request to see them', () => {
+    // Reported 2026-11-25: Kind → Style showed "0 places showing"
+    // with every layer off and no hint why. Picking a kind now
+    // enables its layers, so the list and the map both show them.
+    const styled = layersWithCategoryEnabled(DEFAULT_LAYERS, 'style');
+    expect(styled.find((l) => l.id === 'shops-style')?.visible).toBe(true);
+    expect(styled.filter((l) => l.visible).map((l) => l.id)).toEqual([
+      'shops-style',
+      'my-markers',
+    ]);
+    const robberies = layersWithCategoryEnabled(DEFAULT_LAYERS, 'robberies');
+    expect(
+      robberies.filter((l) => l.visible).map((l) => l.id).sort(),
+    ).toEqual(['breakable', 'loot-heists', 'lootable', 'my-markers']);
+    // 'all' and kinds with no layers change nothing; the input is untouched.
+    expect(layersWithCategoryEnabled(DEFAULT_LAYERS, 'all')).toEqual(DEFAULT_LAYERS);
+    expect(layersWithCategoryEnabled(DEFAULT_LAYERS, 'story')).toEqual(DEFAULT_LAYERS);
+    expect(DEFAULT_LAYERS.find((l) => l.id === 'shops-style')?.visible).toBe(false);
   });
 });
 

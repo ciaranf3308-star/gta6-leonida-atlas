@@ -80,7 +80,7 @@ export interface LayerCount {
  * Real per-layer counts from the loaded catalogue. Audited against the
  * GTADB snapshot 2e9e194: 4,407 places total — community 747 (717
  * positioned), interiors 83 (82), breakable homes 47 (42 positioned, 5
- * guide examples searchable-only), shops 40 (37), lootable 53 (53), gyms 8
+ * guide examples searchable-only), shops 46 (43), lootable 47 (47), gyms 8
  * (6), free outdoor 3 (2 positioned, 1 listed by name only), regions 6
  * (6), uncertain 3,415 (3,355), cards 5 positioned pins across 18 sets
  * (480 cards in total, the rest have no verified position yet). The 3,280

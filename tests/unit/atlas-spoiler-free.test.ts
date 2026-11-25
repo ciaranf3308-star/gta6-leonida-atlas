@@ -115,6 +115,62 @@ describe("Gyms and Workout equipment layers", () => {
     expect(bench!.description).toMatch(/No verified coordinates yet/);
   });
 
+  it("files the named clothes / hair / shoe / tattoo shops under Style, not Robberies", () => {
+    // Reported 2026-11-25: "EVERY clothes store is missing" — Kind →
+    // Style showed one place (Au Courant) because the lootable check
+    // ran first and the generic 'retail' tag on every named Style
+    // shop is robbable. All eight named Style shops are shops-style
+    // with category 'style' now; the sixteen still-unnamed Style
+    // records stay 'uncertain' (or breakable for the Capri ones).
+    const places = catalogueFromSnapshot(snapshot);
+    const style = places.filter((p) => p.layerId === "shops-style");
+    expect(style.map((p) => p.id).sort()).toEqual([
+      "L1482",
+      "L1488",
+      "L2361",
+      "L3396",
+      "L360",
+      "L370",
+      "L3786",
+    ]);
+    expect(style.map((p) => p.title).sort()).toEqual([
+      "A1 Fashions, El Joven Blvd, Southside, Vice City",
+      "Au Courant Unisex Hair Salon, Peacock Bay, Vice City",
+      "Electric Fang Tattoo, Stockyard, Vice City",
+      "Kurt's Barber Shop, Route 61, Hamlet",
+      "Sara's Unisex Salon, Hamlet",
+      "Stock 305, Stockyard, Vice City",
+      "The Old Mill Barber Shop, Millport",
+    ]);
+    expect(style.every((p) => p.category === "style")).toBe(true);
+    // We Have Shoes is the eighth named Style shop, but it is tagged
+    // 'demolished' — the uncertainty rule keeps it Unverified, and
+    // this fix does not override that.
+    const shoes = places.find((p) => p.id === "L1716");
+    expect(shoes?.title).toMatch(/We Have Shoes/);
+    expect(shoes?.layerId).toBe("uncertain");
+    // And the search path works too: "clothes" finds all nine
+    // #clothes records — the two named shops plus the seven "?" ones.
+    const found = filterPlaces(
+      places,
+      { ...DEFAULT_FILTERS, query: "clothes" },
+      [],
+      [],
+      [],
+    );
+    expect(found.map((p) => p.id).sort()).toEqual([
+      "L1488",
+      "L1504",
+      "L1614",
+      "L2361",
+      "L2381",
+      "L2383",
+      "L3303",
+      "L335",
+      "L3747",
+    ]);
+  });
+
   it("merges the gyms into the catalogue alongside the community records", () => {
     const places = catalogueFromSnapshot(snapshot);
     expect(places).toHaveLength(4456);
@@ -126,11 +182,15 @@ describe("Gyms and Workout equipment layers", () => {
     expect(places.filter((p) => p.layerId === "shops-food")).toHaveLength(30);
     expect(places.filter((p) => p.layerId === "shops-vehicles")).toHaveLength(9);
     expect(places.filter((p) => p.layerId === "shops-weapons")).toHaveLength(0);
-    expect(places.filter((p) => p.layerId === "shops-style")).toHaveLength(1);
+    // Style was 1 until v0.31.3: six more named clothes / hair /
+    // shoe / tattoo shops filed under Robberies because the lootable
+    // check ran first and their generic 'retail' tag is robbable. A
+    // Style tag now files to shops-style first (STYLE_SHOP_TAGS).
+    expect(places.filter((p) => p.layerId === "shops-style")).toHaveLength(7);
     expect(
       places.filter((p) => p.layerId.startsWith("shops-")),
-    ).toHaveLength(40);
-    expect(places.filter((p) => p.layerId === "lootable")).toHaveLength(53);
+    ).toHaveLength(46);
+    expect(places.filter((p) => p.layerId === "lootable")).toHaveLength(47);
     expect(
       places.filter((p) => p.layerId.startsWith("cards:")),
     ).toHaveLength(5);
@@ -189,12 +249,12 @@ describe("Map Index categories (v0.21.0) — the game's own filters, not the dat
     expect(counts.get('collectibles')).toBe(25);
     expect(counts.get('exploration')).toBe(737);
     expect(counts.get('food-drink')).toBe(30);
-    expect(counts.get('robberies')).toBe(129);
+    expect(counts.get('robberies')).toBe(123);
     expect(counts.get('unverified')).toBe(3415);
     expect(counts.get('vehicles')).toBe(107);
-    // One Style place now exists: the Au Courant hair salon in Peacock
-    // Bay, the first shops-style record in the snapshot.
-    expect(counts.get('style')).toBe(1);
+    // Style was 1 (Au Courant alone) until v0.31.3, when six named
+    // clothes / hair / tattoo shops moved out of Robberies into Style.
+    expect(counts.get('style')).toBe(7);
     // Honest zeroes, not invented pins: no verified Personal places
     // (safehouse / garages / ATMs) and no mapped missions yet.
     expect(counts.get('personal') ?? 0).toBe(0);

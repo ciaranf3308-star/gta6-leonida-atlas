@@ -25,7 +25,7 @@ import { CompletionPanel } from '../features/completion/CompletionPanel';
 import { areaIsolation, areaOptions, countyIsolation } from '../features/map/isolation';
 import { countyOutlineSvg, islandOutlineSvg, useAfterHoursGeo } from '../features/map/after-hours-geo';
 import { useCountyArt } from '../features/art/ai-images';
-import { DEFAULT_LAYERS } from '../features/map/layers';
+import { DEFAULT_LAYERS, layersWithCategoryEnabled } from '../features/map/layers';
 import {
   PlaceIcon,
   iconKeyForAiRecord,
@@ -813,16 +813,22 @@ function FindFilters({
         <span>Kind</span>
         <select
           value={filters.category}
-          onChange={(e) =>
-            useUiStore
+          onChange={(e) => {
+            const category = e.target.value as (typeof CATEGORIES)[number]['id'];
+            useUiStore.getState().setFilters({ category });
+            // Picking a kind turns on its layers — the pick is the
+            // request to see those places (layersWithCategoryEnabled).
+            useMapStore
               .getState()
-              .setFilters({ category: e.target.value as (typeof CATEGORIES)[number]['id'] })
-          }
+              .setLayers(
+                layersWithCategoryEnabled(useMapStore.getState().layers, category),
+              );
+          }}
           aria-label="Show one kind of place"
         >
           {CATEGORIES.map((c) => (
             <option key={c.id} value={c.id}>
-              {c.name}
+              {c.blurb ? `${c.name} — ${c.blurb}` : c.name}
             </option>
           ))}
         </select>
@@ -896,19 +902,24 @@ function CategoryTiles() {
             type="button"
             className={`category-tile ${filters.category === category.id ? 'active' : ''}`}
             aria-pressed={filters.category === category.id}
-            onClick={() =>
-              useUiStore
+            onClick={() => {
+              const next =
+                filters.category === category.id
+                  ? 'all'
+                  : (category.id as (typeof CATEGORIES)[number]['id']);
+              useUiStore.getState().setFilters({ category: next });
+              // Picking a kind turns on its layers — the pick is the
+              // request to see those places (layersWithCategoryEnabled).
+              useMapStore
                 .getState()
-                .setFilters({
-                  category:
-                    filters.category === category.id
-                      ? 'all'
-                      : (category.id as (typeof CATEGORIES)[number]['id']),
-                })
-            }
+                .setLayers(
+                  layersWithCategoryEnabled(useMapStore.getState().layers, next),
+                );
+            }}
           >
             <PlaceIcon icon={CATEGORY_ICONS[category.id] ?? 'layers'} size={20} />
             <span>{category.name}</span>
+            {category.blurb && <small>{category.blurb}</small>}
           </button>
         ))}
       </div>

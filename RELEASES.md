@@ -2,6 +2,16 @@
 
 Release history, newest first.
 
+## v0.31.3 — 2026-11-25
+
+**Released: Clothes stores are back under Style — and the filter says what Style means.**
+
+- Clothes stores were missing because of a filing bug, not the data (reported 2026-11-25): six named clothes / hair / tattoo shops — Stock 305, A1 Fashions, Electric Fang Tattoo, Sara's Unisex Salon, Kurt's Barber Shop, The Old Mill Barber Shop — filed under Robberies. The lootable check ran first and their generic 'retail' tag is robbable, so Kind → Style showed one place (Au Courant, the only Style shop without 'enterable' + 'retail'). A Style tag (#clothes / #shoes / #tattoos / #hair) now files to shops-style first, per the game's own Map Index — the cited robbery guides cover small stores, gas shops and food/drink, and no per-store source confirms a clothes shop can be held up. Kind → Style now lists 7 places; Robberies drops from 129 to 123.
+- We Have Shoes stays out on purpose: it is named in the data but tagged 'demolished', so the uncertainty rule keeps it Unverified. The 16 still-unnamed Style records stay '?' too (11 Unverified, 5 Capri breakable-home candidates) — no names invented.
+- Filtering is clearer now: the Find "Kind" picker and the category tiles both carry the blurb, so Style reads "Style — Clothing, tattoos, hair & makeup." instead of a bare game term nobody would guess means clothes. Every category gets the same treatment, not just Style.
+- Picking a Kind now turns on its layers: Kind → Style showed "0 places showing" with every layer off and no hint why, because Find only lists places whose layer is on. The pick is the request to see those places — the same consent Ask runs on — so the Style layer turns on with the Kind pick, in the list and on the map. The map still opens clean, and Find's "Clear all" still turns every public layer back off.
+- Verified (lead integration, 2026-11-25): tsc --noEmit clean; eslint 0 errors (1 pre-existing warning); full unit suite 910/910 over 93 files (2 new tests: the seven named Style shops file to shops-style with category 'style', plus the 'clothes' search returning all nine #clothes records, and the Kind-pick layer test in atlas-map-core); one-command production build (ATLAS_BASE_PATH=/gta6-leonida-atlas/, bundle assets/index-IZIP7PwY.js, SW cache atlas-b40404d5-f3128be3ba91, generated worker verified in the same command, CORE 41 entries, 31,527 graded tiles); app walk 43/43 PASS; Style probe 13/13 PASS (Kind → Style lists 7 with the layer turned on by the pick; We Have Shoes correctly absent; no console errors); geometry probe 16/16; basemap walk OK (aborted 1 / error tiles 1 / ocean 0); loot probe 32/32; spoiler probe 21/21; reveal probe 4/4; fix probe 10/10. One probe-only repair on the way: the first Style-probe run failed because Kind → Style showed "0 places showing" with every layer off — that was the real UX gap, fixed by the Kind-turns-on-its-layers change, not a probe bug.
+
 ## v0.31.2 — 2026-11-25
 
 **Released: Clean map — the text labels are off the map view.**

@@ -1,4 +1,4 @@
-import type { LayerDefinition, Place } from '../../domain/types';
+import type { Category, LayerDefinition, Place } from '../../domain/types';
 import { COLLECTABLE_CARD_PLACES, COLLECTABLE_SETS } from '../../data/collectables';
 import { visiblePlaces } from '../spoiler/visibility';
 
@@ -29,7 +29,7 @@ import { visiblePlaces } from '../spoiler/visibility';
  * Gellhorn trailer park is a breakable home even when its name is "?".
  * The 386 enterable records split across Interiors (83 named venues),
  * Breakable homes (47 houses/apartments/trailers — 42 positioned, 5
- * guide examples searchable-only), Lootable (53 shops) and Unverified
+ * guide examples searchable-only), Lootable (47 shops) and Unverified
  * (the rest — unnamed, no confirmed use). The 8 named
  * residential+enterable records (Venture Apts, Jason's House, Bayside
  * Apartments, Pegassi Residences…) moved from Interiors / Unverified
@@ -119,7 +119,7 @@ export const DEFAULT_LAYERS: LayerDefinition[] = [
     id: 'shops-style',
     name: 'Style shops',
     description:
-      'Clothing, tattoos, hair & makeup — the game’s Style filter. No verified places yet: the 23 #clothes / #hair / #tattoos / #shoes records are all unnamed “?” places or filed under Robberies / Breakable homes.',
+      'Clothing, tattoos, hair & makeup — the game’s Style filter. 7 shops with confirmed names: Stock 305 and A1 Fashions (clothes), Electric Fang Tattoo, Sara’s Unisex Salon, Kurt’s Barber Shop, The Old Mill Barber Shop and Au Courant Unisex Hair Salon. We Have Shoes is named in the data but tagged demolished, so it stays Unverified; 16 more Style records are still unnamed “?” places.',
     category: 'activity',
     mapIndex: 'style',
     visible: false,
@@ -283,6 +283,32 @@ export function filterByVisibleLayers(
   revealIds: ReadonlySet<string> = new Set(),
 ): Place[] {
   return visiblePlaces(places, layers, revealIds);
+}
+
+/**
+ * Picking a Kind in Find turns on that kind's layers — the pick IS the
+ * request to see those places, the same consent Ask runs on ("asking
+ * for a thing is consent to show that layer"). Before this, Kind →
+ * Style showed "0 places showing" with every layer off and no hint
+ * why (reported 2026-11-25: "it's not clear how to filter"). The map
+ * still opens clean — nothing turns a layer on except the user asking
+ * for its kind, an Ask answer, or the Layers switches themselves —
+ * and Find's "Clear all" still turns every public layer back off.
+ * 'all' and kinds with no layers (Story, Personal) change nothing;
+ * clearing the Kind leaves the layers as they are.
+ */
+export function layersWithCategoryEnabled(
+  layers: readonly LayerDefinition[],
+  category: Category | 'all',
+): LayerDefinition[] {
+  if (category === 'all') return [...layers];
+  const ids = new Set(
+    layers.filter((layer) => layer.mapIndex === category).map((layer) => layer.id),
+  );
+  if (ids.size === 0) return [...layers];
+  return layers.map((layer) =>
+    ids.has(layer.id) ? { ...layer, visible: true } : layer,
+  );
 }
 
 /** Unpositioned records remain available to the catalogue; the spatial index omits them. */

@@ -107,10 +107,13 @@ export const EXTRA_GROUPS: { id: Category; name: string; icon: IconKey; blurb: s
 
 export const CATEGORY_GROUPS: CategoryInfo[] = [...MAP_INDEX_GROUPS, ...EXTRA_GROUPS];
 
-/** Kinds of places — the "Kind" picker in Find and the marker editor. */
-export const CATEGORIES: { id: Category | 'all'; name: string }[] = [
+/** Kinds of places — the "Kind" picker in Find and the category tiles.
+ * The blurb rides along so the picker says what the game's term means:
+ * "Style" on its own never told anyone it was clothes, hair and
+ * tattoos (reported 2026-11-25). */
+export const CATEGORIES: { id: Category | 'all'; name: string; blurb?: string }[] = [
   { id: 'all', name: 'All kinds' },
-  ...CATEGORY_GROUPS.map(({ id, name }) => ({ id, name })),
+  ...CATEGORY_GROUPS.map(({ id, name, blurb }) => ({ id, name, blurb })),
 ];
 
 const CATEGORY_NAMES = new Map<Category, string>(
@@ -134,6 +137,9 @@ export const EMPTY_GROUP_NOTES: Partial<Record<Category, string>> = {
     'Missions are not mapped yet — the atlas covers places, not the story so far.',
   weapons:
     'No verified Ammu-Nation yet — the 6 #guns records in the public data are 4 unnamed “?” places and 2 lootable shops, so no gun shop has a verified name of its own yet.',
-  style:
-    'No verified clothing, tattoo, hair or shoe shops yet — the 23 #clothes / #hair / #tattoos / #shoes records are all unnamed “?” places or filed under Robberies / Breakable homes, so there is no Style shop layer to turn on yet.',
+  // No style entry: Style has 7 verified shops (Stock 305, A1 Fashions,
+  // Electric Fang Tattoo, Sara's, Kurt's, The Old Mill, Au Courant).
+  // It had one until v0.31.3, when the filing put the other six back —
+  // see STYLE_SHOP_TAGS in src/data/catalogue.ts. (We Have Shoes, the
+  // eighth named Style shop, is tagged demolished and stays Unverified.)
 };

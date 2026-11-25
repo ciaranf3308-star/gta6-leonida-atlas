@@ -50,8 +50,10 @@ describe('onboarding audit — the places really are mapped', () => {
     expect(counts.get('shops-food')).toMatchObject({ total: 30, positioned: 27, unpositioned: 3 });
     expect(counts.get('shops-vehicles')).toMatchObject({ total: 9, positioned: 9, unpositioned: 0 });
     expect(counts.get('shops-weapons')).toMatchObject({ total: 0, positioned: 0, unpositioned: 0 });
-    expect(counts.get('shops-style')).toMatchObject({ total: 1, positioned: 1, unpositioned: 0 });
-    expect(counts.get('lootable')).toMatchObject({ total: 53, positioned: 53, unpositioned: 0 });
+    // Style was 1 until v0.31.3 — six named clothes / hair / tattoo
+    // shops moved out of lootable into shops-style (STYLE_SHOP_TAGS).
+    expect(counts.get('shops-style')).toMatchObject({ total: 7, positioned: 7, unpositioned: 0 });
+    expect(counts.get('lootable')).toMatchObject({ total: 47, positioned: 47, unpositioned: 0 });
     expect(counts.get('loot-heists')).toMatchObject({ total: 29, positioned: 29, unpositioned: 0 });
     expect(counts.get('loot-collectibles')).toMatchObject({ total: 20, positioned: 20, unpositioned: 0 });
     expect(counts.get('gyms')).toMatchObject({ total: 8, positioned: 6, unpositioned: 2 });

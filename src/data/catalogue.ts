@@ -50,7 +50,25 @@ export const SHOP_TAGS: readonly string[] = [
  * explicitly excluded — it cannot be robbed. A lootable pin is an enterable
  * shop of one of these types; per-store safes, alarms and CCTV vary, and
  * this is not a per-store confirmed robbery list.
+ *
+ * One deliberate exception: the generic 'retail' tag must not swallow a
+ * Style shop. A clothes / shoe / tattoo / hair shop is Style in the
+ * game's Map Index even when it is enterable and carries 'retail' —
+ * the cited guides cover small stores, gas shops and food/drink, and
+ * no per-store source confirms a clothes shop can be held up. Before
+ * this rule, six named Style shops (Sara's, Kurt's, Stock 305,
+ * A1 Fashions, Electric Fang, The Old Mill) filed under Robberies and
+ * Kind → Style showed a single place. (We Have Shoes, the seventh
+ * named shoe shop, is tagged 'demolished' so it stays Unverified —
+ * that is the uncertainty rule, not this one.)
  */
+export const STYLE_SHOP_TAGS: readonly string[] = [
+  '#clothes',
+  '#shoes',
+  '#tattoos',
+  '#hair',
+];
+
 export const ROBBABLE_SHOP_TAGS: readonly string[] = [
   'retail',
   '#supermarket',
@@ -76,10 +94,7 @@ export const ROBBABLE_SHOP_TAGS: readonly string[] = [
  */
 export function shopMapIndex(tags: readonly string[]): 'weapons' | 'style' | 'food-drink' | 'vehicles' {
   if (tags.includes('#guns')) return 'weapons';
-  if (
-    tags.some((tag) => ['#clothes', '#shoes', '#tattoos', '#hair'].includes(tag))
-  )
-    return 'style';
+  if (tags.some((tag) => STYLE_SHOP_TAGS.includes(tag))) return 'style';
   if (
     tags.some((tag) => ['#gas', '#modshop', "#pay'n'spray", '#carwash', '#bikeshop'].includes(tag))
   )
@@ -131,6 +146,10 @@ export function layerForGtadbLandmark(
   if (isBreakableGtadbLandmark(landmark)) return 'breakable';
   if (uncertain) return 'uncertain';
   const tags = landmark.tags;
+  // Style before lootable: a clothes / shoe / tattoo / hair shop is
+  // Style in the game's Map Index even when it is enterable and
+  // carries the generic 'retail' tag (see STYLE_SHOP_TAGS above).
+  if (tags.some((tag) => STYLE_SHOP_TAGS.includes(tag))) return shopLayerFor(tags);
   if (
     tags.includes('enterable') &&
     ROBBABLE_SHOP_TAGS.some((tag) => tags.includes(tag))
