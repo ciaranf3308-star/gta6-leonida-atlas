@@ -13,6 +13,7 @@
 //       the chunk). This bounds the bug to first-visit-only.
 //   (b) cold offline first visit -> browser offline page EXPECTED.
 // Self-serves dist/ on port 4352.
+/* global caches */
 import { chromium } from 'playwright';
 import http from 'node:http';
 import { createReadStream, existsSync, mkdirSync } from 'node:fs';

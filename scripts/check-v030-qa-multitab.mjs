@@ -6,6 +6,7 @@
 //       job in both tabs; tab B must show the lock notice and make
 //       ZERO API calls while tab A runs.
 // Self-serves dist/ on port 4350. Fake key only (sk-test-fake).
+/* global document, window */
 import { chromium } from 'playwright';
 import http from 'node:http';
 import { createReadStream, existsSync } from 'node:fs';

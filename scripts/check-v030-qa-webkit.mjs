@@ -2,6 +2,7 @@
 // WebKit; sandbox WebKit e2e is known-broken — record the outcome
 // honestly, never as a pass). Tries webkit.launch() + a plain load
 // of the app at 390px DPR 2; reports what happens.
+/* global document */
 import { webkit } from 'playwright';
 import http from 'node:http';
 import { createReadStream, existsSync } from 'node:fs';

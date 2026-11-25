@@ -12,7 +12,7 @@
 // So this probe asserts the final state after TWO reloads, and
 // logs the first-reload state as an observation, not a failure.
 // Fixture ids only.
-/* global document, window, caches */
+/* global caches, document, navigator */
 import { chromium } from 'playwright';
 import http from 'node:http';
 import { createReadStream, existsSync } from 'node:fs';

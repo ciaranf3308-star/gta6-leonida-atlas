@@ -13,7 +13,7 @@
 //   (c) IDB failure fails loud (poisoned DB v99): legacy keys kept,
 //       error banner shown with retry.
 // Self-serves dist/ on port 4340. Fixture ids only.
-/* global document, window, indexedDB */
+/* global window, indexedDB */
 import { chromium } from 'playwright';
 import http from 'node:http';
 import { createReadStream, existsSync, mkdirSync } from 'node:fs';

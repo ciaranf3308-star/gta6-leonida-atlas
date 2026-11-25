@@ -12,7 +12,7 @@
 //       view must paint the hatched error tile, never ocean.jpg.
 // Self-serves dist/ on port 4342 with a rig: paths in RIG_404 return
 // 404. Fixture ids only.
-/* global document, window, caches */
+/* global caches, document, navigator, Response */
 import { chromium } from 'playwright';
 import http from 'node:http';
 import { createReadStream, existsSync, mkdirSync, readFileSync } from 'node:fs';
@@ -101,7 +101,7 @@ const browser = await chromium.launch();
 // byte-identical to ocean.jpg (verified below from disk).
 let landTile = null;
 let landTile2 = null;
-let seaTile = null;
+let seaTile;
 {
   const context = await browser.newContext({
     viewport: { width: 390, height: 844 },
@@ -173,7 +173,6 @@ if (landTile && landTile2 && seaTile) {
       const buf = new Uint8Array(await res.arrayBuffer());
       return { status: res.status, url: res.url, bytes: buf.length, head: [...buf.slice(0, 4)] };
     }, url);
-  const oceanBytes = readFileSync(join(DIST, 'assets/gta6-leonida-atlas/tiles/ocean.jpg'));
   const land = await fetchTile(landTile);
   check('(a) failed LAND tile returns 404, never ocean', land.status === 404, `status=${land.status} url=${land.url}`);
   const sea = await fetchTile(seaTile);
@@ -194,7 +193,7 @@ if (landTile && landTile2 && seaTile) {
 // must return the 404 (present land tile, never ocean), and Leaflet
 // must paint the hatched error tile into the slot.
 {
-  let centerTile = null;
+  let centerTile;
   {
     const context = await browser.newContext({
       viewport: { width: 390, height: 844 },

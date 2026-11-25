@@ -62,17 +62,6 @@ const check = (name, ok, detail = '') => {
   if (!ok) failures.push(name);
 };
 
-const rec = (placeId, aiCategory, status, confidence, source) => ({
-  placeId,
-  aiCategory,
-  status,
-  confidence,
-  reason: 'QA seed',
-  model: 'gpt-4o-mini',
-  indexedAt: '2026-11-24T10:00:00.000Z',
-  source,
-});
-
 const readAiCount = (pg) =>
   pg.evaluate(
     () =>

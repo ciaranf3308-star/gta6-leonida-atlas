@@ -7,6 +7,7 @@
 //   (b) bad key (401): honest label + local cards, no crash, no
 //       key leaked into the UI.
 // Self-serves dist/ on port 4349. No key is real (sk-test-fake).
+/* global document, window */
 import { chromium } from 'playwright';
 import http from 'node:http';
 import { createReadStream, existsSync } from 'node:fs';

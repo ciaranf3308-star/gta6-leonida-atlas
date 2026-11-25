@@ -11,6 +11,7 @@
 //       (sandbox WebGL timeout is pre-existing — record, don't fail);
 //   (7) DPR 1 and DPR 3 spot-checks (island + street).
 // Self-serves dist/ on port 4356. Fixture ids only.
+/* global document */
 import { chromium } from 'playwright';
 import http from 'node:http';
 import { createReadStream, existsSync, mkdirSync } from 'node:fs';
