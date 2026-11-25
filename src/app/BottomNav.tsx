@@ -22,7 +22,7 @@ const TABS: { id: NavTab; label: string; icon: IconKey }[] = [
 export default function BottomNav({ onNavigate }: { onNavigate: (tab: NavTab) => void }) {
   const navTab = useUiStore((s) => s.navTab);
   const layers = useMapStore((s) => s.layers);
-  const layersOn = layers.filter((l) => l.visible && l.id !== 'personal').length;
+  const layersOn = layers.filter((l) => l.visible && l.id !== 'my-markers').length;
   return (
     <nav className="bottom-nav" aria-label="Atlas sections">
       {TABS.map((tab) => {

@@ -1,4 +1,5 @@
 import type { Filters } from '../../domain/types';
+import { migrateLegacyCategory } from '../../domain/types';
 
 /**
  * Map-view persistence (v0.16.0: clean launch).
@@ -60,11 +61,21 @@ export function loadSavedMapView(
     const value = parsed as Partial<SavedMapView>;
     if (!isStringArray(value.visibleLayerIds)) return null;
     return {
-      // Layer rename (v0.10.0): 'gyms-outdoor' became 'equipment' when
-      // Gyms and Workout equipment were split. Old saved views still
-      // open with the equipment layer on.
+      // Layer renames: 'gyms-outdoor' became 'equipment' when Gyms and
+      // Workout equipment were split (v0.10.0); 'personal' became
+      // 'my-markers' when the layer stopped borrowing the game's
+      // Personal name (v0.21.0). Old saved views still open with the
+      // same layer on. 'shops' split four ways in v0.21.0 (Weapons /
+      // Style / Food & Drink / Vehicles) — an old saved 'shops' id
+      // opens as Food & Drink, where most of the old shops were.
       visibleLayerIds: value.visibleLayerIds.map((id) =>
-        id === 'gyms-outdoor' ? 'equipment' : id,
+        id === 'gyms-outdoor'
+          ? 'equipment'
+          : id === 'personal'
+            ? 'my-markers'
+            : id === 'shops'
+              ? 'shops-food'
+              : id,
       ),
       countyId: typeof value.countyId === 'string' ? value.countyId : null,
       area: typeof value.area === 'string' ? value.area : null,
@@ -75,15 +86,10 @@ export function loadSavedMapView(
         value.evidence === 'approximate' || value.evidence === 'uncertain'
           ? value.evidence
           : 'all',
-      category:
-        value.category === 'region' ||
-        value.category === 'landmark' ||
-        value.category === 'nature' ||
-        value.category === 'transport' ||
-        value.category === 'business' ||
-        value.category === 'personal'
-          ? value.category
-          : 'all',
+      // Categories were rebuilt on the game's Map Index in v0.21.0 —
+      // pre-rebuild values (region / landmark / nature / transport /
+      // business / personal) migrate, anything else falls back to all.
+      category: migrateLegacyCategory(value.category),
       enterableOnly: value.enterableOnly === true,
       lootableOnly: value.lootableOnly === true,
       interiorHouseOnly: value.interiorHouseOnly === true,
@@ -137,10 +143,10 @@ export function mapViewFromState(
 /**
  * v0.16.0 clean launch: the saved view is an OFFER, never a restore.
  * The app opens with every public layer off; the empty-map prompt may
- * offer these ids back in one tap ("Restore my last layers"). 'personal'
+ * offer these ids back in one tap ("Restore my last layers"). 'my-markers'
  * is excluded — My markers are always on anyway, they are not an offer.
  */
 export function savedLayersOffer(saved: SavedMapView | null): string[] {
   if (!saved) return [];
-  return saved.visibleLayerIds.filter((id) => id !== 'personal');
+  return saved.visibleLayerIds.filter((id) => id !== 'my-markers');
 }

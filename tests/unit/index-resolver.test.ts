@@ -47,7 +47,7 @@ function place(
 ): Place {
   return {
     description: "",
-    category: "landmark",
+    category: "exploration",
     position: { x: 0, y: 0 },
     tags: [],
     region: "",
@@ -83,7 +83,7 @@ describe("index resolver v2 — coordinate match (same spot only)", () => {
     const shop = place({
       id: "L100",
       title: "Corner Store, Capri",
-      layerId: "shops",
+      layerId: "shops-food",
       position: { x: 0, y: 0 },
       tags: ["retail"],
     });
@@ -105,7 +105,7 @@ describe("index resolver v2 — coordinate match (same spot only)", () => {
     const shop = place({
       id: "L100",
       title: "Corner Store, Capri",
-      layerId: "shops",
+      layerId: "shops-food",
       position: { x: 0, y: 0 },
       tags: ["retail"],
     });
@@ -362,7 +362,7 @@ describe("index resolver v2 — order and real-snapshot yields", () => {
     const shop = place({
       id: "L100",
       title: "Corner Store, Capri",
-      layerId: "shops",
+      layerId: "shops-food",
       position: { x: 0, y: 0 },
       tags: ["retail"],
     });
@@ -383,7 +383,7 @@ describe("index resolver v2 — order and real-snapshot yields", () => {
     const named = place({
       id: "L100",
       title: "Corner Store, Capri",
-      layerId: "shops",
+      layerId: "shops-food",
       position: { x: 0, y: 0 },
       tags: ["retail"],
     });

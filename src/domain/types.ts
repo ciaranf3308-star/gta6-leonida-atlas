@@ -2,11 +2,88 @@
 import type { AiCategoryRecord } from '../features/categorise/categories';
 import type { IndexJobState } from '../features/categorise/storage';
 
-export interface Position {
+export type Position = {
   x: number;
   y: number;
+};
+/**
+ * The game's own Map Index categories (pause map → D-pad Right → Map
+ * Index), plus the three groups the game files elsewhere: Collectibles
+ * (in-game: Progress > Collections), My markers (the user's own notes —
+ * NEVER called "Personal": in the game, Personal means your vehicles,
+ * safehouse/residence, owned garages and ATMs) and Unverified (places
+ * with no confirmed name or use yet — never forced into a category).
+ *
+ * There is NO "Business" category in the game: shops are split across
+ * Weapons, Style, Food & Drink, Vehicles and Robberies. The old
+ * region/landmark/nature/transport/business/personal set was a GTADB
+ * data-model label, not a GTA one — that mismatch is what v0.21.0
+ * removes. 'personal' here means ONLY the game's Personal; no verified
+ * Personal places exist in the public data yet, so it honestly counts 0.
+ * 'story' (missions) is likewise unmapped so far — also 0, also stated.
+ */
+export type MapIndexCategory =
+  | 'personal'
+  | 'story'
+  | 'robberies'
+  | 'activities'
+  | 'exploration'
+  | 'vehicles'
+  | 'weapons'
+  | 'style'
+  | 'food-drink';
+export type Category =
+  | MapIndexCategory
+  | 'collectibles'
+  | 'my-markers'
+  | 'unverified';
+
+export const MAP_INDEX_CATEGORIES: readonly MapIndexCategory[] = [
+  'personal',
+  'story',
+  'robberies',
+  'activities',
+  'exploration',
+  'vehicles',
+  'weapons',
+  'style',
+  'food-drink',
+];
+
+export const ALL_CATEGORIES: readonly Category[] = [
+  ...MAP_INDEX_CATEGORIES,
+  'collectibles',
+  'my-markers',
+  'unverified',
+];
+
+/**
+ * Pre-v0.21.0 categories, for backups and saved views written before
+ * the rebuild. Only genuinely dead values migrate: region / landmark /
+ * nature / business had no shop-type info attached, so they fall back
+ * to Exploration (a point of interest) rather than being guessed into
+ * Weapons / Style / Food & Drink; transport becomes Vehicles. A value
+ * that is still a live category — including 'personal', which is now
+ * the game's own Personal — passes through unchanged. The one
+ * exception is a MARKER's 'personal': a user marker is never the
+ * game's Personal, so parsePersonalMarker maps that one to
+ * 'my-markers' itself instead of using this function.
+ */
+export function migrateLegacyCategory(value: unknown): Category | 'all' {
+  if (typeof value !== 'string') return 'all';
+  if ((ALL_CATEGORIES as readonly string[]).includes(value)) return value as Category;
+  switch (value) {
+    case 'region':
+    case 'landmark':
+    case 'nature':
+    case 'business':
+      return 'exploration';
+    case 'transport':
+      return 'vehicles';
+    default:
+      return 'all';
+  }
 }
-export type Category = 'region' | 'landmark' | 'nature' | 'transport' | 'business' | 'personal';
 export interface Place {
   id: string;
   title: string;
@@ -56,6 +133,25 @@ export interface PlaceNote {
   text: string;
   updatedAt: string;
 }
+/**
+ * The user's own secondary tags on a place ("sells t-shirts" on a gas
+ * station, "workout equipment" on a house in Capri). They are the
+ * user's labels, never verified data: they never change the place's
+ * real Map Index category, they sit alongside it, and they are always
+ * shown as "Your tag". One row per place, like notes.
+ */
+export interface PlaceTags {
+  placeId: string;
+  tags: string[];
+  updatedAt: string;
+}
+/** A place the user has marked as explored — been there and checked it
+ * out. Separate from found (visited): found is "got the thing / did
+ * the thing", explored is "been here". Explored places fade on the map. */
+export interface ExploredPlace {
+  placeId: string;
+  exploredAt: string;
+}
 export interface Collection {
   id: string;
   name: string;
@@ -71,9 +167,11 @@ export interface Preferences {
 export interface UserData {
   favorites: Favorite[];
   notes: PlaceNote[];
+  placeTags: PlaceTags[];
   collections: Collection[];
   markers: PersonalMarker[];
   visited: VisitedPlace[];
+  explored: ExploredPlace[];
   preferences: Preferences;
 }
 /**
@@ -95,6 +193,13 @@ export interface LayerDefinition {
   name: string;
   description?: string;
   category: string;
+  /**
+   * The game's Map Index group this layer belongs to (v0.21.0) — the
+   * Layers list is grouped by it, in the game's own order. A layer that
+   * spans categories (Interiors: venues of every kind) sits in
+   * Exploration, with the split visible in Find instead.
+   */
+  mapIndex: Category;
   visible: boolean;
   order: number;
   source: string;
@@ -172,8 +277,10 @@ export function namedPlaces<T extends Pick<Place, 'title'>>(places: readonly T[]
 export const EMPTY_USER_DATA: UserData = {
   favorites: [],
   notes: [],
+  placeTags: [],
   collections: [],
   markers: [],
   visited: [],
+  explored: [],
   preferences: DEFAULT_PREFERENCES,
 };

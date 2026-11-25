@@ -9,7 +9,7 @@ const marker = (id = 'custom:beach'): PersonalMarker => ({
   id,
   title: 'Beach stop',
   description: 'Visit later',
-  category: 'personal',
+  category: 'my-markers',
   position: { x: -1200, y: 900 },
   icon: 'flag',
   createdAt: time,
@@ -23,6 +23,8 @@ const incoming = (): Backup => ({
   notes: [{ placeId: 'L42', text: 'Imported note', updatedAt: time }],
   collections: [{ id: 'trip', name: 'Trip', placeIds: ['L42'], createdAt: time, updatedAt: time }],
   markers: [marker()],
+  placeTags: [{ placeId: 'L42', tags: ['sells t-shirts'], updatedAt: time }],
+  explored: [{ placeId: 'L42', exploredAt: time }],
   visited: [{ placeId: 'L42', visitedAt: time }],
   preferences: { reducedMotion: true, showLabels: false, clusterMarkers: false },
   aiCategories: [
@@ -59,9 +61,11 @@ describe('local atlas repository', () => {
     expect(await db.load()).toEqual({
       favorites: [],
       notes: [],
+      placeTags: [],
       collections: [],
       markers: [],
       visited: [],
+      explored: [],
       preferences: { reducedMotion: false, showLabels: true, clusterMarkers: true },
     });
     await db.saveMarker(marker());
@@ -267,12 +271,12 @@ describe('real IndexedDB schema upgrade', () => {
     legacy.close();
     await db.open();
     const saved = await db.load();
-    expect(db.verno).toBe(3);
+    expect(db.verno).toBe(4);
     expect(saved.visited).toEqual([]);
     expect(saved.markers[0]).toMatchObject({
       id: 'custom:old',
       title: 'Old stop',
-      category: 'personal',
+      category: 'my-markers',
       icon: 'pin',
       createdAt: time,
       updatedAt: time,
@@ -285,7 +289,7 @@ describe('real IndexedDB schema upgrade', () => {
       showLabels: false,
       clusterMarkers: true,
     });
-    expect(await db.markers.where('category').equals('personal').count()).toBe(1);
+    expect(await db.markers.where('category').equals('my-markers').count()).toBe(1);
     expect(await db.notes.orderBy('updatedAt').count()).toBe(1);
   });
 

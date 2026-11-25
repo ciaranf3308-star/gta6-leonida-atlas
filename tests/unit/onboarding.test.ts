@@ -47,7 +47,10 @@ describe('onboarding audit — the places really are mapped', () => {
   it('matches the counts the UI claims per layer', () => {
     expect(counts.get('interiors')).toMatchObject({ total: 77, positioned: 76, unpositioned: 1 });
     expect(counts.get('breakable')).toMatchObject({ total: 52, positioned: 47, unpositioned: 5 });
-    expect(counts.get('shops')).toMatchObject({ total: 39, positioned: 36, unpositioned: 3 });
+    expect(counts.get('shops-food')).toMatchObject({ total: 30, positioned: 27, unpositioned: 3 });
+    expect(counts.get('shops-vehicles')).toMatchObject({ total: 9, positioned: 9, unpositioned: 0 });
+    expect(counts.get('shops-weapons')).toMatchObject({ total: 0, positioned: 0, unpositioned: 0 });
+    expect(counts.get('shops-style')).toMatchObject({ total: 0, positioned: 0, unpositioned: 0 });
     expect(counts.get('lootable')).toMatchObject({ total: 52, positioned: 52, unpositioned: 0 });
     expect(counts.get('gyms')).toMatchObject({ total: 8, positioned: 6, unpositioned: 2 });
     expect(counts.get('equipment')).toMatchObject({ total: 3, positioned: 2, unpositioned: 1 });
@@ -74,7 +77,8 @@ describe('onboarding audit — the places really are mapped', () => {
       'breakable',
       'lootable',
       'interiors',
-      'shops',
+      'shops-food',
+      'shops-vehicles',
     ]);
   });
 });

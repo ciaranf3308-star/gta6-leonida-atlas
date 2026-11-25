@@ -16,7 +16,7 @@ function place(
 ): Place {
   return {
     description: "",
-    category: "business",
+    category: "food-drink",
     position: { x: 0, y: 0 },
     tags: [],
     region: "",
@@ -37,7 +37,7 @@ const CAPRI_PLACES: Place[] = [
     layerId: "community",
     position: { x: -6837, y: 769 },
     region: "Capri",
-    category: "transport",
+    category: "vehicles",
   }),
   place({
     id: "L1064",
@@ -45,7 +45,7 @@ const CAPRI_PLACES: Place[] = [
     layerId: "community",
     position: { x: -6409, y: -210 },
     region: "Capri",
-    category: "landmark",
+    category: "exploration",
   }),
   place({
     id: "gym:grand-majestic",

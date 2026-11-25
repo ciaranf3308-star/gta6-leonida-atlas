@@ -1,6 +1,7 @@
 import type { Place, Position } from './types';
 import { isUnnamedPlace } from './types';
 import { normalizeSearch } from './filter';
+import { userTagsMatchLayer } from './user-tags';
 
 /**
  * Gyms vs workout equipment — two different things, kept apart on purpose
@@ -102,10 +103,19 @@ export function memberGyms(places: readonly Place[]): Place[] {
  * Verified free workout equipment: the public equipment layer, plus any
  * workout spot the user marked himself — that is verified equipment too,
  * on his device, and it is what answers an equipment question near home.
+ * A public place the user tagged "workout equipment" counts the same
+ * way: he saw the gear there, no public source needed. (The Capri
+ * garage: he tags the house, and it becomes a Workout Equipment pin.)
  */
-export function verifiedEquipment(places: readonly Place[]): Place[] {
+export function verifiedEquipment(
+  places: readonly Place[],
+  userTags?: ReadonlyMap<string, readonly string[]>,
+): Place[] {
   return places.filter(
-    (place) => place.layerId === 'equipment' || isWorkoutMarker(place),
+    (place) =>
+      place.layerId === 'equipment' ||
+      isWorkoutMarker(place) ||
+      (userTags ? userTagsMatchLayer(userTags.get(place.id) ?? [], 'equipment') : false),
   );
 }
 
@@ -125,9 +135,10 @@ export function nearestVerifiedGym(
 export function nearestVerifiedEquipment(
   places: readonly Place[],
   from: Position,
+  userTags?: ReadonlyMap<string, readonly string[]>,
 ): { place: Place; distance: number } | null {
   let best: { place: Place; distance: number } | null = null;
-  for (const place of verifiedEquipment(places)) {
+  for (const place of verifiedEquipment(places, userTags)) {
     if (!place.position) continue;
     const distance = Math.hypot(place.position.x - from.x, place.position.y - from.y);
     if (!best || distance < best.distance) best = { place, distance };
@@ -143,7 +154,7 @@ export function nearestVerifiedEquipment(
  * spoilers, but they still have to be the thing asked for.
  */
 export function isWorkoutMarker(place: Place): boolean {
-  if (place.layerId !== 'personal') return false;
+  if (place.layerId !== 'my-markers') return false;
   if (place.tags.some((tag) => ['gym', 'workout', 'strength', 'fitness', 'equipment'].includes(tag)))
     return true;
   const text = normalizeSearch(`${place.title} ${place.description}`);

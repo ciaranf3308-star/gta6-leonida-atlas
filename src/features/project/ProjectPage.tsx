@@ -97,7 +97,7 @@ function About() {
           coordinate frame.
         </p>
       </Section>
-      <Section title="Where Leonida Atlas is used" id="deployments">
+      <Section title="Where ViceWire is used" id="deployments">
         <ul>
           <li>
             <a href="https://gta6state.com/">GTA6State</a> hosts the{" "}
@@ -424,7 +424,7 @@ function Changelog() {
   return (
     <>
       <p className="project-lead">
-        Leonida Atlas release history, starting with v0.5.0.
+        ViceWire release history, starting with v0.5.0.
       </p>
       {LEONIDA_ATLAS_RELEASES.map((release) => (
         <Section key={release.version} title={release.title}>
@@ -558,7 +558,7 @@ export default function ProjectPage({ page, onClose }: ProjectPageProps) {
     <main className="project-page" aria-label={title}>
       <header className="project-header">
         <a href={publicPath("")} className="project-brand">
-          LEONIDA <span>ATLAS</span>
+          VICE<span>WIRE</span>
         </a>
         <button ref={closeRef} type="button" onClick={onClose}>
           Back to the atlas
@@ -578,7 +578,7 @@ export default function ProjectPage({ page, onClose }: ProjectPageProps) {
         </nav>
         <article className="project-article">
           <p className="project-eyebrow">
-            GTA6 LEONIDA ATLAS · INDEPENDENT COMMUNITY PROJECT
+            VICEWIRE · INDEPENDENT COMMUNITY PROJECT
           </p>
           <h1>{title}</h1>
           <Content />

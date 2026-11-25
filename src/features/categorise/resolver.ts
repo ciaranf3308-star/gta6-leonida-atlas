@@ -136,7 +136,7 @@ export function categoryForNamedPlace(
   if (fromTags) return { category: fromTags.category, shopType: fromTags.shopType };
   if (place.layerId === "gyms" || place.layerId === "equipment")
     return { category: "gym" };
-  if (place.layerId === "shops" || place.layerId === "lootable")
+  if (place.layerId.startsWith("shops") || place.layerId === "lootable")
     return { category: "shop" };
   if (place.layerId === "breakable") return { category: "house" };
   if (place.layerId === "regions") return { category: "landmark" };
@@ -156,7 +156,7 @@ function coordinateResolution(
       candidate.id !== place.id &&
       candidate.position !== null &&
       !isUnnamedPlace(candidate) &&
-      candidate.layerId !== "personal",
+      candidate.layerId !== "my-markers",
   );
   let best: Place | null = null;
   let bestDistance = Number.POSITIVE_INFINITY;

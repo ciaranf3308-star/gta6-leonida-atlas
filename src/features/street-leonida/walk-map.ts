@@ -1171,7 +1171,7 @@ function completeMapMarkup(prefix: string): string {
     })
     .join('');
   return `
-    <title>Leonida Atlas — community cartography</title>
+    <title>ViceWire — community cartography</title>
     <desc>Original cartographic presentation derived from pinned GTADB / Yanis v16 community map tiles. Coastlines, roads, land cover and placements are APPROXIMATE, not official. Unmapped source areas are UNKNOWN. The established GTADB coordinate transform is unchanged. ${GTADB_ATTRIBUTION}</desc>
     <defs>
       <pattern id="${prefix}-unknown" width="500" height="500" patternUnits="userSpaceOnUse" patternTransform="rotate(35)">

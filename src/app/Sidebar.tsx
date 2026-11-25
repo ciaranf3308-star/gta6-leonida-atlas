@@ -37,7 +37,7 @@ import { setAccountEntryTarget } from '../capabilities/extension-host';
 import IndexPanel from '../features/categorise/IndexPanel';
 import { aiCategoryShortLabel, effectiveAiCategory } from '../features/categorise/categories';
 import { INITIAL_BOUNDS } from '../features/map/coordinates';
-import { CATEGORIES } from './categories';
+import { CATEGORIES, CATEGORY_GROUPS, EMPTY_GROUP_NOTES, MAP_INDEX_GROUPS } from './categories';
 import { distanceBetween, distanceWord } from '../domain/distance';
 import {
   housesToCheck,
@@ -53,6 +53,7 @@ import {
   type VenueType,
 } from '../domain/interiors';
 import { filterPlaces } from '../domain/filter';
+import { userTagsMap } from '../domain/user-tags';
 import { tagResolutionCounts, tagResolutionFor } from '../domain/resolve-tags';
 import { NEAR_DISTANCE_UNITS } from '../features/ask/retrieval';
 
@@ -75,6 +76,8 @@ export interface LayerProgress {
   name: string;
   total: number;
   found: number;
+  /** Explored (been there, checked it out) — separate from found. */
+  explored: number;
 }
 
 /** "Narrow it down" — the narrowing filters that used to live on the
@@ -89,6 +92,7 @@ function NarrowFilters({ allPlaces }: { allPlaces: Place[] }) {
   const notes = useUserStore((s) => s.notes);
   const collections = useUserStore((s) => s.collections);
   const visited = useUserStore((s) => s.visited);
+  const placeTags = useUserStore((s) => s.placeTags);
   const aiCategories = useAiIndexStore((s) => s.categories);
   const visibleIds = new Set(layers.filter((l) => l.visible).map((l) => l.id));
   const favoriteIds = favorites.map((f: { placeId: string }) => f.placeId);
@@ -102,6 +106,7 @@ function NarrowFilters({ allPlaces }: { allPlaces: Place[] }) {
       collections,
       visitedIds,
       aiCategories,
+      userTagsMap(placeTags),
     );
     return matching.filter((p) => p.position && visibleIds.has(p.layerId)).length;
   };
@@ -114,6 +119,7 @@ function NarrowFilters({ allPlaces }: { allPlaces: Place[] }) {
       collections,
       visitedIds,
       aiCategories,
+      userTagsMap(placeTags),
     ),
   );
   const interiorsOn =
@@ -271,22 +277,49 @@ function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allP
     useMapStore.getState().setEditor('create');
     useUiStore.getState().setNavTab('map');
   }
+  // Layers grouped by the game's Map Index (v0.21.0) — the nine
+  // filters the pause map offers, in the game's order, then
+  // Collectibles, My markers and Unverified. A layer with no verified
+  // places yet (Weapons, Style) is hidden and the group says why,
+  // instead of showing an empty toggle.
+  function groupSection(group: (typeof CATEGORY_GROUPS)[number]) {
+    const groupLayers = mainLayers.filter(
+      (layer) =>
+        layer.mapIndex === group.id &&
+        (layer.id === 'my-markers' || (totalById.get(layer.id) ?? 0) > 0),
+    );
+    if (groupLayers.length === 0 && !EMPTY_GROUP_NOTES[group.id]) return null;
+    return (
+      <section className="layer-group-section" key={group.id} aria-label={group.name}>
+        <h3 className="layer-group-title">
+          <PlaceIcon icon={group.icon} size={18} />
+          {group.name}
+        </h3>
+        <p className="help-text">{group.blurb}</p>
+        {groupLayers.map((layer) => row(layer))}
+        {groupLayers.length === 0 && EMPTY_GROUP_NOTES[group.id] && (
+          <p className="empty-state">{EMPTY_GROUP_NOTES[group.id]}</p>
+        )}
+      </section>
+    );
+  }
   return (
     <div className="layer-manager">
       <p className="panel-intro">
         Nothing is shown until you choose it. The map always opens clean —
-        your last layers are one tap away on the map.
+        your last layers are one tap away on the map. Layers are grouped the
+        way the game files them — the pause map’s Map Index.
       </p>
       <button
         type="button"
         className="button"
-        disabled={!layers.some((l) => l.visible && l.id !== 'personal')}
+        disabled={!layers.some((l) => l.visible && l.id !== 'my-markers')}
         onClick={() =>
           useMapStore
             .getState()
             .setLayers(
               layers.map((l) =>
-                l.id === 'personal' ? l : { ...l, visible: false },
+                l.id === 'my-markers' ? l : { ...l, visible: false },
               ),
             )
         }
@@ -369,7 +402,7 @@ function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allP
           </span>
         </button>
       )}
-      {mainLayers.map((layer) => row(layer))}
+      {MAP_INDEX_GROUPS.map((group) => groupSection(group))}
       <details className="layer-group">
         <summary>
           Trading cards · {cardPins.toLocaleString()} verified pin
@@ -388,6 +421,9 @@ function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allP
           </p>
         )}
       </details>
+      {CATEGORY_GROUPS.filter((group) => group.id === 'my-markers' || group.id === 'unverified').map(
+        (group) => groupSection(group),
+      )}
       <NarrowFilters allPlaces={allPlaces} />
       <IndexPanel
         places={allPlaces}
@@ -447,6 +483,7 @@ function Results({
   const selectedId = useMapStore((s) => s.selectedId);
   const mapCenter = useMapStore((s) => s.mapCenter);
   const status = useDomainStore((s) => s.status);
+  const placeTags = useUserStore((s) => s.placeTags);
   const aiCategories = useAiIndexStore((s) => s.categories);
   const [limit, setLimit] = useState(50);
   useEffect(() => setLimit(50), [filters]);
@@ -489,14 +526,14 @@ function Results({
         }
       : mapCenter!;
     const nearest = equipment
-      ? nearestVerifiedEquipment(allPlaces, anchor)
+      ? nearestVerifiedEquipment(allPlaces, anchor, userTagsMap(placeTags))
       : nearestVerifiedGym(allPlaces, anchor);
     if (!nearest || nearest.distance <= NEAR_DISTANCE_UNITS) return null;
     const houses = housesToCheck(allPlaces, anchor, (place) =>
       countyForPlace(place) === county.id,
     );
     return { county, nearest, housesTotal: houses.total, equipment };
-  }, [filters.query, filters.countyId, mapCenter, allPlaces]);
+  }, [filters.query, filters.countyId, mapCenter, allPlaces, placeTags]);
 
   function showHousesToCheck() {
     if (!gymHint) return;
@@ -693,7 +730,7 @@ function FindFilters({
     useMapStore.getState().setBoundsFocus(iso ? iso.bounds : INITIAL_BOUNDS);
   }
   const anythingActive =
-    layers.some((l) => l.visible && l.id !== 'personal') ||
+    layers.some((l) => l.visible && l.id !== 'my-markers') ||
     filters.countyId !== null ||
     filters.area !== null ||
     filters.category !== 'all' ||
@@ -770,7 +807,7 @@ function FindFilters({
                   useMapStore
                     .getState()
                     .layers.map((layer) =>
-                      layer.id === 'personal' ? layer : { ...layer, visible: false },
+                      layer.id === 'my-markers' ? layer : { ...layer, visible: false },
                     ),
                 );
             }}
@@ -787,15 +824,24 @@ function FindFilters({
 }
 
 /** Browse by category — art-directed tiles, not a select. Tapping
- * one sets Find's Kind filter; tapping the active one clears it. */
+ * one sets Find's Kind filter; tapping the active one clears it. The
+ * tiles are the game's own Map Index (v0.21.0) — Personal, Story,
+ * Robberies, Activities, Exploration, Vehicles, Weapons, Style, Food
+ * & Drink — plus Collectibles, My markers and Unverified. */
 const CATEGORY_ICONS: Record<string, IconKey> = {
   all: 'layers',
-  region: 'map',
-  landmark: 'landmark',
-  nature: 'tree',
-  transport: 'train',
-  business: 'store',
-  personal: 'star',
+  personal: 'navigation',
+  story: 'book',
+  robberies: 'banknote',
+  activities: 'weight',
+  exploration: 'search',
+  vehicles: 'car',
+  weapons: 'crosshair',
+  style: 'shirt',
+  'food-drink': 'food',
+  collectibles: 'gem',
+  'my-markers': 'star',
+  unverified: 'question',
 };
 
 function CategoryTiles() {
@@ -803,6 +849,10 @@ function CategoryTiles() {
   return (
     <section className="category-tiles" aria-label="Browse by category">
       <h3>Browse by category</h3>
+      <p className="help-text">
+        The game’s own Map Index — pause map, D-pad Right — plus Collectibles, My markers and
+        Unverified.
+      </p>
       <div className="category-grid">
         {CATEGORIES.map((category) => (
           <button
@@ -857,11 +907,19 @@ export function Sidebar({
   return (
     <aside className="sidebar" aria-label="Atlas panel">
       <header className="brand-header">
-        <div>
-          <h1>
-            Leonida <em>Atlas</em>
-          </h1>
-          <p>GTA VI · Independent community atlas</p>
+        <div className="brand-identity">
+          <img
+            className="brand-mark"
+            src={`${import.meta.env.BASE_URL}favicon.svg`}
+            alt=""
+            aria-hidden="true"
+          />
+          <div>
+            <h1>
+              Vice<em>Wire</em>
+            </h1>
+            <p>GTA VI · Leonida</p>
+          </div>
         </div>
         <button
           className="icon-button"

@@ -4,6 +4,7 @@ import {
   Banknote,
   BedDouble,
   Bike,
+  BookOpen,
   Building2,
   Bus,
   Car,
@@ -146,13 +147,15 @@ export type IconKey =
   | 'brush'
   | 'key'
   | 'search'
-  | 'map';
+  | 'map'
+  | 'book';
 
 export const ICON_COMPONENTS: Record<IconKey, LucideIcon> = {
   anchor: Anchor,
   banknote: Banknote,
   bed: BedDouble,
   bike: Bike,
+  book: BookOpen,
   building: Building2,
   bus: Bus,
   car: Car,
@@ -362,12 +365,15 @@ export function iconKeyForLayer(layerId: string): IconKey {
     regions: 'pin',
     community: 'pin',
     interiors: 'door',
-    shops: 'store',
+    'shops-weapons': 'crosshair',
+    'shops-style': 'shirt',
+    'shops-food': 'food',
+    'shops-vehicles': 'car',
     lootable: 'dollarsign',
     gyms: 'gym',
     equipment: 'weight',
     uncertain: 'question',
-    personal: 'star',
+    'my-markers': 'star',
   };
   return map[layerId] ?? 'pin';
 }
@@ -387,7 +393,7 @@ export function iconKeyForPlace(
   aiCategory?: { category: AiCategoryId; shopType?: string } | null,
 ): IconKey {
   if (aiCategory) return iconKeyForAiCategory(aiCategory.category, aiCategory.shopType);
-  if (place.layerId === 'personal') {
+  if (place.layerId === 'my-markers') {
     if (place.kind === 'workout') return 'gym';
     if (place.kind === 'breakable') return 'home';
     if (place.icon === 'star') return 'star';

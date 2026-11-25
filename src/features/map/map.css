@@ -119,6 +119,11 @@
 .atlas-map-marker.is-found .atlas-pin-face {
   opacity: 0.8;
 }
+/* Explored places fade further — been there, checked it out. Found
+ * outranks explored: a place that is both keeps the tick at 0.8. */
+.atlas-map-marker.is-explored .atlas-pin-face {
+  opacity: 0.45;
+}
 .atlas-found-badge {
   position: absolute;
   right: -3px;

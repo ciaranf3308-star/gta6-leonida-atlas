@@ -13,7 +13,7 @@ import type { Collection } from '../../domain/types';
 export function SavedPlaces({
   progress,
 }: {
-  progress: { layerId: string; name: string; total: number; found: number }[];
+  progress: { layerId: string; name: string; total: number; found: number; explored: number }[];
 }) {
   const collections = useUserStore((s) => s.collections);
   const favorites = useUserStore((s) => s.favorites);
@@ -73,8 +73,8 @@ export function SavedPlaces({
         Progress <span>{visited.length}</span>
       </div>
       <p className="empty-state">
-        Mark places as found from their details. Progress is per layer — turn a layer on, then
-        use “Only places I haven’t found” to chase the last ones.
+        Mark places as found or explored from their details. Progress is per layer — turn a
+        layer on, then use “Only places I haven’t found” to chase the last ones.
       </p>
       {progress
         .filter((row) => row.total > 0)
@@ -102,7 +102,7 @@ export function SavedPlaces({
               <span className="progress-name">
                 {row.name}
                 <small>
-                  {row.found} of {row.total} found · {percent}%
+                  {row.found} of {row.total} found · {row.explored} explored · {percent}%
                 </small>
               </span>
               <span className="progress-wrap" aria-hidden="true">

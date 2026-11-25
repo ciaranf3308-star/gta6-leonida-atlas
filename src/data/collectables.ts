@@ -59,7 +59,7 @@ function card(
     id,
     title: `${title} — ${setName}`,
     description: `Collectible card, ${setName} set. ${where} Pin is the host building's verified GTADB position (${host}); the exact spot inside is as described.`,
-    category: 'landmark',
+    category: 'collectibles',
     position,
     layerId: `cards:${setId}`,
     tags: ['collectible', 'trading-card', setId, 'card'],

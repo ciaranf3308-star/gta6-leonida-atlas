@@ -252,7 +252,7 @@ export function aiCategoryMatchesLayer(
       category === "services"
     );
   }
-  if (layerId === "shops") {
+  if (layerId.startsWith("shops")) {
     return (
       category === "shop" ||
       category === "restaurant" ||

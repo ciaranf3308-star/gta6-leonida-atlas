@@ -132,12 +132,16 @@ describe("regional source discoveries", () => {
     expect(region.description).toMatch(/Allied Crystal/);
     expect(region.evidence).toBe("approximate");
     expect(region.position).not.toBeNull();
+    // Regions are Exploration in the v0.21.0 Map Index (the game has
+    // no separate "Region" filter), so this search scopes to the
+    // regions layer itself — the test is about the research context on
+    // region places, not the category filter.
     const search = (query: string) =>
       filterPlaces(
         catalogue,
         {
           query,
-          category: "region",
+          category: "exploration",
           favoritesOnly: false,
           personalOnly: false,
           evidence: "all",
@@ -155,7 +159,9 @@ describe("regional source discoveries", () => {
         [],
         [],
         [],
-      ).map((place) => place.id);
+      )
+        .filter((place) => place.layerId === 'regions')
+        .map((place) => place.id);
     expect(search("Little Cuba")).toEqual(["region:vice-city"]);
     expect(search("Final Chapter")).toEqual(["region:ambrosia"]);
   });

@@ -64,6 +64,9 @@ export interface AskCard {
   /** Badges that come from an AI suggestion, not from the map data. */
   aiBadges: Partial<Record<AskBadge, boolean>>;
   hasPosition: boolean;
+  /** The user's own secondary tags on this place — shown as "Your tag",
+   * never as verified data. */
+  userTags: string[];
 }
 
 /** Badges for one place: what you can do there, from its tags + layer
@@ -114,14 +117,16 @@ export function buildAskCard(
   place: Place,
   distanceUnits: number | null,
   aiCategories: Readonly<Record<string, AiCategoryRecord>>,
+  userTags?: ReadonlyMap<string, readonly string[]>,
 ): AskCard {
-  return cardFor(place, distanceUnits, aiCategories);
+  return cardFor(place, distanceUnits, aiCategories, userTags);
 }
 
 function cardFor(
   place: Place,
   distanceUnits: number | null,
   aiCategories: Readonly<Record<string, AiCategoryRecord>>,
+  userTags?: ReadonlyMap<string, readonly string[]>,
 ): AskCard {
   const aiRecord = aiCategories[place.id];
   const aiDisplay = aiCategoryDisplay(aiRecord);
@@ -173,6 +178,7 @@ function cardFor(
     badges,
     aiBadges,
     hasPosition: place.position !== null,
+    userTags: [...(userTags?.get(place.id) ?? [])],
   };
 }
 
@@ -188,6 +194,7 @@ export function buildAskCards(
   result: AskRetrievalResult,
   places: readonly Place[],
   aiCategories: Readonly<Record<string, AiCategoryRecord>>,
+  userTags?: ReadonlyMap<string, readonly string[]>,
 ): AskCardsResult {
   const placeById = new Map(places.map((place) => [place.id, place]));
   const ordered = [...result.records].sort((a, b) => {
@@ -203,6 +210,7 @@ export function buildAskCards(
         full,
         result.anchorDistances.get(place.id) ?? null,
         aiCategories,
+        userTags,
       );
     });
   return { cards, total: result.records.length };

@@ -1,6 +1,6 @@
 {
   "background_color": "#0b1018",
-  "description": "A spoiler-free GTA VI Leonida map. All location layers start off; your own markers, notes and progress stay on this device.",
+  "description": "ViceWire — a spoiler-free GTA VI Leonida map. All location layers start off; your own markers, notes and progress stay on this device.",
   "display": "standalone",
   "icons": [
     {
@@ -18,14 +18,14 @@
     {
       "purpose": "maskable",
       "sizes": "512x512",
-      "src": "icons/icon-512.png",
+      "src": "icons/icon-512-maskable.png",
       "type": "image/png"
     }
   ],
-  "name": "Leonida Atlas — Spoiler-Free",
+  "name": "ViceWire — GTA VI Leonida Map",
   "orientation": "any",
   "scope": ".",
-  "short_name": "Leonida Atlas",
+  "short_name": "ViceWire",
   "start_url": ".",
   "theme_color": "#0b1018"
 }

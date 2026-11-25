@@ -35,7 +35,7 @@ describe('Atlas searchable catalogue', () => {
     expect(() => catalogueFromSnapshot({ ...snapshot, landmarks: [{ ...snapshot.landmarks[0], inGameCoordinates: [0, Infinity] }] })).toThrow();
   });
   it('maps personal markers to their own selectable layer without changing persisted identity', () => {
-    const marker = { id: 'personal-1', title: 'My stop', description: 'Visit later', category: 'personal' as const, position: { x: 100, y: -90 }, icon: 'star' as const, createdAt: '2026-09-05', updatedAt: '2026-09-05' };
-    expect(markerToPlace(marker)).toMatchObject({ id: marker.id, title: marker.title, position: marker.position, layerId: 'personal', evidence: 'personal' });
+    const marker = { id: 'personal-1', title: 'My stop', description: 'Visit later', category: 'my-markers' as const, position: { x: 100, y: -90 }, icon: 'star' as const, createdAt: '2026-09-05', updatedAt: '2026-09-05' };
+    expect(markerToPlace(marker)).toMatchObject({ id: marker.id, title: marker.title, position: marker.position, layerId: 'my-markers', evidence: 'personal' });
   });
 });

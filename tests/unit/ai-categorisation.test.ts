@@ -51,7 +51,7 @@ function place(
 ): Place {
   return {
     description: "",
-    category: "landmark",
+    category: "exploration",
     position: { x: 0, y: 0 },
     tags: [],
     region: "",

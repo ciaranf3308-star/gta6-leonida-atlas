@@ -96,7 +96,7 @@ export function layerCounts(
 ): LayerCount[] {
   const byId = new Map<string, LayerCount>();
   for (const layer of layers) {
-    if (layer.id === 'personal') continue;
+    if (layer.id === 'my-markers') continue;
     byId.set(layer.id, {
       layerId: layer.id,
       name: layer.name,
@@ -116,7 +116,7 @@ export function layerCounts(
 }
 
 export function totalMappedPlaces(places: readonly Place[]): number {
-  return places.filter((place) => place.layerId !== 'personal').length;
+  return places.filter((place) => place.layerId !== 'my-markers').length;
 }
 
 /** Unnamed "?" records — still on the map, still to be resolved. */
@@ -182,5 +182,6 @@ export const QUICK_START_LAYERS: { layerId: string; label: string; hint: string 
   { layerId: 'breakable', label: 'Show breakable homes', hint: 'Houses you can break into' },
   { layerId: 'lootable', label: 'Show lootable', hint: 'Buildings you can hold up' },
   { layerId: 'interiors', label: 'Show interiors', hint: 'Enterable buildings' },
-  { layerId: 'shops', label: 'Show shops', hint: 'Shops & services' },
+  { layerId: 'shops-food', label: 'Show food & drink shops', hint: 'Bars, restaurants, convenience stores' },
+  { layerId: 'shops-vehicles', label: 'Show vehicle services', hint: 'Gas, mod shops, Pay ’n’ Spray' },
 ];

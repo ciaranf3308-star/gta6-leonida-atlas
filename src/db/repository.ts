@@ -3,9 +3,11 @@ import { DEFAULT_PREFERENCES } from '../domain/types';
 import type {
   Backup,
   Collection,
+  ExploredPlace,
   Favorite,
   PersonalMarker,
   PlaceNote,
+  PlaceTags,
   Preferences,
   UserData,
   VisitedPlace,
@@ -21,6 +23,7 @@ import {
   parseText,
 } from './backup';
 import { RESOLVER_VERSION } from '../features/categorise/storage';
+import { parseUserTags } from '../domain/user-tags';
 
 type PreferencesRecord = { key: 'preferences'; value: Preferences };
 
@@ -70,6 +73,28 @@ const schemaV3 = {
   visited: 'placeId, visitedAt',
   preferences: 'key',
 };
+/** v4 adds the user's secondary tags (v0.21.0), the explored state
+ * (v0.21.0) and the user's own place photos (v0.21.0, device-only —
+ * photos are NOT part of UserData or backups: a phone screenshot can
+ * be megabytes, and a backup must stay portable). New tables only;
+ * existing data is untouched. */
+const schemaV4 = {
+  ...schemaV3,
+  placeTags: 'placeId, updatedAt',
+  explored: 'placeId, exploredAt',
+  placePhotos: 'placeId, updatedAt',
+};
+
+/** A photo the user added himself — his own in-game screenshot, stored
+ * on this device only (downscaled to ≤1024px JPEG before saving, so
+ * one photo stays small). Never AI-generated, never scraped, never in
+ * a backup file. */
+export interface PlacePhoto {
+  placeId: string;
+  /** Downscaled JPEG data URL. */
+  dataUrl: string;
+  updatedAt: string;
+}
 
 async function migrateV1(transaction: Transaction): Promise<void> {
   const [favorites, notes, markers, collections, prefs] = await Promise.all([
@@ -113,9 +138,12 @@ function mergeNewest<T extends { updatedAt: string }>(
 export class AtlasDatabase extends Dexie {
   declare favorites: Table<Favorite, string>;
   declare notes: Table<PlaceNote, string>;
+  declare placeTags: Table<PlaceTags, string>;
   declare markers: Table<PersonalMarker, string>;
   declare collections: Table<Collection, string>;
   declare visited: Table<VisitedPlace, string>;
+  declare explored: Table<ExploredPlace, string>;
+  declare placePhotos: Table<PlacePhoto, string>;
   declare preferences: Table<PreferencesRecord, string>;
 
   constructor(name = 'leonida-atlas') {
@@ -124,23 +152,30 @@ export class AtlasDatabase extends Dexie {
     this.version(2).stores(schemaV2).upgrade(migrateV1);
     // v3 adds the visited (found) table only; existing data is untouched.
     this.version(3).stores(schemaV3);
+    // v4 adds placeTags, explored and placePhotos; existing data untouched.
+    this.version(4).stores(schemaV4);
   }
 
   private async snapshot(): Promise<UserData> {
-    const [favorites, notes, markers, collections, visited, preferences] = await Promise.all([
-      this.favorites.toArray(),
-      this.notes.toArray(),
-      this.markers.toArray(),
-      this.collections.toArray(),
-      this.visited.toArray(),
-      this.preferences.get('preferences'),
-    ]);
+    const [favorites, notes, placeTags, markers, collections, visited, explored, preferences] =
+      await Promise.all([
+        this.favorites.toArray(),
+        this.notes.toArray(),
+        this.placeTags.toArray(),
+        this.markers.toArray(),
+        this.collections.toArray(),
+        this.visited.toArray(),
+        this.explored.toArray(),
+        this.preferences.get('preferences'),
+      ]);
     return {
       favorites,
       notes,
+      placeTags,
       markers,
       collections,
       visited,
+      explored,
       preferences: preferences?.value ?? { ...DEFAULT_PREFERENCES },
     };
   }
@@ -200,6 +235,69 @@ export class AtlasDatabase extends Dexie {
     });
   }
 
+  /** Mark a place as explored (or unmark it). Explored is separate
+   * from found: found is "got the thing", explored is "been here". */
+  async toggleExplored(placeId: string): Promise<void> {
+    const id = parseId(placeId, 'placeId');
+    await this.transaction('rw', this.tables, async () => {
+      if (await this.explored.get(id)) await this.explored.delete(id);
+      else {
+        await this.requirePlace(id);
+        await this.checkCapacity(this.explored, id);
+        await this.explored.put({ placeId: id, exploredAt: new Date().toISOString() });
+        await this.ensureRestorable();
+      }
+    });
+  }
+
+  /** Replace the user's secondary tags on a place. An empty list
+   * removes the row. Tags go through parseUserTags (the same rules as
+   * the card's Add-a-tag box) so a stored row is always restorable. */
+  async savePlaceTags(placeId: string, tags: string[]): Promise<void> {
+    const id = parseId(placeId, 'placeId');
+    const clean = parseUserTags(tags.join(', '));
+    await this.transaction('rw', this.tables, async () => {
+      if (clean.length === 0) {
+        await this.placeTags.delete(id);
+        return;
+      }
+      await this.requirePlace(id);
+      await this.checkCapacity(this.placeTags, id);
+      const current = await this.placeTags.get(id);
+      await this.placeTags.put({
+        placeId: id,
+        tags: clean,
+        updatedAt: nextUpdatedAt(current?.updatedAt),
+      });
+      await this.ensureRestorable();
+    });
+  }
+
+  /** The user's own photo for a place, if they added one. Device-only:
+   * photos are never in backups or UserData. */
+  async getPlacePhoto(placeId: string): Promise<PlacePhoto | undefined> {
+    return this.placePhotos.get(parseId(placeId, 'placeId'));
+  }
+
+  async savePlacePhoto(placeId: string, dataUrl: string): Promise<void> {
+    const id = parseId(placeId, 'placeId');
+    if (!dataUrl.startsWith('data:image/jpeg;base64,') || dataUrl.length > 1_500_000) {
+      throw new BackupValidationError('place photo must be a downscaled JPEG under 1.5 MB');
+    }
+    await this.transaction('rw', this.placePhotos, async () => {
+      const current = await this.placePhotos.get(id);
+      await this.placePhotos.put({
+        placeId: id,
+        dataUrl,
+        updatedAt: nextUpdatedAt(current?.updatedAt),
+      });
+    });
+  }
+
+  async deletePlacePhoto(placeId: string): Promise<void> {
+    await this.placePhotos.delete(parseId(placeId, 'placeId'));
+  }
+
   async saveNote(placeId: string, text: string, expectedUpdatedAt?: string | null): Promise<void> {
     const id = parseId(placeId, 'placeId');
     const value = parseText(text, 'note.text', BACKUP_LIMITS.note);
@@ -242,14 +340,17 @@ export class AtlasDatabase extends Dexie {
     const markerId = parseId(id, 'marker.id', true);
     await this.transaction(
       'rw',
-      [this.markers, this.favorites, this.notes, this.visited, this.collections],
+      [this.markers, this.favorites, this.notes, this.placeTags, this.visited, this.explored, this.placePhotos, this.collections],
       async () => {
         checkRevision(await this.markers.get(markerId), expectedMarkerUpdatedAt);
         checkRevision(await this.notes.get(markerId), expectedNoteUpdatedAt);
         await this.markers.delete(markerId);
         await this.favorites.delete(markerId);
         await this.notes.delete(markerId);
+        await this.placeTags.delete(markerId);
         await this.visited.delete(markerId);
+        await this.explored.delete(markerId);
+        await this.placePhotos.delete(markerId);
         await this.collections
           .where('placeIds')
           .equals(markerId)
@@ -368,18 +469,26 @@ export class AtlasDatabase extends Dexie {
         favorites: [...favorites.values()],
         markers: mergeNewest(local.markers, imported.markers, (item) => item.id),
         notes: mergeNewest(local.notes, imported.notes, (item) => item.placeId),
+        placeTags: mergeNewest(local.placeTags, imported.placeTags, (item) => item.placeId),
         collections: mergeNewest(local.collections, imported.collections, (item) => item.id),
         visited: mergeNewest(
           local.visited.map((item) => ({ ...item, updatedAt: item.visitedAt })),
           imported.visited.map((item) => ({ ...item, updatedAt: item.visitedAt })),
           (item) => item.placeId,
         ).map(({ placeId, visitedAt }) => ({ placeId, visitedAt })),
+        explored: mergeNewest(
+          local.explored.map((item) => ({ ...item, updatedAt: item.exploredAt })),
+          imported.explored.map((item) => ({ ...item, updatedAt: item.exploredAt })),
+          (item) => item.placeId,
+        ).map(({ placeId, exploredAt }) => ({ placeId, exploredAt })),
       });
       await this.markers.bulkPut(merged.markers);
       await this.favorites.bulkPut(merged.favorites);
       await this.notes.bulkPut(merged.notes);
+      await this.placeTags.bulkPut(merged.placeTags);
       await this.collections.bulkPut(merged.collections);
       await this.visited.bulkPut(merged.visited);
+      await this.explored.bulkPut(merged.explored);
       await this.preferences.put({ key: 'preferences', value: merged.preferences });
     });
   }

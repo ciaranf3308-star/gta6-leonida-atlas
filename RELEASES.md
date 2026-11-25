@@ -2,6 +2,16 @@
 
 Release history, newest first.
 
+## v0.21.0 — 2026-11-24
+
+**Released: ViceWire: the game's own categories, a useful place card, your tags, and a real name.**
+
+- Categories are the game's own nine Map Index groups (pause map → D-pad Right), with the game's icons: Personal (your vehicles, safehouse, garages, ATMs), Story, Robberies, Activities, Exploration, Vehicles, Weapons, Style, Food & Drink. No generic 'Business' — shops split across Weapons, Style, Food & Drink, Vehicles and Robberies. 'Personal' never again means My markers. Personal and Story honestly count 0 verified places.
+- Place card rebuilt: Available loot (verified only, else "Loot unknown"), Hidden collectables (verified pins within 600 units, else "None verified here"), Mark as explored (separate from found, explored places fade), a real picture only (your own screenshot, or a map crop labelled as the map). Raw game coordinates cut.
+- Your secondary tags on any place ("sells t-shirts", "workout equipment" on a Capri house), shown as "Your tag", searchable, answered by Ask, saved on-device, in the v3 backup (schema v4).
+- ViceWire, Option A: bold geometric V over a cartographic layer, navy #0E1A2B, drawn as vector (scripts/build-vicewire-icon.mjs), 192/512/maskable PNGs. Wordmark VICE ivory / WIRE coral, "GTA VI · Leonida" as context. Manifest, title, header, welcome and Settings renamed. Backup format and DB schema keep their leonida-atlas identifiers so existing backups and installs still restore.
+- Kept: v0.20.2 basemap (real GTADB geography, one realism filter, tiles/enhanced/, cache fix), spoiler-free defaults, 48px targets, Ask spoiler rule, backup v3.
+
 ## v0.20.2 — 2026-11-24
 
 **Released: One realism filter, same map everywhere — and the update actually reaches your phone.**

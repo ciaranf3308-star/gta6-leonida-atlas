@@ -45,7 +45,7 @@ export default function SettingsDialog({
   const [generatingCountyId, setGeneratingCountyId] = useState<string | null>(null);
   const [artMessage, setArtMessage] = useState('');
   return (
-    <Modal title="Atlas settings" onClose={onClose}>
+    <Modal title="ViceWire settings" onClose={onClose}>
       <div className="settings-list">
         {(
           [
@@ -89,7 +89,7 @@ export default function SettingsDialog({
         ))}
       </div>
       <section className="detail-section">
-        <h3>Back up my Atlas</h3>
+        <h3>Back up my ViceWire</h3>
         <p className="help-text">
           Everything you make here lives only on this phone — your markers, notes, saved places,
           collections, and the AI index (every &ldquo;?&rdquo; place the job has sorted). A phone
@@ -109,7 +109,7 @@ export default function SettingsDialog({
             }
           }}
         >
-          Back up my Atlas
+          Back up my ViceWire
         </button>
         <p className="help-text">
           Where my stuff lives: markers, notes and saved places in this browser&apos;s storage;

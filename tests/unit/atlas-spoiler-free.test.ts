@@ -24,7 +24,7 @@ const place = (id: string, layerId = "community"): Place => ({
   id,
   title: id,
   description: "",
-  category: "landmark",
+  category: "exploration",
   position: { x: 0, y: 0 },
   layerId,
   tags: [],
@@ -42,19 +42,22 @@ describe("Spoiler-free defaults", () => {
     expect(byId.get("gyms")?.visible).toBe(false);
     expect(byId.get("equipment")?.visible).toBe(false);
     expect(byId.get("interiors")?.visible).toBe(false);
-    expect(byId.get("shops")?.visible).toBe(false);
+    expect(byId.get("shops-food")?.visible).toBe(false);
+    expect(byId.get("shops-vehicles")?.visible).toBe(false);
+    expect(byId.get("shops-weapons")?.visible).toBe(false);
+    expect(byId.get("shops-style")?.visible).toBe(false);
     expect(byId.get("lootable")?.visible).toBe(false);
     for (const layer of DEFAULT_LAYERS) {
       if (layer.id.startsWith("cards:")) expect(layer.visible).toBe(false);
     }
-    expect(byId.get("personal")?.visible).toBe(true);
+    expect(byId.get("my-markers")?.visible).toBe(true);
   });
 
   it("gates search and results to enabled layers, never hiding personal markers", () => {
     const places = [
       place("a", "community"),
       place("b", "regions"),
-      place("c", "personal"),
+      place("c", "my-markers"),
     ];
     expect(
       filterByVisibleLayers(places, DEFAULT_LAYERS).map((p) => p.id),
@@ -120,7 +123,13 @@ describe("Gyms and Workout equipment layers", () => {
     expect(places.filter((p) => p.layerId === "equipment")).toHaveLength(3);
     expect(places.filter((p) => p.layerId === "interiors")).toHaveLength(77);
     expect(places.filter((p) => p.layerId === "breakable")).toHaveLength(52);
-    expect(places.filter((p) => p.layerId === "shops")).toHaveLength(39);
+    expect(places.filter((p) => p.layerId === "shops-food")).toHaveLength(30);
+    expect(places.filter((p) => p.layerId === "shops-vehicles")).toHaveLength(9);
+    expect(places.filter((p) => p.layerId === "shops-weapons")).toHaveLength(0);
+    expect(places.filter((p) => p.layerId === "shops-style")).toHaveLength(0);
+    expect(
+      places.filter((p) => p.layerId.startsWith("shops-")),
+    ).toHaveLength(39);
     expect(places.filter((p) => p.layerId === "lootable")).toHaveLength(52);
     expect(
       places.filter((p) => p.layerId.startsWith("cards:")),
@@ -158,5 +167,102 @@ describe("Found / progress filtering", () => {
         (p) => p.id,
       ),
     ).toEqual(["a", "b"]);
+  });
+});
+
+describe("Map Index categories (v0.21.0) — the game's own filters, not the data model", () => {
+  const places = catalogueFromSnapshot(snapshot);
+
+  it("files every place under the game's Map Index, with no Business or data-model categories left", () => {
+    const counts = new Map<string, number>();
+    for (const place of places) {
+      counts.set(place.category, (counts.get(place.category) ?? 0) + 1);
+    }
+    // The old set (region / landmark / nature / transport / business /
+    // personal-as-markers) is gone from the catalogue entirely.
+    for (const dead of ['region', 'landmark', 'nature', 'transport', 'business']) {
+      expect(counts.get(dead) ?? 0).toBe(0);
+    }
+    expect(counts.get('activities')).toBe(12);
+    expect(counts.get('collectibles')).toBe(5);
+    expect(counts.get('exploration')).toBe(665);
+    expect(counts.get('food-drink')).toBe(30);
+    expect(counts.get('robberies')).toBe(104);
+    expect(counts.get('unverified')).toBe(2860);
+    expect(counts.get('vehicles')).toBe(105);
+    // Honest zeroes, not invented pins: no verified Personal places
+    // (safehouse / garages / ATMs) and no mapped missions yet.
+    expect(counts.get('personal') ?? 0).toBe(0);
+    expect(counts.get('story') ?? 0).toBe(0);
+    expect(counts.get('my-markers') ?? 0).toBe(0);
+  });
+
+  it('maps layers to categories: lootable + breakable are Robberies, gyms + equipment are Activities', () => {
+    for (const place of places.filter((p) => p.layerId === 'lootable' || p.layerId === 'breakable')) {
+      expect(place.category).toBe('robberies');
+    }
+    for (const place of places.filter((p) => p.layerId === 'gyms' || p.layerId === 'equipment')) {
+      expect(place.category).toBe('activities');
+    }
+    for (const place of places.filter((p) => p.layerId === 'uncertain')) {
+      expect(place.category).toBe('unverified');
+    }
+    for (const place of places.filter((p) => p.layerId.startsWith('cards:'))) {
+      expect(place.category).toBe('collectibles');
+    }
+    for (const place of places.filter((p) => p.layerId === 'regions')) {
+      expect(place.category).toBe('exploration');
+    }
+  });
+
+  it('splits shops by the game’s filing: guns are Weapons, clothes are Style, gas is Vehicles, food is Food & Drink', async () => {
+    const { shopMapIndex } = await import('../../src/data/catalogue');
+    expect(shopMapIndex(['#guns'])).toBe('weapons');
+    expect(shopMapIndex(['#clothes'])).toBe('style');
+    expect(shopMapIndex(['#tattoos'])).toBe('style');
+    expect(shopMapIndex(['#hair'])).toBe('style');
+    expect(shopMapIndex(['#gas'])).toBe('vehicles');
+    expect(shopMapIndex(['#modshop'])).toBe('vehicles');
+    expect(shopMapIndex(["#pay'n'spray"])).toBe('vehicles');
+    expect(shopMapIndex(['restaurant'])).toBe('food-drink');
+    expect(shopMapIndex(['#bar'])).toBe('food-drink');
+    expect(shopMapIndex(['retail'])).toBe('food-drink');
+    expect(shopMapIndex(['#supermarket'])).toBe('food-drink');
+  });
+
+  it('keeps every shop layer in the game’s order: Weapons, Style, Food & Drink, Vehicles', () => {
+    const byId = new Map(DEFAULT_LAYERS.map((layer) => [layer.id, layer]));
+    expect(byId.get('shops-weapons')?.mapIndex).toBe('weapons');
+    expect(byId.get('shops-style')?.mapIndex).toBe('style');
+    expect(byId.get('shops-food')?.mapIndex).toBe('food-drink');
+    expect(byId.get('shops-vehicles')?.mapIndex).toBe('vehicles');
+    expect(byId.get('breakable')?.mapIndex).toBe('robberies');
+    expect(byId.get('lootable')?.mapIndex).toBe('robberies');
+    expect(byId.get('gyms')?.mapIndex).toBe('activities');
+    expect(byId.get('equipment')?.mapIndex).toBe('activities');
+    expect(byId.get('uncertain')?.mapIndex).toBe('unverified');
+    expect(byId.get('my-markers')?.mapIndex).toBe('my-markers');
+    // Every layer has a Map Index home — no layer is ungrouped.
+    for (const layer of DEFAULT_LAYERS) {
+      expect(layer.mapIndex).toBeDefined();
+    }
+  });
+
+  it('migrates pre-rebuild categories instead of dropping old backups and views', async () => {
+    const { migrateLegacyCategory } = await import('../../src/domain/types');
+    expect(migrateLegacyCategory('business')).toBe('exploration');
+    expect(migrateLegacyCategory('region')).toBe('exploration');
+    expect(migrateLegacyCategory('landmark')).toBe('exploration');
+    expect(migrateLegacyCategory('nature')).toBe('exploration');
+    expect(migrateLegacyCategory('transport')).toBe('vehicles');
+    // 'personal' is a live category now — the game's own Personal — so
+    // it passes through here. A MARKER's legacy 'personal' is a
+    // different thing and migrates in parseBackup, not here (see
+    // atlas-backup.test.ts: a v2 marker with category 'personal'
+    // restores as 'my-markers').
+    expect(migrateLegacyCategory('personal')).toBe('personal');
+    expect(migrateLegacyCategory('food-drink')).toBe('food-drink');
+    expect(migrateLegacyCategory('bogus')).toBe('all');
+    expect(migrateLegacyCategory(undefined)).toBe('all');
   });
 });

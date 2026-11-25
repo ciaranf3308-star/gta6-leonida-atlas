@@ -40,7 +40,13 @@ export function selectHeroPlaces(
   const picked: PositionedPlace[] = [...regions];
   const pickedIds = new Set(picked.map((place) => place.id));
   const priority = (place: PositionedPlace) =>
-    place.layerId === 'lootable' ? 0 : place.layerId === 'interiors' ? 1 : place.layerId === 'shops' ? 2 : 3;
+    place.layerId === 'lootable'
+      ? 0
+      : place.layerId === 'interiors'
+        ? 1
+        : place.layerId.startsWith('shops-')
+          ? 2
+          : 3;
   const cell = 2200;
   const usedCells = new Set<string>();
   for (const place of regions) {

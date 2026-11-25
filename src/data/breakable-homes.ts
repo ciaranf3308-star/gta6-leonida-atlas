@@ -53,7 +53,7 @@ function breakableExample(
     id,
     title,
     description: `${title} — ${area}. ${whatIsInside} Listed by area only — no verified position, so it is searchable only, not placed on the map.`,
-    category: 'landmark',
+    category: 'robberies',
     position: null,
     layerId: 'breakable',
     // Guide-verified enterable homes — they carry the 'enterable' tag
@@ -66,6 +66,32 @@ function breakableExample(
     evidence: 'uncertain',
   };
 }
+
+/**
+ * What the robbery guides say is inside each guide-named breakable
+ * example — the same facts as the descriptions above, distilled to
+ * one loot line each, for the place card's "Available loot" row. Only
+ * what a guide actually names: Bayside names no loot, so it is not
+ * here, and its card honestly says "Loot unknown".
+ */
+export const GUIDE_BREAKABLE_LOOT: ReadonlyMap<string, string> = new Map([
+  [
+    'breakable:parlor-apartments',
+    'Safe full of cash, drugs — and a shotgun in the apartment.',
+  ],
+  [
+    'breakable:ambrosia-houses',
+    '$1,000 in a safe, a Copperhead Gauntlet in the garage, a football card inside.',
+  ],
+  [
+    'breakable:lost-vista-trailers',
+    'Pill stash in the brown wood trailer, plus a northern mobile home.',
+  ],
+  [
+    'breakable:scattered-pines-trailer',
+    'Crystal inside the white single-wide trailer.',
+  ],
+]);
 
 export const BREAKABLE_HOME_PLACES: Place[] = [
   breakableExample(

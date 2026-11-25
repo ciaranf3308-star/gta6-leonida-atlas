@@ -62,18 +62,54 @@ export const ROBBABLE_SHOP_TAGS: readonly string[] = [
   '#pharmacy',
 ];
 
-function categoryFor(tags: readonly string[]): Category {
-  if (tags.some((tag) => ['natural', 'agriculture'].includes(tag))) return 'nature';
-  if (tags.some((tag) => ['transportation', 'infrastructure', 'infr'].includes(tag)))
-    return 'transport';
+/**
+ * Where a shop sits in the game's own Map Index. There is no "Business"
+ * category in the game: Ammu-Nation is Weapons, clothing / tattoo /
+ * hair is Style, food / bars / convenience is Food & Drink, gas / mod /
+ * Pay 'n' Spray is Vehicles. The judgement calls, documented:
+ * - generic retail, pharmacy and electronics are everyday shops, so
+ *   they sit with Food & Drink (convenience / general stores);
+ * - strip clubs and nightclubs are bars-and-clubs venues, so they sit
+ *   with Food & Drink too, not Activities (the Activities layer is
+ *   gyms and workout gear, not nightlife).
+ */
+export function shopMapIndex(tags: readonly string[]): 'weapons' | 'style' | 'food-drink' | 'vehicles' {
+  if (tags.includes('#guns')) return 'weapons';
   if (
-    tags.some((tag) =>
-      ['hotel', 'restaurant', 'retail', 'service', 'office', 'industrial'].includes(tag),
-    ) ||
-    tags.some((tag) => SHOP_TAGS.includes(tag))
+    tags.some((tag) => ['#clothes', '#shoes', '#tattoos', '#hair'].includes(tag))
   )
-    return 'business';
-  return 'landmark';
+    return 'style';
+  if (
+    tags.some((tag) => ['#gas', '#modshop', "#pay'n'spray", '#carwash', '#bikeshop'].includes(tag))
+  )
+    return 'vehicles';
+  return 'food-drink';
+}
+
+/** The Shops layer a named, non-lootable shop belongs to — one per Map Index group. */
+export function shopLayerFor(tags: readonly string[]): string {
+  const group = shopMapIndex(tags);
+  return group === 'food-drink' ? 'shops-food' : `shops-${group}`;
+}
+
+function categoryFor(tags: readonly string[], layerId: string): Category {
+  // Robbery targets first: lootable shops and breakable homes are
+  // Robberies whatever else they are.
+  if (layerId === 'lootable' || layerId === 'breakable') return 'robberies';
+  if (layerId === 'uncertain') return 'unverified';
+  if (layerId.startsWith('cards:')) return 'collectibles';
+  if (layerId === 'gyms' || layerId === 'equipment') return 'activities';
+  if (layerId === 'personal' || layerId === 'my-markers') return 'my-markers';
+  if (layerId === 'regions') return 'exploration';
+  // Shops split by type — the game's own filing, not "Business".
+  if (SHOP_TAGS.some((tag) => tags.includes(tag))) return shopMapIndex(tags);
+  if (tags.some((tag) => ['gym', '#gym', 'fitness'].includes(tag))) return 'activities';
+  if (tags.some((tag) => ['transportation', 'infrastructure', 'infr'].includes(tag)))
+    return 'vehicles';
+  // Everything else named is a point of interest: Exploration. Nature,
+  // hotels, offices and landmarks all live here — the game has no
+  // separate "Nature" or "Landmark" filter.
+  return 'exploration';
 }
 
 /**
@@ -82,7 +118,9 @@ function categoryFor(tags: readonly string[]): Category {
  * except breakable houses: a residential+enterable record, a Capri
  * rob-house candidate, or the Port Gellhorn trailer park is a breakable
  * home even when its name is still "?". Otherwise a robbable enterable
- * shop is 'lootable', any other shop is 'shops', any other enterable
+ * shop is 'lootable', any other shop is one of the four shops-* layers
+ * (split by the game's Map Index: Weapons / Style / Food & Drink /
+ * Vehicles — there is no "Business" layer), any other enterable
  * building is 'interiors', the rest is 'community'.
  */
 export function layerForGtadbLandmark(
@@ -97,7 +135,7 @@ export function layerForGtadbLandmark(
     ROBBABLE_SHOP_TAGS.some((tag) => tags.includes(tag))
   )
     return 'lootable';
-  if (SHOP_TAGS.some((tag) => tags.includes(tag))) return 'shops';
+  if (SHOP_TAGS.some((tag) => tags.includes(tag))) return shopLayerFor(tags);
   if (tags.includes('enterable')) return 'interiors';
   return 'community';
 }
@@ -134,13 +172,21 @@ function landmarkToPlace(landmark: GtadbLandmark): Place {
   const reasons = classifyGtadbUncertaintyReasons(landmark.inGameAddress, landmark.tags);
   const uncertain = reasons.length > 0;
   const layerId = layerForGtadbLandmark(landmark, uncertain);
+  const shopGroup =
+    layerId === 'shops-weapons'
+      ? 'Weapons'
+      : layerId === 'shops-style'
+        ? 'Style'
+        : layerId === 'shops-vehicles'
+          ? 'Vehicles'
+          : 'Food & Drink';
   const layerNote =
     layerId === 'breakable'
       ? 'Breakable house — can be broken into for robbery. On the in-game map, dark blue means you can go in.'
       : layerId === 'lootable'
         ? 'Enterable shop — most small stores can be held up; safes and alarms vary by store.'
-        : layerId === 'shops'
-          ? 'Shop / service — enterable business.'
+        : layerId.startsWith('shops-')
+          ? `Shop — filed under the game's Map Index as ${shopGroup}.`
           : layerId === 'interiors'
             ? 'Enterable building — has an interior.'
             : '';
@@ -159,7 +205,7 @@ function landmarkToPlace(landmark: GtadbLandmark): Place {
     ]
       .filter(Boolean)
       .join(' '),
-    category: categoryFor(landmark.tags),
+    category: categoryFor(landmark.tags, layerId),
     position: landmark.inGameCoordinates
       ? { x: landmark.inGameCoordinates[0], y: landmark.inGameCoordinates[1] }
       : null,
@@ -213,7 +259,7 @@ export function catalogueFromSnapshot(input: unknown): Place[] {
     id: `region:${region.slug}`,
     title: region.name,
     description: region.description ?? '',
-    category: 'region',
+    category: 'exploration',
     position: region.position ? { x: region.position.x, y: region.position.y } : null,
     layerId: 'regions',
     tags: [...region.labels],
@@ -262,9 +308,12 @@ export function markerToPlace(marker: PersonalMarker): Place {
     id: marker.id,
     title: marker.title,
     description: marker.description,
-    category: marker.category,
+    // A marker is always a My marker — its own group, never the game's
+    // Personal (safehouse / garages / ATMs). Old stored markers that
+    // carried a legacy category read the same way.
+    category: 'my-markers',
     position: marker.position,
-    layerId: 'personal',
+    layerId: 'my-markers',
     tags: [
       marker.icon,
       // A workout-spot marker is a workout-equipment answer for Ask

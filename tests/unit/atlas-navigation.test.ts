@@ -31,7 +31,7 @@ const snapshot = JSON.parse(
 function place(overrides: Partial<Place> & Pick<Place, "id" | "title" | "layerId">): Place {
   return {
     description: "",
-    category: "landmark",
+    category: "exploration",
     position: { x: 0, y: 0 },
     tags: [],
     region: "",
@@ -58,7 +58,7 @@ describe("navigation filters — one system, map and Find", () => {
   it("narrows to lootable buildings only", () => {
     const places = [
       place({ id: "a", title: "Store, Capri", layerId: "lootable", tags: ["enterable", "retail"] }),
-      place({ id: "b", title: "Shop, Capri", layerId: "shops", tags: ["retail"] }),
+      place({ id: "b", title: "Shop, Capri", layerId: "shops-food", tags: ["retail"] }),
     ];
     const found = filterPlaces(places, { ...DEFAULT_FILTERS, lootableOnly: true }, [], [], []);
     expect(found.map((p) => p.id)).toEqual(["a"]);
@@ -102,7 +102,7 @@ describe("Capri gym hunting — honest, from the real data", () => {
     // GTADB records only — the curated gyms carry a 'gym' tag by
     // construction, so they are not part of this claim.
     const gtadb = places.filter((p) =>
-      ["community", "interiors", "shops", "lootable", "uncertain"].includes(p.layerId),
+      ["community", "interiors", "shops-food", "shops-vehicles", "lootable", "uncertain"].includes(p.layerId),
     );
     const gymTagged = gtadb.filter((p) => p.tags.some((t) => /^#?(gym|fitness|workout)$/.test(t)));
     expect(gymTagged.map((p) => p.id)).toEqual(["L1869"]);
@@ -147,7 +147,7 @@ describe("Capri gym hunting — honest, from the real data", () => {
     const places = [
       place({ id: "h1", title: "?, Capri", layerId: "uncertain", position: { x: 100, y: 100 }, tags: ["enterable"], region: "Capri" }),
       place({ id: "h2", title: "?, Capri", layerId: "uncertain", position: { x: 300, y: 300 }, tags: ["residential"], region: "Capri" }),
-      place({ id: "n1", title: "Named Shop, Capri", layerId: "shops", position: { x: 110, y: 110 }, tags: ["retail"], region: "Capri" }),
+      place({ id: "n1", title: "Named Shop, Capri", layerId: "shops-food", position: { x: 110, y: 110 }, tags: ["retail"], region: "Capri" }),
       place({ id: "n2", title: "?, Capri", layerId: "uncertain", position: { x: 120, y: 120 }, tags: [], region: "Capri" }),
       place({ id: "far", title: "?, Vice City", layerId: "uncertain", position: { x: 130, y: 130 }, tags: ["enterable"], region: "Vice City" }),
     ];
@@ -306,7 +306,7 @@ describe("Gyms vs workout equipment — the split (user, 2026-11-23)", () => {
       place({
         id: "marker:garage",
         title: "Bench in the garage",
-        layerId: "personal",
+        layerId: "my-markers",
         position: { x: -6800, y: 200 },
         region: "My markers",
         tags: ["pin", "gym", "workout", "equipment"],

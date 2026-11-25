@@ -4,45 +4,45 @@ export const ATLAS_PROJECT_META: Record<
   { title: string; heading: string; description: string }
 > = {
   about: {
-    title: "About GTA 6 Leonida Atlas: Evidence, Methods & Project",
-    heading: "About the GTA 6 Leonida Atlas",
+    title: "About ViceWire: Evidence, Methods & Project",
+    heading: "About the ViceWire",
     description:
-      "Understand the independent Leonida Atlas project, its approximate community geography, local data and public source release history.",
+      "Understand the independent ViceWire project, its approximate community geography, local data and public source release history.",
   },
   documentation: {
     title: "GTA 6 Map Guide: GTADB In-Game Map, Sources & Atlas Controls",
-    heading: "How to Use the GTA 6 Leonida Atlas",
+    heading: "How to Use the ViceWire",
     description:
-      "Learn how to explore the Leonida Atlas, use the GTADB in-game basemap and distinguish confirmed evidence from approximate community mapping.",
+      "Learn how to explore the ViceWire, use the GTADB in-game basemap and distinguish confirmed evidence from approximate community mapping.",
   },
   credits: {
-    title: "Leonida Atlas Credits: GTADB In-Game Map & Map Sources",
-    heading: "GTADB In-Game Map and Leonida Atlas Credits",
+    title: "ViceWire Credits: GTADB In-Game Map & Map Sources",
+    heading: "GTADB In-Game Map and ViceWire Credits",
     description:
-      "Find the GTADB in-game map and landmark attribution, pinned sources, Rockstar references and rights notices behind the Leonida Atlas.",
+      "Find the GTADB in-game map and landmark attribution, pinned sources, Rockstar references and rights notices behind the ViceWire.",
   },
   contributing: {
-    title: "Contribute to Leonida Atlas: Evidence & Source Corrections",
-    heading: "Contributing to the Leonida Atlas",
+    title: "Contribute to ViceWire: Evidence & Source Corrections",
+    heading: "Contributing to the ViceWire",
     description:
-      "Learn how to contribute reproducible evidence, report mapping corrections and improve the independent Leonida Atlas while preserving source attribution.",
+      "Learn how to contribute reproducible evidence, report mapping corrections and improve the independent ViceWire while preserving source attribution.",
   },
   changelog: {
-    title: "Leonida Atlas Changelog: Public Release History",
-    heading: "Leonida Atlas Release History",
+    title: "ViceWire Changelog: Public Release History",
+    heading: "ViceWire Release History",
     description:
-      "Read the public Leonida Atlas release history, including changes to community cartography, the optional 3D explorer and local map tools.",
+      "Read the public ViceWire release history, including changes to community cartography, the optional 3D explorer and local map tools.",
   },
   licenses: {
-    title: "Leonida Atlas Licenses: Code, Cartography & Asset Rights",
-    heading: "Leonida Atlas Code and Content Licenses",
+    title: "ViceWire Licenses: Code, Cartography & Asset Rights",
+    heading: "ViceWire Code and Content Licenses",
     description:
-      "Review the Leonida Atlas AGPL code license, GTADB cartography attribution and separate rights for Rockstar references and other third-party assets.",
+      "Review the ViceWire AGPL code license, GTADB cartography attribution and separate rights for Rockstar references and other third-party assets.",
   },
 };
 export const ATLAS_ENTRY_META = {
-  title: "GTA 6 Leonida Atlas: Interactive Community Map",
-  heading: "GTA 6 Leonida Atlas",
+  title: "ViceWire — GTA VI Leonida Map",
+  heading: "ViceWire",
   description:
     "Explore an approximate community map of Leonida, inspect cited location evidence and keep personal favorites, notes and collections in your browser.",
 };

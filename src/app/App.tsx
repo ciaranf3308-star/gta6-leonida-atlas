@@ -2,6 +2,7 @@ import { lazy, Suspense, useCallback, useDeferredValue, useEffect, useMemo, useR
 import { MapPinPlus, Search, X } from 'lucide-react';
 import { loadCatalogue, markerToPlace } from '../data/catalogue';
 import { filterPlaces } from '../domain/filter';
+import { userTagsMap } from '../domain/user-tags';
 import { DEFAULT_LAYERS, filterByVisibleLayers } from '../features/map/layers';
 import MapView from '../features/map/MapView';
 import BottomNav from './BottomNav';
@@ -60,6 +61,8 @@ export default function App() {
   const error = useDomainStore((s) => s.error);
   const markers = useUserStore((s) => s.markers);
   const visited = useUserStore((s) => s.visited);
+  const explored = useUserStore((s) => s.explored);
+  const placeTags = useUserStore((s) => s.placeTags);
   const favorites = useUserStore((s) => s.favorites);
   const notes = useUserStore((s) => s.notes);
   const collections = useUserStore((s) => s.collections);
@@ -150,26 +153,33 @@ export default function App() {
           collections,
           visited.map((v) => v.placeId),
           aiCategories,
+          userTagsMap(placeTags),
         ).filter((place) =>
           [...atlasRegistry.filters.values()].every((filter) => filter.matches(place)),
         ),
         layers,
       ),
-    [allPlaces, filters, deferredQuery, favorites, notes, collections, visited, layers, aiCategories],
+    [allPlaces, filters, deferredQuery, favorites, notes, collections, visited, layers, aiCategories, placeTags],
   );
-  /** Per-layer found/total for the Progress section. Counts every place in the layer. */
+  /** Per-layer found / explored / total for the Progress section.
+   * Counts every place in the layer. Explored is separate from found:
+   * found is "got the thing", explored is "been here". */
   const progress = useMemo(() => {
     const found = new Set(visited.map((v) => v.placeId));
+    const seen = new Set(explored.map((e) => e.placeId));
     return layers.map((layer) => {
       const total = allPlaces.filter((p) => p.layerId === layer.id).length;
       const done = allPlaces.filter(
         (p) => p.layerId === layer.id && found.has(p.id),
       ).length;
-      return { layerId: layer.id, name: layer.name, total, found: done };
+      const checked = allPlaces.filter(
+        (p) => p.layerId === layer.id && seen.has(p.id),
+      ).length;
+      return { layerId: layer.id, name: layer.name, total, found: done, explored: checked };
     });
-  }, [allPlaces, visited, layers]);
+  }, [allPlaces, visited, explored, layers]);
   const anyPublicLayerVisible = layers.some(
-    (layer) => layer.visible && layer.id !== 'personal',
+    (layer) => layer.visible && layer.id !== 'my-markers',
   );
   /** Positioned places currently matching — what the overlay pill counts. */
   const showingCount = useMemo(
@@ -201,7 +211,7 @@ export default function App() {
       if (place) {
         // An explicit tap is the user choosing to reveal that place: turn its
         // layer on so a deep link or a search result is never a dead end.
-        if (place.layerId !== 'personal') {
+        if (place.layerId !== 'my-markers') {
           const current = useMapStore.getState().layers;
           if (current.some((l) => l.id === place.layerId && !l.visible)) {
             useMapStore
@@ -245,7 +255,7 @@ export default function App() {
       useMapStore
         .getState()
         .layers.map((layer) =>
-          layer.id === 'personal'
+          layer.id === 'my-markers'
             ? layer
             : layerIds === 'all' || layerIds.includes(layer.id)
               ? { ...layer, visible: true }
@@ -269,7 +279,7 @@ export default function App() {
       useMapStore
         .getState()
         .layers.map((layer) =>
-          layer.id === 'personal'
+          layer.id === 'my-markers'
             ? layer
             : layerIds === 'all' || layerIds.includes(layer.id)
               ? { ...layer, visible: true }
@@ -285,7 +295,7 @@ export default function App() {
       label: 'Activities',
       layers: ['interiors', 'breakable', 'gyms', 'equipment'],
     },
-    { id: 'stores', label: 'Stores', layers: ['shops', 'lootable'] },
+    { id: 'stores', label: 'Stores', layers: ['shops-food', 'shops-vehicles', 'shops-weapons', 'shops-style', 'lootable'] },
     {
       id: 'collectibles',
       label: 'Collectibles',
@@ -293,11 +303,11 @@ export default function App() {
     },
   ];
   const activeChip = useMemo(() => {
-    const visible = new Set(layers.filter((l) => l.visible && l.id !== 'personal').map((l) => l.id));
+    const visible = new Set(layers.filter((l) => l.visible && l.id !== 'my-markers').map((l) => l.id));
     if (visible.size === 0) return null;
     for (const chip of chipGroups) {
       if (chip.layers === 'all') {
-        if (visible.size === layers.filter((l) => l.id !== 'personal').length) return 'all';
+        if (visible.size === layers.filter((l) => l.id !== 'my-markers').length) return 'all';
       } else if (
         chip.layers.length > 0 &&
         chip.layers.every((id) => visible.has(id)) &&
@@ -523,6 +533,7 @@ export default function App() {
           editorMode={editorMode}
           preferences={preferences}
           foundIds={new Set(visited.map((v) => v.placeId))}
+          exploredIds={new Set(explored.map((e) => e.placeId))}
           highlightIds={highlightSet}
           aiCategories={aiCategories}
           onSelect={select}
@@ -546,20 +557,23 @@ export default function App() {
                 alt=""
               />
               <div className="map-hero-titles">
-                {/* v0.19.0: the reference header carries the GTA VI
-                 * wordmark beside LEONIDA ATLAS; ours was a bare
-                 * wordmark on a sunset strip. Text-only mark (no
-                 * copied logo art): condensed "Grand Theft Auto"
-                 * over a coral-to-sunset VI, a divider, then the
-                 * Atlas name — the same lockup, drawn not lifted. */}
-                <span className="map-hero-gta">
-                  <span className="gta-name">Grand Theft Auto</span>
-                  <span className="gta-vi">VI</span>
-                </span>
-                <span className="map-hero-divider" aria-hidden="true" />
+                {/* v0.21.0 VICEWIRE (Option A, The Network): the bold
+                 * geometric V mark (drawn vector, not lifted from the
+                 * concept boards) beside the wordmark — VICE in ivory,
+                 * WIRE in coral — with "GTA VI · Leonida" as the
+                 * context line, not the product name. */}
+                <img
+                  className="map-hero-mark"
+                  src={`${import.meta.env.BASE_URL}favicon.svg`}
+                  alt=""
+                  aria-hidden="true"
+                />
                 <span className="map-hero-names">
-                  <span className="map-hero-brand">Leonida Atlas</span>
-                  <span className="map-hero-sub">The complete GTA VI companion</span>
+                  <span className="map-hero-brand vicewire">
+                    <span className="vicewire-vice">VICE</span>
+                    <span className="vicewire-wire">WIRE</span>
+                  </span>
+                  <span className="map-hero-sub">GTA VI · Leonida</span>
                 </span>
               </div>
             </div>
@@ -610,7 +624,12 @@ export default function App() {
                 <button type="button" onClick={() => turnOnLayers(['lootable'])}>
                   Show lootable
                 </button>
-                <button type="button" onClick={() => turnOnLayers(['shops'])}>
+                <button
+                  type="button"
+                  onClick={() =>
+                    turnOnLayers(['shops-food', 'shops-vehicles', 'shops-weapons', 'shops-style'])
+                  }
+                >
                   Show shops
                 </button>
                 <button type="button" onClick={() => turnOnLayers('all')}>
@@ -649,6 +668,7 @@ export default function App() {
           layers={layers}
           filters={filters}
           aiCategories={aiCategories}
+          userTags={userTagsMap(placeTags)}
           visitedIds={visited.map((v) => v.placeId)}
           offline={offline}
           onSelect={select}
@@ -698,6 +718,7 @@ export default function App() {
           <PlaceDetails
             key={selected.id}
             place={selected}
+            allPlaces={allPlaces}
             onAddMarkerHere={beginMarkerAt}
             onMarkWorkout={markWorkoutAt}
             onMarkBreakable={markBreakableAt}

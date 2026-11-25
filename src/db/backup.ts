@@ -1,14 +1,17 @@
-import { DEFAULT_PREFERENCES } from '../domain/types';
+import { DEFAULT_PREFERENCES, migrateLegacyCategory } from '../domain/types';
 import type {
   Backup,
   Category,
   Collection,
+  ExploredPlace,
   Favorite,
   PersonalMarker,
   PlaceNote,
+  PlaceTags,
   Preferences,
   VisitedPlace,
 } from '../domain/types';
+import { parseUserTags } from '../domain/user-tags';
 import { CANONICAL_BOUNDS } from '../features/street-leonida/leonida-coordinates';
 import {
   AI_CATEGORIES,
@@ -155,13 +158,16 @@ export function parsePersonalMarker(
     }
     return value;
   };
-  const category = item.category === undefined && legacyTime ? 'personal' : item.category;
-  if (
-    !['region', 'landmark', 'nature', 'transport', 'business', 'personal'].includes(
-      category as string,
-    )
-  )
-    invalid(`${path}.category`, 'is unsupported');
+  // Markers are My markers (v0.21.0): a missing category on a legacy
+  // backup defaults to 'my-markers', a legacy 'personal' on a marker
+  // is a My marker (a user marker is never the game's Personal), and a
+  // pre-rebuild category (region / landmark / nature / transport /
+  // business) migrates instead of failing the restore.
+  const rawCategory =
+    item.category === undefined && legacyTime ? 'my-markers' : item.category;
+  const category =
+    rawCategory === 'personal' ? 'my-markers' : migrateLegacyCategory(rawCategory);
+  if (category === 'all') invalid(`${path}.category`, 'is unsupported');
   const icon = item.icon === undefined && legacyTime ? 'pin' : item.icon;
   if (icon !== 'pin' && icon !== 'star' && icon !== 'flag')
     invalid(`${path}.icon`, 'is unsupported');
@@ -394,6 +400,42 @@ export function parseBackup(input: unknown): Backup {
     (item) => item.placeId,
     'visited',
   );
+  // v0.21.0: the user's secondary tags and explored state. Old files
+  // never had them — they restore with empty lists, and nothing else
+  // in the file is affected. Tags are re-normalised on the way in
+  // (lowercased, deduped, capped), so a hand-edited file cannot smuggle
+  // in a 10,000-character tag.
+  const placeTags = unique(
+    list(data.placeTags === undefined ? [] : data.placeTags, 'placeTags').map(
+      (value, index): PlaceTags => {
+        const path = `placeTags[${index}]`;
+        const item = record(value, path);
+        if (!Array.isArray(item.tags) || item.tags.some((tag) => typeof tag !== 'string'))
+          invalid(`${path}.tags`, 'must be an array of strings');
+        return {
+          placeId: parseId(item.placeId, `${path}.placeId`),
+          tags: parseUserTags(item.tags.join(', ')),
+          updatedAt: timestamp(item.updatedAt, `${path}.updatedAt`),
+        };
+      },
+    ),
+    (item) => item.placeId,
+    'placeTags',
+  );
+  const explored = unique(
+    list(data.explored === undefined ? [] : data.explored, 'explored').map(
+      (value, index): ExploredPlace => {
+        const path = `explored[${index}]`;
+        const item = record(value, path);
+        return {
+          placeId: parseId(item.placeId, `${path}.placeId`),
+          exploredAt: timestamp(item.exploredAt, `${path}.exploredAt`),
+        };
+      },
+    ),
+    (item) => item.placeId,
+    'explored',
+  );
   const markerIds = new Set(markers.map((item) => item.id));
   const checkReference = (id: string) => {
     if (id.startsWith('custom:') && !markerIds.has(id))
@@ -401,17 +443,21 @@ export function parseBackup(input: unknown): Backup {
   };
   for (const item of favorites) checkReference(item.placeId);
   for (const item of notes) checkReference(item.placeId);
+  for (const item of placeTags) checkReference(item.placeId);
   for (const item of collections) for (const id of item.placeIds) checkReference(id);
   for (const item of visited) checkReference(item.placeId);
+  for (const item of explored) checkReference(item.placeId);
   const result: Backup = {
     format: 'leonida-atlas',
     version: 3,
     exportedAt,
     favorites,
     notes,
+    placeTags,
     collections,
     markers,
     visited,
+    explored,
     preferences: parsePreferences(data.preferences, Boolean(legacyTime)),
     // v1/v2 files never had the AI index — they restore with an empty
     // one, and the job simply starts from scratch. v3 files carry it.

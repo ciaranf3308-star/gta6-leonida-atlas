@@ -12,7 +12,7 @@ import {
 function place(overrides: Partial<Place> & Pick<Place, 'id' | 'title' | 'layerId'>): Place {
   return {
     description: '',
-    category: 'business',
+    category: 'food-drink',
     position: { x: 0, y: 0 },
     tags: [],
     region: '',
@@ -216,7 +216,7 @@ describe('Ask Nylah — the spoiler rule', () => {
 
   it('a general question uses visible layers only — hidden layers stay hidden', () => {
     const visibleLayers = layers().map((layer) =>
-      layer.id === 'shops' || layer.id === 'lootable' ? { ...layer, visible: true } : layer,
+      layer.id.startsWith('shops-') || layer.id === 'lootable' ? { ...layer, visible: true } : layer,
     );
     const result = retrieveForAsk({
       question: "What's around here?",
@@ -225,7 +225,7 @@ describe('Ask Nylah — the spoiler rule', () => {
       filters: { hideFound: false, remainingOnly: false, countyId: null },
     });
     expect(result.requestedLayerIds).toEqual([]);
-    expect(result.records.every((p) => ['shops', 'lootable', 'personal'].includes(p.layerId))).toBe(
+    expect(result.records.every((p) => ['shops-food', 'lootable', 'my-markers'].includes(p.layerId))).toBe(
       true,
     );
     expect(result.records.map((p) => p.id)).not.toContain('gym:dynamix');
@@ -298,7 +298,7 @@ describe('Ask Nylah — the spoiler rule', () => {
     const marked = place({
       id: 'personal:capri-house',
       title: 'Capri house with a garage',
-      layerId: 'personal',
+      layerId: 'my-markers',
       position: { x: -6800, y: 200 },
       region: 'My markers',
       tags: ['breakable', 'house'],
@@ -308,7 +308,7 @@ describe('Ask Nylah — the spoiler rule', () => {
     const workout = place({
       id: 'personal:capri-gym',
       title: 'Capri garage gym',
-      layerId: 'personal',
+      layerId: 'my-markers',
       position: { x: -6800, y: 200 },
       region: 'My markers',
       tags: ['gym', 'workout', 'equipment'],
@@ -409,7 +409,7 @@ describe('Ask Nylah — real proximity (the Capri gyms case)', () => {
       layerId: 'community',
       position: { x: -6837, y: 769 },
       region: 'Capri',
-      category: 'transport',
+      category: 'vehicles',
     }),
     place({
       id: 'L1064',
@@ -417,7 +417,7 @@ describe('Ask Nylah — real proximity (the Capri gyms case)', () => {
       layerId: 'community',
       position: { x: -6409, y: -210 },
       region: 'Capri',
-      category: 'landmark',
+      category: 'exploration',
     }),
     place({
       id: 'gym:grand-majestic',
@@ -520,7 +520,7 @@ describe('Ask Nylah — real proximity (the Capri gyms case)', () => {
       place({
         id: 'custom:house-gym-capri',
         title: 'House gym on 5th, Capri',
-        layerId: 'personal',
+        layerId: 'my-markers',
         position: { x: -6500, y: 100 },
         region: 'My markers',
         evidence: 'personal',
@@ -530,7 +530,7 @@ describe('Ask Nylah — real proximity (the Capri gyms case)', () => {
       place({
         id: 'custom:photo-spot-capri',
         title: 'Photo spot, Capri',
-        layerId: 'personal',
+        layerId: 'my-markers',
         position: { x: -6550, y: 150 },
         region: 'My markers',
         evidence: 'personal',
@@ -671,5 +671,46 @@ describe('Ask Nylah — answers from tags, not just names', () => {
     // The house and the petrol station are not gyms.
     expect(result.records.map((p) => p.id)).not.toContain('L777');
     expect(result.records.map((p) => p.id)).not.toContain('L778');
+  });
+
+  it('a house the user tagged "workout equipment" answers a workout-equipment question, whatever its source tags say', () => {
+    const result = retrieveForAsk({
+      question: 'Where is there workout equipment near Capri?',
+      places: TAGGED,
+      layers: layers(),
+      filters: { hideFound: false, remainingOnly: false, countyId: null },
+      userTags: new Map([['L778', ['workout equipment']]]),
+    });
+    // The house has no gym tag in the source data — only the user's tag.
+    expect(result.records.map((p) => p.id)).toContain('L778');
+    // And the tag is layer-scoped: it never answers a member-gym question.
+    const gym = retrieveForAsk({
+      question: 'Show me a gym near Capri',
+      places: TAGGED,
+      layers: layers(),
+      filters: { hideFound: false, remainingOnly: false, countyId: null },
+      userTags: new Map([['L778', ['workout equipment']]]),
+    });
+    expect(gym.records.map((p) => p.id)).not.toContain('L778');
+  });
+
+  it('a gas station the user tagged "sells t-shirts" answers a shopping question, but never a gym question', () => {
+    const userTags = new Map([['L777', ['sells t-shirts']]]);
+    const shopping = retrieveForAsk({
+      question: 'Where can I buy t-shirts?',
+      places: TAGGED,
+      layers: layers(),
+      filters: { hideFound: false, remainingOnly: false, countyId: null },
+      userTags,
+    });
+    expect(shopping.records.map((p) => p.id)).toContain('L777');
+    const gym = retrieveForAsk({
+      question: 'Show me a gym near Capri',
+      places: TAGGED,
+      layers: layers(),
+      filters: { hideFound: false, remainingOnly: false, countyId: null },
+      userTags,
+    });
+    expect(gym.records.map((p) => p.id)).not.toContain('L777');
   });
 });

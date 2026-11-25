@@ -43,6 +43,10 @@ describe('portable backup validation', () => {
     expect(result.markers[0]).not.toHaveProperty('html');
     expect(result.markers[0]?.position).toEqual({ x: -1200, y: 900 });
     expect(result.markers[0]?.description).toBe('<b>plain text</b>');
+    // The v2 fixture marker still carries the pre-rebuild category
+    // 'personal' — a user marker is never the game's Personal, so it
+    // restores as a My marker.
+    expect(result.markers[0]?.category).toBe('my-markers');
     result.collections[0]!.placeIds.push('L99');
     expect(input.collections[0]!.placeIds).toEqual(['L42', 'custom:beach']);
   });
@@ -161,7 +165,7 @@ describe('portable backup validation', () => {
       title: 'Old stop',
       description: '',
       position: { x: 0, y: 0 },
-      category: 'personal',
+      category: 'my-markers',
       icon: 'pin',
       createdAt: time,
       updatedAt: time,

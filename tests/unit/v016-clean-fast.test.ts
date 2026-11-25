@@ -14,7 +14,7 @@ const place = (
   id,
   title,
   description: '',
-  category: 'landmark',
+  category: 'exploration',
   position: { x, y },
   layerId,
   tags: [],
@@ -44,10 +44,10 @@ describe('v0.16.0 clean launch', () => {
     // offer is what the empty-map prompt shows; the launch itself
     // starts with every public layer off.
     expect(
-      savedLayersOffer(savedView(['interiors', 'shops', 'personal'])),
-    ).toEqual(['interiors', 'shops']);
+      savedLayersOffer(savedView(['interiors', 'shops-food', 'my-markers'])),
+    ).toEqual(['interiors', 'shops-food']);
     expect(savedLayersOffer(null)).toEqual([]);
-    expect(savedLayersOffer(savedView(['personal']))).toEqual([]);
+    expect(savedLayersOffer(savedView(['my-markers']))).toEqual([]);
   });
 });
 
@@ -71,7 +71,7 @@ describe('v0.16.0 hero pins at full-map zoom', () => {
 
   it('spreads one hero pin per grid cell instead of bunching', () => {
     const places: Place[] = Array.from({ length: 40 }, (_, i) =>
-      place(`bunched-${i}`, 100 + (i % 5), 100 + Math.floor(i / 5), 'shops'),
+      place(`bunched-${i}`, 100 + (i % 5), 100 + Math.floor(i / 5), 'shops-food'),
     );
     // 40 places in one cell: only one hero pin survives from that cell.
     expect(selectHeroPlaces(places)).toHaveLength(1);

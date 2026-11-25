@@ -56,7 +56,7 @@ function gym(
         ? 'Approximate community pin — verify in game.'
         : 'No verified coordinates yet — listed here so it can be found by name, not placed on the map.'
     } Working out raises Strength and Cardio.${note ? ` ${note}` : ''}`,
-    category: 'business',
+    category: 'activities',
     position,
     layerId,
     tags: ['gym', 'strength', 'fitness', ...extraTags],

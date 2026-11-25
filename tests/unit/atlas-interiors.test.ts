@@ -28,7 +28,7 @@ const snapshot = JSON.parse(
 function place(overrides: Partial<Place> & Pick<Place, 'id' | 'title' | 'layerId'>): Place {
   return {
     description: '',
-    category: 'landmark',
+    category: 'exploration',
     position: { x: 0, y: 0 },
     tags: [],
     region: '',

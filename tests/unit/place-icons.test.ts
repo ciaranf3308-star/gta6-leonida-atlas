@@ -28,7 +28,7 @@ function fakePlace(tags: string[], layerId = 'community'): Place {
     id: 'L1',
     title: 'Test',
     description: '',
-    category: 'landmark',
+    category: 'exploration',
     position: { x: 0, y: 0 },
     layerId,
     tags,
@@ -108,10 +108,10 @@ describe('place icons — one designed set, no coloured dots', () => {
   });
 
   it('personal markers keep star / flag / workout', () => {
-    expect(iconKeyForPlace({ ...fakePlace([]), layerId: 'personal', icon: 'star' })).toBe('star');
-    expect(iconKeyForPlace({ ...fakePlace([]), layerId: 'personal', icon: 'flag' })).toBe('flag');
+    expect(iconKeyForPlace({ ...fakePlace([]), layerId: 'my-markers', icon: 'star' })).toBe('star');
+    expect(iconKeyForPlace({ ...fakePlace([]), layerId: 'my-markers', icon: 'flag' })).toBe('flag');
     expect(
-      iconKeyForPlace({ ...fakePlace([]), layerId: 'personal', icon: 'pin', kind: 'workout' }),
+      iconKeyForPlace({ ...fakePlace([]), layerId: 'my-markers', icon: 'pin', kind: 'workout' }),
     ).toBe('gym');
   });
 

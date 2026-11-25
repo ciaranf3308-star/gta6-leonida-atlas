@@ -19,7 +19,7 @@ async function openPanel(
 
 async function expectTilesLoaded(page: Page): Promise<void> {
   // GTADB In-Game Day tiles: at least one loaded tile from the bundled set.
-  const tile = page.locator('.leaflet-tile-loaded[src*="tiles/redrawn/"]').first();
+  const tile = page.locator('.leaflet-tile-loaded[src*="tiles/enhanced/"]').first();
   await expect(tile).toBeVisible();
   await expect(tile).toHaveJSProperty('complete', true);
   expect(
@@ -52,7 +52,7 @@ async function dismissWelcome(page: Page): Promise<void> {
 
 async function openAtlas(page: Page): Promise<void> {
   await page.goto('');
-  await expect(page).toHaveTitle(/Leonida Atlas/);
+  await expect(page).toHaveTitle(/ViceWire/);
   await expect(
     page.getByRole('region', { name: 'Leonida interactive map', exact: true }),
   ).toBeVisible();
@@ -77,7 +77,7 @@ async function selectRegion(page: Page, name = 'Ambrosia'): Promise<void> {
   // Spoiler-free defaults start with every public layer off.
   await enableLayer(page, 'Named regions');
   await openPanel(page, 'find');
-  await page.getByLabel('Show one kind of place').selectOption('region');
+  await page.getByLabel('Show one kind of place').selectOption('exploration');
   await search(page).fill(name);
   // v0.14.0 minimal cards: the card face is title + area + distance only,
   // so the button name starts with the place title, not "Name Region".
@@ -183,7 +183,7 @@ test('the map opens without an account, filters public evidence, and toggles vis
   });
   await openPanel(page, 'find');
   await expect(
-    sidebar(page).getByRole('heading', { name: 'Leonida Atlas', exact: true }),
+    sidebar(page).getByRole('heading', { name: 'ViceWire', exact: true }),
   ).toBeVisible();
   await expect(page.locator('vite-error-overlay')).toHaveCount(0);
   // Spoiler-free defaults start with every public layer off; opt in before
@@ -192,7 +192,7 @@ test('the map opens without an account, filters public evidence, and toggles vis
   await enableLayer(page, 'Community places');
   await enableLayer(page, 'Unverified places');
   await openPanel(page, 'find');
-  await page.getByLabel('Show one kind of place').selectOption('region');
+  await page.getByLabel('Show one kind of place').selectOption('exploration');
   // v0.14.0 minimal cards: no evidence/category line on the card face,
   // so the first region-kind result is identified by its title — Vice City
   // sorts first from the default centre.
@@ -201,7 +201,7 @@ test('the map opens without an account, filters public evidence, and toggles vis
   );
   // 'My markers' has no places yet in a fresh profile, so it is the
   // category that yields no results with these layers on.
-  await page.getByLabel('Show one kind of place').selectOption('personal');
+  await page.getByLabel('Show one kind of place').selectOption('my-markers');
   await expect(page.getByText('No places match these filters.', { exact: false })).toBeVisible();
   await page.getByLabel('Show one kind of place').selectOption('all');
   // The list repopulates — regions sort first now, so assert on the list
@@ -318,7 +318,14 @@ test('a personal marker can be edited, moved and deleted with its saved referenc
   await editor.getByLabel('Game X', { exact: true }).fill('-1000');
   await editor.getByLabel('Game Y', { exact: true }).fill('1200');
   await editor.getByRole('button', { name: 'Save marker', exact: true }).click();
-  await expect(details(page)).toContainText('-1000.0, 1200.0');
+  // v0.21.0: the card no longer prints raw game coordinates (cut as a
+  // redundant line), so the moved position is proven by reopening the
+  // editor and reading the fields back.
+  await details(page).getByRole('button', { name: 'Edit marker', exact: true }).click();
+  editor = page.getByRole('dialog', { name: 'Edit my marker', exact: true });
+  await expect(editor.getByLabel('Game X', { exact: true })).toHaveValue('-1000');
+  await expect(editor.getByLabel('Game Y', { exact: true })).toHaveValue('1200');
+  await editor.getByRole('button', { name: 'Cancel', exact: true }).click();
   await page.reload();
   await openPanel(page, 'find');
   await search(page).fill('Quiet beach overlook');
@@ -326,9 +333,10 @@ test('a personal marker can be edited, moved and deleted with its saved referenc
     .locator('.place-results')
     .getByRole('button', { name: /^Quiet beach overlook My marker/ })
     .click();
-  await expect(details(page)).toContainText('-1000.0, 1200.0');
   await details(page).getByRole('button', { name: 'Edit marker', exact: true }).click();
   editor = page.getByRole('dialog', { name: 'Edit my marker', exact: true });
+  await expect(editor.getByLabel('Game X', { exact: true })).toHaveValue('-1000');
+  await expect(editor.getByLabel('Game Y', { exact: true })).toHaveValue('1200');
   await editor.getByRole('button', { name: 'Delete marker', exact: true }).click();
   await editor.getByRole('button', { name: 'Confirm deletion', exact: true }).click();
   await expect(editor).not.toBeVisible();
@@ -491,7 +499,7 @@ test('keyboard search and modal dismissal preserve focus and usable navigation',
   await search(page).fill('Ambrosia');
   const settings = sidebar(page).getByRole('button', { name: 'Settings', exact: true });
   await settings.click();
-  const dialog = page.getByRole('dialog', { name: 'Atlas settings', exact: true });
+  const dialog = page.getByRole('dialog', { name: 'ViceWire settings', exact: true });
   await expect(dialog).toBeVisible();
   for (let index = 0; index < 7; index++) {
     await page.keyboard.press('Tab');
@@ -696,7 +704,7 @@ test('forced indexing onboarding appears on a fresh profile, and Skip leaves a o
   });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('');
-  await expect(page).toHaveTitle(/Leonida Atlas/);
+  await expect(page).toHaveTitle(/ViceWire/);
   await expect(
     page.getByRole('region', { name: 'Leonida interactive map', exact: true }),
   ).toBeVisible();

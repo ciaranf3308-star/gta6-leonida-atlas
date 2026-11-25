@@ -331,7 +331,11 @@ h3 {
   overflow: hidden;
   pointer-events: none;
 }
-.map-hero-banner img {
+/* The sunset photo only — a direct child. A bare `img` selector also
+ * caught the V mark inside .map-hero-titles and, on higher
+ * specificity, stretched it to 362px, which pushed the whole wordmark
+ * off the top of the screen (v0.21 walk). */
+.map-hero-banner > img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -356,8 +360,23 @@ h3 {
   align-items: center;
   gap: 10px;
 }
-/* v0.19.0 GTA VI text wordmark (drawn, not lifted): condensed name
- * over a coral-to-sunset VI, a divider, then the Atlas name. */
+/* v0.21.0 VICEWIRE wordmark: the V mark beside VICE (ivory) +
+ * WIRE (coral), with "GTA VI · Leonida" as the context line. */
+.map-hero-mark {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 6px #000c);
+}
+.map-hero-brand.vicewire {
+  letter-spacing: 3px;
+}
+.map-hero-brand .vicewire-vice {
+  color: var(--text);
+}
+.map-hero-brand .vicewire-wire {
+  color: #ee657c;
+}
 .map-hero-gta {
   display: grid;
   gap: 0;
@@ -679,6 +698,19 @@ h3 {
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
+  flex-shrink: 0;
+}
+/* v0.21.0 VICEWIRE panel header: the V mark beside the wordmark,
+ * same lockup as the map hero — VICE ivory, WIRE coral. */
+.brand-identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.brand-mark {
+  width: 30px;
+  height: 30px;
   flex-shrink: 0;
 }
 .brand-header h1 {
@@ -1106,6 +1138,30 @@ h3 {
   margin-bottom: 10px;
   background: var(--surface);
 }
+/* Map Index groups (v0.21.0): one headed section per game category. */
+.layer-group-section {
+  margin-bottom: 18px;
+}
+.layer-group-section:last-of-type {
+  margin-bottom: 10px;
+}
+.layer-group-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--condensed);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  color: var(--text);
+  margin: 0 0 2px;
+}
+.layer-group-title svg {
+  color: var(--accent);
+}
+.layer-group-section > .help-text {
+  margin: 0 0 8px 26px;
+}
 .layer-group summary {
   font-family: var(--condensed);
   font-size: 15px;
@@ -1508,6 +1564,36 @@ h3 {
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: 6px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.detail-tags span .icon-button {
+  min-width: 28px;
+  min-height: 28px;
+  padding: 0;
+}
+.collectables-list {
+  margin: 4px 0 12px;
+  padding-left: 20px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.tag-add-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.tag-add-row input {
+  flex: 1;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 15px;
 }
 .source-link {
   font-size: 13px;

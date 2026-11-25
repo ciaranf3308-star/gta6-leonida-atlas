@@ -100,7 +100,7 @@ await writeFile(
     gtag('js',new Date());
     var safeLocation=parentOrigin+base;
     gtag('config',id,{send_page_view:false,cookie_domain:'none',cookie_path:base,cookie_prefix:'atlas',cookie_flags:'SameSite=Lax;Secure',page_location:safeLocation,page_referrer:'',allow_google_signals:false,allow_ad_personalization_signals:false});
-    gtag('event','page_view',{page_title:'Leonida Atlas',page_location:safeLocation,page_referrer:''});
+    gtag('event','page_view',{page_title:'ViceWire',page_location:safeLocation,page_referrer:''});
     var script=document.createElement('script');script.async=true;script.src='https://www.googletagmanager.com/gtag/js?id='+id;document.head.appendChild(script);
   });
   send('atlas:analytics:ready');
@@ -199,7 +199,7 @@ try {
         title: "Atlas page not found",
         description: "This Atlas address does not identify an available page.",
       },
-      markup: `<main class="project-page"><div class="project-layout"><article class="project-article"><h1>Atlas page not found</h1><p><a href="${base}">Return to the Leonida Atlas</a></p></article></div></main>`,
+      markup: `<main class="project-page"><div class="project-layout"><article class="project-article"><h1>Atlas page not found</h1><p><a href="${base}">Return to ViceWire</a></p></article></div></main>`,
     }).replace(/<script type="module"[^>]*><\/script>/g, ""),
   );
 } finally {

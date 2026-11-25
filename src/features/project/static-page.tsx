@@ -12,7 +12,7 @@ function AtlasIntroduction() {
   return (
     <main className="project-page" aria-labelledby="atlas-introduction-title">
       <header className="project-header">
-        <span className="project-brand">LEONIDA ATLAS</span>
+        <span className="project-brand">VICEWIRE</span>
       </header>
       <div className="project-layout">
         <nav className="project-navigation" aria-label="Project pages">

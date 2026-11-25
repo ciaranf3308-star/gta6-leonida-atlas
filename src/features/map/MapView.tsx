@@ -1,11 +1,6 @@
-import { useEffect, useId, useMemo, useRef, useState } from "react";
-import L from "leaflet";
-import type {
-  LayerDefinition,
-  Place,
-  Position,
-  Preferences,
-} from "../../domain/types";
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import L from 'leaflet';
+import type { LayerDefinition, Place, Position, Preferences } from '../../domain/types';
 import {
   BASEMAP_BOUNDS,
   INITIAL_BOUNDS,
@@ -16,26 +11,20 @@ import {
   isValidPosition,
   toMapCoordinate,
   type MapBounds,
-} from "./coordinates";
-import { GTADB_TILE_BOUNDS, gtadbTileUrl } from "./gtadb-tiles";
-import {
-  buildSpatialIndex,
-  clusterPlaces,
-  querySpatialIndex,
-  selectHeroPlaces,
-  type PlaceCluster,
-} from "./spatial";
+} from './coordinates';
+import { GTADB_TILE_BOUNDS, gtadbTileUrl } from './gtadb-tiles';
+import { buildSpatialIndex, clusterPlaces, querySpatialIndex, selectHeroPlaces, type PlaceCluster } from './spatial';
 import {
   iconKeyForAiRecord,
   iconKeyForPlace,
   placeIconSvg,
-} from "./place-icons";
-import type { AiCategoryRecord } from "../categorise/categories";
-import type { Isolation } from "./isolation";
-import { loadSavedCamera, shouldResumeCamera } from "./camera-persistence";
-import { runToLatLngs, useAfterHoursGeo } from "./after-hours-geo";
-import "leaflet/dist/leaflet.css";
-import "./map.css";
+} from './place-icons';
+import type { AiCategoryRecord } from '../categorise/categories';
+import type { Isolation } from './isolation';
+import { loadSavedCamera, shouldResumeCamera } from './camera-persistence';
+import { runToLatLngs, useAfterHoursGeo } from './after-hours-geo';
+import 'leaflet/dist/leaflet.css';
+import './map.css';
 
 export interface MapViewProps {
   places: Place[];
@@ -49,9 +38,12 @@ export interface MapViewProps {
   isolation?: Isolation | null;
   /** Exit isolation — back to all of Leonida. */
   onExitIsolation?: () => void;
-  editorMode: "none" | "create" | "move";
+  editorMode: 'none' | 'create' | 'move';
   preferences: Preferences;
   foundIds: ReadonlySet<string>;
+  /** Explored places (v0.21.0) — been there, checked it out. Explored
+   * pins fade on the map; found pins keep the tick and outrank them. */
+  exploredIds?: ReadonlySet<string>;
   /** Ask Nylah highlights — rendered even when their layer is off. */
   highlightIds?: ReadonlySet<string>;
   /** AI-suggested types (on-device only): a categorised "?" pins its type glyph. */
@@ -79,34 +71,31 @@ function markerIcon(
   highlighted?: boolean,
   iconSvg?: string,
   clusterIconSvg?: string,
+  explored?: boolean,
 ): L.DivIcon {
   const cluster = group.places.length > 1;
-  const content = document.createElement("span");
-  content.className = cluster ? "atlas-cluster-face" : "atlas-pin-face";
-  content.style.setProperty(
-    "--pin-color",
-    color ?? layer?.style.color ?? "#e8823a",
-  );
-  content.setAttribute("aria-hidden", "true");
+  const content = document.createElement('span');
+  content.className = cluster ? 'atlas-cluster-face' : 'atlas-pin-face';
+  content.style.setProperty('--pin-color', color ?? layer?.style.color ?? '#e8823a');
+  content.setAttribute('aria-hidden', 'true');
   if (cluster) {
     // v0.16.0: a cluster is a small icon pin, not a giant pink number.
     // It wears its best member's glyph (named first, enterable next)
     // and carries the count as one tiny badge — the reference never
     // shows a number as the whole marker.
-    content.innerHTML = clusterIconSvg ?? "";
-    const badge = document.createElement("span");
-    badge.className = "atlas-cluster-count";
-    badge.textContent =
-      group.places.length > 99 ? "99+" : String(group.places.length);
+    content.innerHTML = clusterIconSvg ?? '';
+    const badge = document.createElement('span');
+    badge.className = 'atlas-cluster-count';
+    badge.textContent = group.places.length > 99 ? '99+' : String(group.places.length);
     content.append(badge);
   } else {
     // A GTA blip: white pictogram in the layer-coloured roundel — never a
     // bare coloured dot. Found places keep their glyph and gain a tick.
-    content.innerHTML = iconSvg ?? "";
+    content.innerHTML = iconSvg ?? '';
     if (found) {
-      const badge = document.createElement("span");
-      badge.className = "atlas-found-badge";
-      badge.textContent = "✓";
+      const badge = document.createElement('span');
+      badge.className = 'atlas-found-badge';
+      badge.textContent = '✓';
       content.append(badge);
     }
   }
@@ -116,15 +105,15 @@ function markerIcon(
   const size = 48;
   return L.divIcon({
     html: content,
-    className: `atlas-map-marker ${cluster ? "is-cluster" : ""} ${selected ? "is-selected" : ""} ${found && !cluster ? "is-found" : ""} ${highlighted ? "is-highlighted" : ""} ${group.places[0]?.layerId === "regions" ? "is-region" : ""}`,
+    className: `atlas-map-marker ${cluster ? 'is-cluster' : ''} ${selected ? 'is-selected' : ''} ${found && !cluster ? 'is-found' : ''} ${explored && !found && !cluster ? 'is-explored' : ''} ${highlighted ? 'is-highlighted' : ''} ${group.places[0]?.layerId === 'regions' ? 'is-region' : ''}`,
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
   });
 }
 
 function markerColor(place: Place): string | undefined {
-  const tag = place.tags.find((tag) => tag.startsWith("color:"));
-  return tag?.slice("color:".length);
+  const tag = place.tags.find((tag) => tag.startsWith('color:'));
+  return tag?.slice('color:'.length);
 }
 
 export default function MapView(props: MapViewProps) {
@@ -134,7 +123,7 @@ export default function MapView(props: MapViewProps) {
   const [attempt, setAttempt] = useState(0);
   const [mapError, setMapError] = useState<string | null>(null);
   const [previewPosition, setPreviewPosition] = useState<Position | null>(null);
-  const [placementMessage, setPlacementMessage] = useState("");
+  const [placementMessage, setPlacementMessage] = useState('');
   const [zoom, setZoom] = useState(-5);
   const descriptionId = useId();
   const index = useMemo(() => buildSpatialIndex(props.places), [props.places]);
@@ -164,9 +153,7 @@ export default function MapView(props: MapViewProps) {
         touchZoom: true,
         doubleClickZoom: true,
         // Camera padding allows wide screens to center the occupied source extent. Data stays within BASEMAP_BOUNDS.
-        maxBounds: L.latLngBounds(
-          leafletBounds(BASEMAP_BOUNDS) as L.LatLngBoundsLiteral,
-        ).pad(0.75),
+        maxBounds: L.latLngBounds(leafletBounds(BASEMAP_BOUNDS) as L.LatLngBoundsLiteral).pad(0.75),
         maxBoundsViscosity: 0.8,
         zoomAnimation: !callbacks.current.preferences.reducedMotion,
         fadeAnimation: !callbacks.current.preferences.reducedMotion,
@@ -185,11 +172,7 @@ export default function MapView(props: MapViewProps) {
         x: (INITIAL_BOUNDS.west + INITIAL_BOUNDS.east) / 2,
         y: (INITIAL_BOUNDS.south + INITIAL_BOUNDS.north) / 2,
       };
-      const fitZoom = activeMap.getBoundsZoom(
-        leafletBounds(INITIAL_BOUNDS),
-        false,
-        L.point(24, 24),
-      );
+      const fitZoom = activeMap.getBoundsZoom(leafletBounds(INITIAL_BOUNDS), false, L.point(24, 24));
       if (savedCamera && shouldResumeCamera(savedCamera, fitZoom, fitCenter)) {
         activeMap.setView(
           toMapCoordinate(savedCamera.center),
@@ -197,45 +180,37 @@ export default function MapView(props: MapViewProps) {
           { animate: false },
         );
       } else {
-        activeMap.fitBounds(leafletBounds(INITIAL_BOUNDS), {
-          padding: [24, 24],
-          animate: false,
-        });
+        activeMap.fitBounds(leafletBounds(INITIAL_BOUNDS), { padding: [24, 24], animate: false });
       }
-      const base = import.meta.env.BASE_URL ?? "/";
-      // GTADB tiles, enhanced by one realism filter (v0.20.2) — the real
-      // in-game map, geography locked 1:1, sharp at max zoom.
+      const base = import.meta.env.BASE_URL ?? '/';
+      // GTADB In-Game Day tiles — the real in-game map, sharp at max zoom.
       // Leaflet zoom -5..1 maps onto tile zooms 0..6 inside gtadbTileUrl
       // (coords.z is the Leaflet zoom). The layer MUST declare
       // minZoom/maxZoom in Leaflet zoom: GridLayer defaults minZoom 0,
       // which sets _tileZoom undefined and loads nothing below zoom 0.
-      // RETINA, by hand (v0.20.2): on a DPR >= 2 screen the layer asks
-      // for the next pyramid level (zoomOffset 1) and displays each
-      // 256px tile at 128 CSS px — 1:1 device pixels on a DPR 2 phone,
-      // 1.5x on DPR 3. That is exactly what Leaflet's detectRetina
-      // does, but detectRetina ALSO clamps the layer minZoom to 0 and
-      // drops maxZoom by 1 — this map lives at -5..1, so tiles below
-      // Leaflet zoom 0 would vanish on his phone. The two safe halves
-      // are applied here, the clamps are not: minZoom/maxZoom stay
-      // -5..1, so at map zoom 1 the tile zoom still clamps to tile
-      // zoom 6 (native max), and at map zoom -5 the whole map is still
-      // covered, just with twice as many tiles per side.
-      const retina =
-        typeof window !== "undefined" && window.devicePixelRatio >= 2;
-      const tiles = L.tileLayer("", {
-        tileSize: retina ? 128 : 256,
-        zoomOffset: retina ? 1 : 0,
+      // No zoomOffset / minNativeZoom / maxNativeZoom: those clamp the
+      // tile zoom Leaflet computes, which would break the mapping.
+      // v0.20.0: the redrawn tiles are 512x512 files served at
+      // tileSize 256, so each tile displays at 256 CSS px from 512
+      // real pixels — 1:1 device pixels on a DPR 2 phone, 1.5x on
+      // DPR 3 (v0.19's 256px tiles were stretched 2-3x by the
+      // browser, the main cause of his "so blurry" verdict).
+      // Leaflet's detectRetina is deliberately NOT used: it clamps
+      // the layer minZoom to 0 and this map lives at -5..1, so tiles
+      // below Leaflet zoom 0 would vanish on his phone.
+      const tiles = L.tileLayer('', {
+        tileSize: 256,
         minZoom: MIN_ZOOM,
         maxZoom: MAX_ZOOM,
         bounds: leafletBounds(GTADB_TILE_BOUNDS),
-        errorTileUrl: `${base.endsWith("/") ? base : `${base}/`}assets/gta6-leonida-atlas/tiles/ocean.jpg`,
+        errorTileUrl: `${base.endsWith('/') ? base : `${base}/`}assets/gta6-leonida-atlas/tiles/ocean.jpg`,
         noWrap: true,
         keepBuffer: 1,
       });
       tiles.getTileUrl = (coords: L.Coords) =>
         gtadbTileUrl(base, coords.x, coords.y, coords.z);
       tiles.addTo(activeMap);
-      tiles.on("tileerror", () => {
+      tiles.on('tileerror', () => {
         // Missing tiles are ocean the source never drew; the ocean tile
         // above covers them. Only a wholesale failure is worth surfacing.
       });
@@ -245,7 +220,7 @@ export default function MapView(props: MapViewProps) {
       // and the pale tiles showed through (reported 2026-11-24, the
       // v0.17 "seamless sea" fix did not hold on the user's phone).
       // The colour is now baked into the tiles themselves
-      // (v0.20.2: tiles/enhanced/, scripts/enhance-tiles.py), so there
+      // (v0.19.0: tiles/redrawn/, scripts/redraw-tiles.py), so there
       // is no overlay, no mask rect and nothing left that can seam.
       const reportViewport = () => {
         setZoom(activeMap.getZoom());
@@ -254,45 +229,39 @@ export default function MapView(props: MapViewProps) {
           zoom: activeMap.getZoom(),
         });
       };
-      activeMap.on("moveend zoomend", reportViewport);
-      activeMap.on("click", (event: L.LeafletMouseEvent) => {
-        if (callbacks.current.editorMode === "none") return;
+      activeMap.on('moveend zoomend', reportViewport);
+      activeMap.on('click', (event: L.LeafletMouseEvent) => {
+        if (callbacks.current.editorMode === 'none') return;
         const position = fromMapCoordinate(event.latlng);
         if (!isValidPosition(position)) {
-          setPlacementMessage("Choose a point inside the source map.");
+          setPlacementMessage('Choose a point inside the source map.');
           return;
         }
         setPreviewPosition(position);
-        setPlacementMessage(
-          "Position chosen. Complete the marker details to save.",
-        );
+        setPlacementMessage('Position chosen. Complete the marker details to save.');
         callbacks.current.onPlacePosition(position);
       });
       // Right-click on desktop, long-press on touch: drop a marker here.
       // In placement mode it behaves like a click; otherwise it opens the editor.
-      activeMap.on("contextmenu", (event: L.LeafletMouseEvent) => {
+      activeMap.on('contextmenu', (event: L.LeafletMouseEvent) => {
         const position = fromMapCoordinate(event.latlng);
         if (!isValidPosition(position)) {
-          setPlacementMessage("Choose a point inside the source map.");
+          setPlacementMessage('Choose a point inside the source map.');
           return;
         }
-        if (callbacks.current.editorMode === "none") {
+        if (callbacks.current.editorMode === 'none') {
           callbacks.current.onAddMarkerAt(position);
           return;
         }
         setPreviewPosition(position);
-        setPlacementMessage(
-          "Position chosen. Complete the marker details to save.",
-        );
+        setPlacementMessage('Position chosen. Complete the marker details to save.');
         callbacks.current.onPlacePosition(position);
       });
       const resize = () => {
         cancelAnimationFrame(resizeFrame);
-        resizeFrame = requestAnimationFrame(() =>
-          activeMap.invalidateSize({ pan: false }),
-        );
+        resizeFrame = requestAnimationFrame(() => activeMap.invalidateSize({ pan: false }));
       };
-      if (typeof ResizeObserver !== "undefined") {
+      if (typeof ResizeObserver !== 'undefined') {
         observer = new ResizeObserver(resize);
         observer.observe(host);
       }
@@ -303,11 +272,10 @@ export default function MapView(props: MapViewProps) {
         cancelAnimationFrame(resizeFrame);
         tiles.off();
         tiles.remove();
-        activeMap.off("moveend zoomend", reportViewport);
+        activeMap.off('moveend zoomend', reportViewport);
         // Leaflet 1.9's uncancellable 250ms zoom fallback can outlive remove().
         // Clear its guard before the map pane is deleted; preserve internal unload cleanup.
-        (activeMap as L.Map & { _animatingZoom?: boolean })._animatingZoom =
-          false;
+        (activeMap as L.Map & { _animatingZoom?: boolean })._animatingZoom = false;
         activeMap.remove();
         activeMap.off();
       };
@@ -319,7 +287,7 @@ export default function MapView(props: MapViewProps) {
       setMapError(
         error instanceof Error
           ? `Map unavailable: ${error.message}`
-          : "The map could not be initialized.",
+          : 'The map could not be initialized.',
       );
     }
   }, [attempt]);
@@ -381,18 +349,14 @@ export default function MapView(props: MapViewProps) {
         const interactive = group.places.some(
           (member) => layersById.get(member.layerId)?.interactive,
         );
-        const draggable =
-          selected &&
-          place.evidence === "personal" &&
-          props.editorMode === "move";
+        const draggable = selected && place.evidence === 'personal' && props.editorMode === 'move';
         const title = isCluster
           ? `Explore ${group.places.length.toLocaleString()} places`
-          : `${place.title}${selected ? ", selected" : ""}`;
+          : `${place.title}${selected ? ', selected' : ''}`;
         // A cluster wears its best member's glyph: a named place first,
         // then an enterable one, so the pin still says what it is.
         const representative =
-          group.places.find((member) => member.title !== "?") ??
-          group.places[0]!;
+          group.places.find((member) => member.title !== '?') ?? group.places[0]!;
         const marker = L.marker(toMapCoordinate(group.position), {
           icon: markerIcon(
             group,
@@ -415,6 +379,7 @@ export default function MapView(props: MapViewProps) {
                   15,
                 )
               : undefined,
+            props.exploredIds?.has(place.id),
           ),
           title,
           alt: title,
@@ -427,22 +392,20 @@ export default function MapView(props: MapViewProps) {
           zIndexOffset: selected ? 1500 : (layer?.order ?? 0) * 5,
         }).addTo(markerGroup);
         const markerElement = marker.getElement();
-        markerElement?.setAttribute("aria-label", title);
+        markerElement?.setAttribute('aria-label', title);
         if (interactive)
-          markerElement?.addEventListener("keydown", (event) => {
-            if (event.key === " ") {
+          markerElement?.addEventListener('keydown', (event) => {
+            if (event.key === ' ') {
               event.preventDefault();
               event.stopPropagation();
-              marker.fire("click");
+              marker.fire('click');
             }
           });
         if (interactive) {
-          marker.on("click", () => {
-            if (callbacks.current.editorMode !== "none") {
+          marker.on('click', () => {
+            if (callbacks.current.editorMode !== 'none') {
               setPreviewPosition(group.position);
-              setPlacementMessage(
-                "Position chosen. Complete the marker details to save.",
-              );
+              setPlacementMessage('Position chosen. Complete the marker details to save.');
               callbacks.current.onPlacePosition(group.position);
               return;
             }
@@ -452,36 +415,32 @@ export default function MapView(props: MapViewProps) {
             }
             if (map.getZoom() < MAX_ZOOM) {
               // Tap a cluster: the camera flies into it, smoothly.
-              map.flyTo(
-                toMapCoordinate(group.position),
-                Math.min(MAX_ZOOM, map.getZoom() + 1.5),
-                {
-                  animate: !callbacks.current.preferences.reducedMotion,
-                },
-              );
+              map.flyTo(toMapCoordinate(group.position), Math.min(MAX_ZOOM, map.getZoom() + 1.5), {
+                animate: !callbacks.current.preferences.reducedMotion,
+              });
               return;
             }
             // Coincident source positions cannot separate through zoom; offer their records directly.
-            const content = document.createElement("div");
-            content.className = "atlas-cluster-list";
-            const heading = document.createElement("strong");
+            const content = document.createElement('div');
+            content.className = 'atlas-cluster-list';
+            const heading = document.createElement('strong');
             heading.textContent = `${group.places.length} places at this position`;
             content.append(heading);
             for (const member of group.places.slice(0, 30)) {
               if (!layersById.get(member.layerId)?.interactive) continue;
-              const button = document.createElement("button");
-              button.type = "button";
+              const button = document.createElement('button');
+              button.type = 'button';
               button.textContent = `${member.title} · ${member.id}`;
-              button.addEventListener("click", () => {
+              button.addEventListener('click', () => {
                 callbacks.current.onSelect(member.id);
                 map.closePopup();
               });
               content.append(button);
             }
             if (group.places.length > 30) {
-              const note = document.createElement("p");
+              const note = document.createElement('p');
               note.textContent =
-                "Showing the first 30 records. Search the catalogue to find any other place.";
+                'Showing the first 30 records. Search the catalogue to find any other place.';
               content.append(note);
             }
             L.popup({ maxWidth: 310, maxHeight: 280 })
@@ -491,17 +450,15 @@ export default function MapView(props: MapViewProps) {
           });
         }
         if (draggable) {
-          marker.on("dragend", () => {
+          marker.on('dragend', () => {
             const position = fromMapCoordinate(marker.getLatLng());
             if (!isValidPosition(position)) {
               marker.setLatLng(toMapCoordinate(place.position!));
-              setPlacementMessage("Choose a point inside the source map.");
+              setPlacementMessage('Choose a point inside the source map.');
               return;
             }
             setPreviewPosition(position);
-            setPlacementMessage(
-              "Marker moved in preview. Save its details to keep this position.",
-            );
+            setPlacementMessage('Marker moved in preview. Save its details to keep this position.');
             callbacks.current.onPlacePosition(position);
           });
         }
@@ -513,12 +470,9 @@ export default function MapView(props: MapViewProps) {
           // normal zoom — every place labelling itself at zoom -1 was
           // the overlapping-labels mess in his screenshot. Close in
           // (zoom 0.5+) the labels come back for every place.
-          (selected ||
-            props.highlightIds?.has(place.id) ||
-            place.layerId === "regions" ||
-            currentZoom >= 0.5)
+          (selected || props.highlightIds?.has(place.id) || place.layerId === 'regions' || currentZoom >= 0.5)
         ) {
-          const label = document.createElement("span");
+          const label = document.createElement('span');
           label.textContent = place.title;
           // v0.17.0: a label runs right from its pin — when another
           // pin sits just to the right of it (Leonida Keys into
@@ -534,9 +488,9 @@ export default function MapView(props: MapViewProps) {
           );
           marker.bindTooltip(label, {
             permanent: true,
-            direction: labelLeft ? "left" : "right",
+            direction: labelLeft ? 'left' : 'right',
             offset: labelLeft ? [-10, 0] : [10, 0],
-            className: `atlas-place-label ${selected ? "is-selected" : ""}`,
+            className: `atlas-place-label ${selected ? 'is-selected' : ''}`,
           });
           labelCount++;
         }
@@ -547,10 +501,10 @@ export default function MapView(props: MapViewProps) {
       frame = requestAnimationFrame(renderMarkers);
     };
     renderMarkers();
-    map.on("moveend zoomend resize", scheduleRender);
+    map.on('moveend zoomend resize', scheduleRender);
     return () => {
       cancelAnimationFrame(frame);
-      map.off("moveend zoomend resize", scheduleRender);
+      map.off('moveend zoomend resize', scheduleRender);
       markerGroup.clearLayers();
       markerGroup.remove();
     };
@@ -561,6 +515,7 @@ export default function MapView(props: MapViewProps) {
     props.selectedId,
     props.editorMode,
     props.foundIds,
+    props.exploredIds,
     props.highlightIds,
     props.aiCategories,
     props.preferences.clusterMarkers,
@@ -586,9 +541,9 @@ export default function MapView(props: MapViewProps) {
       if (callbacks.current.selectedId) applyFocus();
     };
     applyFocus();
-    map.on("resize", followResize);
+    map.on('resize', followResize);
     return () => {
-      map.off("resize", followResize);
+      map.off('resize', followResize);
     };
   }, [map, props.focus, props.preferences.reducedMotion]);
 
@@ -643,16 +598,14 @@ export default function MapView(props: MapViewProps) {
       [GTADB_TILE_BOUNDS.north, GTADB_TILE_BOUNDS.west],
     ];
     const added: L.Layer[] = [];
-    const countyGeo = isolation.countyId
-      ? geo?.counties[isolation.countyId]
-      : undefined;
+    const countyGeo = isolation.countyId ? geo?.counties[isolation.countyId] : undefined;
     if (countyGeo && countyGeo.loops.length > 0) {
       const mask = L.polygon(
         [outer, ...countyGeo.loops.map((loop) => runToLatLngs(loop))],
         {
-          color: "#0b1018",
+          color: '#0b1018',
           weight: 0,
-          fillColor: "#0b1018",
+          fillColor: '#0b1018',
           fillOpacity: 0.55,
           interactive: false,
         },
@@ -662,7 +615,7 @@ export default function MapView(props: MapViewProps) {
         const latlngs = runToLatLngs(run);
         added.push(
           L.polyline(latlngs, {
-            color: "#0b1018",
+            color: '#0b1018',
             weight: 4,
             opacity: 0.5,
             interactive: false,
@@ -670,7 +623,7 @@ export default function MapView(props: MapViewProps) {
         );
         added.push(
           L.polyline(latlngs, {
-            color: "#f6f0e5",
+            color: '#f6f0e5',
             weight: 2,
             opacity: 0.9,
             interactive: false,
@@ -681,7 +634,7 @@ export default function MapView(props: MapViewProps) {
         const latlngs = runToLatLngs(run);
         added.push(
           L.polyline(latlngs, {
-            color: "#0b1018",
+            color: '#0b1018',
             weight: 3.5,
             opacity: 0.4,
             interactive: false,
@@ -689,10 +642,10 @@ export default function MapView(props: MapViewProps) {
         );
         added.push(
           L.polyline(latlngs, {
-            color: "#f6f0e5",
+            color: '#f6f0e5',
             weight: 1.5,
             opacity: 0.75,
-            dashArray: "5 5",
+            dashArray: '5 5',
             interactive: false,
           }).addTo(map),
         );
@@ -707,19 +660,19 @@ export default function MapView(props: MapViewProps) {
       ];
       added.push(
         L.polygon([outer, hole], {
-          color: "#0b1018",
+          color: '#0b1018',
           weight: 0,
-          fillColor: "#0b1018",
+          fillColor: '#0b1018',
           fillOpacity: 0.55,
           interactive: false,
         }).addTo(map),
       );
       added.push(
         L.rectangle(leafletBounds(b), {
-          color: "#f6f0e5",
+          color: '#f6f0e5',
           weight: 1,
           opacity: 0.65,
-          dashArray: "5 5",
+          dashArray: '5 5',
           fill: false,
           interactive: false,
         }).addTo(map),
@@ -731,23 +684,23 @@ export default function MapView(props: MapViewProps) {
   }, [map, props.isolation, geo]);
 
   useEffect(() => {
-    if (props.editorMode === "none") {
+    if (props.editorMode === 'none') {
       setPreviewPosition(null);
-      setPlacementMessage("");
+      setPlacementMessage('');
     }
     if (!map) return;
-    if (props.editorMode === "none") map.doubleClickZoom.enable();
+    if (props.editorMode === 'none') map.doubleClickZoom.enable();
     else map.doubleClickZoom.disable();
   }, [map, props.editorMode]);
 
   useEffect(() => {
-    if (!map || !previewPosition || props.editorMode === "none") return;
-    const content = document.createElement("span");
-    content.textContent = "+";
-    content.setAttribute("aria-hidden", "true");
+    if (!map || !previewPosition || props.editorMode === 'none') return;
+    const content = document.createElement('span');
+    content.textContent = '+';
+    content.setAttribute('aria-hidden', 'true');
     const preview = L.marker(toMapCoordinate(previewPosition), {
       icon: L.divIcon({
-        className: "atlas-position-preview",
+        className: 'atlas-position-preview',
         html: content,
         iconSize: [36, 36],
         iconAnchor: [18, 18],
@@ -761,8 +714,8 @@ export default function MapView(props: MapViewProps) {
     };
   }, [map, previewPosition, props.editorMode]);
 
-  // v0.20.2: the animated sea canvas is gone — the sea is baked
-  // into the enhanced tiles themselves, so there is no overlay left
+  // v0.19.0: the animated sea canvas is gone — the sea is baked
+  // into the redrawn tiles themselves, so there is no overlay left
   // that can seam. See the note at the tile-layer setup above.
 
   const useMapCenter = () => {
@@ -774,24 +727,20 @@ export default function MapView(props: MapViewProps) {
         : map.getCenter();
     const position = fromMapCoordinate(center);
     if (!isValidPosition(position)) {
-      setPlacementMessage("Pan to a point inside the source map.");
+      setPlacementMessage('Pan to a point inside the source map.');
       return;
     }
     setPreviewPosition(position);
-    setPlacementMessage(
-      "Map center chosen. Complete the marker details to save.",
-    );
+    setPlacementMessage('Map center chosen. Complete the marker details to save.');
     props.onPlacePosition(position);
   };
 
   return (
-    <div
-      className={`atlas-map-view ${props.editorMode !== "none" ? "is-editing" : ""}`}
-    >
+    <div className={`atlas-map-view ${props.editorMode !== 'none' ? 'is-editing' : ''}`}>
       <p id={descriptionId} className="map-sr-only">
-        Interactive map using the GTADB in-game map of Leonida, with approximate
-        game coordinates. Use arrow keys to pan and plus or minus to zoom.
-        Select a map marker or use the searchable place list.
+        Interactive map using the GTADB in-game map of Leonida, with approximate game
+        coordinates. Use arrow keys to pan and plus or minus to zoom. Select a map marker or use
+        the searchable place list.
       </p>
       <div
         ref={hostRef}
@@ -819,20 +768,20 @@ export default function MapView(props: MapViewProps) {
           </div>
         </>
       )}
-      {props.editorMode !== "none" ? (
+      {props.editorMode !== 'none' ? (
         <div className="atlas-map-editor-hint">
           <button type="button" onClick={useMapCenter}>
             Use map center
           </button>
           <span className="map-sr-only" role="status">
             {placementMessage ||
-              (props.editorMode === "move"
-                ? "Choose the new marker position"
-                : "Choose a position for your marker")}
+              (props.editorMode === 'move'
+                ? 'Choose the new marker position'
+                : 'Choose a position for your marker')}
           </span>
         </div>
       ) : null}
-      {props.editorMode !== "none" ? (
+      {props.editorMode !== 'none' ? (
         <div className="atlas-center-crosshair" aria-hidden="true">
           +
         </div>
@@ -843,9 +792,7 @@ export default function MapView(props: MapViewProps) {
           aria-label="Zoom in"
           title="Zoom in"
           disabled={!map || zoom >= MAX_ZOOM}
-          onClick={() =>
-            map?.zoomIn(0.5, { animate: !props.preferences.reducedMotion })
-          }
+          onClick={() => map?.zoomIn(0.5, { animate: !props.preferences.reducedMotion })}
         >
           +
         </button>
@@ -854,9 +801,7 @@ export default function MapView(props: MapViewProps) {
           aria-label="Zoom out"
           title="Zoom out"
           disabled={!map || zoom <= MIN_ZOOM}
-          onClick={() =>
-            map?.zoomOut(0.5, { animate: !props.preferences.reducedMotion })
-          }
+          onClick={() => map?.zoomOut(0.5, { animate: !props.preferences.reducedMotion })}
         >
           −
         </button>
@@ -901,11 +846,7 @@ export default function MapView(props: MapViewProps) {
           GTADB / Map GTA
         </a>
         <span> · </span>
-        <a
-          href="https://creativecommons.org/licenses/by/4.0/"
-          target="_blank"
-          rel="noreferrer"
-        >
+        <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">
           CC BY 4.0
         </a>
         <span> · In-game map © Rockstar Games · Places approximate</span>
@@ -913,10 +854,7 @@ export default function MapView(props: MapViewProps) {
       {mapError ? (
         <div className="atlas-map-error" role="alert">
           <span>{mapError}</span>
-          <button
-            type="button"
-            onClick={() => setAttempt((value) => value + 1)}
-          >
+          <button type="button" onClick={() => setAttempt((value) => value + 1)}>
             Reload map
           </button>
         </div>

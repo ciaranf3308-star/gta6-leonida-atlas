@@ -8,7 +8,7 @@ const collection = (): Collection => ({
   id: 'collection:trip', name: 'Trip', placeIds: ['L1'], createdAt: time, updatedAt: time,
 });
 const marker = (): PersonalMarker => ({
-  id: 'custom:beach', title: 'Beach', description: '', category: 'personal',
+  id: 'custom:beach', title: 'Beach', description: '', category: 'my-markers',
   position: { x: 0, y: 0 }, icon: 'pin', createdAt: time, updatedAt: time,
 });
 

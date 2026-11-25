@@ -8,9 +8,21 @@ import {
   latestLeonidaAtlasRelease,
 } from "../../src/features/street-leonida/releases";
 
+/** renderToStaticMarkup escapes text the way React does — an
+ * apostrophe in a title becomes &#x27; in the markup, so a raw
+ * toContain on the title would fail even though the page is right. */
+const escapeHtml = (value: string): string =>
+  value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#x27;");
+
 describe("Leonida Atlas release history", () => {
   it("retains every release since v0.5.0 in newest-first order across the changelog and documentation", async () => {
     expect(LEONIDA_ATLAS_RELEASES.map((release) => release.version)).toEqual([
+      "v0.21.0",
       "v0.20.2",
       "v0.20.0",
       "v0.19.0",
@@ -34,7 +46,7 @@ describe("Leonida Atlas release history", () => {
       "v0.5.0",
     ]);
     expect(latestLeonidaAtlasRelease).toMatchObject({
-      version: "v0.20.2",
+      version: "v0.21.0",
       date: "2026-11-24",
       status: "public",
     });
@@ -60,7 +72,7 @@ describe("Leonida Atlas release history", () => {
       expect(output).not.toMatch(/\bv0\.[1-4]\.\d+\b/);
       expect(output).not.toContain("local candidate; not pushed");
     }
-    expect(markup).toContain(latestLeonidaAtlasRelease.title);
+    expect(markup).toContain(escapeHtml(latestLeonidaAtlasRelease.title));
   });
 
   it("shows the same release history on About with direct version links and a single current badge", () => {
@@ -72,8 +84,8 @@ describe("Leonida Atlas release history", () => {
       expect(markup).toContain(
         `https://github.com/navanem/gta6-leonida-atlas/releases/tag/${release.version}`,
       );
-      expect(markup).toContain(release.title);
-      expect(markup).toContain(release.summary);
+      expect(markup).toContain(escapeHtml(release.title));
+      expect(markup).toContain(escapeHtml(release.summary));
     }
     expect(markup.match(/>Current</g)).toHaveLength(1);
     expect(markup).toContain("Full changelog");

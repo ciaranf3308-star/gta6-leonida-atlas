@@ -5,7 +5,7 @@ import { DEFAULT_LAYERS, getVisiblePlaces } from '../../src/features/map/layers'
 import { buildSpatialIndex, clusterPlaces, querySpatialIndex } from '../../src/features/map/spatial';
 
 const place = (id: string, x = 0, y = 0, layerId = 'community'): Place => ({
-  id, title: id, description: '', category: 'landmark', position: { x, y }, layerId,
+  id, title: id, description: '', category: 'exploration', position: { x, y }, layerId,
   tags: [], region: '', source: { title: 'Test', url: '' }, evidence: 'approximate',
 });
 
@@ -33,7 +33,7 @@ describe('Atlas game coordinates', () => {
 describe('Atlas layer visibility', () => {
   it('honors visibility, zoom limits and stable layer order without mutating input', () => {
     const layers = DEFAULT_LAYERS.map(layer => ({ ...layer, visible: layer.id !== 'uncertain', ...(layer.id === 'community' ? { minZoom: -3, maxZoom: 0 } : {}) }));
-    const places = [place('a'), place('b', 0, 0, 'uncertain'), place('c', 0, 0, 'regions'), place('d', 0, 0, 'personal')];
+    const places = [place('a'), place('b', 0, 0, 'uncertain'), place('c', 0, 0, 'regions'), place('d', 0, 0, 'my-markers')];
     expect(getVisiblePlaces(places, layers, -4).map(p => p.id)).toEqual(['c', 'd']);
     expect(getVisiblePlaces(places, layers, -3).map(p => p.id)).toEqual(['c', 'a', 'd']);
     expect(getVisiblePlaces(places, layers, 1).map(p => p.id)).toEqual(['c', 'd']);
@@ -82,7 +82,7 @@ describe('Atlas viewport grid', () => {
     expect(clusterPlaces(places, { zoom: -2, enabled: false })).toHaveLength(3);
   });
   it('keeps the six regional reference labels outside community clusters', () => {
-    const region = { ...place('region:vice-city', 2, 2, 'regions'), category: 'region' as const };
+    const region = { ...place('region:vice-city', 2, 2, 'regions'), category: 'exploration' as const };
     const groups = clusterPlaces([region, place('a', 2, 2), place('b', 3, 3)], { zoom: -5, enabled: true });
     expect(groups.some(group => group.places.length === 1 && group.places[0]?.id === region.id)).toBe(true);
     expect(groups.some(group => group.places.length === 2)).toBe(true);

@@ -19,7 +19,7 @@ function memoryStorage(initial: Record<string, string> = {}) {
 }
 
 const VIEW: SavedMapView = {
-  visibleLayerIds: ['lootable', 'shops'],
+  visibleLayerIds: ['lootable', 'shops-food'],
   countyId: 'kelly',
   area: null,
   hideFound: true,
@@ -58,17 +58,17 @@ describe('Map-view persistence — layers survive a reload', () => {
   });
 
   it('builds a saved view from live layer + filter state', () => {
-    const view = mapViewFromState(['lootable', 'personal'], {
+    const view = mapViewFromState(['lootable', 'my-markers'], {
       ...DEFAULT_FILTERS,
       countyId: 'vice-dale',
     });
-    expect(view.visibleLayerIds).toEqual(['lootable', 'personal']);
+    expect(view.visibleLayerIds).toEqual(['lootable', 'my-markers']);
     expect(view.countyId).toBe('vice-dale');
   });
 
   it('first launch stays blank: the default layers are all off except My markers', () => {
     const visible = DEFAULT_LAYERS.filter((l) => l.visible).map((l) => l.id);
-    expect(visible).toEqual(['personal']);
+    expect(visible).toEqual(['my-markers']);
   });
 
   it('lists the useful layers first and the card sets last', () => {
@@ -78,9 +78,9 @@ describe('Map-view persistence — layers survive a reload', () => {
       'Lootable buildings',
       'Interiors / Enterable',
       'Breakable homes',
-      'Shops & services',
-      'Gyms',
-      'Workout equipment',
+      'Weapons shops',
+      'Style shops',
+      'Food & drink shops',
     ]);
     expect(names.slice(-2)).toEqual([
       'Cards · Vice City Narcos',
@@ -89,5 +89,30 @@ describe('Map-view persistence — layers survive a reload', () => {
     expect(ordered[ordered.length - 1]?.id.startsWith('cards:')).toBe(true);
     const firstCard = ordered.findIndex((l) => l.id.startsWith('cards:'));
     expect(ordered.slice(0, firstCard).every((l) => !l.id.startsWith('cards:'))).toBe(true);
+  });
+});
+
+describe('v0.21.0 migrations — old layers and categories still open', () => {
+  it("maps a saved 'shops' layer to Food & Drink and a saved 'personal' layer to My markers", () => {
+    const loaded = loadSavedMapView(
+      memoryStorage({
+        'leonida-map-view-v1': JSON.stringify({
+          ...VIEW,
+          visibleLayerIds: ['shops', 'personal', 'lootable'],
+          category: 'business',
+        }),
+      }),
+    );
+    expect(loaded?.visibleLayerIds).toEqual(['shops-food', 'my-markers', 'lootable']);
+    expect(loaded?.category).toBe('exploration');
+  });
+
+  it("maps a saved 'transport' kind to Vehicles", () => {
+    const loaded = loadSavedMapView(
+      memoryStorage({
+        'leonida-map-view-v1': JSON.stringify({ ...VIEW, category: 'transport' }),
+      }),
+    );
+    expect(loaded?.category).toBe('vehicles');
   });
 });

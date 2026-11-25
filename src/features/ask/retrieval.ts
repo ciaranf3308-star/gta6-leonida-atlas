@@ -3,6 +3,7 @@ import { isUnnamedPlace } from '../../domain/types';
 import { COUNTIES, countyForPlace, countyIdFromText } from '../../data/counties';
 import { ROBBABLE_SHOP_TAGS, SHOP_TAGS } from '../../data/catalogue';
 import { housesToCheck, isWorkoutMarker } from '../../domain/gym-check';
+import { userTagsMatchLayer } from '../../domain/user-tags';
 import {
   BREAKABLE_GAP_NOTE,
   DARK_BLUE_RULE,
@@ -56,6 +57,13 @@ export interface AskRetrievalInput {
    * confidence / "not sure" records never match.
    */
   aiCategories?: Readonly<Record<string, AiCategoryRecord>>;
+  /**
+   * The user's own secondary tags (on-device only). A place he tagged
+   * "workout equipment" answers a workout question the way a verified
+   * equipment pin does — he saw the gear there. A tag never answers
+   * for a layer it was not tagged for.
+   */
+  userTags?: ReadonlyMap<string, readonly string[]>;
   /**
    * Earlier user questions in this conversation, oldest first. Only used to
    * recover the place a follow-up is about ("is there nowhere else I can
@@ -235,8 +243,12 @@ export function layersRequestedByQuestion(
     shopWords.some((w) => hasWord(q, w)) ||
     hasPhrase(q, 'buy') ||
     hasPhrase(q, 'where can i buy')
-  )
-    has('shops');
+  ) {
+    // Shops split four ways in v0.21.0 (Weapons / Style / Food & Drink
+    // / Vehicles) — a shop question asks for all of them; the question
+    // words narrow it further only through the place tags.
+    for (const layer of layers) if (layer.id.startsWith('shops-')) ids.add(layer.id);
+  }
   // Interiors only on an explicit interior ask — never from a generic
   // "house/building" mention, so a burglary question cannot leak interiors.
   if (
@@ -253,7 +265,7 @@ export function layersRequestedByQuestion(
     for (const layer of layers) if (layer.id.startsWith('cards:')) ids.add(layer.id);
   }
   if (['my marker', 'my markers', 'my note', 'my notes', 'my places'].some((p) => hasPhrase(q, p)))
-    has('personal');
+    has('my-markers');
   if (
     ['named region', 'named regions', 'place name', 'place names'].some((p) => hasPhrase(q, p))
   )
@@ -365,10 +377,10 @@ function placeNounForLayers(layerIds: readonly string[]): string {
     if (layerIds[0] === 'gyms') return 'gym';
     if (layerIds[0] === 'breakable') return 'breakable home';
     if (layerIds[0] === 'lootable') return 'lootable building';
-    if (layerIds[0] === 'shops') return 'shop';
+    if (layerIds[0]?.startsWith('shops-')) return 'shop';
     if (layerIds[0] === 'interiors') return 'enterable building';
     if (layerIds[0]?.startsWith('cards:')) return 'card';
-    if (layerIds[0] === 'personal') return 'marker of yours';
+    if (layerIds[0] === 'my-markers') return 'marker of yours';
     return 'place';
   }
   if (layerIds.includes('gyms')) return 'gym';
@@ -437,7 +449,8 @@ export function tagMatchesLayer(place: Place, layerId: string): boolean {
       place.layerId !== 'gyms' &&
       tags.some((tag) => ['equipment', 'workout'].includes(tag))
     );
-  if (layerId === 'shops') return tags.some((tag) => (SHOP_TAGS as readonly string[]).includes(tag));
+  if (layerId.startsWith('shops-'))
+    return tags.some((tag) => (SHOP_TAGS as readonly string[]).includes(tag));
   if (layerId === 'lootable')
     return (
       tags.includes('enterable') &&
@@ -466,8 +479,8 @@ export function retrieveForAsk(input: AskRetrievalInput): AskRetrievalResult {
   // layers only count for general questions that name no layer.
   const allowed = new Set<string>(
     requestedLayerIds.length > 0
-      ? [...requestedLayerIds, 'personal']
-      : [...visible, 'personal'],
+      ? [...requestedLayerIds, 'my-markers']
+      : [...visible, 'my-markers'],
   );
   const visited = new Set(input.visitedIds ?? []);
   const hideFound = input.filters.hideFound || input.filters.remainingOnly;
@@ -488,6 +501,12 @@ export function retrieveForAsk(input: AskRetrievalInput): AskRetrievalResult {
         // for counts, whatever layer it sits in (see tagMatchesLayer).
         (requestedLayerIds.length > 0 &&
           requestedLayerIds.some((id) => tagMatchesLayer(place, id))) ||
+        // The user's own tags: a place he tagged "workout equipment"
+        // answers a workout question, whatever layer it sits in.
+        (requestedLayerIds.length > 0 &&
+          requestedLayerIds.some((id) =>
+            userTagsMatchLayer(input.userTags?.get(place.id) ?? [], id),
+          )) ||
         // AI evidence: a confident AI type counts the same way — a gym
         // the AI suggested for a "?" near Capri answers a gym question.
         (requestedLayerIds.length > 0 &&
@@ -497,7 +516,7 @@ export function retrieveForAsk(input: AskRetrievalInput): AskRetrievalResult {
       !(hideFound && visited.has(place.id)) &&
       !(
         asksMarkerKind &&
-        place.layerId === 'personal' &&
+        place.layerId === 'my-markers' &&
         !(
           (asksWorkout && isWorkoutMarker(place)) ||
           (asksBreakable && isBreakableMarker(place))

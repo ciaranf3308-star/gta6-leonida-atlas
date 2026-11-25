@@ -513,7 +513,7 @@ describe("optional analytics separate-origin isolation", () => {
         "event",
         "page_view",
         {
-          page_title: "Leonida Atlas",
+          page_title: "ViceWire",
           page_location: `${origin}/atlas/`,
           page_referrer: "",
         },

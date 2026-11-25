@@ -8,6 +8,7 @@ import {
   aiCategorySearchWords,
   type AiCategoryRecord,
 } from '../features/categorise/categories';
+import { userTagSearchWords } from './user-tags';
 
 export function normalizeSearch(text: string): string {
   return text
@@ -31,6 +32,11 @@ export function filterPlaces(
    * Low-confidence / "not sure" records never match.
    */
   aiCategories?: Readonly<Record<string, AiCategoryRecord>>,
+  /**
+   * The user's own secondary tags (on-device only). A search for
+   * "t-shirts" finds the gas station the user tagged "sells t-shirts".
+   */
+  userTags?: ReadonlyMap<string, readonly string[]>,
 ): Place[] {
   const favorites = new Set(favoriteIds);
   const visited = new Set(visitedIds);
@@ -90,6 +96,9 @@ export function filterPlaces(
         // "house" finds a residential "?", "petrol" finds a #gas "?".
         ...tagResolutionSearchWords(place),
         ...aiCategorySearchWords(aiCategories?.[place.id]),
+        // The user's own tags are searchable words too: "t-shirts"
+        // finds the gas station tagged "sells t-shirts".
+        ...userTagSearchWords(userTags?.get(place.id) ?? []),
         noteIndex.get(place.id) ?? '',
       ].join(' '),
     );

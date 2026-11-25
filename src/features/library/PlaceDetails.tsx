@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
-import { Bookmark, Check, Dumbbell, ExternalLink, Home, MapPin, Move, Navigation, Pencil, Scan, Sparkles, Star, X } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Bookmark, Camera, Check, Dumbbell, ExternalLink, Footprints, Home, MapPin, Move, Navigation, Pencil, Scan, Sparkles, Star, Tag, X } from 'lucide-react';
 import type { Place, Position } from '../../domain/types';
 import { isUnnamedPlace } from '../../domain/types';
+import { categoryLabel } from '../../app/categories';
 import {
   displayTagsFor,
   placeStatusLine,
@@ -9,6 +10,11 @@ import {
 } from '../../domain/tags';
 import { DARK_BLUE_RULE, interiorInfoFor } from '../../domain/interiors';
 import { tagResolutionFor } from '../../domain/resolve-tags';
+import { lootFor } from '../../domain/loot';
+import { collectablesNear } from '../../domain/nearby-collectables';
+import { MAX_TAG_LENGTH, parseUserTags, userTagsFor } from '../../domain/user-tags';
+import PlaceMapCrop from './PlaceMapCrop';
+import { downscalePhoto } from './place-photo';
 import {
   AI_CATEGORIES,
   AI_CATEGORY_LABELS,
@@ -37,31 +43,17 @@ import RegionalResearch from './RegionalResearch';
 import { COUNTIES } from '../../data/counties';
 import { countyIsolation } from '../map/isolation';
 
-/** County art for a named region (Vice City → Vice-Dale's photo).
- * The photo is the county's own art, never a photo of the place. */
-function regionPhoto(place: Place): string | null {
-  if (place.layerId !== 'regions' || !place.position) return null;
-  const byName = COUNTIES.find(
-    (county) => county.area.includes(place.title) || county.name.includes(place.title),
-  );
-  if (byName?.photo) return byName.photo;
-  const containing = COUNTIES.find(
-    (county) =>
-      place.position!.x >= county.bounds.west &&
-      place.position!.x <= county.bounds.east &&
-      place.position!.y >= county.bounds.south &&
-      place.position!.y <= county.bounds.north,
-  );
-  return containing?.photo ?? null;
-}
-
 export default function PlaceDetails({
   place,
+  allPlaces,
   onAddMarkerHere,
   onMarkWorkout,
   onMarkBreakable,
 }: {
   place: Place;
+  /** Every place, for the "Hidden collectables" row: verified card pins
+   * near this place. The card receives only its own place otherwise. */
+  allPlaces: readonly Place[];
   /** Start a My marker at this place's position (for "?" places the user identifies). */
   onAddMarkerHere?: (position: Position) => void;
   /** Start a workout-equipment marker at this place's position — the
@@ -75,12 +67,93 @@ export default function PlaceDetails({
 }) {
   const favorite = useUserStore((s) => s.favorites.some((f) => f.placeId === place.id));
   const found = useUserStore((s) => s.visited.some((v) => v.placeId === place.id));
+  const explored = useUserStore((s) => s.explored.some((e) => e.placeId === place.id));
+  // Select the raw store array (a stable reference) and derive the
+  // place's tags with useMemo. Selecting userTagsFor(...) directly
+  // returns a fresh array on every render, and React's external-store
+  // check reads that as a change on every pass — an infinite loop
+  // (React error #185) that unmounted the whole sheet.
+  const placeTags = useUserStore((s) => s.placeTags);
+  const userTags = useMemo(() => userTagsFor(place.id, placeTags), [place.id, placeTags]);
   const savedNote = useUserStore((s) => s.notes.find((n) => n.placeId === place.id)?.text ?? '');
   const savedRevision = useUserStore(
     (s) => s.notes.find((n) => n.placeId === place.id)?.updatedAt ?? null,
   );
   const collections = useUserStore((s) => s.collections);
   const ready = usePersistenceStore((s) => s.ready);
+  // What can be looted here — verified sources only, "Loot unknown"
+  // when nothing is confirmed. Hidden collectables — verified card
+  // pins near this place, or "None verified here".
+  const loot = useMemo(() => lootFor(place), [place]);
+  const nearbyCollectables = useMemo(
+    () => collectablesNear(place, allPlaces),
+    [place, allPlaces],
+  );
+  // The user's own photo for this place (his screenshot, on-device
+  // only). Loads from IndexedDB when the card opens.
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  useEffect(() => {
+    let alive = true;
+    void atlasRepository
+      .getPlacePhoto(place.id)
+      .then((photo) => {
+        if (alive) setPhotoUrl(photo?.dataUrl ?? null);
+      })
+      .catch(() => {
+        if (alive) setPhotoUrl(null);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [place.id]);
+  async function onPhotoFile(file: File | undefined) {
+    if (!file) return;
+    setPhotoBusy(true);
+    setPhotoError(null);
+    const dataUrl = await downscalePhoto(file);
+    if (!dataUrl) {
+      setPhotoBusy(false);
+      setPhotoError('That file could not be read as a photo. Try a screenshot from your phone.');
+      return;
+    }
+    const ok = await saveLocal(() => atlasRepository.savePlacePhoto(place.id, dataUrl));
+    setPhotoBusy(false);
+    if (ok) setPhotoUrl(dataUrl);
+    else setPhotoError('The photo could not be saved on this device.');
+  }
+  async function removePhoto() {
+    const ok = await saveLocal(() => atlasRepository.deletePlacePhoto(place.id));
+    if (ok) setPhotoUrl(null);
+  }
+  // The user's own secondary tags ("sells t-shirts", "workout
+  // equipment") — free text, saved on-device, shown as "Your tag",
+  // never mixed with verified data, never changing the real category.
+  const [tagInput, setTagInput] = useState('');
+  const [tagError, setTagError] = useState<string | null>(null);
+  async function addTag() {
+    const parsed = parseUserTags(tagInput);
+    if (parsed.length === 0) {
+      setTagError(
+        'A tag needs at least 2 letters — try “sells t-shirts” or “workout equipment”.',
+      );
+      return;
+    }
+    setTagError(null);
+    setTagInput('');
+    await saveLocal(() =>
+      atlasRepository.savePlaceTags(place.id, [...userTags, ...parsed]),
+    );
+  }
+  async function removeTag(tag: string) {
+    await saveLocal(() =>
+      atlasRepository.savePlaceTags(
+        place.id,
+        userTags.filter((t) => t !== tag),
+      ),
+    );
+  }
   const [draft, setDraft] = useState<NoteDraft>({
     text: savedNote,
     revision: savedRevision,
@@ -185,7 +258,7 @@ export default function PlaceDetails({
     useMapStore.getState().setBoundsFocus(county.bounds);
     useMapStore.getState().setIsolation(countyIsolation(county));
   }
-  const photo = regionPhoto(place);
+  const photoInputRef = useRef<HTMLInputElement>(null);
   async function share() {
     const url = new URL(window.location.href);
     url.search = '';
@@ -212,14 +285,67 @@ export default function PlaceDetails({
         </button>
       </header>
       <div className="detail-scroll">
-        {photo && (
-          <div className="place-photo">
-            <img
-              src={`${import.meta.env.BASE_URL}${photo}`}
-              alt={`${place.title} — county art`}
-            />
-          </div>
-        )}
+        {/*
+          * The picture: your own screenshot if you added one, otherwise
+          * a zoomed crop of the real map at this exact spot, labelled
+          * as the map — never as a photo. No AI image, no scraped
+          * image, no stock photo of a different building. The old
+          * county art is gone from this card: it was art of the
+          * county, not a picture of this place.
+          */}
+        <div className="place-photo-block">
+          {photoUrl ? (
+            <div className="place-photo">
+              <img src={photoUrl} alt={`${place.title} — your photo`} />
+              <p className="place-photo-caption">Your photo — added by you</p>
+              <button
+                type="button"
+                className="text-button"
+                disabled={!ready}
+                onClick={() => void removePhoto()}
+              >
+                Remove photo
+              </button>
+            </div>
+          ) : place.position ? (
+            <>
+              <PlaceMapCrop position={place.position} />
+              <p className="place-photo-caption">Map view of this spot — not a photo</p>
+            </>
+          ) : null}
+          <button
+            type="button"
+            className="button"
+            disabled={!ready || photoBusy}
+            onClick={() => photoInputRef.current?.click()}
+          >
+            <Camera size={16} />{' '}
+            {photoBusy ? 'Adding…' : photoUrl ? 'Replace your photo' : 'Add your photo'}
+          </button>
+          <input
+            ref={photoInputRef}
+            type="file"
+            accept="image/*"
+            className="visually-hidden"
+            aria-label="Choose your own in-game screenshot of this place"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              e.target.value = '';
+              void onPhotoFile(file);
+            }}
+          />
+          {photoError && (
+            <p className="inline-error" role="alert">
+              {photoError}
+            </p>
+          )}
+          {!photoUrl && (
+            <p className="help-text">
+              No photo of this building yet — add your own in-game screenshot. Photos stay on
+              this device and are never in backups.
+            </p>
+          )}
+        </div>
         <div className="place-hero">
           <span className="place-hero-icon" style={{ background: layerColor }} aria-hidden="true">
             <PlaceIcon
@@ -296,7 +422,92 @@ export default function PlaceDetails({
             <Check size={18} />
             {found ? 'Found ✓ — tap to undo' : 'Mark as found'}
           </button>
+          <button
+            disabled={!ready}
+            className={`button ${explored ? 'selected' : ''}`}
+            onClick={() => void saveLocal(() => atlasRepository.toggleExplored(place.id))}
+          >
+            <Footprints size={18} />
+            {explored ? 'Explored ✓ — tap to undo' : 'Mark as explored'}
+          </button>
         </div>
+        {(loot || nearbyCollectables.length > 0 || place.layerId === 'lootable' || place.layerId === 'breakable') && (
+          <section className="detail-section" aria-label="Loot and collectables">
+            {loot && (
+              <>
+                <h3>Available loot</h3>
+                <p className="help-text">
+                  <strong>{loot.text}</strong>
+                  {loot.source ? ` ${loot.source}` : ''}
+                </p>
+              </>
+            )}
+            <h3>Hidden collectables</h3>
+            {nearbyCollectables.length > 0 ? (
+              <ul className="collectables-list">
+                {nearbyCollectables.map(({ place: card }) => (
+                  <li key={card.id}>{card.title}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="help-text">None verified here.</p>
+            )}
+          </section>
+        )}
+        <section className="detail-section" aria-label="Your tags">
+          <h3>
+            <Tag size={15} /> Your tags
+          </h3>
+          <p className="help-text">
+            Your own labels for this place — “sells t-shirts” on a gas station, “workout
+            equipment” on a house. They never change its real category.
+          </p>
+          {userTags.length > 0 && (
+            <p className="detail-tags" aria-label="Your tags on this place">
+              {userTags.map((tag) => (
+                <span key={tag}>
+                  Your tag: {tag}
+                  <button
+                    type="button"
+                    className="icon-button"
+                    aria-label={`Remove tag ${tag}`}
+                    disabled={!ready}
+                    onClick={() => void removeTag(tag)}
+                  >
+                    <X size={13} />
+                  </button>
+                </span>
+              ))}
+            </p>
+          )}
+          <div className="tag-add-row">
+            <input
+              type="text"
+              maxLength={MAX_TAG_LENGTH}
+              value={tagInput}
+              disabled={!ready}
+              placeholder="Add a tag… e.g. sells t-shirts"
+              aria-label="Add your own tag for this place"
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') void addTag();
+              }}
+            />
+            <button
+              type="button"
+              className="button"
+              disabled={!ready || tagInput.trim().length === 0}
+              onClick={() => void addTag()}
+            >
+              Add tag
+            </button>
+          </div>
+          {tagError && (
+            <p className="inline-error" role="alert">
+              {tagError}
+            </p>
+          )}
+        </section>
         <section className="detail-section" aria-label="Interior">
           <h3>Inside</h3>
           <p className="help-text">
@@ -536,20 +747,12 @@ export default function PlaceDetails({
         <dl className="place-meta">
           <div>
             <dt>Category</dt>
-            <dd>{place.category}</dd>
+            <dd>{categoryLabel(place.category)}</dd>
           </div>
           {place.region && (
             <div>
               <dt>Region</dt>
               <dd>{place.region}</dd>
-            </div>
-          )}
-          {place.position && (
-            <div>
-              <dt>Game coordinates</dt>
-              <dd>
-                {place.position.x.toFixed(1)}, {place.position.y.toFixed(1)}
-              </dd>
             </div>
           )}
         </dl>

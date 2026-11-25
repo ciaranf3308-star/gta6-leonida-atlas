@@ -201,7 +201,7 @@ export function isBreakablePlace(place: Place): boolean {
  * the same shape as isWorkoutMarker.
  */
 export function isBreakableMarker(place: Place): boolean {
-  if (place.layerId !== 'personal') return false;
+  if (place.layerId !== 'my-markers') return false;
   if (place.tags.some((tag) => ['breakable'].includes(tag))) return true;
   const text = `${place.title} ${place.description}`.toLowerCase();
   return ['breakable', 'break into', 'break-in', 'robbery', 'can rob'].some((p) =>

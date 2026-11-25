@@ -23,6 +23,9 @@ export interface AskPanelProps {
   filters: Filters;
   /** AI-suggested types for unnamed places (on-device only). */
   aiCategories: Readonly<Record<string, AiCategoryRecord>>;
+  /** The user's own secondary tags (on-device only) — Ask answers
+   * from them, and cards show them as "Your tag". */
+  userTags: ReadonlyMap<string, readonly string[]>;
   visitedIds: string[];
   offline: boolean;
   onSelect: (id: string) => void;
@@ -186,6 +189,7 @@ export default function AskPanel(props: AskPanelProps) {
         layers: props.layers,
         filters: props.filters,
         aiCategories: props.aiCategories,
+        userTags: props.userTags,
         visitedIds: props.visitedIds,
         // Follow-ups ("is there nowhere else?") inherit the place from the
         // earlier question in this conversation — the layers asked for
@@ -195,7 +199,7 @@ export default function AskPanel(props: AskPanelProps) {
           .map((message) => message.text),
       });
       const anchorLabel = askAnchorLabel(result);
-      const cards = buildAskCards(result, props.places, props.aiCategories);
+      const cards = buildAskCards(result, props.places, props.aiCategories, props.userTags);
       setBusyNote(
         anchorLabel
           ? `Finding places ${anchorLabel.toLowerCase()}…`
@@ -381,6 +385,11 @@ export default function AskPanel(props: AskPanelProps) {
                           {card.near ? 'Close by · ' : ''}
                           {card.distanceLabel}
                         </small>
+                        {card.userTags.length > 0 && (
+                          <small className="ask-card-user-tags">
+                            Your tag: {card.userTags.join(', ')}
+                          </small>
+                        )}
                         {card.badges.length > 0 && (
                           <span className="result-badges">
                             {card.badges.map((badge) => (
@@ -434,6 +443,7 @@ export default function AskPanel(props: AskPanelProps) {
                       place,
                       null,
                       props.aiCategories,
+                      props.userTags,
                     );
                     return (
                       <li key={id} className="ask-house-card">

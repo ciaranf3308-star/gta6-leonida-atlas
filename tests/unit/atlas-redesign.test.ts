@@ -26,16 +26,26 @@ describe('v0.12.0 mobile redesign', () => {
     }
   });
 
-  it('has seven place kinds, including My markers', () => {
+  it('has thirteen place kinds: the game’s nine Map Index filters, plus Collectibles, My markers and Unverified', () => {
     expect(CATEGORIES.map((c) => c.id)).toEqual([
       'all',
-      'region',
-      'landmark',
-      'nature',
-      'transport',
-      'business',
       'personal',
+      'story',
+      'robberies',
+      'activities',
+      'exploration',
+      'vehicles',
+      'weapons',
+      'style',
+      'food-drink',
+      'collectibles',
+      'my-markers',
+      'unverified',
     ]);
+    // No "Business" anywhere — the game has none — and "Personal" is
+    // the game's own Personal (safehouse / garages / ATMs), never a
+    // relabel of the user's own markers.
+    expect(CATEGORIES.map((c) => c.id)).not.toContain('business');
   });
 
   it('has no FilterBar anywhere — the file is deleted and nothing imports it', async () => {

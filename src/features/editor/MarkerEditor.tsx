@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import type { Category, PersonalMarker, Position } from '../../domain/types';
+import type { PersonalMarker, Position } from '../../domain/types';
 import { atlasRepository, ConflictError } from '../../db/repository';
 import { markerToPlace } from '../../data/catalogue';
 import { MARKER_COLORS } from '../../db/backup';
 import { saveLocal, useMapStore, useUiStore, useUserStore } from '../../stores/atlas';
 import { Modal } from '../../app/Modal';
-import { CATEGORIES } from '../../app/categories';
 
 const MARKER_COLOR_NAMES: Record<string, string> = {
   '#c9a9ef': 'Purple',
@@ -30,7 +29,9 @@ export default function MarkerEditor({
   const [marker] = useState(mode === 'create' ? undefined : existing);
   const [title, setTitle] = useState(marker?.title ?? '');
   const [description, setDescription] = useState(marker?.description ?? '');
-  const [category, setCategory] = useState<Category>(marker?.category ?? 'personal');
+  // A marker is always a My marker — its own group, never the game's
+  // Personal (safehouse / garages / ATMs). The kind (general / workout
+  // / breakable) is what distinguishes it, not a category picker.
   const [icon, setIcon] = useState<PersonalMarker['icon']>(marker?.icon ?? 'pin');
   const presetKind = useMapStore((s) => s.markerKindPreset);
   const [kind, setKind] = useState<'general' | 'workout' | 'breakable'>(() => {
@@ -70,7 +71,7 @@ export default function MarkerEditor({
       id: marker?.id ?? `custom:${crypto.randomUUID()}`,
       title: title.trim(),
       description: description.trim(),
-      category,
+      category: 'my-markers',
       icon,
       color,
       ...(kind === 'workout' ? { kind: 'workout' as const } : {}),
@@ -189,20 +190,6 @@ export default function MarkerEditor({
           onChange={(e) => setDescription(e.target.value)}
         />
         <div className="form-grid">
-          <div>
-            <label htmlFor="marker-category">Category</label>
-            <select
-              id="marker-category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value as Category)}
-            >
-              {CATEGORIES.filter((c) => c.id !== 'all').map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
           <div>
             <label htmlFor="marker-icon">Icon</label>
             <select

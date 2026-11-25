@@ -24,7 +24,7 @@ const place: Place = {
   id: 'L1',
   title: 'Café Beach',
   description: '',
-  category: 'business',
+  category: 'food-drink',
   position: { x: 0, y: 0 },
   layerId: 'community',
   tags: ['food'],
@@ -73,7 +73,7 @@ describe('composable catalogue filters', () => {
       ),
     ).toHaveLength(0);
     expect(
-      filterPlaces([place], { ...filters, category: 'nature' }, ['L1'], [], [collection]),
+      filterPlaces([place], { ...filters, category: 'exploration' }, ['L1'], [], [collection]),
     ).toHaveLength(0);
   });
 });
