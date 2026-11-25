@@ -317,7 +317,7 @@ h3 {
   left: 0;
   right: 0;
   display: grid;
-  gap: 10px;
+  gap: 8px;
   padding: 0 12px;
   pointer-events: none;
 }
@@ -326,7 +326,7 @@ h3 {
 }
 .map-hero-banner {
   position: relative;
-  height: 56px;
+  height: 48px;
   margin: 0 -12px;
   overflow: hidden;
   pointer-events: none;
@@ -348,7 +348,10 @@ h3 {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, #0b101800 30%, #0b1018b3 100%);
+  /* Reference header: dark navy over the skyline, sunset only as a
+   * glow at the top — the photo strip must read as a dark bar, not
+   * a bright banner sitting on the map. */
+  background: linear-gradient(180deg, #0b1018d9 0%, #0b101866 45%, #0b1018e6 100%);
 }
 .map-hero-titles {
   position: absolute;
@@ -361,10 +364,12 @@ h3 {
   gap: 10px;
 }
 /* v0.21.0 VICEWIRE wordmark: the V mark beside VICE (ivory) +
- * WIRE (coral), with "GTA VI · Leonida" as the context line. */
+ * WIRE (coral), with "GTA VI · Leonida" as the context line.
+ * v0.23.0: smaller and tighter — the reference wordmark is
+ * confident, not loud, and the map owns the pixels. */
 .map-hero-mark {
-  width: 42px;
-  height: 42px;
+  width: 32px;
+  height: 32px;
   flex-shrink: 0;
   filter: drop-shadow(0 2px 6px #000c);
 }
@@ -417,32 +422,28 @@ h3 {
 }
 .map-hero-brand {
   font-family: var(--condensed);
-  font-size: 19px;
+  font-size: 17px;
   font-weight: 600;
   line-height: 1;
-  letter-spacing: 5px;
+  letter-spacing: 4px;
   text-transform: uppercase;
   color: var(--text);
   text-shadow: 0 1px 8px #000c;
 }
 .map-hero-sub {
   font-family: var(--condensed);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 500;
-  letter-spacing: 3px;
+  letter-spacing: 2.5px;
   text-transform: uppercase;
   color: #ffb56b;
   text-shadow: 0 1px 6px #000c;
 }
-@media (max-width: 599px) {
-  /* Phones: the subtitle is the first thing to go — the wordmark
-   * alone is the identity, and the map gets the pixels. */
-  .map-hero-sub {
-    display: none;
-  }
-  .map-hero-titles {
-    bottom: 8px;
-  }
+/* v0.23.0: the subtitle stays on phones — the reference header
+ * carries it, and at 9px it costs nothing. The wordmark alone
+ * was the identity; the line underneath is the context. */
+.map-hero-titles {
+  bottom: 6px;
 }
 /* Quick-filter chips (v0.16.0): the reference row. One group on, the
  * rest off — tapping a chip is the way into the map. */
@@ -462,8 +463,28 @@ h3 {
 .map-chips::-webkit-scrollbar {
   display: none;
 }
+/* Review (v0.22 baseline): the 5th chip (Collectibles) was cut off
+ * at the right edge in every shot — the fade mask only said "there
+ * is more". On phones the chips wrap to two rows and ALL FIVE fit;
+ * the mask and the scroll go away with them. Desktop keeps one row. */
+@media (max-width: 599px) {
+  .map-chips {
+    flex-wrap: wrap;
+    overflow: visible;
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+  .map-chip {
+    min-height: 36px;
+    padding: 0 12px;
+    font-size: 12px;
+  }
+}
 .map-chip {
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   min-height: 40px;
   padding: 0 16px;
   border: 1px solid #f6f0e529;
@@ -476,17 +497,28 @@ h3 {
   font-weight: 600;
   cursor: pointer;
 }
+/* Reference chips wear their icon; the active one glows pink —
+ * border, icon and a soft halo — so the current filter reads at a
+ * glance on the map, not just in the Layers list. */
+.map-chip svg {
+  color: #9aa7b8;
+}
 .map-chip.is-active {
   border-color: var(--coral);
   background: linear-gradient(135deg, #ff527f33, #ffb56b33);
   color: #fff;
+  box-shadow:
+    0 0 0 1px #ff527f55,
+    0 0 16px #ff527f40;
+}
+.map-chip.is-active svg {
+  color: var(--pink-soft);
 }
 .map-search-pill {
   display: flex;
   align-items: center;
   gap: 10px;
   width: 100%;
-  max-width: 340px;
   min-height: 44px;
   padding: 0 14px;
   border: 1px solid #f6f0e529;
@@ -505,6 +537,19 @@ h3 {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+/* Reference search pill: the expand glyph on the right. Same tap
+ * as the pill — it opens Find — it is a signpost, not a second
+ * control. */
+.map-search-expand {
+  margin-left: auto;
+  display: grid;
+  place-items: center;
+  color: #9aa7b8;
+  flex-shrink: 0;
+}
+.map-search-expand svg {
+  color: #9aa7b8;
 }
 /* ---- Empty map (v0.14.0, bottom bar v0.17.0, slimmed v0.19.0):
  * the map must never look empty with no explanation. Spoiler-free
@@ -543,6 +588,29 @@ h3 {
   font-size: 12px;
   line-height: 1.4;
   color: var(--text);
+}
+/* Review (v0.22 baseline): the prompt was a card covering the
+ * bottom ~25% of the map, with the attribution half-hidden behind
+ * it. On phones it is one compact bar: the line, one row of
+ * buttons, no paragraph. */
+@media (max-width: 599px) {
+  .empty-map-prompt {
+    padding: 8px 10px;
+  }
+  .empty-map-prompt p {
+    display: none;
+  }
+  .empty-map-prompt strong {
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+  /* The base .empty-map-buttons button rule sits later in this file
+   * with equal specificity — this needs the extra class to win. */
+  .empty-map-prompt .empty-map-buttons button {
+    min-height: 32px;
+    font-size: 11px;
+    padding: 4px 6px;
+  }
 }
 .empty-map-buttons {
   display: flex;
@@ -618,8 +686,9 @@ h3 {
 .bottom-nav {
   display: flex;
   flex-shrink: 0;
-  background: #0b1018f2;
-  backdrop-filter: blur(12px);
+  /* Reference nav: smoked glass over the map, not a solid bar. */
+  background: #0b1018e0;
+  backdrop-filter: blur(16px);
   border-top: 1px solid #f6f0e51a;
   padding-bottom: env(safe-area-inset-bottom, 0px);
   z-index: 700;
@@ -627,6 +696,7 @@ h3 {
 .bottom-nav button {
   flex: 1;
   min-width: 0;
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -654,6 +724,21 @@ h3 {
 }
 .bottom-nav button.active .bottom-nav-icon {
   color: var(--coral);
+  /* Reference active tab: the icon itself glows, and a short
+   * gradient underline sits under the label. */
+  filter: drop-shadow(0 0 8px #ff527f99);
+}
+.bottom-nav button.active::after {
+  content: '';
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--sunset);
+  box-shadow: 0 0 10px #ff527f99;
 }
 .bottom-nav-icon {
   position: relative;
@@ -663,18 +748,18 @@ h3 {
 }
 .bottom-nav-badge {
   position: absolute;
-  top: -6px;
-  right: -12px;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
+  /* Review (v0.22 baseline): the "30" on the Layers tab read as an
+   * unread-notification badge. It is a dot now — layers are on, no
+   * count, no inbox. The number stays in the aria-label. */
+  top: -2px;
+  right: -6px;
+  width: 8px;
+  height: 8px;
+  min-width: 8px;
+  padding: 0;
   border-radius: 999px;
   background: var(--coral);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 18px;
-  text-align: center;
+  border: 1.5px solid #0b1018;
 }
 .bottom-nav-label {
   white-space: nowrap;
@@ -1372,7 +1457,9 @@ h3 {
   max-height: 88dvh;
   display: flex;
   flex-direction: column;
-  background: var(--night-2);
+  /* Reference sheet: smoked glass over the map, not a solid slab. */
+  background: #101823f2;
+  backdrop-filter: blur(16px);
   border: 1px solid var(--border);
   border-bottom: 0;
   border-radius: 24px 24px 0 0;
@@ -1402,8 +1489,188 @@ h3 {
   flex: 1;
   min-height: 0;
 }
-/* Region sheet photo (v0.16.0): the county art above the title,
- * like the reference's Vice City sheet. */
+/* Review (v0.22 baseline): the sheet opened ~90% of the screen
+ * while the reference sheet is a compact card — head, actions, and
+ * a peek of what follows. 72dvh on phones, still scrollable. */
+@media (max-width: 599px) {
+  .place-sheet {
+    max-height: 72dvh;
+  }
+}
+/* ---- Place card head (v0.23.0, reference bottom sheet): the
+ * photo sits LEFT of the title, not above it — a thumb beside
+ * the name, county and two lines of description, with the
+ * bookmark top-right. The old layout stacked a 148px photo over
+ * a 56px icon over a 30px title and the card started two screens
+ * tall. The loot, collectables, tags and notes sections below are
+ * unchanged; the head is what reads at a glance. ---- */
+.place-card-head {
+  display: grid;
+  grid-template-columns: 116px minmax(0, 1fr);
+  gap: 14px;
+  margin-top: 8px;
+  position: relative;
+}
+.place-card-photo {
+  position: relative;
+  width: 116px;
+  height: 116px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #f6f0e51f;
+  background: #0b2a4a;
+  flex-shrink: 0;
+}
+.place-card-photo .place-photo {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  height: 100%;
+}
+.place-card-photo .place-photo img {
+  height: 116px;
+}
+/* The map crop is a Leaflet map: without an explicit height the
+ * container is 0px and the "picture" is only its caption — the
+ * v0.21 card shipped exactly that bug (caption, no image). */
+.place-card-photo .place-map-crop {
+  width: 100%;
+  height: 116px;
+}
+.place-card-photo .place-map-crop .leaflet-container {
+  width: 100%;
+  height: 100%;
+  background: #0b2a4a;
+}
+/* No position and no photo: the thumb is the layer icon on a
+ * quiet surface, not an empty box. */
+.place-card-photo .place-photo-empty {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  background: var(--surface);
+  color: #fff;
+}
+.place-crop-dot {
+  display: grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--coral);
+  border: 2px solid #fff;
+  box-shadow: 0 0 10px #ff527f99;
+}
+.place-card-photo-badge {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  border: 2px solid #0b1018e6;
+  box-shadow: 0 2px 8px #000a;
+  z-index: 2;
+}
+.place-card-text {
+  min-width: 0;
+  padding-right: 40px;
+}
+.place-card-text h2 {
+  font-size: 24px;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+.place-card-county {
+  display: block;
+  margin-top: 5px;
+  font-family: var(--condensed);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: #9aa7b8;
+}
+.place-card-county:empty {
+  display: none;
+}
+.place-card-desc {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #d8d2c4;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.place-card-desc:empty {
+  display: none;
+}
+.place-card-bookmark {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0;
+  border: 1px solid #f6f0e529;
+  border-radius: 50%;
+  background: #0b1018cc;
+  color: var(--text);
+  display: grid;
+  place-items: center;
+}
+.place-card-bookmark.is-saved {
+  color: var(--gold);
+  border-color: #ffb56b88;
+}
+.place-card-photo-note {
+  margin: 8px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.place-card-photo-note:empty {
+  display: none;
+}
+/* The reference action row: Set Route in the sunset gradient,
+ * View Area and Add to List in smoked glass — one row of three,
+ * for every place, not only regions. */
+.place-card-actions {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 8px;
+  margin: 16px 0 0;
+}
+.place-card-actions .button {
+  width: 100%;
+  min-height: 52px;
+  padding: 10px 8px;
+  font-size: 13px;
+}
+.place-card-actions .button.primary {
+  box-shadow: 0 4px 18px #ff527f55;
+}
+/* The file input behind "Add your photo": it had no hiding rule
+ * at all, so the native "Choose File / No file chosen" row showed
+ * in the card (v0.21 screenshot). It is opened by the button. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 .place-photo {
   margin: 4px 0 0;
   border-radius: 14px;

@@ -81,14 +81,23 @@ describe('v0.12.0 mobile redesign', () => {
     expect(sidebar).toContain('add-section');
   });
 
-  it('place detail is a full bottom sheet with a hero and badges', async () => {
+  it('place detail is a full bottom sheet with a photo-led card head and badges', async () => {
     const details = await readFile(
       new URL('../../src/features/library/PlaceDetails.tsx', import.meta.url),
       'utf8',
     );
     expect(details).toContain('place-sheet');
     expect(details).toContain('sheet-grabber');
-    expect(details).toContain('place-hero');
+    // v0.23.0: the reference card head — photo left of the title,
+    // county line, description, and the Set Route / View Area /
+    // Add to List row for every place. The old stacked hero
+    // (place-hero, 148px photo over a 56px icon) is gone.
+    expect(details).toContain('place-card-head');
+    expect(details).toContain('place-card-photo');
+    expect(details).toContain('place-card-county');
+    expect(details).toContain('place-card-desc');
+    expect(details).toContain('place-card-actions');
+    expect(details).not.toContain('place-hero');
     expect(details).toContain('place-badges');
     expect(details).toContain('place-actions');
     expect(details).not.toContain('detail-panel');

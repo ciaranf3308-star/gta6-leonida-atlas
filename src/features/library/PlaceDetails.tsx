@@ -188,6 +188,24 @@ export default function PlaceDetails({
     : place.description;
   const layerColor =
     DEFAULT_LAYERS.find((l) => l.id === place.layerId)?.style.color ?? '#e8823a';
+  // The county line on the card head (reference: "MARIANA COUNTY"):
+  // the county whose bounds contain this place, else the area name,
+  // else the type line. Same bounds lookup as viewArea below.
+  const cardCounty = useMemo(() => {
+    if (!place.position) return null;
+    return (
+      COUNTIES.find(
+        (c) =>
+          place.position &&
+          place.position.x >= c.bounds.west &&
+          place.position.x <= c.bounds.east &&
+          place.position.y >= c.bounds.south &&
+          place.position.y <= c.bounds.north,
+      )?.name ?? null
+    );
+  }, [place.position]);
+  const cardSubtitle =
+    cardCounty || place.region || placeTypeLine(place) || categoryLabel(place.category);
   // Interior status, in plain words at the top of the sheet: enterable /
   // unknown (never a false no), what kind of venue, what you do inside,
   // and whether it is a breakable house. A house with no enterable tag
@@ -286,33 +304,63 @@ export default function PlaceDetails({
       </header>
       <div className="detail-scroll">
         {/*
-          * The picture: your own screenshot if you added one, otherwise
-          * a zoomed crop of the real map at this exact spot, labelled
-          * as the map — never as a photo. No AI image, no scraped
-          * image, no stock photo of a different building. The old
-          * county art is gone from this card: it was art of the
-          * county, not a picture of this place.
+          * The card head (reference bottom sheet): the picture sits
+          * LEFT of the title — your own screenshot, or the zoomed
+          * map crop at this exact spot, labelled as the map, never
+          * as a photo. No AI image, no scraped image, no stock photo
+          * of a different building. The crop used to render 0px tall
+          * (no height rule) — only its caption showed.
           */}
-        <div className="place-photo-block">
-          {photoUrl ? (
-            <div className="place-photo">
-              <img src={photoUrl} alt={`${place.title} — your photo`} />
-              <p className="place-photo-caption">Your photo — added by you</p>
-              <button
-                type="button"
-                className="text-button"
-                disabled={!ready}
-                onClick={() => void removePhoto()}
-              >
-                Remove photo
-              </button>
-            </div>
-          ) : place.position ? (
-            <>
+        <div className="place-card-head">
+          <div className="place-card-photo">
+            {photoUrl ? (
+              <div className="place-photo">
+                <img src={photoUrl} alt={`${place.title} — your photo`} />
+              </div>
+            ) : place.position ? (
               <PlaceMapCrop position={place.position} />
-              <p className="place-photo-caption">Map view of this spot — not a photo</p>
-            </>
-          ) : null}
+            ) : (
+              <div className="place-photo place-photo-empty" aria-hidden="true">
+                <PlaceIcon
+                  icon={iconKeyForAiRecord(aiRecord) ?? iconKeyForPlace(place)}
+                  size={30}
+                />
+              </div>
+            )}
+            <span
+              className="place-card-photo-badge"
+              style={{ background: layerColor }}
+              aria-hidden="true"
+            >
+              <PlaceIcon
+                icon={iconKeyForAiRecord(aiRecord) ?? iconKeyForPlace(place)}
+                size={16}
+              />
+            </span>
+          </div>
+          <div className="place-card-text">
+            <h2>{place.title}</h2>
+            <span className="place-card-county">{cardSubtitle}</span>
+            {description.trim() ? <p className="place-card-desc">{description}</p> : null}
+          </div>
+          <button
+            type="button"
+            className={`place-card-bookmark ${favorite ? 'is-saved' : ''}`}
+            disabled={!ready}
+            aria-label={favorite ? 'Remove from favorites' : 'Add to favorites'}
+            onClick={() => void toggleFavorite()}
+          >
+            <Star size={18} fill={favorite ? 'currentColor' : 'none'} />
+          </button>
+        </div>
+        <p className="place-card-photo-note">
+          {photoUrl
+            ? 'Your photo — added by you'
+            : place.position
+              ? 'Map view of this spot — not a photo'
+              : ''}
+        </p>
+        <div className="button-row">
           <button
             type="button"
             className="button"
@@ -322,58 +370,66 @@ export default function PlaceDetails({
             <Camera size={16} />{' '}
             {photoBusy ? 'Adding…' : photoUrl ? 'Replace your photo' : 'Add your photo'}
           </button>
-          <input
-            ref={photoInputRef}
-            type="file"
-            accept="image/*"
-            className="visually-hidden"
-            aria-label="Choose your own in-game screenshot of this place"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              e.target.value = '';
-              void onPhotoFile(file);
-            }}
-          />
-          {photoError && (
-            <p className="inline-error" role="alert">
-              {photoError}
-            </p>
-          )}
-          {!photoUrl && (
-            <p className="help-text">
-              No photo of this building yet — add your own in-game screenshot. Photos stay on
-              this device and are never in backups.
-            </p>
-          )}
-        </div>
-        <div className="place-hero">
-          <span className="place-hero-icon" style={{ background: layerColor }} aria-hidden="true">
-            <PlaceIcon
-              icon={iconKeyForAiRecord(aiRecord) ?? iconKeyForPlace(place)}
-              size={30}
-            />
-          </span>
-          <h2>{place.title}</h2>
-        </div>
-        {place.layerId === 'regions' && (
-          <div className="place-actions">
-            <button type="button" className="button primary" onClick={setRoute}>
-              <Navigation size={18} /> Set Route
-            </button>
-            <button type="button" className="button" onClick={viewArea}>
-              <Scan size={18} /> View Area
-            </button>
+          {photoUrl && (
             <button
               type="button"
+              className="button"
               disabled={!ready}
-              className={`button ${favorite ? 'selected' : ''}`}
-              onClick={() => void toggleFavorite()}
+              onClick={() => void removePhoto()}
             >
-              <Star size={18} fill={favorite ? 'currentColor' : 'none'} />
-              {favorite ? 'Saved' : 'Add to List'}
+              Remove photo
             </button>
-          </div>
+          )}
+        </div>
+        <input
+          ref={photoInputRef}
+          type="file"
+          accept="image/*"
+          className="visually-hidden"
+          aria-label="Choose your own in-game screenshot of this place"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            e.target.value = '';
+            void onPhotoFile(file);
+          }}
+        />
+        {photoError && (
+          <p className="inline-error" role="alert">
+            {photoError}
+          </p>
         )}
+        {!photoUrl && (
+          <p className="help-text">
+            No photo of this building yet — add your own in-game screenshot. Photos stay on
+            this device and are never in backups.
+          </p>
+        )}
+        {/* Reference action row — one row of three, for every place,
+          * not only regions. Set Route flies the camera to the place;
+          * View Area isolates its county; Add to List is the
+          * favorite toggle. */}
+        <div className="place-card-actions">
+          <button
+            type="button"
+            className="button primary"
+            disabled={!place.position}
+            onClick={setRoute}
+          >
+            <Navigation size={18} /> Set Route
+          </button>
+          <button type="button" className="button" disabled={!place.position} onClick={viewArea}>
+            <Scan size={18} /> View Area
+          </button>
+          <button
+            type="button"
+            disabled={!ready}
+            className={`button ${favorite ? 'selected' : ''}`}
+            onClick={() => void toggleFavorite()}
+          >
+            <Star size={18} fill={favorite ? 'currentColor' : 'none'} />
+            {favorite ? 'Saved' : 'Add to List'}
+          </button>
+        </div>
         <p className="place-badges" aria-label="What this place is">
           {interior.breakable && <span>Breakable home</span>}
           {place.layerId === 'lootable' && <span>Lootable</span>}
@@ -406,14 +462,6 @@ export default function PlaceDetails({
           </p>
         )}
         <div className="place-actions">
-          <button
-            disabled={!ready}
-            className={`button ${favorite ? 'selected' : ''}`}
-            onClick={() => void saveLocal(() => atlasRepository.toggleFavorite(place.id))}
-          >
-            <Star size={18} fill={favorite ? 'currentColor' : 'none'} />
-            {favorite ? 'Saved to favorites' : 'Add to favorites'}
-          </button>
           <button
             disabled={!ready}
             className={`button ${found ? 'selected' : ''}`}
@@ -737,7 +785,6 @@ export default function PlaceDetails({
           </section>
         )}
 
-        {description && <p className="description">{description}</p>}
         {analogue && (
           <p className="analogue-note">
             <strong>Real-world reference (analogue only):</strong> {analogue} — a

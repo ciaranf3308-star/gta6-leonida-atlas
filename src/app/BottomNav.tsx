@@ -39,9 +39,11 @@ export default function BottomNav({ onNavigate }: { onNavigate: (tab: NavTab) =>
             <span className="bottom-nav-icon">
               <PlaceIcon icon={tab.icon} size={22} />
               {badge !== null && (
-                <span className="bottom-nav-badge" aria-label={`${badge} layers on`}>
-                  {badge}
-                </span>
+                // Decorative dot only: it must be aria-hidden, or its
+                // aria-label ("30 layers on") becomes the START of the
+                // button's accessible name ("30 layers onLayers") and
+                // the tab stops matching its own name.
+                <span className="bottom-nav-badge" aria-hidden="true" />
               )}
             </span>
             <span className="bottom-nav-label">{tab.label}</span>

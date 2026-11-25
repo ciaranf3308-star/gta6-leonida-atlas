@@ -1,5 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
+import { Layers, LocateFixed, Minus, Plus } from 'lucide-react';
+import { useUiStore } from '../../stores/atlas';
 import type { LayerDefinition, Place, Position, Preferences } from '../../domain/types';
 import {
   BASEMAP_BOUNDS,
@@ -51,6 +53,13 @@ export interface MapViewProps {
   exploredIds?: ReadonlySet<string>;
   /** Ask Nylah highlights — rendered even when their layer is off. */
   highlightIds?: ReadonlySet<string>;
+  /** Hide the attribution line — the empty-map prompt owns the
+   * bottom of the screen while it is up, and the attribution
+   * half-hidden behind it read as broken. */
+  attributionHidden?: boolean;
+  /** The empty-map prompt is up — the zoom pill lifts above it
+   * (bottom 150px) instead of sitting half-hidden behind it. */
+  promptVisible?: boolean;
   /** AI-suggested types (on-device only): a categorised "?" pins its type glyph. */
   aiCategories?: Readonly<Record<string, AiCategoryRecord>>;
   onSelect: (id: string) => void;
@@ -83,6 +92,10 @@ function markerIcon(
   content.className = cluster ? 'atlas-cluster-face' : 'atlas-pin-face';
   content.style.setProperty('--pin-color', color ?? layer?.style.color ?? '#e8823a');
   content.setAttribute('aria-hidden', 'true');
+  // Unnamed "?" pins wear the is-unnamed class: small, quiet, never
+  // labelled — the street-zoom noise was dozens of full-size black
+  // roundels with long "?, Downtown, Vice City" pills.
+  const unnamed = group.places[0]?.title?.startsWith('?') ?? false;
   if (cluster) {
     // v0.16.0: a cluster is a small icon pin, not a giant pink number.
     // It wears its best member's glyph (named first, enterable next)
@@ -110,7 +123,7 @@ function markerIcon(
   const size = 48;
   return L.divIcon({
     html: content,
-    className: `atlas-map-marker ${cluster ? 'is-cluster' : ''} ${selected ? 'is-selected' : ''} ${found && !cluster ? 'is-found' : ''} ${explored && !found && !cluster ? 'is-explored' : ''} ${highlighted ? 'is-highlighted' : ''} ${group.places[0]?.layerId === 'regions' ? 'is-region' : ''}`,
+    className: `atlas-map-marker ${cluster ? 'is-cluster' : ''} ${selected ? 'is-selected' : ''} ${found && !cluster ? 'is-found' : ''} ${explored && !found && !cluster ? 'is-explored' : ''} ${highlighted ? 'is-highlighted' : ''} ${group.places[0]?.layerId === 'regions' ? 'is-region' : ''} ${unnamed ? 'is-unnamed' : ''}`,
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
   });
@@ -137,6 +150,18 @@ export default function MapView(props: MapViewProps) {
   const retina =
     typeof window !== "undefined" && window.devicePixelRatio >= 2;
   const descriptionId = useId();
+  // v0.23.0: fit the island into the VISIBLE band — between the hero
+  // (banner + search + chips, two chip rows on phones) and the bottom
+  // nav. The old [24,24] padding left the island small with empty sea
+  // around it. Every fit-to-Leonida call goes through here.
+  const fitAllOptions = (animate: boolean): L.FitBoundsOptions => ({
+    paddingTopLeft: L.point(12, window.innerWidth <= 599 ? 204 : 158),
+    // The empty prompt owns the bottom ~132px on first open — the
+    // island's southern tip (the Keys) must sit above it, not under
+    // it. Once layers are on the prompt is gone and it is the nav.
+    paddingBottomRight: L.point(12, props.promptVisible ? 150 : 84),
+    animate,
+  });
   const index = useMemo(() => buildSpatialIndex(props.places), [props.places]);
 
   useEffect(() => {
@@ -191,7 +216,7 @@ export default function MapView(props: MapViewProps) {
           { animate: false },
         );
       } else {
-        activeMap.fitBounds(leafletBounds(INITIAL_BOUNDS), { padding: [24, 24], animate: false });
+        activeMap.fitBounds(leafletBounds(INITIAL_BOUNDS), fitAllOptions(false));
       }
       const base = import.meta.env.BASE_URL ?? '/';
       // GTADB In-Game Day tiles — the real in-game map, sharp at max zoom.
@@ -491,6 +516,10 @@ export default function MapView(props: MapViewProps) {
           !isCluster &&
           props.preferences.showLabels &&
           labelCount < 65 &&
+          // Unnamed "?" places never get a name pill — their titles
+          // are "?, Downtown, Vice City" and at street zoom the pills
+          // overlapped the search, the chips and each other.
+          !place.title.startsWith('?') &&
           // v0.16.0: labels only for regions / selected / highlights at
           // normal zoom — every place labelling itself at zoom -1 was
           // the overlapping-labels mess in his screenshot. Close in
@@ -577,15 +606,10 @@ export default function MapView(props: MapViewProps) {
   useEffect(() => {
     if (!map || !props.boundsFocus) return;
     if (callbacks.current.preferences.reducedMotion) {
-      map.fitBounds(leafletBounds(props.boundsFocus.bounds), {
-        padding: [24, 24],
-        animate: false,
-      });
+      map.fitBounds(leafletBounds(props.boundsFocus.bounds), fitAllOptions(false));
       return;
     }
-    map.flyToBounds(leafletBounds(props.boundsFocus.bounds), {
-      padding: [24, 24],
-    });
+    map.flyToBounds(leafletBounds(props.boundsFocus.bounds), fitAllOptions(true));
   }, [map, props.boundsFocus]);
 
   // Area isolation: the surrounding counties desaturate — a dim
@@ -761,7 +785,9 @@ export default function MapView(props: MapViewProps) {
   };
 
   return (
-    <div className={`atlas-map-view ${props.editorMode !== 'none' ? 'is-editing' : ''}`}>
+    <div
+      className={`atlas-map-view ${props.editorMode !== 'none' ? 'is-editing' : ''} ${zoom <= -2.5 ? 'is-hero-zoom' : ''} ${props.promptVisible ? 'has-prompt' : ''}`}
+    >
       <p id={descriptionId} className="map-sr-only">
         Interactive map using the GTADB in-game map of Leonida, with approximate game
         coordinates. Use arrow keys to pan and plus or minus to zoom. Select a map marker or use
@@ -775,6 +801,13 @@ export default function MapView(props: MapViewProps) {
         aria-describedby={descriptionId}
         tabIndex={0}
       />
+      {/* Decorative clouds over the sea at island zoom (map.css) —
+        pure CSS, no asset, pointer-events none, below the pins. */}
+      <div className="atlas-clouds" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </div>
       {props.isolation && (
         <>
           <div className="county-map-title" aria-hidden="true">
@@ -819,7 +852,7 @@ export default function MapView(props: MapViewProps) {
           disabled={!map || zoom >= MAX_ZOOM}
           onClick={() => map?.zoomIn(0.5, { animate: !props.preferences.reducedMotion })}
         >
-          +
+          <Plus size={22} />
         </button>
         <button
           type="button"
@@ -828,66 +861,83 @@ export default function MapView(props: MapViewProps) {
           disabled={!map || zoom <= MIN_ZOOM}
           onClick={() => map?.zoomOut(0.5, { animate: !props.preferences.reducedMotion })}
         >
-          −
+          <Minus size={22} />
         </button>
         <button
           type="button"
           aria-label="Show full source coverage"
           title="Show full source coverage"
           disabled={!map}
-          onClick={() =>
-            map?.fitBounds(leafletBounds(INITIAL_BOUNDS), {
-              padding: [24, 24],
-              animate: !props.preferences.reducedMotion,
-            })
-          }
+          onClick={() => map?.fitBounds(leafletBounds(INITIAL_BOUNDS), fitAllOptions(!props.preferences.reducedMotion))}
         >
-          ⌖
+          <LocateFixed size={20} />
         </button>
       </div>
-      {/* v0.17.0: the zoom buttons are hidden on phones, so a saved
-       * camera that stranded the player zoomed in had no way out —
-       * pinch was the only escape and he did not know it. One
-       * floating recenter button, phones only (desktop keeps the
-       * full nav above); it fits all of Leonida, like the reference's
-       * right-edge controls. */}
-      <button
-        type="button"
-        className="atlas-recenter"
-        aria-label="Show all of Leonida"
-        title="Show all of Leonida"
-        disabled={!map}
-        onClick={() =>
-          map?.fitBounds(leafletBounds(INITIAL_BOUNDS), {
-            padding: [24, 24],
-            animate: !props.preferences.reducedMotion,
-          })
-        }
-      >
-        ⌖
-      </button>
-      <div className="atlas-map-attribution">
-        <a href="https://map.gtadb.org" target="_blank" rel="noreferrer">
-          GTADB / Map GTA
-        </a>
-        <span> · </span>
-        <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">
-          CC BY 4.0
-        </a>
-        <span> · In-game map © Rockstar Games · Places approximate</span>
+      {/* v0.23.0: the reference's right-edge stack on phones —
+       * layers + recenter as round dark-translucent buttons under
+       * the chips, zoom as a pill bottom-right. The zoom buttons
+       * used to be hidden on phones and the lone recenter was the
+       * only way back from a stranded camera; the pill is the
+       * reference composition and pinch still works. Desktop keeps
+       * .atlas-map-navigation above and never sees this stack. */}
+      <div className="atlas-edge-stack" aria-label="Map shortcuts">
+        <button
+          type="button"
+          aria-label="Open Layers"
+          title="Layers"
+          onClick={() => useUiStore.getState().setNavTab('layers')}
+        >
+          <Layers size={20} />
+        </button>
+        <button
+          type="button"
+          aria-label="Show all of Leonida"
+          title="Show all of Leonida"
+          disabled={!map}
+          onClick={() => map?.fitBounds(leafletBounds(INITIAL_BOUNDS), fitAllOptions(!props.preferences.reducedMotion))}
+        >
+          <LocateFixed size={20} />
+        </button>
       </div>
-      {/* Island view label (2026-11-25): the island zoom is an AI
-          illustration traced from the real map; street zoom is the
-          real in-game map. Plain, small, and it follows the actual
-          tiles on screen — never present the illustration as the
-          real map. It sits just below the filter chips (map.css):
-          the bottom spot above the attribution is covered by the
-          empty-map prompt on first open. */}
+      <div className="atlas-edge-zoom" aria-label="Zoom">
+        <button
+          type="button"
+          aria-label="Zoom in"
+          title="Zoom in"
+          disabled={!map || zoom >= MAX_ZOOM}
+          onClick={() => map?.zoomIn(0.5, { animate: !props.preferences.reducedMotion })}
+        >
+          <Plus size={22} />
+        </button>
+        <button
+          type="button"
+          aria-label="Zoom out"
+          title="Zoom out"
+          disabled={!map || zoom <= MIN_ZOOM}
+          onClick={() => map?.zoomOut(0.5, { animate: !props.preferences.reducedMotion })}
+        >
+          <Minus size={22} />
+        </button>
+      </div>
+      {!props.attributionHidden && (
+        <div className="atlas-map-attribution">
+          <a href="https://map.gtadb.org" target="_blank" rel="noreferrer">
+            GTADB / Map GTA
+          </a>
+          <span> · </span>
+          <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">
+            CC BY 4.0
+          </a>
+          <span> · © Rockstar Games · Places approximate</span>
+        </div>
+      )}
+      {/* Map style note (ViceWire overhaul, 2026-11-25): one
+          geometry-driven render at every zoom — the real in-game map,
+          restyled, geography unchanged. No AI illustration any more,
+          so the old island/street label is gone. Plain, small, it
+          sits just below the filter chips (map.css). */}
       <div className="atlas-map-illustration-note">
-        {Math.round(zoom) + (retina ? 1 : 0) + GTADB_DAY_TILE_ZOOM_OFFSET <=
-        GTADB_ILLUSTRATED_MAX_ZOOM
-          ? "Island view: AI illustration traced from the real map"
-          : "Street zoom: the real in-game map"}
+        ViceWire map: the real in-game map, restyled — geography unchanged
       </div>
       {mapError ? (
         <div className="atlas-map-error" role="alert">

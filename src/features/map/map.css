@@ -37,6 +37,60 @@
 .atlas-map-view.is-editing .atlas-map-marker {
   cursor: crosshair;
 }
+/* Decorative clouds (v0.23.0): the reference has soft clouds over
+ * the sea at island zoom. Pure CSS — blurred white ellipses, no
+ * asset, no tile, pointer-events none, above the tiles (z 350) and
+ * below the pins. Island zoom only (is-hero-zoom); they fade out
+ * as you zoom in. Reduced motion kills the drift (global rule). */
+.atlas-clouds {
+  position: absolute;
+  inset: 0;
+  z-index: 350;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 600ms ease;
+  overflow: hidden;
+}
+.atlas-map-view.is-hero-zoom .atlas-clouds {
+  opacity: 1;
+}
+.atlas-clouds span {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, #ffffff2e 0%, #ffffff14 45%, transparent 70%);
+  filter: blur(18px);
+  animation: atlas-cloud-drift 90s ease-in-out infinite alternate;
+}
+.atlas-clouds span:nth-child(1) {
+  width: 220px;
+  height: 90px;
+  left: -40px;
+  top: 12%;
+}
+.atlas-clouds span:nth-child(2) {
+  width: 300px;
+  height: 110px;
+  right: -60px;
+  top: 58%;
+  animation-duration: 120s;
+  animation-delay: -30s;
+}
+.atlas-clouds span:nth-child(3) {
+  width: 180px;
+  height: 70px;
+  left: 30%;
+  bottom: 6%;
+  animation-duration: 75s;
+  animation-delay: -50s;
+}
+@keyframes atlas-cloud-drift {
+  from {
+    transform: translateX(-16px);
+  }
+  to {
+    transform: translateX(24px);
+  }
+}
 .atlas-map-marker {
   border: 0;
   background: transparent;
@@ -56,12 +110,35 @@
   border: 2px solid #0b1018e6;
   box-shadow:
     0 2px 8px #120e0a80,
-    inset 0 0 0 1px #ffffff2e;
+    inset 0 0 0 1px #ffffff2e,
+    /* Reference pins glow in their own colour — a soft halo, not
+     * a flat disc. color-mix tints the halo from the pin colour. */
+    0 0 12px color-mix(in srgb, var(--pin-color, #e8823a) 65%, transparent);
   font: 700 18px/1 sans-serif;
 }
 .atlas-pin-face {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
+}
+/* Hero zoom (whole island, ~24 pins): the reference pins are big
+ * and glowing at island zoom — a 28px blip reads as a speck on
+ * the illustrated map. MapView adds .is-hero-zoom at zoom <= -2.5. */
+.atlas-map-view.is-hero-zoom .atlas-pin-face {
+  width: 38px;
+  height: 38px;
+  box-shadow:
+    0 2px 10px #120e0a80,
+    inset 0 0 0 1px #ffffff30,
+    0 0 18px color-mix(in srgb, var(--pin-color, #e8823a) 75%, transparent),
+    0 0 34px color-mix(in srgb, var(--pin-color, #e8823a) 35%, transparent);
+}
+.atlas-map-view.is-hero-zoom .atlas-pin-face svg {
+  width: 20px;
+  height: 20px;
+}
+.atlas-map-view.is-hero-zoom .atlas-cluster-face {
+  width: 36px;
+  height: 36px;
 }
 /* v0.16.0: a cluster is a small glowing icon pin — dark smoked glass
  * with the member's glyph — plus one tiny count badge. The giant pink
@@ -93,11 +170,34 @@
   height: 17px;
   padding: 0 4px;
   border-radius: 999px;
-  background: var(--coral, #ff527f);
-  border: 1.5px solid #0b1018;
-  color: #fff;
+  /* Review (v0.22 baseline): the coral count badge read as a
+   * notification count. Dark smoked glass, ivory text — the count
+   * is information, not an alert. */
+  background: #0b1018e6;
+  border: 1px solid #f6f0e555;
+  color: #f6f0e5;
   font: 700 10px/1 sans-serif;
   text-shadow: 0 1px 2px #0008;
+}
+/* Unnamed "?" pins stay small and quiet — the street-zoom noise
+ * was dozens of full-size black roundels with long name pills.
+ * They never get a label (MapView) and never wear the hero size. */
+.atlas-map-marker.is-unnamed .atlas-pin-face {
+  width: 24px;
+  height: 24px;
+  opacity: 0.85;
+}
+.atlas-map-marker.is-unnamed .atlas-pin-face svg {
+  width: 13px;
+  height: 13px;
+}
+.atlas-map-view.is-hero-zoom .atlas-map-marker.is-unnamed .atlas-pin-face {
+  width: 30px;
+  height: 30px;
+}
+.atlas-map-view.is-hero-zoom .atlas-map-marker.is-unnamed .atlas-pin-face svg {
+  width: 15px;
+  height: 15px;
 }
 /* The glyph inside the blip: white, same stroke everywhere. */
 .atlas-pin-face svg {
@@ -176,7 +276,9 @@
 .county-map-title {
   position: absolute;
   left: 50%;
-  top: 76px;
+  /* Below the slimmed hero (banner 48 + search 44 + chips 38 +
+   * gaps) so the title sits on the map, not under the chips. */
+  top: 158px;
   transform: translateX(-50%);
   z-index: 430;
   pointer-events: none;
@@ -241,6 +343,73 @@
   background: var(--coral, #ff527f);
   color: #fff;
 }
+/* v0.23.0: the reference's right-edge stack — layers and recenter
+ * as round dark-translucent buttons under the chips, zoom as a
+ * pill bottom-right. Phones only: desktop keeps the full
+ * .atlas-map-navigation. The old standalone .atlas-recenter is
+ * gone; the stack is the one recenter control on a phone. */
+.atlas-edge-stack {
+  position: absolute;
+  z-index: 500;
+  right: 12px;
+  top: 158px;
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+}
+.atlas-edge-stack button {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid #f6f0e529;
+  border-radius: 50%;
+  background: #0b1018d9;
+  backdrop-filter: blur(12px);
+  color: #f6f0e5;
+  box-shadow: 0 4px 16px #0009;
+  cursor: pointer;
+}
+.atlas-edge-stack button:hover {
+  background: #19232f;
+  color: #ffb56b;
+}
+.atlas-edge-stack button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.atlas-edge-zoom {
+  position: absolute;
+  z-index: 500;
+  right: 12px;
+  bottom: 76px;
+  display: none;
+  flex-direction: column;
+  gap: 1px;
+  border: 1px solid #f6f0e529;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px #0009;
+}
+.atlas-edge-zoom button {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  padding: 0;
+  color: #f6f0e5;
+  background: #0b1018d9;
+  cursor: pointer;
+}
+.atlas-edge-zoom button:hover {
+  background: #19232f;
+  color: #ffb56b;
+}
+.atlas-edge-zoom button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
 .atlas-map-navigation {
   position: absolute;
   z-index: 500;
@@ -277,35 +446,10 @@
 .atlas-map-navigation button:focus-visible,
 .atlas-map-editor-hint button:focus-visible,
 .atlas-map-error button:focus-visible,
-.atlas-recenter:focus-visible {
+.atlas-edge-stack button:focus-visible,
+.atlas-edge-zoom button:focus-visible {
   outline: 2px solid #fff;
   outline-offset: -4px;
-}
-/* v0.17.0: one floating recenter button, phones only — the zoom
- * buttons are hidden under 599px, so this is the way back to all of
- * Leonida when a camera strands the player zoomed in. Desktop keeps
- * the full nav (which already has ⌖) and never sees this. */
-.atlas-recenter {
-  display: none;
-  position: absolute;
-  z-index: 500;
-  right: 12px;
-  bottom: 76px;
-  width: 48px;
-  height: 48px;
-  place-items: center;
-  border: 1px solid #f6f0e529;
-  border-radius: 50%;
-  background: #0b1018d9;
-  backdrop-filter: blur(12px);
-  color: #f6f0e5;
-  font: 400 25px/1 sans-serif;
-  box-shadow: 0 4px 16px #0009;
-  cursor: pointer;
-}
-.atlas-recenter:disabled {
-  opacity: 0.45;
-  cursor: default;
 }
 .atlas-map-attribution {
   position: absolute;
@@ -345,7 +489,9 @@
   position: absolute;
   z-index: 500;
   left: 12px;
-  top: 176px;
+  /* Just below the slimmed hero (banner 48 + search 44 + chips 38
+   * + gaps ≈ 146px). */
+  top: 154px;
   padding: 5px 8px;
   border-radius: 5px;
   background: #0b1018e6;
@@ -353,7 +499,8 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: min(85%, 440px);
+  /* Clear of the right-edge stack (48px buttons at right:12px). */
+  max-width: min(calc(100% - 80px), 440px);
   font-size: 9px;
   line-height: 1.4;
 }
@@ -468,7 +615,7 @@
   }
   .atlas-map-illustration-note {
     left: 10px;
-    top: 172px;
+    top: 150px;
     font-size: 8px;
   }
   .atlas-map-navigation {
@@ -480,13 +627,33 @@
   }
 }
 @media (max-width: 599px) {
-  /* Pinch-to-zoom replaces permanent zoom buttons on phones — but
-   * the recenter button stays: it is the way back to all of Leonida. */
+  /* Pinch-to-zoom is the primary zoom on phones, but the
+   * reference shows a zoom pill — and a saved camera that strands
+   * the player zoomed in needs a visible way back. The edge stack
+   * (layers + recenter up top, zoom pill bottom-right) is that. */
   .atlas-map-navigation {
     display: none;
   }
-  .atlas-recenter {
-    display: grid;
+  .atlas-edge-stack,
+  .atlas-edge-zoom {
+    display: flex;
+  }
+  /* The empty prompt owns the bottom ~132px of the screen on first
+   * open — the zoom pill lifts above it instead of sitting
+   * half-hidden behind it (caught by the v0.23 walk). */
+  .atlas-map-view.has-prompt .atlas-edge-zoom {
+    bottom: 150px;
+  }
+  /* Phones carry the wrapped two-row chips, so the hero is ~188px
+   * tall: every overlay that sits below it moves down with it. */
+  .atlas-map-illustration-note {
+    top: 196px;
+  }
+  .county-map-title {
+    top: 196px;
+  }
+  .atlas-edge-stack {
+    top: 196px;
   }
   .atlas-app[data-details='true'] .atlas-map-attribution {
     display: none;

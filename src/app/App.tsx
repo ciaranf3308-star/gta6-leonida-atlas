@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
-import { MapPinPlus, Search, X } from 'lucide-react';
+import { Gem, LayoutGrid, MapPin, MapPinPlus, Palmtree, Scan, Search, ShoppingBag, X } from 'lucide-react';
 import { loadCatalogue, markerToPlace } from '../data/catalogue';
 import { filterPlaces } from '../domain/filter';
 import { userTagsMap } from '../domain/user-tags';
@@ -287,18 +287,20 @@ export default function App() {
         ),
     );
   }, []);
-  const chipGroups: { id: string; label: string; layers: string[] | 'all' }[] = [
-    { id: 'all', label: 'All', layers: 'all' },
-    { id: 'locations', label: 'Locations', layers: ['regions', 'community'] },
+  const chipGroups: { id: string; label: string; icon: typeof LayoutGrid; layers: string[] | 'all' }[] = [
+    { id: 'all', label: 'All', icon: LayoutGrid, layers: 'all' },
+    { id: 'locations', label: 'Locations', icon: MapPin, layers: ['regions', 'community'] },
     {
       id: 'activities',
       label: 'Activities',
+      icon: Palmtree,
       layers: ['interiors', 'breakable', 'gyms', 'equipment'],
     },
-    { id: 'stores', label: 'Stores', layers: ['shops-food', 'shops-vehicles', 'shops-weapons', 'shops-style', 'lootable'] },
+    { id: 'stores', label: 'Stores', icon: ShoppingBag, layers: ['shops-food', 'shops-vehicles', 'shops-weapons', 'shops-style', 'lootable'] },
     {
       id: 'collectibles',
       label: 'Collectibles',
+      icon: Gem,
       layers: layers.filter((l) => l.id.startsWith('cards:')).map((l) => l.id),
     },
   ];
@@ -530,6 +532,8 @@ export default function App() {
           boundsFocus={boundsFocus}
           isolation={isolation}
           onExitIsolation={exitIsolation}
+          attributionHidden={navTab === 'map' && !selected && status === 'ready' && showingCount === 0}
+          promptVisible={navTab === 'map' && !selected && status === 'ready' && showingCount === 0}
           editorMode={editorMode}
           preferences={preferences}
           foundIds={new Set(visited.map((v) => v.placeId))}
@@ -589,6 +593,9 @@ export default function App() {
             >
               <Search size={18} />
               <span>Search Leonida…</span>
+              <span className="map-search-expand" aria-hidden="true">
+                <Scan size={16} />
+              </span>
             </button>
             <div className="map-chips" role="group" aria-label="Quick filters">
               {chipGroups.map((chip) => (
@@ -599,6 +606,7 @@ export default function App() {
                   aria-pressed={activeChip === chip.id}
                   onClick={() => showOnlyLayers(chip.layers)}
                 >
+                  <chip.icon size={15} aria-hidden="true" />
                   {chip.label}
                 </button>
               ))}
