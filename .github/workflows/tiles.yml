@@ -1,0 +1,72 @@
+name: Tiles
+
+# Proves the full graded tile pyramid reproduces from a clean
+# checkout. Manual dispatch + weekly — the full render (31,022 tiles)
+# is far too slow for every push; ci.yml runs a --sample smoke test
+# instead. This workflow does NOT deploy anything; it only verifies
+# the pyramid and the content-hash fingerprint.
+#
+# Note: no elevation grid in CI, so these tiles grade WITHOUT
+# hill-shading. They match the shipped pyramid everywhere except the
+# hills, which are flat. That difference is expected and reported by
+# the grade script's warning — geography never changes either way.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 4 * * 0" # Sundays 04:00 UTC
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tiles-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  render:
+    name: Full pyramid render
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      ATLAS_BASE_PATH: "/gta6-leonida-atlas/"
+      GRADE_WORKERS: "4"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+      - name: Activate pnpm
+        run: corepack enable && corepack prepare pnpm@12.18.0 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Set up Python
+        uses: actions/setup-python@a26af69d7c5e3b0f8d29e1e5ee8a3c0d28e2e1f # v6.2.0
+        with:
+          python-version: "3.12"
+      - name: Install tile grade dependencies
+        run: python3 -m pip install numpy pillow
+      - name: Grade full pyramid
+        run: |
+          env -u PYTHONNOUSERSITE python3 scripts/grade-tiles.py --full
+          env -u PYTHONNOUSERSITE python3 scripts/grade-tiles.py --fill-ocean
+          env -u PYTHONNOUSERSITE python3 scripts/grade-tiles.py --check
+      - name: Production build
+        run: pnpm build
+      - name: Fingerprint stability (finalize twice, same cache name)
+        run: |
+          CACHE_A="$(grep -o 'const CACHE="[^"]*"' dist/sw.js)"
+          node scripts/finalize-build.mjs > /dev/null
+          CACHE_B="$(grep -o 'const CACHE="[^"]*"' dist/sw.js)"
+          echo "first run:  $CACHE_A"
+          echo "second run: $CACHE_B"
+          [ "$CACHE_A" = "$CACHE_B" ] || { echo "finalize is not idempotent" >&2; exit 1; }
+      - name: Tile counts in dist
+        run: |
+          for z in 0 1 2 3 4 5 6; do
+            echo "z$z: $(find "dist/assets/gta6-leonida-atlas/tiles/graded/$z" -name '*.jpg' | wc -l) tiles"
+          done

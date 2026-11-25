@@ -27,7 +27,7 @@ jobs:
         with:
           node-version: '22'
       - name: Activate pnpm
-        run: corepack enable && corepack prepare pnpm@11.3.0 --activate
+        run: corepack enable && corepack prepare pnpm@12.18.0 --activate
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
       - run: pnpm lint
@@ -40,7 +40,7 @@ jobs:
 
   publish:
     needs: validate
-    if: github.repository == 'navanem/gta6-leonida-atlas'
+    if: github.repository == 'ciaranf3308-star/gta6-leonida-atlas'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:

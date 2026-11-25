@@ -17,8 +17,9 @@ By participating, you agree to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 Requirements: Node.js 22.13+ within the 22.x line, 24.x, or 26+ and pnpm 10 or newer.
 
 ```sh
-git clone https://github.com/navanem/gta6-leonida-atlas.git
+git clone https://github.com/ciaranf3308-star/gta6-leonida-atlas.git
 cd gta6-leonida-atlas
+git checkout spoiler-free-pwa
 corepack enable
 pnpm install --frozen-lockfile
 pnpm dev

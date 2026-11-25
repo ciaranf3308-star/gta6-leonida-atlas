@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseReleaseNotes, publishRelease } from '../../scripts/publish-release.mjs';
 
-const repository = 'navanem/gta6-leonida-atlas';
+const repository = 'ciaranf3308-star/gta6-leonida-atlas';
 const tag = 'v0.6.1';
 const notes =
   '# Releases\n\n## v0.6.1 — 2026-09-05\n\nCurrent fixes.\n\n### Details\n\nCurrent detail.\n\n## v0.6.0\n\nAccount workspaces.\n\n## v0.5.0\n\nStandalone local map.\n';

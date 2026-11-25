@@ -100,18 +100,19 @@ function About() {
       <Section title="Where ViceWire is used" id="deployments">
         <ul>
           <li>
-            <a href="https://gta6state.com/">GTA6State</a> hosts the{" "}
-            <a href="https://gta6state.com/gta6-leonida-atlas/">
-              interactive atlas
+            <a href="https://ciaranf3308-star.github.io/gta6-leonida-atlas/">
+              GitHub Pages
             </a>{" "}
-            alongside its GTA VI guides and location database.
+            hosts this build, deployed from the{" "}
+            <a href="https://github.com/ciaranf3308-star/gta6-leonida-atlas">
+              VICEWIRE repository
+            </a>{" "}
+            (<code>spoiler-free-pwa</code> branch).
           </li>
           <li>
-            <a href="https://zonepedia.com/">Zonepedia</a> hosts a{" "}
-            <a href="https://atlas.zonepedia.com/">
-              standalone version of the atlas
-            </a>
-            .
+            <a href="https://gta6state.com/">GTA6State</a> and{" "}
+            <a href="https://zonepedia.com/">Zonepedia</a> host the
+            upstream Leonida Atlas — not this fork.
           </li>
         </ul>
       </Section>
@@ -122,7 +123,7 @@ function About() {
             <li key={release.version} className="project-release-card">
               <div className="project-release-meta">
                 <a
-                  href={`https://github.com/navanem/gta6-leonida-atlas/releases/tag/${release.version}`}
+                  href={`https://github.com/ciaranf3308-star/gta6-leonida-atlas/releases/tag/${release.version}`}
                   target="_blank"
                   rel="noreferrer"
                 >

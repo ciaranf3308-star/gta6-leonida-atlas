@@ -1,5 +1,10 @@
 node_modules/
 dist/
+build/
+# Generated tile pyramid — rebuilt from tracked tiles-source/day/ by
+# scripts/grade-tiles.py (see docs/BUILD.md). Never commit 197 MB of
+# derived JPEGs; the fingerprint in finalize-build.mjs hashes content.
+public/assets/gta6-leonida-atlas/tiles/graded/
 .astro/
 .pnpm-store/
 .vite/

@@ -36,7 +36,12 @@ async function fixture() {
   const directory = await mkdtemp(join(tmpdir(), "atlas-security-"));
   temporaryDirectories.push(directory);
   const files: Record<string, string> = {
-    "index.html": '<!doctype html><div id="root"></div>',
+    // A real <head> with a title: finalize SSR-injects its robots/og
+    // block before </head>, and the stability test must prove a second
+    // finalize over its own output does not inject it twice (v0.30.0
+    // found three copies accumulating in dist/index.html).
+    "index.html":
+      '<!doctype html><html><head><title>Fixture</title><meta name="description" content="fixture"></head><body><div id="root"></div></body></html>',
     "favicon.svg": "<svg/>",
     "manifest.webmanifest": "{}",
     "icons/icon-192.png": "",
@@ -70,7 +75,20 @@ function finalize(directory: string, id = "") {
       VITE_ANALYTICS_PARENT_ORIGIN: origin,
     },
     stdio: "pipe",
-    timeout: 30_000,
+    // finalize spins up a Vite SSR server: on a loaded box that takes
+    // far longer than the old 30 s budget, and the timeout fired as a
+    // spawnSync ETIMEDOUT the suite then reported as a failure. 120 s
+    // is the budget for the work, not a pass for hanging.
+    // The child's output is diagnostics, not the assertion (the tests
+    // assert on the files finalize writes), so the capture buffer is
+    // generous: Vite's file-watcher can spam stderr past the 1 MB
+    // default (ENOSPC lines, one per unwatched tile file — measured
+    // 887 KB on one run), which throws spawnSync ENOBUFS and fails
+    // the test for a reason that has nothing to do with the build.
+    // finalize itself ignores the pyramids (see scripts/finalize-
+    // build.mjs); this is belt and braces for a loaded box.
+    maxBuffer: 16 * 1024 * 1024,
+    timeout: 120_000,
   });
 }
 
@@ -280,9 +298,12 @@ describe("generated service worker privacy and availability", () => {
   it("answers a missing tile with the ocean tile instead of a 404", async () => {
     // v0.20.2: the retina layer asks for one tile beyond the grid edge
     // (Leaflet's bounds check counts edge-touching tiles as valid), so
-    // a session logs a console error per missing tile. A missing tile
-    // is ocean by definition — the pyramid only draws land — so the
-    // worker serves ocean.jpg and caches it under the tile URL.
+    // a session logs a console error per missing tile. A tile the
+    // pyramid never drew is genuine ocean (v0.30.0: the worker checks
+    // the tile manifest — only never-drawn or pure-sea tiles get the
+    // ocean answer; a failed LAND tile is handed back as the failure
+    // instead, see service-worker-tiles.test.ts), so the worker serves
+    // ocean.jpg and caches it under the tile URL.
     const harness = workerHarness(worker, {
       fetchResponse: (url) =>
         url.endsWith("/tiles/ocean.jpg")
@@ -321,7 +342,65 @@ describe("generated service worker privacy and availability", () => {
     const afterCache = after.match(/const CACHE="([^"]+)"/)?.[1];
     expect(afterCache).toBeTruthy();
     expect(afterCache).not.toBe(beforeCache);
-  }, 60_000);
+  }, 120_000);
+
+  it("changes the cache when tile bytes change at the SAME size", async () => {
+    // v0.30.0 (audit finding): the v0.20.2–v0.29 fingerprint hashed
+    // tile paths + SIZES only, so a re-render that changed bytes
+    // without changing a file's size left the cache name untouched
+    // and phones kept serving stale tiles. The fingerprint is now
+    // content: same length, different bytes must still move it.
+    const directory = await fixture();
+    const tile = join(
+      directory,
+      "dist/assets/gta6-leonida-atlas/tiles/graded/5/5,57,69.jpg",
+    );
+    await mkdir(dirname(tile), { recursive: true });
+    await writeFile(tile, "tile-bytes-v1");
+    finalize(directory);
+    const before = await readFile(join(directory, "dist/sw.js"), "utf8");
+    const beforeCache = before.match(/const CACHE="([^"]+)"/)?.[1];
+    expect(beforeCache).toBeTruthy();
+    await writeFile(tile, "tile-bytes-v2"); // same 13 bytes, new content
+    finalize(directory);
+    const after = await readFile(join(directory, "dist/sw.js"), "utf8");
+    const afterCache = after.match(/const CACHE="([^"]+)"/)?.[1];
+    expect(afterCache).toBeTruthy();
+    expect(afterCache).not.toBe(beforeCache);
+  }, 120_000);
+
+  it("keeps the cache when nothing changed", async () => {
+    // Content hashing must be deterministic: rebuilding the same
+    // bytes must not bust every phone's cache for no reason. The
+    // SSR step is part of that: finalize reads dist/index.html, and
+    // before v0.30.0 each run appended another robots/og block to
+    // it, so the hash — and the cache name — moved on every build.
+    const directory = await fixture();
+    const tile = join(
+      directory,
+      "dist/assets/gta6-leonida-atlas/tiles/graded/5/5,57,69.jpg",
+    );
+    await mkdir(dirname(tile), { recursive: true });
+    await writeFile(tile, "tile-bytes-v1");
+    finalize(directory);
+    const before = await readFile(join(directory, "dist/sw.js"), "utf8");
+    const beforeCache = before.match(/const CACHE="([^"]+)"/)?.[1];
+    expect(beforeCache).toBeTruthy();
+    const beforeHtml = await readFile(
+      join(directory, "dist/index.html"),
+      "utf8",
+    );
+    expect(beforeHtml.match(/<meta property="og:title"/g)).toHaveLength(1);
+    finalize(directory);
+    const after = await readFile(join(directory, "dist/sw.js"), "utf8");
+    const afterCache = after.match(/const CACHE="([^"]+)"/)?.[1];
+    expect(afterCache).toBe(beforeCache);
+    const afterHtml = await readFile(
+      join(directory, "dist/index.html"),
+      "utf8",
+    );
+    expect(afterHtml).toBe(beforeHtml);
+  }, 120_000);
 
   it("does NOT change the cache when a file appears at a dead tile path", async () => {
     // v0.28: the ViceWire pyramids, illustrated and enhanced are
@@ -344,7 +423,7 @@ describe("generated service worker privacy and availability", () => {
     const after = await readFile(join(directory, "dist/sw.js"), "utf8");
     const afterCache = after.match(/const CACHE="([^"]+)"/)?.[1];
     expect(afterCache).toBe(beforeCache);
-  }, 60_000);
+  }, 120_000);
 });
 
 function runBootstrap(

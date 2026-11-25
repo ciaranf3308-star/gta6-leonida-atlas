@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const RELEASE_REPOSITORY = 'navanem/gta6-leonida-atlas';
+const RELEASE_REPOSITORY = 'ciaranf3308-star/gta6-leonida-atlas';
 
 function version(tag) {
   const match =

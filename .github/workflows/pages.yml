@@ -23,7 +23,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 120
     env:
       VITE_ANALYTICS_ID: ""
       ATLAS_BASE_PATH: "/gta6-leonida-atlas/"
@@ -37,7 +37,7 @@ jobs:
         with:
           node-version: "22"
       - name: Activate pnpm
-        run: corepack enable && corepack prepare pnpm@11.3.0 --activate
+        run: corepack enable && corepack prepare pnpm@12.18.0 --activate
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Check types
@@ -48,6 +48,17 @@ jobs:
         run: pnpm test:unit
       - name: Generate PWA icons
         run: node scripts/generate-pwa-icons.mjs
+      - name: Grade tile pyramid
+        # v0.30.0: without this the deploy ships a tile-less site —
+        # the graded pyramid is generated, not tracked. No elevation
+        # grid in CI, so these tiles grade without hill-shading (the
+        # hills are flat; geography unchanged). Full render takes
+        # most of the 120 min budget.
+        run: |
+          python3 -m pip install numpy pillow
+          env -u PYTHONNOUSERSITE python3 scripts/grade-tiles.py --full
+          env -u PYTHONNOUSERSITE python3 scripts/grade-tiles.py --fill-ocean
+          env -u PYTHONNOUSERSITE python3 scripts/grade-tiles.py --check
       - name: Build
         run: pnpm build
       - name: Upload Pages artifact

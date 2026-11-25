@@ -88,7 +88,7 @@ parameters, no RNG). Re-running the script over the pyramid is a
 no-op for finished tiles unless --force.
 
 Usage:
-  python3 scripts/grade-tiles.py --sample      # a handful of tiles -> /tmp/graded-sample/
+  python3 scripts/grade-tiles.py --sample      # a handful of tiles -> build/graded-sample/
   python3 scripts/grade-tiles.py --full        # the whole pyramid
   python3 scripts/grade-tiles.py --fill-ocean  # the 505 missing y=0 ocean rows
   python3 scripts/grade-tiles.py --check       # verify counts + determinism
@@ -105,9 +105,14 @@ from PIL import Image
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "tiles-source/day")
 DST = os.path.join(ROOT, "public/assets/gta6-leonida-atlas/tiles/graded")
-SAMPLE_OUT = "/tmp/graded-sample"
+# Sample output lives under the repo (build/, gitignored), not /tmp:
+# /tmp is cleaned out from under long runs on this box, and a sample
+# run must survive long enough to be eye-checked.
+SAMPLE_OUT = os.path.join(ROOT, "build/graded-sample")
 SEA_MASK = os.path.join(ROOT, "scripts/sea-mask-z2.png")
-# Elevation grid (GTADB, leak-derived — never commit/redistribute).
+# Elevation grid (GTADB elevation.bin — licence-grey per GTADB's own
+# FAQ, Aug 2026: "remodeled from the ground up… mostly correct,
+# shouldn't be treated as 100% accurate". Never commit/redistribute).
 # Read from the research dir or VICEWIRE_ELEVATION; if absent the
 # grade still runs, just without hill-shading (warned once per
 # process) — same fallback as render-vicewire.py.

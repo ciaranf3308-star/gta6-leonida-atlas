@@ -22,6 +22,7 @@ const escapeHtml = (value: string): string =>
 describe("Leonida Atlas release history", () => {
   it("retains every release since v0.5.0 in newest-first order across the changelog and documentation", async () => {
     expect(LEONIDA_ATLAS_RELEASES.map((release) => release.version)).toEqual([
+      "v0.30.0",
       "v0.29.0",
       "v0.28.0",
       "v0.27.0",
@@ -54,7 +55,7 @@ describe("Leonida Atlas release history", () => {
       "v0.5.0",
     ]);
     expect(latestLeonidaAtlasRelease).toMatchObject({
-      version: "v0.29.0",
+      version: "v0.30.0",
       date: "2026-11-25",
       status: "public",
     });
@@ -90,7 +91,7 @@ describe("Leonida Atlas release history", () => {
     expect(markup).toContain("Release history");
     for (const release of LEONIDA_ATLAS_RELEASES) {
       expect(markup).toContain(
-        `https://github.com/navanem/gta6-leonida-atlas/releases/tag/${release.version}`,
+        `https://github.com/ciaranf3308-star/gta6-leonida-atlas/releases/tag/${release.version}`,
       );
       expect(markup).toContain(escapeHtml(release.title));
       expect(markup).toContain(escapeHtml(release.summary));

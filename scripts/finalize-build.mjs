@@ -1,5 +1,5 @@
 import { fileURLToPath } from "node:url";
-import { readFile, writeFile, readdir, mkdir, stat } from "node:fs/promises";
+import { readFile, writeFile, readdir, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
 import { createServer, loadEnv } from "vite";
@@ -130,7 +130,20 @@ function documentHtml({ metadata, markup }) {
   const title = escapeHtml(metadata.title);
   const description = escapeHtml(metadata.description);
   const canonical = metadata.canonical && escapeHtml(metadata.canonical);
-  return template
+  // Idempotency (v0.30.0): finalize READS dist/index.html, which a
+  // previous finalize already SSR-rendered — so without stripping,
+  // every run appended another robots/og block before </head> and
+  // the root markup went stale (the literal '<div id="root"></div>'
+  // replace never fires again once markup is in place). The injected
+  // head block and root markup are wrapped in sentinels and stripped
+  // before re-injection, so re-running finalize over its own output
+  // reproduces byte-identical files and the content hash (and the SW
+  // cache name) stays put when nothing changed. Found because two
+  // consecutive finalize runs produced different cache names.
+  const stripped = template
+    .replace(/<!-- vicewire-ssr-head -->[\s\S]*?<!-- \/vicewire-ssr-head -->\n?/g, "")
+    .replace(/<!-- vicewire-ssr-root -->[\s\S]*?<!-- \/vicewire-ssr-root -->/g, "");
+  return stripped
     .replace(/<title>.*?<\/title>/s, `<title>${title}</title>`)
     .replace(
       /<meta name="description"[^>]*>/,
@@ -138,7 +151,8 @@ function documentHtml({ metadata, markup }) {
     )
     .replace(
       "</head>",
-      `<meta name="robots" content="${metadata.robots}">
+      `<!-- vicewire-ssr-head -->
+<meta name="robots" content="${metadata.robots}">
 <meta property="og:type" content="website">
 <meta property="og:title" content="${title}">
 <meta property="og:description" content="${description}">
@@ -151,9 +165,13 @@ ${
 <meta property="og:url" content="${canonical}">`
     : ""
 }
+<!-- /vicewire-ssr-head -->
 </head>`,
     )
-    .replace('<div id="root"></div>', `<div id="root">${markup}</div>`);
+    .replace(
+      '<div id="root"></div>',
+      `<div id="root"><!-- vicewire-ssr-root -->${markup}<!-- /vicewire-ssr-root --></div>`,
+    );
 }
 // Use the existing project components as the initial HTML; no second editorial copy.
 // The interactive app still mounts normally, including private account extensions.
@@ -169,7 +187,12 @@ const renderer = await createServer({
     // per file to stderr (4+ MB), which overflowed the calling test's
     // exec buffer. This server only SSR-renders static pages; it never
     // needs to watch static assets.
-    watch: { ignored: ["**/tiles/**"] },
+    // v0.30.0: the source pyramid moved to tiles-source/day/ — the
+    // segment is "tiles-source", not "tiles", so the old pattern did
+    // not match it and the spam came back (measured 887 KB / 5,569
+    // ENOSPC lines on one run, right at the test's 1 MB exec buffer).
+    // Both pyramids are ignored now.
+    watch: { ignored: ["**/tiles/**", "**/tiles-source/**"] },
   },
   appType: "custom",
 });
@@ -229,15 +252,17 @@ for (const url of [...precache, ...threeDimensionalAssets]) {
   if (url !== base)
     contentHash.update(await readFile(join(outDir, url.slice(base.length))));
 }
-// Tile fingerprint (v0.20.2): the cache name MUST change when tile bytes
-// change, even when no app code changed. v0.20 re-rendered all 31,022
-// tiles at the same filenames and the content hash above — which only
-// covers the app shell and precached assets — did not move, so the old
-// cache (and its stale tiles) survived. The fingerprint is the list of
-// tile paths + sizes for the live pyramid (graded z0-6): cheap (stat
-// only, no content reads) and it moves on any tile re-render. A tile
-// re-render must ALSO change the tile path (see gtadb-tiles.ts) —
-// both layers, not one hope.
+// Tile manifest (v0.30.0): which tiles the pyramid actually drew, and
+// which of them are pure sea — so the worker can tell a failed LAND
+// tile (never ocean) from genuine water. A tile is "ocean" when its
+// bytes are identical to ocean.jpg: the 505 fill tiles are all the
+// same graded pure-sea image, and ocean.jpg is that same image, so
+// the check is exact, not a colour guess. The manifest is a per-zoom
+// bitset over the full grid (3·2^z wide × 4·2^z tall): "p" = present,
+// "o" = ocean, hex-encoded so the worker needs no atob. It is folded
+// into the content hash with the tile bytes, so a re-render moves the
+// cache name. The ocean.jpg fallback is hashed too: it is served for
+// genuine ocean and cached under those tiles' URLs.
 // v0.28: the fingerprint covers tiles/graded/ only. The ViceWire
 // pyramids (v1/v2/v3), illustrated and enhanced are no longer on
 // disk, so they are no longer fingerprinted — a future re-render gets
@@ -246,22 +271,50 @@ const gradedDir = join(
   outDir,
   "assets/gta6-leonida-atlas/tiles/graded",
 );
+let oceanBytes = null;
 try {
-  for (const [dir, topZoom, label] of [
-    [gradedDir, 6, "graded"],
-  ]) {
-    for (let zoom = 0; zoom <= topZoom; zoom++) {
-      let names;
-      try {
-        names = (await readdir(join(dir, String(zoom)))).sort();
-      } catch {
-        continue; // No tiles at this zoom in this build — not an error.
-      }
-      for (const name of names) {
-        const { size } = await stat(join(dir, String(zoom), name));
-        contentHash.update(`${label}/${zoom}/${name}:${size}\n`);
-      }
+  oceanBytes = await readFile(
+    join(outDir, "assets/gta6-leonida-atlas/tiles/ocean.jpg"),
+  );
+  contentHash.update("ocean.jpg:");
+  contentHash.update(oceanBytes);
+  contentHash.update("\n");
+} catch {
+  // No ocean fallback in this build — not an error.
+}
+const tileManifest = {};
+try {
+  for (let zoom = 0; zoom <= 6; zoom++) {
+    let names;
+    try {
+      names = (await readdir(join(gradedDir, String(zoom)))).sort();
+    } catch {
+      continue; // No tiles at this zoom in this build — not an error.
     }
+    const width = 3 * (1 << zoom);
+    const height = 4 * (1 << zoom);
+    const present = new Uint8Array(Math.ceil((width * height) / 8));
+    const ocean = new Uint8Array(Math.ceil((width * height) / 8));
+    for (const name of names) {
+      const bytes = await readFile(join(gradedDir, String(zoom), name));
+      contentHash.update(`graded/${zoom}/${name}:`);
+      contentHash.update(bytes);
+      contentHash.update("\n");
+      const parts = /^(\d+),(\d+),(\d+)\.jpg$/.exec(name);
+      if (!parts) continue;
+      const tileZoom = Number(parts[1]);
+      const tileY = Number(parts[2]);
+      const tileX = Number(parts[3]);
+      if (tileZoom !== zoom || tileY >= height || tileX >= width) continue;
+      const bit = tileY * width + tileX;
+      present[bit >> 3] |= 1 << (bit & 7);
+      if (oceanBytes !== null && bytes.equals(oceanBytes))
+        ocean[bit >> 3] |= 1 << (bit & 7);
+    }
+    tileManifest[String(zoom)] = {
+      p: Buffer.from(present).toString("hex"),
+      o: Buffer.from(ocean).toString("hex"),
+    };
   }
 } catch {
   // No tile pyramids in this build (older checkouts) — the hash
@@ -278,6 +331,41 @@ const worker = `// Generated per release; never cache external analytics, APIs, 
 const CACHE=${JSON.stringify(prefix + revision)}, PREFIX=${JSON.stringify(prefix)}, BASE=${JSON.stringify(base)};
 const CORE=${JSON.stringify(precache)};
 const APP_FILES=CORE.concat(${JSON.stringify(threeDimensionalAssets)});
+// Tile manifest (v0.30.0): per-zoom bitsets over the full grid
+// (3·2^z wide × 4·2^z tall), hex-encoded — "p" = the pyramid drew
+// this tile, "o" = the tile is pure sea (byte-identical to
+// ocean.jpg). Decoded lazily, one zoom at a time.
+const TILE_MANIFEST=${JSON.stringify(tileManifest)};
+const TILE_DATA={};
+function tileHexBytes(hex){const a=new Uint8Array(hex.length/2);for(let i=0;i<a.length;i++)a[i]=parseInt(hex.substr(i*2,2),16);return a;}
+function tileData(z){
+  if(TILE_DATA[z]!==undefined)return TILE_DATA[z];
+  const entry=TILE_MANIFEST[String(z)];
+  if(!entry){TILE_DATA[z]=null;return null;}
+  const data={present:tileHexBytes(entry.p),ocean:tileHexBytes(entry.o)};
+  TILE_DATA[z]=data;
+  return data;
+}
+function tileBit(arr,z,y,x){
+  const w=3*(1<<z),h=4*(1<<z);
+  if(x<0||y<0||x>=w||y>=h)return false;
+  const i=y*w+x;
+  return ((arr[i>>3]>>(i&7))&1)===1;
+}
+// Genuine ocean, by the pyramid's own marking: a tile the pyramid
+// never drew (open sea beyond the grid — Leaflet asks for one tile
+// past the edge), or a tile whose bytes are the pyramid's pure-sea
+// image (the 505 fill tiles). Anything else is land-or-coast: a
+// failed fetch for it must NEVER be answered with ocean (v0.24 P0:
+// max zoom on land rendered ocean because tile zoom 7 404'd and the
+// worker silently answered ocean.jpg).
+function tileIsOcean(z,y,x){
+  const data=tileData(z);
+  if(!data)return true;
+  if(tileBit(data.ocean,z,y,x))return true;
+  if(!tileBit(data.present,z,y,x))return true;
+  return false;
+}
 // Optional-asset budget (v0.29, measured): a real session loads ~600
 // distinct tiles in two minutes of driving, and the old 1500 cap
 // evicted the oldest tile on every put past it — tiles seen five
@@ -314,26 +402,35 @@ self.addEventListener('fetch',event=>{
   if(navigation){event.respondWith(fetch(request).catch(()=>caches.match(BASE+'index.html')));return;}
   event.respondWith(caches.open(CACHE).then(async cache=>{
     const cached=await cache.match(request);if(cached)return cached;
-    const response=await fetch(request);
-    // A missing tile is ocean by definition (v0.20.2): the GTADB
-    // pyramid only draws land, and Leaflet asks for one tile beyond
-    // the grid edge (its bounds check counts edge-touching tiles as
-    // valid — worse with 128px retina tiles). Answer with the ocean
-    // tile instead of the 404, so the image loads cleanly, no console
-    // error is logged, and the tile is cached as ocean for offline.
-    if(!response.ok&&url.pathname.startsWith(BASE+'assets/gta6-leonida-atlas/tiles/')&&/\\.jpg$/.test(url.pathname)){
-      const oceanUrl=new URL(BASE+'assets/gta6-leonida-atlas/tiles/ocean.jpg',self.location.origin).href;
-      let ocean=await cache.match(oceanUrl);
-      if(!ocean||!ocean.ok){
-        const fetched=await fetch(oceanUrl);
-        if(fetched.ok){try{await cache.put(oceanUrl,fetched.clone());}catch{}ocean=fetched;}
+    const isTile=url.pathname.startsWith(BASE+'assets/gta6-leonida-atlas/tiles/graded/')&&/\\.jpg$/.test(url.pathname);
+    let response=null;
+    try{response=await fetch(request);}catch{response=null;}
+    if(isTile&&(!response||!response.ok)){
+      // A failed tile is ocean ONLY when the pyramid marks it as
+      // water (tileIsOcean): never drawn, or pure sea. A failed LAND
+      // tile is handed back as the failure it is — never ocean, never
+      // cached — so Leaflet fires tileerror and shows the error tile
+      // instead of painting water over land (v0.24 P0), and the next
+      // pan retries it. The ocean tile itself is cached as ocean for
+      // offline, as before.
+      const m=url.pathname.match(/\\/graded\\/(\\d+)\\/(\\d+),(-?\\d+),(-?\\d+)\\.jpg$/);
+      const z=m?Number(m[1]):-1,y=m?Number(m[3]):-1,x=m?Number(m[4]):-1;
+      if(z>=0&&z<=6&&tileIsOcean(z,y,x)){
+        const oceanUrl=new URL(BASE+'assets/gta6-leonida-atlas/tiles/ocean.jpg',self.location.origin).href;
+        let ocean=await cache.match(oceanUrl);
+        if(!ocean||!ocean.ok){
+          const fetched=await fetch(oceanUrl).catch(()=>null);
+          if(fetched&&fetched.ok){try{await cache.put(oceanUrl,fetched.clone());}catch{}ocean=fetched;}
+        }
+        if(ocean&&ocean.ok){
+          try{await cache.put(request,ocean.clone());}catch{}
+          return ocean;
+        }
       }
-      if(ocean&&ocean.ok){
-        try{await cache.put(request,ocean.clone());}catch{}
-        return ocean;
-      }
+      if(response)return response;
+      throw new Error('Tile unavailable');
     }
-    if(response.ok&&response.type==='basic'&&!/private|no-store/i.test(response.headers.get('cache-control')||'')){
+    if(response&&response.ok&&response.type==='basic'&&!/private|no-store/i.test(response.headers.get('cache-control')||'')){
       // Bound optional asset caching (3D assets and map tiles visited);
       // the app shell and public data remain pinned. Eviction is
       // bulk oldest-first (see countOptional above); the per-put scan
@@ -349,7 +446,8 @@ self.addEventListener('fetch',event=>{
         if(publicOptional&&!APP_FILES.includes(url.pathname))optionalCount++;
       } catch { /* Cache quota must not discard a successful network response. */ }
     }
-    return response;
+    if(response)return response;
+    throw new Error('Asset unavailable');
   }).catch(()=>fetch(request)));
 });
 `;

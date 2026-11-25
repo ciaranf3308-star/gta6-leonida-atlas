@@ -1,16 +1,17 @@
 {
   "name": "gta6-leonida-atlas",
-  "version": "0.29.0",
+  "version": "0.30.0",
+  "packageManager": "pnpm@12.18.0",
   "private": false,
   "type": "module",
   "license": "AGPL-3.0-only",
-  "description": "Standalone local-first community map and optional 3D explorer for Leonida.",
+  "description": "VICEWIRE — spoiler-free, local-first GTA VI Leonida map. Fork of Leonida Atlas; the real GTADB in-game map, colour-graded, with everything off by default.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/navanem/gta6-leonida-atlas.git"
+    "url": "git+https://github.com/ciaranf3308-star/gta6-leonida-atlas.git"
   },
   "bugs": {
-    "url": "https://github.com/navanem/gta6-leonida-atlas/issues"
+    "url": "https://github.com/ciaranf3308-star/gta6-leonida-atlas/issues"
   },
   "scripts": {
     "dev": "vite --host 127.0.0.1",
@@ -26,6 +27,8 @@
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
     "build:basemap": "node scripts/build-leonida-atlas-basemap.mjs",
+    "build:clean": "bash scripts/build-from-clean.sh",
+    "tiles:check": "python3 scripts/grade-tiles.py --check",
     "test:fork": "node scripts/test-fork.mjs"
   },
   "dependencies": {
@@ -50,8 +53,10 @@
     "@vitejs/plugin-react": "6.1.2",
     "eslint": "10.13.0",
     "fake-indexeddb": "^6.2.6",
+    "leaflet.markercluster": "2.0.0-beta.2",
     "prettier": "3.9.10",
     "sharp": "^0.35.5",
+    "supercluster": "8.0.1",
     "tsx": "4.23.15",
     "typescript": "6.0.3",
     "typescript-eslint": "8.72.0",

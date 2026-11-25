@@ -12,8 +12,18 @@ Some data and cartographic source material used by GTA6 Leonida Atlas originates
 
 - Source: https://github.com/rolux/gtadb.org
 - Map: https://map.gtadb.org
-- Pinned landmark catalogue revision: `5c1d69ff864623d181da5457afaacd00b623e1a4`
-- Pinned Yanis v16 basemap revision: `7c3f8c295d64254e6b6d269b77c6f84fc4339f9c`
+- Pinned landmark catalogue revision: `d406fea099e1df2bce42fd6b87eed04bce646629`
+- Basemap: the GTADB In-Game Day tile pyramid (`tiles-source/day/`,
+  tracked in git), served through a fixed per-pixel colour grade
+  (`scripts/grade-tiles.py`, v0.28.0). Geography locked 1:1 to the
+  source tiles. The Yanis v16 basemap revision
+  (`7c3f8c295d64254e6b6d269b77c6f84fc4339f9c`) is retained only for
+  the 3D explorer's reconstruction, not the 2D basemap.
+- Elevation grid (`elevation.bin`, hill-shading only): licence-grey
+  per GTADB's own FAQ (Aug 2026) — "remodeled from the ground up…
+  mostly correct, shouldn't be treated as 100% accurate". Used for
+  hill-shading gradients only, at render time, never committed,
+  vendored, or bundled. Absolute heights unverified.
 - Data license: Creative Commons Attribution 4.0 International (`CC BY 4.0`)
 - License URL: https://creativecommons.org/licenses/by/4.0/
 - Attribution: `gtadb.org` and contributors

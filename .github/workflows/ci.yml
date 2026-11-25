@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - spoiler-free-pwa
   pull_request:
   workflow_dispatch:
 
@@ -32,17 +33,34 @@ jobs:
         with:
           node-version: "22"
       - name: Activate pnpm
-        run: corepack enable && corepack prepare pnpm@11.3.0 --activate
+        # Pinned to the version in package.json `packageManager` — the
+        # lockfile was generated with it. Do not drift this silently.
+        run: corepack enable && corepack prepare pnpm@12.18.0 --activate
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Check types
         run: pnpm typecheck
       - name: Lint
         run: pnpm lint
+      # Suite-flake mitigation (v0.30.0): the atlas-security tests shell
+      # out to finalize-build.mjs, which spins up a Vite SSR server.
+      # On a loaded box that took longer than the old 30 s exec
+      # timeout and flaked as spawnSync ETIMEDOUT. The helper now
+      # allows 120 s; CI runners have 4 vCPUs, so the suite runs at
+      # default parallelism. If this flakes again, look at the
+      # finalize timeout first — do not silence the failure.
       - name: Run unit tests
         run: pnpm test:unit
       - name: Build
         run: pnpm build
+      - name: Install tile grade dependencies
+        run: python3 -m pip install --user numpy pillow
+      - name: Tile grade smoke test
+        # Proves the tile pipeline runs in CI (sample render from the
+        # tracked day tiles). No elevation grid in CI, so the sample
+        # grades without hill-shading — the warning is expected. The
+        # full pyramid render lives in tiles.yml.
+        run: env -u PYTHONNOUSERSITE python3 scripts/grade-tiles.py --sample
       - name: Install browser test engines
         run: pnpm exec playwright install --with-deps chromium webkit
       - name: Run browser tests
