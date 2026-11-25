@@ -19,7 +19,8 @@ import {
   GTADB_TILE_BOUNDS,
   gtadbTileUrl,
 } from './gtadb-tiles';
-import { buildSpatialIndex, clusterPlaces, querySpatialIndex, selectHeroPlaces, type PlaceCluster } from './spatial';
+import { buildSpatialIndex, clusterPlaces, querySpatialIndex, selectHeroPlaces, type PlaceCluster, type SpatialIndex } from './spatial';
+import { startTilePrefetch } from './tile-prefetch';
 import {
   iconKeyForAiRecord,
   iconKeyForPlace,
@@ -162,6 +163,19 @@ export default function MapView(props: MapViewProps) {
     animate,
   });
   const index = useMemo(() => buildSpatialIndex(props.places), [props.places]);
+  // v0.29.0: memo for the hero/cluster grouping step of renderMarkers.
+  // A layer toggle re-runs the marker effect, and the grouping (hero
+  // sort over ~1,000 named places at island zoom, cluster passes at
+  // street zoom) was recomputed even when the camera and the visible
+  // layers had not moved — toggling a layer off and back on at the
+  // same camera is the common case. Keyed on everything the grouping
+  // can depend on; the spatial index identity pins the place set, so
+  // a catalogue reload or a user marker can never read stale groups.
+  // Marker DOM creation still runs every render (icons, labels and
+  // chrome clamp are live per render) — only the grouping is cached.
+  const groupCache = useRef(
+    new Map<string, { index: SpatialIndex; groups: PlaceCluster[] }>(),
+  );
 
   useEffect(() => {
     callbacks.current = props;
@@ -270,11 +284,21 @@ export default function MapView(props: MapViewProps) {
         bounds: leafletBounds(GTADB_TILE_BOUNDS),
         errorTileUrl: `${base.endsWith('/') ? base : `${base}/`}assets/gta6-leonida-atlas/tiles/ocean.jpg`,
         noWrap: true,
-        keepBuffer: 1,
+        // v0.29.0: two rings of buffered tiles around the viewport
+        // instead of one — a pan by a screenful stays inside tiles
+        // Leaflet already holds, so the new edge arrives from the
+        // service-worker cache instead of the network. Costs ~2x the
+        // tiles per view; the SW cache (6000 entries) holds them.
+        keepBuffer: 2,
       });
       tiles.getTileUrl = (coords: L.Coords) =>
         gtadbTileUrl(base, coords.x, coords.y, coords.z + (retina ? 1 : 0));
       tiles.addTo(activeMap);
+      // v0.29.0: warm the tile cache on idle — low-zoom island plus
+      // the neighbours and child/parent zooms of the current view —
+      // so the next pan or zoom step reads from cache. Stopped when
+      // this map instance is torn down.
+      const prefetch = startTilePrefetch(activeMap, tiles, base);
       tiles.on('tileerror', () => {
         // Missing tiles are ocean the source never drew; the ocean tile
         // above covers them. Only a wholesale failure is worth surfacing.
@@ -333,6 +357,7 @@ export default function MapView(props: MapViewProps) {
       reportViewport();
       setMap(activeMap);
       return () => {
+        prefetch.stop();
         observer?.disconnect();
         cancelAnimationFrame(resizeFrame);
         tiles.off();
@@ -383,19 +408,51 @@ export default function MapView(props: MapViewProps) {
       // small icon pins, no clustering, no counts. Zooming in brings
       // the full layers back, clustered, capped at 120 DOM markers.
       // That cap is the lag fix: 3,754 places never become 3,754 pins.
+      // v0.29.0: the grouping step is memoized (see groupCache above)
+      // — a layer toggle at a stationary camera reuses the groups
+      // instead of re-sorting / re-clustering the same visible set.
       const heroMode = currentZoom <= -2.5;
-      const groups = heroMode
-        ? selectHeroPlaces(visible).map((place) => ({
-            id: place.id,
-            position: place.position,
-            places: [place],
-          }))
-        : clusterPlaces(visible, {
-            zoom: currentZoom,
-            enabled: props.preferences.clusterMarkers,
-            selectedId: props.selectedId,
-            maxMarkers: 120,
-          }).slice(0, 120);
+      const groupKey = [
+        currentZoom.toFixed(2),
+        Math.floor(bounds.getWest() / index.cellSize),
+        Math.floor(bounds.getEast() / index.cellSize),
+        Math.floor(bounds.getSouth() / index.cellSize),
+        Math.floor(bounds.getNorth() / index.cellSize),
+        props.layers
+          .filter((layer) => layer.visible)
+          .map((layer) => `${layer.id}:${layer.minZoom ?? ''}:${layer.maxZoom ?? ''}`)
+          .sort()
+          .join(','),
+        [...(props.highlightIds ?? [])].sort().join(','),
+        props.selectedId ?? '',
+        props.preferences.clusterMarkers ? '1' : '0',
+      ].join('|');
+      const cachedGroups = groupCache.current.get(groupKey);
+      let groups: PlaceCluster[];
+      if (cachedGroups && cachedGroups.index === index) {
+        groups = cachedGroups.groups;
+        groupCache.current.delete(groupKey);
+        groupCache.current.set(groupKey, cachedGroups);
+      } else {
+        groups = heroMode
+          ? selectHeroPlaces(visible).map((place) => ({
+              id: place.id,
+              position: place.position,
+              places: [place],
+            }))
+          : clusterPlaces(visible, {
+              zoom: currentZoom,
+              enabled: props.preferences.clusterMarkers,
+              selectedId: props.selectedId,
+              maxMarkers: 120,
+            }).slice(0, 120);
+        groupCache.current.set(groupKey, { index, groups });
+        while (groupCache.current.size > 4) {
+          const oldest = groupCache.current.keys().next().value;
+          if (oldest === undefined) break;
+          groupCache.current.delete(oldest);
+        }
+      }
       let labelCount = 0;
       // v0.25.0: a label's placed rect, so a later label that would
       // land on top of an earlier one is skipped instead of piling
@@ -654,7 +711,11 @@ export default function MapView(props: MapViewProps) {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(renderMarkers);
     };
-    renderMarkers();
+    // v0.29.0: the first render of a run is scheduled, not synchronous
+    // — a layer tap's React commit paints first (sheet closing, chip
+    // state) and the marker rebuild lands on the next frame, instead
+    // of the tap waiting on the whole rebuild before anything moves.
+    scheduleRender();
     map.on('moveend zoomend resize', scheduleRender);
     return () => {
       cancelAnimationFrame(frame);

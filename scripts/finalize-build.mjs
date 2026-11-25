@@ -278,6 +278,28 @@ const worker = `// Generated per release; never cache external analytics, APIs, 
 const CACHE=${JSON.stringify(prefix + revision)}, PREFIX=${JSON.stringify(prefix)}, BASE=${JSON.stringify(base)};
 const CORE=${JSON.stringify(precache)};
 const APP_FILES=CORE.concat(${JSON.stringify(threeDimensionalAssets)});
+// Optional-asset budget (v0.29, measured): a real session loads ~600
+// distinct tiles in two minutes of driving, and the old 1500 cap
+// evicted the oldest tile on every put past it — tiles seen five
+// minutes ago re-fetched over the network. The cap is now 6000
+// (~37 MB at ~6 KB/tile) and the count is kept in memory instead of
+// re-scanning cache.keys() on every put: that O(n) scan ran per tile
+// and grew with the cache, and under Leaflet's concurrent tile loads
+// the check-then-put raced anyway (a 1600-fetch proof run left 1599
+// entries in the cache, not 1500). The count is soft — concurrent
+// puts can overshoot by a batch — the browser quota is the hard
+// limit. Eviction still drops the oldest first, in bulk (100 at a
+// time), and the counter is re-counted after each eviction so drift
+// from re-puts can never accumulate.
+let optionalCount=-1;
+const OPTIONAL_CAP=6000,OPTIONAL_EVICT=100;
+async function countOptional(cache){
+  if(optionalCount<0){
+    const keys=await cache.keys();
+    optionalCount=keys.filter(k=>!APP_FILES.includes(new URL(k.url).pathname)).length;
+  }
+  return optionalCount;
+}
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)));self.skipWaiting();});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith(PREFIX)&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()));});
 self.addEventListener('fetch',event=>{
@@ -313,13 +335,18 @@ self.addEventListener('fetch',event=>{
     }
     if(response.ok&&response.type==='basic'&&!/private|no-store/i.test(response.headers.get('cache-control')||'')){
       // Bound optional asset caching (3D assets and map tiles visited);
-      // the app shell and public data remain pinned.
+      // the app shell and public data remain pinned. Eviction is
+      // bulk oldest-first (see countOptional above); the per-put scan
+      // the old cap did is gone.
       try {
-        if(publicOptional&&!APP_FILES.includes(url.pathname)){
-          const keys=await cache.keys();const extras=keys.filter(key=>!APP_FILES.includes(new URL(key.url).pathname));
-          if(extras.length>=1500)await cache.delete(extras[0]);
+        if(publicOptional&&!APP_FILES.includes(url.pathname)&&await countOptional(cache)>=OPTIONAL_CAP){
+          const keys=await cache.keys();
+          const extras=keys.filter(k=>!APP_FILES.includes(new URL(k.url).pathname)).slice(0,OPTIONAL_EVICT);
+          await Promise.all(extras.map(k=>cache.delete(k)));
+          optionalCount=-1;
         }
         await cache.put(request,response.clone());
+        if(publicOptional&&!APP_FILES.includes(url.pathname))optionalCount++;
       } catch { /* Cache quota must not discard a successful network response. */ }
     }
     return response;
