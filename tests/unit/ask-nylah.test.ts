@@ -1,7 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { LayerDefinition, Place } from '../../src/domain/types';
 import { DEFAULT_LAYERS } from '../../src/features/map/layers';
-import { retrieveForAsk, layersRequestedByQuestion } from '../../src/features/ask/retrieval';
+import {
+  isNightlifePlace,
+  nightlifeTagsForQuestion,
+  retrieveForAsk,
+  layersRequestedByQuestion,
+} from '../../src/features/ask/retrieval';
 import {
   askOpenAi,
   buildAskSystemPrompt,
@@ -109,6 +114,45 @@ const FIXTURES: Place[] = [
     region: 'Rockridge, Vice City',
     tags: ['enterable', 'residential'],
   }),
+  // Nightlife (reported 2026-11-25: "Nightclub in vice city" returned
+  // nothing, though both clubs carry #nightclub in the data). Both sit
+  // in Food & Drink — the game's own filing for bars-and-clubs venues.
+  place({
+    id: 'L190',
+    title: 'NINE1NINE, Downtown, Vice City',
+    layerId: 'shops-food',
+    position: { x: -671, y: 468 },
+    region: 'Downtown, Vice City',
+    tags: ['#nightclub', 'enterable', 'leisure'],
+  }),
+  place({
+    id: 'L556',
+    title: 'The Vault, Downtown, Vice City',
+    layerId: 'shops-food',
+    position: { x: -774, y: 462 },
+    region: 'Downtown, Vice City',
+    tags: ['#nightclub', 'enterable', 'leisure'],
+  }),
+  // VYB is a real nightclub (LIV Nightclub Miami) with no verified
+  // in-game position — it must never appear in a Vice City answer.
+  place({
+    id: 'L1453',
+    title: 'VYB, Vice Beach',
+    layerId: 'shops-food',
+    position: null,
+    region: 'Vice Beach',
+    tags: [],
+  }),
+  // A Food & Drink place that is NOT nightlife — the narrowing must
+  // keep it out of a nightclub answer.
+  place({
+    id: 'L4001',
+    title: 'Seaside Grill, Ocean Beach, Vice City',
+    layerId: 'shops-food',
+    position: { x: -700, y: 300 },
+    region: 'Ocean Beach, Vice City',
+    tags: ['restaurant', 'enterable'],
+  }),
 ];
 
 describe('Ask Nylah — the spoiler rule', () => {
@@ -136,6 +180,64 @@ describe('Ask Nylah — the spoiler rule', () => {
     expect(result.requestedLayerIds).toEqual(['equipment']);
     expect(result.records.map((p) => p.id)).toContain('gym:muscle-sands');
     expect(result.records.map((p) => p.id)).not.toContain('gym:dynamix');
+  });
+
+  it('a nightclub question returns the nightclubs — not the nearest shops', () => {
+    // Reported 2026-11-25: "Nightclub in vice city" answered "Nothing
+    // in the map data", though NINE1NINE and The Vault both carry
+    // #nightclub. No nightlife word reached any layer before this.
+    expect(layersRequestedByQuestion('Nightclub in vice city', layers())).toEqual(['shops-food']);
+    expect(nightlifeTagsForQuestion('Nightclub in vice city')).toEqual(['#nightclub']);
+    const result = retrieveForAsk({
+      question: 'Nightclub in vice city',
+      places: FIXTURES,
+      layers: layers(),
+      filters: { hideFound: false, remainingOnly: false, countyId: null },
+    });
+    expect(result.requestedLayerIds).toEqual(['shops-food']);
+    expect(result.records.map((p) => p.id).sort()).toEqual(['L190', 'L556']);
+    // The restaurant next door is Food & Drink too — the narrowing
+    // keeps it out. VYB has no verified position and is in Vice
+    // Beach, not Vice City — it stays out as well.
+    expect(result.records.map((p) => p.id)).not.toContain('L4001');
+    expect(result.records.map((p) => p.id)).not.toContain('L1453');
+  });
+
+  it('a bar question asks for Food & Drink and narrows to bars', () => {
+    expect(layersRequestedByQuestion('Where is the nearest bar?', layers())).toEqual([
+      'shops-food',
+    ]);
+    expect(nightlifeTagsForQuestion('Where is the nearest bar?')).toEqual(['#bar']);
+    // A bare "club" means the whole nightlife set.
+    expect(nightlifeTagsForQuestion('Any clubs open tonight?').sort()).toEqual([
+      '#bar',
+      '#nightclub',
+      '#stripclub',
+    ]);
+  });
+
+  it('isNightlifePlace needs the venue asked for, from any evidence', () => {
+    const club = FIXTURES.find((p) => p.id === 'L190')!;
+    const grill = FIXTURES.find((p) => p.id === 'L4001')!;
+    // Source tag: a nightclub answers a nightclub ask, not a bar ask.
+    expect(isNightlifePlace(club, ['#nightclub'], undefined, undefined)).toBe(true);
+    expect(isNightlifePlace(club, ['#bar'], undefined, undefined)).toBe(false);
+    expect(isNightlifePlace(grill, ['#nightclub'], undefined, undefined)).toBe(false);
+    // The user's own tag: "nightclub" on a place counts; "barbecue" is not a bar.
+    expect(isNightlifePlace(grill, ['#nightclub'], ['nightclub'], undefined)).toBe(true);
+    expect(isNightlifePlace(grill, ['#bar'], ['barbecue joint'], undefined)).toBe(false);
+    // A confident AI "bar" type counts for a bar ask.
+    expect(
+      isNightlifePlace(grill, ['#bar'], undefined, {
+        placeId: 'L4001',
+        aiCategory: 'bar',
+        confidence: 0.9,
+        reason: 'test',
+        model: 'test',
+        indexedAt: '2026-11-25',
+        status: 'suggested',
+      }),
+    ).toBe(true);
   });
 
   it('a named area scopes the answer to that area', () => {

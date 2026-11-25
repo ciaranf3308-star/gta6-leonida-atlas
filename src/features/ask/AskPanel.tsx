@@ -116,6 +116,13 @@ export default function AskPanel(props: AskPanelProps) {
   useEffect(() => {
     if (!props.open) abortRef.current?.abort();
   }, [props.open]);
+  // The key can be added in Settings while this sheet stays mounted
+  // behind the dialog — re-read it every time the sheet opens, or the
+  // "Add your OpenAI key" prompts keep showing after the key is saved
+  // (reported 2026-11-25: key added in Settings, Ask still said no key).
+  useEffect(() => {
+    if (props.open) setHasKey(getAskApiKey().length > 0);
+  }, [props.open]);
 
   /** Cancel the running question: abort the network call, drop any
    * late result, and stop the spinner. Nothing is appended. */
@@ -238,6 +245,11 @@ export default function AskPanel(props: AskPanelProps) {
           : 'Finding places…',
       );
       const apiKey = getAskApiKey();
+      // The key may have been added in Settings since this sheet
+      // mounted (hasKey is captured at mount) — refresh it from the
+      // same fresh read, or the "add your key" prompts stay up after
+      // a keyed question runs.
+      setHasKey(apiKey.length > 0);
       if (result.records.length === 0) {
         const scope = result.requestedLayerNames.length
           ? ` for ${result.requestedLayerNames.join(', ')}`

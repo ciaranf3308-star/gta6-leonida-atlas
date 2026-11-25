@@ -3,7 +3,7 @@ import { isUnnamedPlace } from '../../domain/types';
 import { COUNTIES, countyForPlace, countyIdFromText } from '../../data/counties';
 import { ROBBABLE_SHOP_TAGS, SHOP_TAGS } from '../../data/catalogue';
 import { housesToCheck, isWorkoutMarker } from '../../domain/gym-check';
-import { userTagsMatchLayer } from '../../domain/user-tags';
+import { normalizeUserTag, userTagsMatchLayer } from '../../domain/user-tags';
 import {
   BREAKABLE_GAP_NOTE,
   DARK_BLUE_RULE,
@@ -14,6 +14,7 @@ import {
 export { isWorkoutMarker, isBreakableMarker };
 import {
   aiCategoryMatchesLayer,
+  effectiveAiCategory,
   type AiCategoryRecord,
 } from '../categorise/categories';
 import { askAllowedLayerIds } from '../spoiler/visibility';
@@ -149,6 +150,82 @@ function hasWord(haystack: string, word: string): boolean {
   return haystack.split(' ').includes(word);
 }
 
+/**
+ * Nightlife #tags, by the words a question uses. Nightclubs, strip
+ * clubs and bars are bars-and-clubs venues in the game's own filing
+ * (shopMapIndex puts them in Food & Drink, not Activities), so a
+ * nightlife question asks for the Food & Drink layer — and
+ * retrieveForAsk then narrows the eligible set to these tags, so
+ * the answer is the nightclubs, not the nearest thirty shops in
+ * the area (the over-match the QA report already flagged for
+ * "shop"). A bare "club" means the whole nightlife set: in GTA a
+ * club is a nightclub first (a member gym is asked for as "gym").
+ * "Nightclub in vice city" (reported 2026-11-25) returned nothing
+ * before this, even though NINE1NINE and The Vault both carry
+ * #nightclub in the data — no nightlife word reached any layer.
+ */
+export function nightlifeTagsForQuestion(question: string): string[] {
+  const q = normalizeAsk(question);
+  const tags = new Set<string>();
+  if (hasWord(q, 'nightclub') || hasWord(q, 'nightclubs')) tags.add('#nightclub');
+  if (hasPhrase(q, 'strip club') || hasPhrase(q, 'strip clubs') || hasWord(q, 'stripclub'))
+    tags.add('#stripclub');
+  if (hasWord(q, 'bar') || hasWord(q, 'bars') || hasWord(q, 'pub') || hasWord(q, 'pubs'))
+    tags.add('#bar');
+  if (
+    hasWord(q, 'nightlife') ||
+    hasWord(q, 'club') ||
+    hasWord(q, 'clubs') ||
+    hasWord(q, 'dance') ||
+    hasWord(q, 'dancing') ||
+    hasWord(q, 'dj') ||
+    hasWord(q, 'karaoke') ||
+    hasWord(q, 'party') ||
+    hasWord(q, 'partying')
+  ) {
+    tags.add('#nightclub');
+    tags.add('#stripclub');
+    tags.add('#bar');
+  }
+  return [...tags];
+}
+
+/** User-tag words for each nightlife #tag — the words a tag of his
+ * own has to carry to count as that venue. */
+const NIGHTLIFE_TAG_WORDS: Record<string, readonly string[]> = {
+  '#nightclub': ['nightclub'],
+  '#stripclub': ['stripclub', 'strip club'],
+  '#bar': ['bar', 'pub'],
+};
+
+/** Is this place one of the nightlife venues asked for, by any
+ * evidence on the device? A source #tag, the user's own tag saying
+ * so, or a confident AI "bar" type (the resolver files nightclub /
+ * bar / pub words as "bar", so an AI bar counts for any nightlife
+ * ask). Whole-word matching on user tags, so a "barbecue" tag never
+ * counts as a bar. */
+export function isNightlifePlace(
+  place: Place,
+  tags: readonly string[],
+  userTags: readonly string[] | undefined,
+  aiRecord: AiCategoryRecord | undefined | null,
+): boolean {
+  if (place.tags.some((tag) => tags.includes(tag))) return true;
+  const words = tags.flatMap((tag) => NIGHTLIFE_TAG_WORDS[tag] ?? []);
+  const mine = userTags ?? [];
+  if (
+    words.length > 0 &&
+    mine.some((tag) => {
+      const clean = normalizeUserTag(tag);
+      if (!clean) return false;
+      if (words.includes('strip club') && clean.includes('strip club')) return true;
+      return clean.split(' ').some((word) => words.includes(word));
+    })
+  )
+    return true;
+  return effectiveAiCategory(aiRecord) === 'bar';
+}
+
 /** Layer ids a question asks for, by keyword. Empty = no layer asked for. */
 export function layersRequestedByQuestion(
   question: string,
@@ -258,6 +335,11 @@ export function layersRequestedByQuestion(
     // words narrow it further only through the place tags.
     for (const layer of layers) if (layer.id.startsWith('shops-')) ids.add(layer.id);
   }
+  // Nightlife asks for Food & Drink only — every nightlife #tag files
+  // there (shopMapIndex: nightclubs and strip clubs are bars-and-clubs
+  // venues). retrieveForAsk narrows it to the nightlife tags, so the
+  // answer is the nightclubs, not the nearest thirty shops.
+  if (nightlifeTagsForQuestion(question).length > 0) has('shops-food');
   // Interiors only on an explicit interior ask — never from a generic
   // "house/building" mention, so a burglary question cannot leak interiors.
   if (
@@ -509,7 +591,7 @@ export function retrieveForAsk(input: AskRetrievalInput): AskRetrievalResult {
   // general question takes all of them — they are the user's own notes.
   const asksMarkerKind = asksWorkout || asksBreakable;
 
-  const eligible = places.filter(
+  let eligible = places.filter(
     (place) =>
       (allowed.has(place.layerId) ||
         // Tag evidence: a "?" place whose tags say it is the thing asked
@@ -538,6 +620,23 @@ export function retrieveForAsk(input: AskRetrievalInput): AskRetrievalResult {
         )
       ),
   );
+  // Nightlife narrowing (see nightlifeTagsForQuestion): when the
+  // question names a nightlife subtype, only nightlife evidence
+  // counts — a source #tag, the user's own tag, or a confident AI
+  // "bar" type. Without this the two Vice City nightclubs drown in
+  // the nearest thirty Food & Drink shops, and the answer reads as
+  // a shop list instead of the clubs asked for.
+  const nightlifeTags = nightlifeTagsForQuestion(question);
+  if (nightlifeTags.length > 0) {
+    eligible = eligible.filter((place) =>
+      isNightlifePlace(
+        place,
+        nightlifeTags,
+        input.userTags?.get(place.id),
+        input.aiCategories?.[place.id],
+      ),
+    );
+  }
   const totalInScope = eligible.length;
 
   // Scope resolution, in order. The current question is tried first; a
