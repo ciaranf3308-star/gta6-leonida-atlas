@@ -82,19 +82,33 @@ const closePlaceSheet = async () => {
 };
 const loadedTiles = (zoom) =>
   page.locator(`.leaflet-tile-loaded[src*="tiles/graded/${zoom}/"]`);
+// A zoom button's disabled state and the click on it are not atomic:
+// the map can reach its zoom limit between the guard and the click,
+// disabling the button for good, and Playwright's click then waits
+// out its 30 s timeout for an element that will never become enabled
+// again (hit live in the v0.31 lead run: the error-tile probe's Zoom
+// in click timed out at max zoom). A short click timeout plus a
+// re-check turns that race into the break the loop already intends.
+const clickZoom = async (target, name) => {
+  const btn = target.getByRole('button', { name });
+  if (await btn.isDisabled()) return false;
+  try {
+    await btn.click({ timeout: 5000 });
+  } catch {
+    if (await btn.isDisabled()) return false;
+    throw;
+  }
+  return true;
+};
 const zoomInToMax = async () => {
   for (let i = 0; i < 16; i++) {
-    const btn = page.getByRole('button', { name: 'Zoom in' });
-    if (await btn.isDisabled()) break;
-    await btn.click();
+    if (!(await clickZoom(page, 'Zoom in'))) break;
     await page.waitForTimeout(350);
   }
 };
 const zoomOut = async (n) => {
   for (let i = 0; i < n; i++) {
-    const btn = page.getByRole('button', { name: 'Zoom out' });
-    if (await btn.isDisabled()) break;
-    await btn.click();
+    if (!(await clickZoom(page, 'Zoom out'))) break;
     await page.waitForTimeout(350);
   }
 };
@@ -272,9 +286,7 @@ if (await probeClose.isVisible({ timeout: 5000 }).catch(() => false)) {
   await probePage.waitForTimeout(600);
 }
 for (let i = 0; i < 16; i++) {
-  const btn = probePage.getByRole('button', { name: 'Zoom in' });
-  if (await btn.isDisabled()) break;
-  await btn.click();
+  if (!(await clickZoom(probePage, 'Zoom in'))) break;
   await probePage.waitForTimeout(350);
 }
 await probePage.waitForTimeout(1500);
