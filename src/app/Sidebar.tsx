@@ -323,6 +323,12 @@ function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allP
       >
         Turn everything off
       </button>
+      {/* v0.26.1: the nine Map Index groups come FIRST in the sheet —
+        they are what Layers is for. v0.26.0 opened on the county
+        cards and the first group title sat just below the sheet's
+        bottom edge, ~3,000px down a ~6,944px scroll. County
+        isolation stays, below the groups. */}
+      {MAP_INDEX_GROUPS.map((group) => groupSection(group))}
       <section className="county-cards" aria-label="Isolate one county">
         <h3>Isolate a county</h3>
         <div className="county-grid">
@@ -413,7 +419,6 @@ function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allP
           </span>
         </button>
       )}
-      {MAP_INDEX_GROUPS.map((group) => groupSection(group))}
       <details className="layer-group">
         <summary>
           Trading cards · {cardPins.toLocaleString()} verified pin

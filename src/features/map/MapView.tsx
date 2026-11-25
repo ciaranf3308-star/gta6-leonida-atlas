@@ -423,19 +423,37 @@ export default function MapView(props: MapViewProps) {
       const mapSize = map.getSize();
       const phoneLayout = window.innerWidth <= 599;
       const topChrome = phoneLayout ? 200 : 162;
+      // v0.26.1: test the whole 48px marker BOX, not just its centre
+      // point. The marker is a 48px square centred on its anchor
+      // (divIcon iconAnchor [24, 24]) — a pin whose centre clears
+      // chrome can still hang its bottom half behind the zoom pill:
+      // v0.26's review measured a roundel at (328, 559) whose bottom
+      // 11px sat behind the pill's top edge, because the old clamp
+      // tested the centre (583) against a pill top of 598. The pill
+      // is two 48px buttons + 1px gap + 2px border = 99px tall, at
+      // right 12px, bottom 76px (150px while the prompt is up).
+      // Every chrome rect below is tested as a box overlap.
+      const PIN_HALF = 24;
       const pillBottom = props.promptVisible ? 150 : 76;
-      const pillTop = mapSize.y - pillBottom - 97;
+      const pillTop = mapSize.y - pillBottom - 99;
+      const pillLeft = mapSize.x - 62;
+      const pillRight = mapSize.x - 12;
       const inChrome = (p: L.Point): boolean => {
-        if (p.y < topChrome + 12) return true;
-        // Cut off at the screen edge: a pin whose centre is within
-        // half a pin of the left or right edge is half off-screen.
-        // The marker element is 48px wide (roundel plus count
-        // badge), so half a pin is 24px — a 14px margin still left
-        // the badge hanging off the edge.
-        if (p.x < 24 || p.x > mapSize.x - 24) return true;
-        if (p.x > mapSize.x - 72 && p.y >= topChrome && p.y <= topChrome + 116) return true;
-        if (p.x > mapSize.x - 72 && p.y >= pillTop && p.y <= mapSize.y - pillBottom) return true;
-        if (p.y > mapSize.y - 40) return true;
+        const left = p.x - PIN_HALF;
+        const right = p.x + PIN_HALF;
+        const top = p.y - PIN_HALF;
+        const bottom = p.y + PIN_HALF;
+        if (top < topChrome + 12) return true;
+        // Cut off at the screen edge: a pin whose box crosses the
+        // left or right edge is half off-screen.
+        if (left < 24 || right > mapSize.x - 24) return true;
+        // Edge stack (layers + recenter, right edge below the hero).
+        if (right > mapSize.x - 72 && top <= topChrome + 116 && bottom >= topChrome)
+          return true;
+        // Zoom pill, bottom-right.
+        if (right > pillLeft && left < pillRight && bottom >= pillTop && top <= mapSize.y - pillBottom)
+          return true;
+        if (bottom > mapSize.y - 40) return true;
         return false;
       };
       const shown = groups

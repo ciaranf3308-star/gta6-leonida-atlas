@@ -37,19 +37,15 @@
 .atlas-map-view.is-editing .atlas-map-marker {
   cursor: crosshair;
 }
-/* Decorative clouds (v0.23.0, boldened v0.25.0, boldened again
- * v0.26.0): the reference has soft clouds over the sea at island
- * zoom. Pure CSS — no asset, no tile, pointer-events none, above
- * the tiles (z 350) and below the pins. Island zoom only
- * (is-hero-zoom); they fade out as you zoom in. v0.23's three faint
- * blurred ellipses (white 0x2e, blur 18px) barely read on the sea;
- * v0.25.0 made five puffy clusters, and the v0.25 review still
- * called them haze at the margins — so v0.26.0 goes genuinely bold:
- * near-opaque lobes (0.85–0.98), a bright white core in every
- * cluster, only a 3px blur, and clusters ~30% larger, so they read
- * as clouds instead of smudges. They sit at the frame edges, over
- * the sea, never over the island's centre. Reduced motion kills
- * the drift (global rule). */
+/* Decorative clouds (v0.23.0, boldened v0.25.0): the reference has
+ * soft clouds over the sea at island zoom. Pure CSS — no asset, no
+ * tile, pointer-events none, above the tiles (z 350) and below the
+ * pins. Island zoom only (is-hero-zoom); they fade out as you zoom
+ * in. v0.23's three faint blurred ellipses (white 0x2e, blur 18px)
+ * barely read on the sea — v0.25.0 makes five puffy clusters:
+ * overlapping radial-gradient lobes at ~0.5 alpha with only a 5px
+ * blur, so they read as clouds instead of smudges. Reduced motion
+ * kills the drift (global rule). */
 .atlas-clouds {
   position: absolute;
   inset: 0;
@@ -66,48 +62,48 @@
   position: absolute;
   border-radius: 50%;
   background:
-    radial-gradient(circle at 28% 62%, #fffffff2 0 15%, transparent 16%),
-    radial-gradient(circle at 52% 42%, #fffffffa 0 19%, transparent 20%),
-    radial-gradient(circle at 74% 64%, #ffffffd9 0 14%, transparent 15%),
-    radial-gradient(ellipse at center, #ffffffb3 0 55%, transparent 72%);
-  filter: blur(3px);
+    radial-gradient(circle at 28% 62%, #ffffff8c 0 16%, transparent 17%),
+    radial-gradient(circle at 52% 42%, #ffffff99 0 20%, transparent 21%),
+    radial-gradient(circle at 74% 64%, #ffffff80 0 15%, transparent 16%),
+    radial-gradient(ellipse at center, #ffffff4d 0 55%, transparent 72%);
+  filter: blur(5px);
   animation: atlas-cloud-drift 90s ease-in-out infinite alternate;
 }
 .atlas-clouds span:nth-child(1) {
-  width: 380px;
-  height: 140px;
-  left: -60px;
-  top: 28%;
+  width: 300px;
+  height: 110px;
+  left: -50px;
+  top: 30%;
 }
 .atlas-clouds span:nth-child(2) {
-  width: 480px;
-  height: 160px;
-  right: -80px;
-  top: 52%;
+  width: 380px;
+  height: 130px;
+  right: -70px;
+  top: 55%;
   animation-duration: 120s;
   animation-delay: -30s;
 }
 .atlas-clouds span:nth-child(3) {
-  width: 330px;
-  height: 120px;
-  left: 22%;
-  bottom: 6%;
+  width: 260px;
+  height: 100px;
+  left: 24%;
+  bottom: 8%;
   animation-duration: 75s;
   animation-delay: -50s;
 }
 .atlas-clouds span:nth-child(4) {
-  width: 440px;
-  height: 150px;
-  right: 4%;
-  top: 30%;
+  width: 340px;
+  height: 120px;
+  right: 6%;
+  top: 32%;
   animation-duration: 100s;
   animation-delay: -60s;
 }
 .atlas-clouds span:nth-child(5) {
-  width: 320px;
-  height: 115px;
-  left: 4%;
-  top: 62%;
+  width: 240px;
+  height: 90px;
+  left: 6%;
+  top: 64%;
   animation-duration: 85s;
   animation-delay: -20s;
 }

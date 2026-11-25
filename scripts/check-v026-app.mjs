@@ -125,7 +125,7 @@ check('interiors pins appear after picking', (await markerCount()) > 0);
 check('no empty-map banner after picking', (await page.locator('.empty-map-prompt').count()) === 0);
 await shot('b-picker-interiors');
 
-// (c) Hero + chips + bold clouds + attribution on the map.
+// (c) Hero + chips + subtle clouds + attribution on the map.
 const chipBoxes = await page.locator('.map-chip').evaluateAll((els) =>
   els.map((el) => {
     const r = el.getBoundingClientRect();
@@ -153,10 +153,10 @@ const clouds = await page.evaluate(() =>
   })),
 );
 check(
-  'clouds are five bold clusters (bigger, near-opaque, 3px blur)',
+  'clouds are five subtle clusters (v0.25 strength, <=0.6 alpha, 5px blur)',
   clouds.length === 5 &&
-    clouds.every((c) => c.w >= 320 && c.h >= 115 && c.filter === 'blur(3px)') &&
-    clouds.every((c) => /0\.9[0-9]/.test(c.bg)),
+    clouds.every((c) => c.w >= 240 && c.w <= 380 && c.h >= 90 && c.h <= 130 && c.filter === 'blur(5px)') &&
+    clouds.every((c) => !/0\.[789]/.test(c.bg) && !/0\.9[0-9]/.test(c.bg)),
   JSON.stringify(clouds.map((c) => `${Math.round(c.w)}x${Math.round(c.h)} ${c.filter}`)),
 );
 
