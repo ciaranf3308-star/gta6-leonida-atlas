@@ -7,7 +7,7 @@
 // edge stack + zoom pill, place card, tag/explored reload, region
 // card, street-zoom "?" pills, turn everything off). Served from
 // dist/ on port 4331 like the v0.21/v0.23 walks.
-/* global document, getComputedStyle */
+/* global document, getComputedStyle, window */
 import { chromium } from 'playwright';
 import http from 'node:http';
 import { createReadStream, existsSync, mkdirSync } from 'node:fs';
