@@ -188,12 +188,13 @@ const layersFirst = await page.evaluate(() => {
 });
 check('layers: first Map Index group reads without scrolling', layersFirst.visibleWithoutScroll === true, JSON.stringify(layersFirst));
 // groupSection is also used for My markers + Unverified, so the
-// sheet has 11 group titles; the first 9 must be the Map Index
-// groups, in the game's order.
+// sheet has 12 group titles (9 Map Index + my-markers, unverified,
+// collectibles — v0.31.1 added the collectibles group for the Loot Map
+// layer); the first 9 must be the Map Index groups, in the game's order.
 const MAP_INDEX_NAMES = ['Personal', 'Story', 'Robberies', 'Activities', 'Exploration', 'Vehicles', 'Weapons', 'Style', 'Food & Drink'];
 check(
   'layers: first 9 group titles are the Map Index groups in order',
-  layersFirst.groupCount === 11 &&
+  layersFirst.groupCount === 12 &&
     JSON.stringify(layersFirst.firstNine) === JSON.stringify(MAP_INDEX_NAMES),
   `groups=${layersFirst.groupCount} firstNine=${JSON.stringify(layersFirst.firstNine)}`,
 );
