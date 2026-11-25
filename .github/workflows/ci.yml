@@ -22,7 +22,13 @@ jobs:
     timeout-minutes: 20
     env:
       VITE_ANALYTICS_ID: ""
-      ATLAS_BASE_PATH: "/"
+      # The base the app actually ships under. The preview server
+      # (`pnpm start`) and the live Pages site both serve it here, so
+      # the build must bake the same base into its asset URLs — CI
+      # previously built with '/', the preview served
+      # /gta6-leonida-atlas/, every JS chunk 404'd, React never
+      # mounted, and all 23 browser tests failed at open.
+      ATLAS_BASE_PATH: "/gta6-leonida-atlas/"
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -64,4 +70,18 @@ jobs:
       - name: Install browser test engines
         run: pnpm exec playwright install --with-deps chromium webkit
       - name: Run browser tests
-        run: pnpm test:e2e
+        # Playwright's auto webServer is disabled when E2E_BASE_URL is
+        # set (see playwright.config.ts), so start the preview here
+        # and point the tests at the base it serves — the same base
+        # the build above baked into the asset URLs.
+        run: |
+          pnpm start > /tmp/vite-preview.log 2>&1 &
+          PREVIEW_PID=$!
+          for i in $(seq 1 30); do
+            if curl -fsSL http://127.0.0.1:4330/gta6-leonida-atlas/ > /dev/null 2>&1; then break; fi
+            sleep 1
+          done
+          E2E_BASE_URL=http://127.0.0.1:4330/gta6-leonida-atlas/ pnpm test:e2e
+          TEST_EXIT=$?
+          kill $PREVIEW_PID 2>/dev/null || true
+          exit $TEST_EXIT
