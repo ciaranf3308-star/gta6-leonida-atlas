@@ -120,6 +120,8 @@ export class AiImageError extends Error {
   }
 }
 
+export const AI_IMAGE_TIMEOUT_MS = 60_000;
+
 interface ImagesResponse {
   data?: { b64_json?: string; url?: string }[];
   error?: { message?: string; code?: string };
@@ -133,6 +135,14 @@ async function callImagesApi(
   fetchImpl: typeof fetch,
   signal?: AbortSignal,
 ): Promise<string> {
+  // Bounded: an image call that hangs must fail loudly, not spin
+  // forever while the county row shows a spinner.
+  const timeoutController = new AbortController();
+  const timeout = setTimeout(() => timeoutController.abort(), AI_IMAGE_TIMEOUT_MS);
+  const combined =
+    signal === undefined
+      ? timeoutController.signal
+      : AbortSignal.any([signal, timeoutController.signal]);
   let res: Response;
   try {
     res = await fetchImpl('https://api.openai.com/v1/images/generations', {
@@ -142,13 +152,22 @@ async function callImagesApi(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ model, prompt, size, n: 1 }),
-      signal,
+      signal: combined,
     });
-  } catch {
+  } catch (error) {
+    if (timeoutController.signal.aborted && !(signal?.aborted ?? false)) {
+      throw new AiImageError(
+        'unavailable',
+        'OpenAI took too long to paint the image. Try again — the bundled art is untouched.',
+      );
+    }
+    if (signal?.aborted) throw error;
     throw new AiImageError(
       'network',
       'Could not reach OpenAI. Check the connection and try again — the bundled art is untouched.',
     );
+  } finally {
+    clearTimeout(timeout);
   }
   if (res.status === 401 || res.status === 403) {
     throw new AiImageError(
@@ -231,6 +250,10 @@ export async function generateCountyArt(input: {
   const downscale = input.downscale ?? downscaleArtDataUrl;
   const prompt = countyArtPrompt(input.county);
   let dataUrl: string;
+  // PROVENANCE: the record must name the model that actually painted
+  // the image. The dall-e-3 fallback used to be recorded as
+  // 'gpt-image-1' — a wrong model name in the stored metadata.
+  let usedModel = 'gpt-image-1';
   try {
     dataUrl = await callImagesApi(
       apiKey,
@@ -243,6 +266,7 @@ export async function generateCountyArt(input: {
   } catch (error) {
     // gpt-image-1 is not on every key: dall-e-3 paints the same prompt.
     if (error instanceof AiImageError && error.kind === 'unavailable') {
+      usedModel = 'dall-e-3';
       dataUrl = await callImagesApi(
         apiKey,
         'dall-e-3',
@@ -259,7 +283,7 @@ export async function generateCountyArt(input: {
   return {
     countyId: input.county.id,
     dataUrl: downsized,
-    model: 'gpt-image-1',
+    model: usedModel,
     createdAt: new Date().toISOString(),
   };
 }

@@ -185,10 +185,10 @@ describe("v0.14.0 — not-sure places are re-queued on a new resolver version", 
       fetchImpl,
       shouldPause: () => false,
       shouldCancel: () => false,
-      applyResults: (results) =>
-        useAiIndexStore.getState().applyResults(results),
-      markAttempted: (placeIds) =>
-        useAiIndexStore.getState().markAttempted(placeIds),
+      applyResults: (results, model) =>
+        useAiIndexStore.getState().applyResults(results, model),
+      applyBatch: (results, attemptedPlaceIds, model) =>
+        useAiIndexStore.getState().applyBatch(results, attemptedPlaceIds, model),
       setJob: (patch) => useAiIndexStore.getState().setJob(patch),
       batchDelayMs: 0,
     });

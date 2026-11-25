@@ -18,6 +18,9 @@ import {
 export const ASK_API_KEY_STORAGE_KEY = 'leonida-ask-api-key';
 export const ASK_MODEL_STORAGE_KEY = 'leonida-ask-model';
 export const DEFAULT_ASK_MODEL = 'gpt-4o-mini';
+/** An Ask answer that takes longer than this is a failure, not a wait —
+ * the local map results below it are the fallback, not a spinner. */
+export const ASK_TIMEOUT_MS = 30_000;
 
 export function getAskApiKey(): string {
   if (typeof window === 'undefined' || !window.localStorage) return '';
@@ -129,11 +132,116 @@ export interface AskOpenAiInput {
   distances?: ReadonlyMap<string, number>;
   /** AI-suggested types, so the answer can label them as AI-suggested. */
   aiCategories?: Readonly<Record<string, AiCategoryRecord>>;
+  /** Abort a request the user abandoned (new question, panel closed).
+   * Aborting stops the network call; a stale result can never land. */
+  signal?: AbortSignal;
+  /** Bounded wait — defaults to ASK_TIMEOUT_MS. */
+  timeoutMs?: number;
+}
+
+/**
+ * Deterministic check on the AI's free text, before it is shown.
+ * The retrieval scope already limits what the model was given, but the
+ * model can still name a place from its own training, or volunteer an
+ * extra from a layer nobody asked for ("you'll also find cards in
+ * those houses"). A prompt cannot stop that — code can, sentence by
+ * sentence:
+ * - a sentence naming a place that is NOT one of the records sent to
+ *   the model is dropped (region names and the anchor are area
+ *   references, not finds, so they are allowed);
+ * - a sentence using the words of a layer nobody asked for is dropped
+ *   (a gym answer never gets to mention cards, a shops answer never
+ *   gets to mention gyms).
+ * What survives is shown; if nothing survives, the answer is the
+ * deterministic verdict + cards alone. Never a guessed name, never a
+ * cross-layer extra.
+ */
+const CROSS_LAYER_KEYWORDS: Readonly<Record<string, readonly string[]>> = {
+  gyms: ['gym', 'gyms', 'fitness', 'workout', 'weights', 'bench', 'exercise'],
+  equipment: ['equipment', 'workout', 'weights', 'bench', 'kettlebell', 'dumbbell'],
+  lootable: ['loot', 'lootable', 'rob', 'robbery', 'robberies', 'burglar', 'burglary', 'steal', 'hold up'],
+  breakable: ['breakable', 'break into', 'break-in', 'burglar', 'burglary', 'rob a house'],
+  interiors: ['interior', 'interiors', 'enterable', 'go inside', 'inside'],
+  shops: ['shop', 'shops', 'store', 'stores', 'buy'],
+  cards: ['card', 'cards', 'collectible', 'collectable', 'trading card', 'watch', 'watches'],
+};
+
+export function sanitizeAiNote(
+  answer: string,
+  records: readonly Place[],
+  allPlaces: readonly Place[],
+  requestedLayerIds: readonly string[],
+  anchorName?: string | null,
+): string {
+  const allowedTitles = new Set(
+    records.map((place) => normalizeAsk(place.title.split(' — ')[0] ?? place.title)),
+  );
+  // Area references are not finds: region names and the anchor the
+  // question was about may be named freely.
+  const areaTitles = new Set(
+    allPlaces
+      .filter((place) => place.layerId === 'regions')
+      .map((place) => normalizeAsk(place.title.split(' — ')[0] ?? place.title)),
+  );
+  if (anchorName) areaTitles.add(normalizeAsk(anchorName));
+  const sentences = answer.split(/(?<=[.!?])\s+/).map((s) => s.trim()).filter(Boolean);
+  const kept: string[] = [];
+  for (const sentence of sentences) {
+    const haystack = normalizeAsk(sentence);
+    let leak = false;
+    // A named place that was never sent to the model.
+    for (const place of allPlaces) {
+      const base = normalizeAsk(place.title.split(' — ')[0] ?? place.title);
+      if (base.length < 4 || allowedTitles.has(base) || areaTitles.has(base)) continue;
+      if (haystack.includes(base)) {
+        leak = true;
+        break;
+      }
+    }
+    if (leak) continue;
+    // Words of a layer nobody asked for — but a keyword that is part
+    // of an ALLOWED place's own name is not an extra: "Store" in
+    // "Corner Store" must not read as a shops mention. Mask the
+    // allowed titles out of the haystack before the keyword check.
+    let keywordHaystack = haystack;
+    for (const allowed of allowedTitles) {
+      for (const word of allowed.split(/[^a-z0-9]+/).filter((w) => w.length > 1)) {
+        keywordHaystack = keywordHaystack.replace(
+          new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "g"),
+          " ",
+        );
+      }
+    }
+    for (const [layerId, keywords] of Object.entries(CROSS_LAYER_KEYWORDS)) {
+      if (requestedLayerIds.includes(layerId)) continue;
+      if (layerId === 'cards' && requestedLayerIds.some((id) => id.startsWith('cards:'))) continue;
+      if (
+        keywords.some((keyword) =>
+          new RegExp(`\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(keywordHaystack),
+        )
+      ) {
+        leak = true;
+        break;
+      }
+    }
+    if (!leak) kept.push(sentence);
+  }
+  return kept.join(' ');
 }
 
 export async function askOpenAi(input: AskOpenAiInput): Promise<string> {
   const model = input.model?.trim() || DEFAULT_ASK_MODEL;
-  const response = await (input.fetchImpl ?? fetch)('https://api.openai.com/v1/chat/completions', {
+  const timeoutMs = input.timeoutMs ?? ASK_TIMEOUT_MS;
+  // Bounded + abortable: the timeout aborts the real fetch, and the
+  // race unblocks the caller even if a fetch implementation ignores
+  // the signal (a mocked fetch, a hung socket).
+  const timeoutController = new AbortController();
+  const timer = setTimeout(() => timeoutController.abort(), timeoutMs);
+  const signal =
+    input.signal === undefined
+      ? timeoutController.signal
+      : AbortSignal.any([input.signal, timeoutController.signal]);
+  const fetchPromise = (input.fetchImpl ?? fetch)('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -150,7 +258,40 @@ export async function askOpenAi(input: AskOpenAiInput): Promise<string> {
       ],
       temperature: 0.2,
     }),
+    signal,
   });
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    const t = setTimeout(
+      () =>
+        reject(
+          new Error(
+            `Ask timed out after ${Math.round(timeoutMs / 1000)} seconds — the local map results below still work.`,
+          ),
+        ),
+      timeoutMs,
+    );
+    // If the fetch settles first, the timer must not keep the process
+    // (or the test) alive — and a late timeout must never reject
+    // after the answer already landed.
+    fetchPromise.then(
+      () => clearTimeout(t),
+      () => clearTimeout(t),
+    );
+  });
+  let response: Response;
+  try {
+    response = await Promise.race([fetchPromise, timeoutPromise]);
+  } catch (error) {
+    clearTimeout(timer);
+    if (timeoutController.signal.aborted && !(input.signal?.aborted ?? false)) {
+      throw new Error(
+        `Ask timed out after ${Math.round(timeoutMs / 1000)} seconds — the local map results below still work.`,
+        { cause: error },
+      );
+    }
+    throw error;
+  }
+  clearTimeout(timer);
   if (!response.ok) {
     const detail = await response.text().catch(() => '');
     throw new Error(

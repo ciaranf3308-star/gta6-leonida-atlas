@@ -111,6 +111,14 @@ describe('county art generation (key-powered, mocked fetch)', () => {
       downscale: async (url) => url,
     });
     expect(result.dataUrl).toContain('abc');
+    // PROVENANCE (v0.30.0): the fallback painter is dall-e-3, and the
+    // stored record must say so — it used to hardcode 'gpt-image-1'
+    // whatever actually painted the image.
+    expect(result.model).toBe('dall-e-3');
+    const secondCall = (
+      fetchImpl as unknown as { mock: { calls: unknown[][] } }
+    ).mock.calls[1] as [string, RequestInit];
+    expect(JSON.parse(secondCall[1].body as string).model).toBe('dall-e-3');
     expect(fetchImpl).toHaveBeenCalledTimes(2);
   });
 

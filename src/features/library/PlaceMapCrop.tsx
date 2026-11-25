@@ -3,6 +3,7 @@ import L from 'leaflet';
 import type { Position } from '../../domain/types';
 import { toMapCoordinate } from '../map/coordinates';
 import { GTADB_TILE_BOUNDS, gtadbTileUrl } from '../map/gtadb-tiles';
+import { TILE_ERROR_DATA_URI } from '../map/tile-error';
 import { MAX_ZOOM, MIN_ZOOM } from '../map/coordinates';
 
 /** The tile bounds as a Leaflet bounds expression (same as MapView's
@@ -45,7 +46,9 @@ export default function PlaceMapCrop({ position }: { position: Position }) {
       minZoom: MIN_ZOOM,
       maxZoom: MAX_ZOOM,
       bounds: tileBounds(),
-      errorTileUrl: `${base.endsWith('/') ? base : `${base}/`}assets/gta6-leonida-atlas/tiles/ocean.jpg`,
+      // v0.30.0: a failed tile shows the error tile, not ocean (see
+      // MapView — the worker refuses to substitute ocean for land).
+      errorTileUrl: TILE_ERROR_DATA_URI,
       noWrap: true,
       keepBuffer: 1,
     });

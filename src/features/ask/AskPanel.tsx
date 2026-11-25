@@ -7,6 +7,7 @@ import {
   askOpenAi,
   getAskApiKey,
   getAskModel,
+  sanitizeAiNote,
   setAskApiKey,
 } from './openai';
 import { buildAskCard, buildAskCards, askAnchorLabel, shortVerdict, type AskCard } from './cards';
@@ -77,6 +78,9 @@ interface AskMessage {
   totalInScope: number;
   /** The anchor the distances are measured from ("Near Capri"). */
   anchorLabel: string | null;
+  /** When the AI answer failed: the local map results still stand,
+   * labelled honestly — never a silent AI answer, never a fake one. */
+  aiFailed?: string;
   /** Houses in the asked area worth checking for workout equipment —
    * candidates, never verified equipment. 'equipment' when equipment was
    * asked for, 'gym' when a member gym was. */
@@ -102,6 +106,26 @@ export default function AskPanel(props: AskPanelProps) {
   const messagesRef = useRef<HTMLDivElement>(null);
   /** Monotonic submit id — a stale answer never lands after a newer one. */
   const requestRef = useRef(0);
+  /** The in-flight AI request, so Cancel / close / unmount actually
+   * abort it instead of letting it run on and land late. */
+  const abortRef = useRef<AbortController | null>(null);
+  useEffect(() => {
+    return () => abortRef.current?.abort();
+  }, []);
+  // Closing the sheet abandons the question — the request stops with it.
+  useEffect(() => {
+    if (!props.open) abortRef.current?.abort();
+  }, [props.open]);
+
+  /** Cancel the running question: abort the network call, drop any
+   * late result, and stop the spinner. Nothing is appended. */
+  function cancelCurrent() {
+    abortRef.current?.abort();
+    requestRef.current++;
+    abortRef.current = null;
+    setBusy(false);
+    setBusyNote(null);
+  }
   // The latest answer must be in view — scrolled to its TOP, so the
   // verdict and the first cards show, not the tail of the list. (The
   // old scroll-to-bottom landed on the houses list at the end of a
@@ -182,8 +206,16 @@ export default function AskPanel(props: AskPanelProps) {
     setMessages((prev) => [...prev, { role: 'user', text: question, cards: [], totalInScope: 0, anchorLabel: null }]);
     setBusy(true);
     setBusyNote('Finding places…');
+    // The local answer is built inside the try but must survive into
+    // the catch: an AI failure falls back to it (verdict + cards +
+    // map highlights, labelled local-only), so these live outside
+    // the try block.
+    let result: ReturnType<typeof retrieveForAsk> | undefined;
+    let cards: ReturnType<typeof buildAskCards> | undefined;
+    let verdict: string | undefined;
+    let anchorLabel: string | null | undefined;
     try {
-      const result = retrieveForAsk({
+      result = retrieveForAsk({
         question,
         places: props.places,
         layers: props.layers,
@@ -198,8 +230,8 @@ export default function AskPanel(props: AskPanelProps) {
           .filter((message) => message.role === 'user')
           .map((message) => message.text),
       });
-      const anchorLabel = askAnchorLabel(result);
-      const cards = buildAskCards(result, props.places, props.aiCategories, props.userTags);
+      anchorLabel = askAnchorLabel(result);
+      cards = buildAskCards(result, props.places, props.aiCategories, props.userTags);
       setBusyNote(
         anchorLabel
           ? `Finding places ${anchorLabel.toLowerCase()}…`
@@ -232,7 +264,7 @@ export default function AskPanel(props: AskPanelProps) {
       }
       // The verdict leads, in one or two lines — the cards carry the
       // places, and the houses section carries the house-gym gap.
-      const verdict =
+      verdict =
         shortVerdict(result.proximitySummary) ??
         `Here are the matching places from the map (${result.records.length} shown${result.totalInScope > result.records.length ? ` of ${result.totalInScope}` : ''}${result.areaMismatch ? ' — nothing in that exact area, so these are the nearest' : ''}).`;
       if (!apiKey) {
@@ -252,35 +284,93 @@ export default function AskPanel(props: AskPanelProps) {
         );
         return;
       }
-      const answer = await askOpenAi({
-        question,
-        records: result.records,
-        requestedLayerNames: result.requestedLayerNames,
-        apiKey,
-        model: getAskModel(),
-        proximitySummary: result.proximitySummary,
-        anchorName: result.anchorPlace?.title ?? result.areaLabel,
-        distances: result.anchorDistances,
-        aiCategories: props.aiCategories,
-      });
+      // Local answer, built first: the verdict, the cards and the
+      // houses are all deterministic, from retrieval — they stand
+      // whether or not the AI answers. The AI only ever adds at most
+      // two short sentences under them, checked before they are shown.
+      const localAnswer: Omit<AskMessage, 'role'> = {
+        text: verdict,
+        cards: cards.cards,
+        totalInScope: cards.total,
+        anchorLabel,
+        houses: housesFor(result),
+        ruleNote: result.ruleNote,
+      };
+      const answer = await (async () => {
+        const controller = new AbortController();
+        abortRef.current = controller;
+        try {
+          return await askOpenAi({
+            question,
+            records: result.records,
+            requestedLayerNames: result.requestedLayerNames,
+            apiKey,
+            model: getAskModel(),
+            proximitySummary: result.proximitySummary,
+            anchorName: result.anchorPlace?.title ?? result.areaLabel,
+            distances: result.anchorDistances,
+            aiCategories: props.aiCategories,
+            signal: controller.signal,
+          });
+        } finally {
+          if (abortRef.current === controller) abortRef.current = null;
+        }
+      })();
+      // Retrieval ran before the await, so this is unreachable in
+      // practice — it only re-narrows `result` for the type checker
+      // (an await resets narrowing on a `let`).
+      if (result === undefined || verdict === undefined || cards === undefined) return;
       showOnMap(result.records);
       appendAssistant(
         {
-          // The verdict is the answer; the AI writes at most two short
-          // sentences under it (see the system prompt) — never a wall,
-          // never a place list, never a repeat of the verdict. One
-          // atomic append: verdict + AI note + cards together.
-          text: verdict,
-          aiNote: answer,
-          cards: cards.cards,
-          totalInScope: cards.total,
-          anchorLabel,
-          houses: housesFor(result),
-          ruleNote: result.ruleNote,
+          ...localAnswer,
+          // Deterministic check on the free text (v0.30.0): a
+          // sentence naming a place that was never sent, or
+          // volunteering an extra from an unasked layer, is dropped
+          // before it is shown. If nothing survives, no AI note.
+          aiNote:
+            sanitizeAiNote(
+              answer,
+              result.records,
+              props.places,
+              result.requestedLayerIds,
+              result.anchorPlace?.title ?? result.areaLabel,
+            ) || undefined,
         },
         requestId,
       );
     } catch (error) {
+      // A cancelled question appends nothing — the user stopped it.
+      if (
+        (error instanceof DOMException && error.name === 'AbortError') ||
+        (error instanceof Error && error.name === 'AbortError')
+      ) {
+        return;
+      }
+      // AI failure is NOT a dead end: the local finder already found
+      // the places, so the answer still lands — verdict, cards, map
+      // highlights — labelled honestly as local-only. Never a silent
+      // AI answer, never a fake one, never an error with zero cards
+      // when records exist.
+      if (result !== undefined && result.records.length > 0 && verdict !== undefined && cards !== undefined) {
+        showOnMap(result.records);
+        appendAssistant(
+          {
+            text: verdict,
+            cards: cards.cards,
+            totalInScope: cards.total,
+            anchorLabel: anchorLabel ?? null,
+            houses: housesFor(result),
+            ruleNote: result.ruleNote,
+            aiFailed:
+              error instanceof Error
+                ? error.message
+                : 'The AI answer failed.',
+          },
+          requestId,
+        );
+        return;
+      }
       appendAssistant(
         {
           text:
@@ -347,6 +437,12 @@ export default function AskPanel(props: AskPanelProps) {
             </p>
             {message.role === 'assistant' && message.aiNote && (
               <p className="ask-ai-note">{message.aiNote}</p>
+            )}
+            {message.role === 'assistant' && message.aiFailed && (
+              <p className="help-text">
+                AI answer unavailable — showing local map results only.{' '}
+                {message.aiFailed}
+              </p>
             )}
             {message.role === 'assistant' && message.ruleNote && (
               <p className="ask-rule-note">{message.ruleNote}</p>
@@ -505,6 +601,9 @@ export default function AskPanel(props: AskPanelProps) {
         {busy && (
           <div className="ask-loading" role="status">
             <p className="help-text">{busyNote ?? 'Finding places…'}</p>
+            <button type="button" className="text-button" onClick={cancelCurrent}>
+              Cancel
+            </button>
             <div className="ask-card-skeleton" aria-hidden="true" />
             <div className="ask-card-skeleton" aria-hidden="true" />
             <div className="ask-card-skeleton" aria-hidden="true" />

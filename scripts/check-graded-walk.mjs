@@ -235,6 +235,67 @@ console.log('cached reload tiles:', cachedTiles);
 check(cachedTiles > 0, 'cached reload still loads tiles');
 await page.screenshot({ path: join(outDir, '08-island-cached.png') });
 
+// 8. v0.30.0 — a failed LAND tile shows the error tile, never ocean.
+// Abort the first z6 tile request on the wire and load the Ambrosia
+// max-zoom view: the slot must paint the dark error tile (the
+// data-URI SVG from tile-error.ts), never ocean.jpg. The service-
+// worker half of this — a failed land tile must never be answered
+// with ocean — is proven in the harness unit tests
+// (service-worker-tiles.test.ts); this probe proves the map side.
+// It runs in a FRESH browser context with service workers BLOCKED
+// (serviceWorkers: 'block'): on the main page the worker claims the
+// page within ~1s of load and then consumes every tile request in
+// its fetch handler, so Playwright's route never sees them — two
+// earlier attempts aborted 0 tiles for exactly that reason, and a
+// route for sw.js cannot stop it either (the worker-script fetch
+// bypasses page routing; debug runs confirmed the page still ends
+// up controlled). Blocking registration is safe: main.tsx catches a
+// failed registration silently ("Map and IndexedDB remain usable
+// when caching is unavailable"), so no console error and no
+// pageerror.
+const probeContext = await browser.newContext({
+  viewport: { width: 390, height: 844 },
+  deviceScaleFactor: 2,
+  serviceWorkers: 'block',
+});
+const probePage = await probeContext.newPage();
+let abortedTiles = 0;
+await probePage.route('**/tiles/graded/6/*', async (route) => {
+  if (abortedTiles === 0) {
+    abortedTiles++;
+    await route.abort();
+  } else {
+    await route.continue();
+  }
+});
+await probePage.goto(`${base}?place=${PLACES.ambrosia}`, { waitUntil: 'networkidle' });
+await probePage.waitForTimeout(2500);
+const probeSkip = probePage.getByRole('button', { name: /Skip for now/ });
+if (await probeSkip.isVisible({ timeout: 5000 }).catch(() => false)) {
+  await probeSkip.click();
+  await probePage.waitForTimeout(800);
+}
+const probeClose = probePage.getByRole('button', { name: 'Close place details' });
+if (await probeClose.isVisible({ timeout: 5000 }).catch(() => false)) {
+  await probeClose.click();
+  await probePage.waitForTimeout(600);
+}
+for (let i = 0; i < 16; i++) {
+  const btn = probePage.getByRole('button', { name: 'Zoom in' });
+  if (await btn.isDisabled()) break;
+  await btn.click();
+  await probePage.waitForTimeout(350);
+}
+await probePage.waitForTimeout(1500);
+const errorTilesProbe = await probePage.locator('.leaflet-tile[src^="data:image/svg+xml"]').count();
+const oceanTilesProbe = await probePage.locator('.leaflet-tile-loaded[src*="tiles/ocean.jpg"]').count();
+console.log('aborted-tile probe: aborted', abortedTiles, 'error tiles', errorTilesProbe, 'ocean tiles', oceanTilesProbe);
+check(abortedTiles === 1, `probe aborted exactly one land tile — saw ${abortedTiles}`);
+check(errorTilesProbe >= 1, `aborted land tile shows the error tile — saw ${errorTilesProbe}`);
+check(oceanTilesProbe === 0, `aborted land tile never shows ocean — saw ${oceanTilesProbe}`);
+await probePage.screenshot({ path: join(outDir, '09-aborted-land-tile.png') });
+await probeContext.close();
+
 // Global assertions: no z7 requests (the P0 regression), no failed
 // tile requests on a fresh profile, no console errors.
 const z7 = [...tileUrls].filter((u) => /\/tiles\/[^/]+\/7\//.test(u));
@@ -250,6 +311,7 @@ writeFileSync(join(outDir, 'walk-result.json'), JSON.stringify({
   islandTiles, oceanFit, y0TilesRequested: y0Tiles.length,
   z6vc, z6vcDistinct: z6vcStats.distinct, stddevVc,
   z6amb, z6ambDistinct: z6ambStats.distinct, stddevAmb, oceanTiles, cachedTiles,
+  abortedTiles, errorTilesProbe, oceanTilesProbe,
   tileUrlsSeen: tileUrls.size, z7Requests: z7.length,
   failedTileRequests: tileFailures.length, consoleErrors: errors.length,
   failures,

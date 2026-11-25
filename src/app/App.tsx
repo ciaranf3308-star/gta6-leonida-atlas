@@ -4,6 +4,7 @@ import { loadCatalogue, markerToPlace } from '../data/catalogue';
 import { filterPlaces } from '../domain/filter';
 import { userTagsMap } from '../domain/user-tags';
 import { DEFAULT_LAYERS, filterByVisibleLayers } from '../features/map/layers';
+import { revealSet } from '../features/spoiler/visibility';
 import MapView from '../features/map/MapView';
 import BottomNav from './BottomNav';
 import {
@@ -201,15 +202,24 @@ export default function App() {
     [filtered],
   );
   /** Ask Nylah highlights render even when their layer is off — the
-   * question itself was consent to show them, for that answer only. */
+   * question itself was consent to show them, for that answer only.
+   * The reveal set is the highlights plus the selected place
+   * (features/spoiler/visibility.ts): a revealed place renders with
+   * its layer off, and its pin must not vanish while its sheet is
+   * open. The Ask panel keeps the true highlight set, so its "Clear
+   * highlights (N)" count stays honest. */
+  const mapHighlightSet = useMemo(
+    () => revealSet(highlightIds, selectedId),
+    [highlightIds, selectedId],
+  );
   const mapPlaces = useMemo(() => {
-    if (highlightIds.length === 0) return filtered;
+    if (mapHighlightSet.size === 0) return filtered;
     const seen = new Set(filtered.map((place) => place.id));
     return [
       ...filtered,
-      ...allPlaces.filter((place) => highlightSet.has(place.id) && !seen.has(place.id)),
+      ...allPlaces.filter((place) => mapHighlightSet.has(place.id) && !seen.has(place.id)),
     ];
-  }, [filtered, allPlaces, highlightIds, highlightSet]);
+  }, [filtered, allPlaces, mapHighlightSet]);
   const selected = useMemo(
     () => allPlaces.find((p) => p.id === selectedId),
     [allPlaces, selectedId],
@@ -223,20 +233,15 @@ export default function App() {
         useUiStore.getState().setNavTab('map');
       const place = allPlaces.find((p) => p.id === id);
       if (place) {
-        // An explicit tap is the user choosing to reveal that place: turn its
-        // layer on so a deep link or a search result is never a dead end.
-        if (place.layerId !== 'my-markers') {
-          const current = useMapStore.getState().layers;
-          if (current.some((l) => l.id === place.layerId && !l.visible)) {
-            useMapStore
-              .getState()
-              .setLayers(
-                current.map((l) =>
-                  l.id === place.layerId ? { ...l, visible: true } : l,
-                ),
-              );
-          }
-        }
+        // Reveal ONE place only (v0.30.0): the tap reveals that place
+        // — its pin renders and its sheet opens — but its layer stays
+        // exactly as it was, so no unrelated marker appears with it.
+        // Turning a whole layer on is a separate, explicit action
+        // (a Layers checkbox, a map chip, "Show everything").
+        // Previously this turned the place's layer on, so a Find tap,
+        // an Ask card or a deep link switched on every marker in
+        // that layer as a side effect.
+        useMapStore.getState().setHighlights([place.id]);
         useMapStore.getState().select(place);
       }
     },
@@ -496,7 +501,16 @@ export default function App() {
             data !== null &&
             'workspaceId' in data &&
             data.workspaceId === ownWorkspace;
-      if (matches && usePersistenceStore.getState().status !== 'saving') void hydrateUserData();
+      // A save in another tab reloads the user data AND the AI index
+      // here — the index is device-global, so a batch finished in the
+      // other tab is this tab's progress too. The runner's own
+      // post-batch reload (store.applyBatch) already keeps a running
+      // job current; this covers imports and confirmations made
+      // elsewhere.
+      if (matches && usePersistenceStore.getState().status !== 'saving') {
+        void hydrateUserData();
+        void useAiIndexStore.getState().reloadFromDatabase();
+      }
     });
     const unlisten = atlasRegistry.on('saved', () =>
       channel?.postMessage({ workspaceId: useWorkspaceStore.getState().workspaceId }),
@@ -642,7 +656,7 @@ export default function App() {
           preferences={preferences}
           foundIds={new Set(visited.map((v) => v.placeId))}
           exploredIds={new Set(explored.map((e) => e.placeId))}
-          highlightIds={highlightSet}
+          highlightIds={mapHighlightSet}
           aiCategories={aiCategories}
           onSelect={select}
           onPlacePosition={placePosition}

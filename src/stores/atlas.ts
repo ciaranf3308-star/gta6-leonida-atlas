@@ -12,10 +12,9 @@ import {
 } from '../db/repository';
 import { atlasRegistry } from '../plugins/registry';
 import { parseBackup } from '../db/backup';
-import {
-  loadAiCategories,
-  loadIndexJob,
-} from '../features/categorise/storage';
+import { exportAiIndex } from '../db/ai-index';
+import { importAtlasBackup } from '../db/backup-import';
+import { useAiIndexStore } from '../features/categorise/store';
 
 export const DEFAULT_FILTERS: Filters = {
   query: '',
@@ -279,15 +278,16 @@ export async function exportWorkspaceBackup(workspaceId: string | null) {
   assertWorkspace(workspaceId, expectedGeneration);
   const backup = await atlasRepository.exportBackup();
   assertWorkspace(workspaceId, expectedGeneration);
-  // The AI index lives in localStorage, not in the database — attach
-  // a read-only snapshot here. Two plain reads, no writes: safe while
-  // the indexing job is running, and the file is validated before it
-  // is handed to the download, so a half-written batch can never
-  // produce a corrupt backup.
+  // The AI index lives in its own IndexedDB database, not in the
+  // user-data database — attach a read-only snapshot here. No
+  // writes: safe while the indexing job is running, and the file is
+  // validated before it is handed to the download, so a half-written
+  // batch can never produce a corrupt backup.
+  const ai = await exportAiIndex();
   return parseBackup({
     ...backup,
-    aiCategories: Object.values(loadAiCategories()),
-    aiIndexJob: loadIndexJob(),
+    aiCategories: ai.aiCategories,
+    aiIndexJob: ai.aiIndexJob,
   });
 }
 
@@ -298,13 +298,37 @@ export async function importWorkspaceBackup(
   const expectedGeneration = generation;
   assertWorkspace(workspaceId, expectedGeneration);
   const backup = parseBackup(value);
+  // The import is one honest operation across both stores: the AI
+  // half merges first, then the user-data half imports, and if the
+  // user-data half fails the AI half is rolled back to its
+  // pre-import snapshot (see db/backup-import.ts). Only after both
+  // halves are persisted — and the stores reloaded from the
+  // databases — may the caller say the import succeeded.
+  // (A holder object, not a let: TypeScript cannot see a closure
+  // assignment across an await, so a plain variable reads as null
+  // after saveLocal returns.)
+  const importResult: { failure?: string } = {};
   const saved = await saveLocal(async () => {
     assertWorkspace(workspaceId, expectedGeneration);
-    await atlasRepository.importBackup(backup);
+    try {
+      await importAtlasBackup(backup);
+    } catch (error) {
+      importResult.failure =
+        error instanceof Error ? error.message : 'Could not import the backup.';
+      throw error;
+    }
   });
   assertWorkspace(workspaceId, expectedGeneration);
   if (!saved)
-    throw new Error(usePersistenceStore.getState().error || 'Could not import the backup.');
+    throw new Error(
+      importResult.failure &&
+        importResult.failure.includes('could not be rolled back')
+        ? importResult.failure
+        : usePersistenceStore.getState().error ||
+          importResult.failure ||
+          'Could not import the backup.',
+    );
+  await useAiIndexStore.getState().reloadFromDatabase();
 }
 
 /** Serialize local writes; publish success only after the transaction and reload complete. */

@@ -18,6 +18,7 @@ import {
   MIN_AI_CONFIDENCE,
   parseCategorisationResponse,
   type AiCategoryRecord,
+  type ParsedCategorisationResult,
 } from "../../src/features/categorise/categories";
 import {
   loadAiCategories,
@@ -550,10 +551,10 @@ describe("AI categorisation — the job runner (mocked fetch)", () => {
       fetchImpl: fetchImpl as unknown as typeof fetch,
       shouldPause: () => false,
       shouldCancel: () => false,
-      applyResults: (results) =>
-        useAiIndexStore.getState().applyResults(results),
-      markAttempted: (placeIds) =>
-        useAiIndexStore.getState().markAttempted(placeIds),
+      applyResults: (results, model) =>
+        useAiIndexStore.getState().applyResults(results, model),
+      applyBatch: (results, attemptedPlaceIds, model) =>
+        useAiIndexStore.getState().applyBatch(results, attemptedPlaceIds, model),
       setJob: (patch) => useAiIndexStore.getState().setJob(patch),
       batchDelayMs: 0,
     });
@@ -574,10 +575,10 @@ describe("AI categorisation — the job runner (mocked fetch)", () => {
       fetchImpl: fetchImpl as unknown as typeof fetch,
       shouldPause: () => false,
       shouldCancel: () => false,
-      applyResults: (results) =>
-        useAiIndexStore.getState().applyResults(results),
-      markAttempted: (placeIds) =>
-        useAiIndexStore.getState().markAttempted(placeIds),
+      applyResults: (results, model) =>
+        useAiIndexStore.getState().applyResults(results, model),
+      applyBatch: (results, attemptedPlaceIds, model) =>
+        useAiIndexStore.getState().applyBatch(results, attemptedPlaceIds, model),
       setJob: (patch) => useAiIndexStore.getState().setJob(patch),
       batchDelayMs: 0,
     });
@@ -611,10 +612,10 @@ describe("AI categorisation — the job runner (mocked fetch)", () => {
       }) as unknown as typeof fetch,
       shouldPause: () => calls >= 1,
       shouldCancel: () => false,
-      applyResults: (results) =>
-        useAiIndexStore.getState().applyResults(results),
-      markAttempted: (placeIds) =>
-        useAiIndexStore.getState().markAttempted(placeIds),
+      applyResults: (results, model) =>
+        useAiIndexStore.getState().applyResults(results, model),
+      applyBatch: (results, attemptedPlaceIds, model) =>
+        useAiIndexStore.getState().applyBatch(results, attemptedPlaceIds, model),
       setJob: (patch) => useAiIndexStore.getState().setJob(patch),
       batchDelayMs: 0,
     });
@@ -648,10 +649,10 @@ describe("AI categorisation — the job runner (mocked fetch)", () => {
       fetchImpl: failing as unknown as typeof fetch,
       shouldPause: () => false,
       shouldCancel: () => false,
-      applyResults: (results) =>
-        useAiIndexStore.getState().applyResults(results),
-      markAttempted: (placeIds) =>
-        useAiIndexStore.getState().markAttempted(placeIds),
+      applyResults: (results, model) =>
+        useAiIndexStore.getState().applyResults(results, model),
+      applyBatch: (results, attemptedPlaceIds, model) =>
+        useAiIndexStore.getState().applyBatch(results, attemptedPlaceIds, model),
       setJob: (patch) => useAiIndexStore.getState().setJob(patch),
       batchDelayMs: 0,
     });
@@ -819,5 +820,203 @@ describe("AI categorisation — Ask Nylah and search use it", () => {
       ).map((p) => p.id),
     ).toEqual(["L818"]);
     expect(aiCategorySearchWords(aiCategories["L939"])).toContain("workout");
+  });
+});
+
+describe("AI categorisation — v0.30.0 job reliability and model provenance", () => {
+  function baseJob(overrides: {
+    places: Place[];
+    fetchImpl: unknown;
+    shouldCancel?: () => boolean;
+    shouldPause?: () => boolean;
+    applyResults: (
+      results: ParsedCategorisationResult[],
+      model?: string,
+    ) => Promise<boolean>;
+    applyBatch?: (
+      results: ParsedCategorisationResult[],
+      attemptedPlaceIds: readonly string[],
+      model?: string,
+    ) => Promise<boolean>;
+    model?: string;
+  }) {
+    const storage = memoryStorage();
+    useAiIndexStore.getState().load(storage);
+    return {
+      storage,
+      run: () =>
+        runIndexJob({
+          places: overrides.places,
+          allPlaces: overrides.places,
+          apiKey: "sk-test",
+          model: overrides.model,
+          fetchImpl: overrides.fetchImpl as unknown as typeof fetch,
+          shouldPause: overrides.shouldPause ?? (() => false),
+          shouldCancel: overrides.shouldCancel ?? (() => false),
+          applyResults: overrides.applyResults,
+          applyBatch:
+            overrides.applyBatch ??
+            ((results, attemptedPlaceIds, model) =>
+              useAiIndexStore
+                .getState()
+                .applyBatch(results, attemptedPlaceIds, model)),
+          setJob: (patch) => useAiIndexStore.getState().setJob(patch),
+          batchDelayMs: 0,
+        }),
+    };
+  }
+
+  it("stopping mid-batch aborts the in-flight call — nothing from that batch is saved", async () => {
+    const all = Array.from({ length: 8 }, (_, i) =>
+      place({
+        id: `L${5000 + i}`,
+        title: "?, Capri",
+        layerId: "uncertain",
+        position: { x: i, y: 0 },
+        region: "Capri",
+      }),
+    );
+    let seenSignal: AbortSignal | undefined;
+    const hanging = vi.fn(async (_url: string, init?: RequestInit) => {
+      seenSignal = init?.signal as AbortSignal | undefined;
+      await new Promise<void>((_, reject) => {
+        seenSignal?.addEventListener("abort", () => {
+          reject(new DOMException("Aborted", "AbortError"));
+        });
+      });
+      return {} as Response;
+    });
+    let stop = false;
+    setTimeout(() => {
+      stop = true;
+    }, 30);
+    const applied: unknown[] = [];
+    const { storage, run } = baseJob({
+      places: all,
+      fetchImpl: hanging,
+      shouldCancel: () => stop,
+      applyResults: async (results) => {
+        applied.push(...results);
+        return true;
+      },
+    });
+    const outcome = await run();
+    expect(outcome).toBe("cancelled");
+    expect(useAiIndexStore.getState().job.status).toBe("idle");
+    expect(seenSignal?.aborted).toBe(true);
+    expect(applied).toHaveLength(0);
+    expect(useAiIndexStore.getState().job.attemptedPlaceIds).toHaveLength(0);
+    expect(useAiIndexStore.getState().categories).toEqual({});
+    useAiIndexStore.getState().clearAll(storage);
+  });
+
+  it("a hanging batch times out instead of stalling the job forever", async () => {
+    const all = Array.from({ length: 8 }, (_, i) =>
+      place({
+        id: `L${5100 + i}`,
+        title: "?, Capri",
+        layerId: "uncertain",
+        position: { x: i, y: 0 },
+        region: "Capri",
+      }),
+    );
+    const hanging = vi.fn(
+      () => new Promise<Response>(() => {}),
+    ) as unknown as typeof fetch;
+    // The runner's batch timeout is the categoriseBatch default (60s),
+    // so exercise the batch call directly with a short timeout here.
+    await expect(
+      categoriseBatch({
+        places: all,
+        allPlaces: all,
+        apiKey: "sk-test",
+        fetchImpl: hanging,
+        timeoutMs: 50,
+      }),
+    ).rejects.toThrow(/timed out/i);
+  });
+
+  it("records name the model that actually made them — custom model for AI, 'deterministic' for data-resolved", async () => {
+    const deterministicPlace = place({
+      id: "L5200",
+      title: "?, Vice City",
+      layerId: "gyms",
+      tags: ["gym"],
+      position: { x: 0, y: 0 },
+      region: "Vice City",
+    });
+    const aiPlaces = Array.from({ length: 7 }, (_, i) =>
+      place({
+        id: `L${5201 + i}`,
+        title: "?, Capri",
+        layerId: "uncertain",
+        position: { x: i + 1, y: 0 },
+        region: "Capri",
+      }),
+    );
+    const all = [deterministicPlace, ...aiPlaces];
+    const seenModels: string[] = [];
+    const fetchImpl = vi.fn().mockImplementation(async (_url: string, init: RequestInit) => {
+      const body = JSON.parse(String(init.body));
+      seenModels.push(body.model as string);
+      const text: string = body.messages[1].content as string;
+      const batchIds = aiPlaces.map((p) => p.id).filter((id) => text.includes(id));
+      return {
+        ok: true,
+        json: async () => ({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  results: batchIds.map((id) => ({
+                    id,
+                    category: "house",
+                    confidence: 0.9,
+                    reason: "Test batch.",
+                  })),
+                }),
+              },
+            },
+          ],
+        }),
+      } as unknown as Response;
+    });
+    const appliedModels: Array<{ ids: string[]; model: string | undefined }> = [];
+    const { storage, run } = baseJob({
+      places: all,
+      fetchImpl,
+      model: "gpt-4o",
+      applyResults: async (results, model) => {
+        appliedModels.push({
+          ids: results.map((r) => r.placeId),
+          model,
+        });
+        return useAiIndexStore.getState().applyResults(results, model);
+      },
+      applyBatch: async (results, attemptedPlaceIds, model) => {
+        appliedModels.push({
+          ids: results.map((r) => r.placeId),
+          model,
+        });
+        return useAiIndexStore
+          .getState()
+          .applyBatch(results, attemptedPlaceIds, model);
+      },
+    });
+    const outcome = await run();
+    expect(outcome).toBe("done");
+    // The AI call used the user's chosen model, not the default.
+    expect(seenModels).toEqual(["gpt-4o"]);
+    // The data-resolved place was recorded as 'deterministic' — no
+    // model made it — and the AI places as 'gpt-4o'.
+    const byId = new Map(
+      appliedModels.flatMap(({ ids, model }) => ids.map((id) => [id, model])),
+    );
+    expect(byId.get("L5200")).toBe("deterministic");
+    for (const p of aiPlaces) expect(byId.get(p.id)).toBe("gpt-4o");
+    const stored = useAiIndexStore.getState().categories;
+    expect(stored["L5200"]?.model).toBe("deterministic");
+    expect(stored["L5201"]?.model).toBe("gpt-4o");
+    useAiIndexStore.getState().clearAll(storage);
   });
 });

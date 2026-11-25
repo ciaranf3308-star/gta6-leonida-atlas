@@ -301,6 +301,10 @@ export default function PlaceDetails({
   const [correcting, setCorrecting] = useState(false);
   const [correctChoice, setCorrectChoice] = useState<AiCategoryId>('house');
   const [correctShopType, setCorrectShopType] = useState('');
+  /** Shown when a confirm/correct write did not persist — the
+   * record on screen only changes after the write is verified, so
+   * a failure must say so instead of looking like it worked. */
+  const [aiSaveError, setAiSaveError] = useState('');
   async function saveNote() {
     if (saving.current || !draft.dirty || draft.conflict) return;
     saving.current = true;
@@ -862,7 +866,16 @@ export default function PlaceDetails({
                   <button
                     type="button"
                     className="button"
-                    onClick={() => useAiIndexStore.getState().confirmCategory(place.id)}
+                    onClick={async () => {
+                      const ok = await useAiIndexStore
+                        .getState()
+                        .confirmCategory(place.id);
+                      setAiSaveError(
+                        ok
+                          ? ''
+                          : 'That confirmation could not be saved on this device — try again.',
+                      );
+                    }}
                   >
                     <Check size={16} /> That looks right — confirm
                   </button>
@@ -926,8 +939,8 @@ export default function PlaceDetails({
                   <button
                     type="button"
                     className="button primary"
-                    onClick={() => {
-                      useAiIndexStore
+                    onClick={async () => {
+                      const ok = await useAiIndexStore
                         .getState()
                         .correctCategory(
                           place.id,
@@ -936,6 +949,13 @@ export default function PlaceDetails({
                             ? correctShopType.trim() || undefined
                             : undefined,
                         );
+                      if (!ok) {
+                        setAiSaveError(
+                          'That type could not be saved on this device — try again.',
+                        );
+                        return;
+                      }
+                      setAiSaveError('');
                       setCorrecting(false);
                     }}
                   >
@@ -950,6 +970,11 @@ export default function PlaceDetails({
                   </button>
                 </div>
               </div>
+            )}
+            {aiSaveError && (
+              <p className="inline-error" role="alert">
+                {aiSaveError}
+              </p>
             )}
           </section>
         )}

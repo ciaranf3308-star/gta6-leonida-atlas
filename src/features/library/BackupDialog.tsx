@@ -1,14 +1,11 @@
 import { useState } from 'react';
 import { Download, Upload } from 'lucide-react';
 import type { Backup } from '../../domain/types';
-import { atlasRepository } from '../../db/repository';
 import { MAX_BACKUP_BYTES, parseBackup } from '../../db/backup';
-import {
-  saveLocal,
-  usePersistenceStore,
-  useWorkspaceStore,
-} from '../../stores/atlas';
+import { saveLocal, usePersistenceStore, useWorkspaceStore } from '../../stores/atlas';
 import { useAiIndexStore } from '../categorise/store';
+import { importAtlasBackup } from '../../db/backup-import';
+import type { AiMergeStats } from '../../db/ai-index';
 import { downloadAtlasBackup } from '../backup/atlas-backup';
 import { Modal } from '../../app/Modal';
 
@@ -59,16 +56,30 @@ export default function BackupDialog({ onClose }: { onClose: () => void }) {
   async function merge() {
     if (!preview) return;
     setBusy(true);
-    const ok = await saveLocal(() => atlasRepository.importBackup(preview));
-    if (ok) {
-      // The markers/notes half is in; now merge the AI index the same
-      // way — corrections win, confirmed beats suggested, "not sure"
-      // never overwrites a type. Safe while the job runs: the merge
-      // keeps the live job's status, so a restore never pauses or
-      // stops a run in progress.
-      const ai = useAiIndexStore
-        .getState()
-        .mergeImportedAi(preview.aiCategories, preview.aiIndexJob);
+    // One honest import across both stores (see db/backup-import.ts):
+    // the AI half merges first, then the markers/notes half imports,
+    // and if the second half fails the AI half is rolled back to its
+    // pre-import snapshot — so a failed import leaves existing data
+    // untouched. The success message below is only shown after both
+    // halves persisted AND the stores reloaded from the databases.
+    // Safe while the job runs: the merge keeps the live job's status,
+    // so a restore never pauses or stops a run in progress.
+    // (A holder object, not a let: TypeScript cannot see a closure
+    // assignment across an await, so a plain variable reads as null
+    // after saveLocal returns.)
+    const importResult: { ai?: AiMergeStats; failure?: string } = {};
+    const ok = await saveLocal(async () => {
+      try {
+        importResult.ai = await importAtlasBackup(preview);
+      } catch (error) {
+        importResult.failure =
+          error instanceof Error ? error.message : 'Import failed.';
+        throw error;
+      }
+    });
+    if (ok && importResult.ai) {
+      const ai = importResult.ai;
+      await useAiIndexStore.getState().reloadFromDatabase();
       setBusy(false);
       setPreview(null);
       setMessage(
@@ -82,7 +93,14 @@ export default function BackupDialog({ onClose }: { onClose: () => void }) {
       );
     } else {
       setBusy(false);
-      setError('Import failed. Existing data is preserved. Retry after checking storage.');
+      // A rollback failure is the one case where "existing data is
+      // preserved" would be a lie — surface the detail instead.
+      setError(
+        importResult.failure &&
+          importResult.failure.includes('could not be rolled back')
+          ? importResult.failure
+          : 'Import failed. Existing data is preserved. Retry after checking storage.',
+      );
     }
   }
   return (

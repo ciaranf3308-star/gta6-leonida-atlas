@@ -16,6 +16,7 @@ import {
   aiCategoryMatchesLayer,
   type AiCategoryRecord,
 } from '../categorise/categories';
+import { askAllowedLayerIds } from '../spoiler/visibility';
 
 /**
  * Ask Nylah retrieval — the spoiler rule, in code.
@@ -471,17 +472,13 @@ export function tagMatchesLayer(place: Place, layerId: string): boolean {
 export function retrieveForAsk(input: AskRetrievalInput): AskRetrievalResult {
   const { question, places, layers } = input;
   const requestedLayerIds = layersRequestedByQuestion(question, layers);
-  const visible = new Set(layers.filter((l) => l.visible).map((l) => l.id));
   // Scope: when the question asks for specific layers, ONLY those layers
   // (plus My markers) are in scope — a visible-but-unasked layer must never
   // hijack the answer (e.g. a gym question must not return an interior just
   // because Interiors is on and the county filter matches it). Visible
   // layers only count for general questions that name no layer.
-  const allowed = new Set<string>(
-    requestedLayerIds.length > 0
-      ? [...requestedLayerIds, 'my-markers']
-      : [...visible, 'my-markers'],
-  );
+  // (features/spoiler/visibility.ts — one source of truth.)
+  const allowed = askAllowedLayerIds(requestedLayerIds, layers);
   const visited = new Set(input.visitedIds ?? []);
   const hideFound = input.filters.hideFound || input.filters.remainingOnly;
   const asksGyms = requestedLayerIds.includes('gyms');

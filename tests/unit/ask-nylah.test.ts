@@ -7,6 +7,7 @@ import {
   buildAskSystemPrompt,
   formatRecordsForPrompt,
   parsePlaceMentions,
+  sanitizeAiNote,
 } from '../../src/features/ask/openai';
 
 function place(overrides: Partial<Place> & Pick<Place, 'id' | 'title' | 'layerId'>): Place {
@@ -712,5 +713,107 @@ describe('Ask Nylah — answers from tags, not just names', () => {
       userTags,
     });
     expect(gym.records.map((p) => p.id)).not.toContain('L777');
+  });
+});
+
+describe('Ask Nylah — deterministic check on the AI free text (v0.30.0)', () => {
+  const gymRecords = FIXTURES.filter((p) => p.layerId === 'gyms');
+  const all = FIXTURES;
+
+  it('keeps a sentence about a place that was actually sent', () => {
+    const note = sanitizeAiNote(
+      'The nearest gym is Dynamix Fitness, in Vice City.',
+      gymRecords,
+      all,
+      ['gyms'],
+      'Vice City',
+    );
+    expect(note).toContain('Dynamix Fitness');
+  });
+
+  it('drops a sentence naming a place that was never sent — the Vicki / Starlet Motel leak', () => {
+    const lootRecords = FIXTURES.filter((p) => p.layerId === 'lootable');
+    const note = sanitizeAiNote(
+      'Hit Corner Store, Capri first. Vicki is in there too, plus the Starlet Motel.',
+      lootRecords,
+      all,
+      ['lootable'],
+      'Capri',
+    );
+    expect(note).toContain('Corner Store');
+    expect(note).not.toContain('Vicki');
+    expect(note).not.toContain('Starlet Motel');
+  });
+
+  it('drops a cross-layer extra the question never asked for', () => {
+    const note = sanitizeAiNote(
+      'The nearest gym is Dynamix Fitness. You will also find trading cards in those houses.',
+      gymRecords,
+      all,
+      ['gyms'],
+      'Vice City',
+    );
+    expect(note).toContain('Dynamix Fitness');
+    expect(note).not.toMatch(/card/i);
+  });
+
+  it('keeps a cross-layer word when that layer WAS asked for', () => {
+    const cardRecords = FIXTURES.filter((p) => p.layerId.startsWith('cards:'));
+    const note = sanitizeAiNote(
+      'One card is pinned here.',
+      cardRecords,
+      all,
+      ['cards:delights'],
+    );
+    expect(note).toContain('card');
+  });
+
+  it('returns empty when every sentence leaks — the answer falls back to verdict + cards', () => {
+    expect(
+      sanitizeAiNote(
+        'Vicki is in there too, plus the Starlet Motel.',
+        gymRecords,
+        all,
+        ['gyms'],
+      ),
+    ).toBe('');
+  });
+});
+
+describe('Ask Nylah — bounded requests (v0.30.0)', () => {
+  const base = {
+    question: 'Where can I train?',
+    records: FIXTURES.slice(0, 1),
+    requestedLayerNames: ['Gyms'],
+    apiKey: 'sk-test',
+  };
+
+  it('fails fast when the API hangs — the caller is never stuck on a spinner', async () => {
+    const hanging = vi.fn(
+      () => new Promise<Response>(() => {}),
+    ) as unknown as typeof fetch;
+    await expect(
+      askOpenAi({ ...base, fetchImpl: hanging, timeoutMs: 50 }),
+    ).rejects.toThrow(/timed out/i);
+  });
+
+  it('aborts the in-flight request when the caller cancels', async () => {
+    const controller = new AbortController();
+    let seenSignal: AbortSignal | undefined;
+    const slow = vi.fn(async (_url: string, init?: RequestInit) => {
+      seenSignal = init?.signal as AbortSignal | undefined;
+      await new Promise<void>((resolve, reject) => {
+        const t = setTimeout(resolve, 5000);
+        seenSignal?.addEventListener('abort', () => {
+          clearTimeout(t);
+          reject(new DOMException('Aborted', 'AbortError'));
+        });
+      });
+      return { ok: true, json: async () => ({ choices: [{ message: { content: 'late' } }] }) } as unknown as Response;
+    }) as unknown as typeof fetch;
+    const promise = askOpenAi({ ...base, fetchImpl: slow, signal: controller.signal });
+    controller.abort();
+    await expect(promise).rejects.toThrow();
+    expect(seenSignal?.aborted).toBe(true);
   });
 });

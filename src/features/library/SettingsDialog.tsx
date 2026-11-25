@@ -125,7 +125,10 @@ export default function SettingsDialog({
           Ask Nylah answers only from this map, and only about what you asked for. Your OpenAI
           key stays on this device only — it is never backed up, never sent anywhere except
           OpenAI when you ask, and never shown in full. Without a key, Ask still lists matching
-          places from the map.
+          places from the map. OpenAI itself recommends against keeping API keys in a browser:
+          this one lives in this browser&apos;s storage, so anyone with access to this device
+          or browser profile could read it — remove it here any time, and don&apos;t reuse a
+          key that protects anything else.
         </p>
         <label className="ask-setting-row" htmlFor="ask-api-key">
           <span>

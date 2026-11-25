@@ -487,6 +487,11 @@ export interface CategoriseBatchInput {
   apiKey: string;
   model?: string;
   fetchImpl?: typeof fetch;
+  /** Abort a batch the user stopped mid-flight — the request dies
+   * with it instead of finishing and writing results afterwards. */
+  signal?: AbortSignal;
+  /** Bounded wait per batch — defaults to 60 seconds. */
+  timeoutMs?: number;
 }
 
 /** One small batch to OpenAI. No key is ever bundled; the caller passes
@@ -496,10 +501,20 @@ export async function categoriseBatch(
 ): Promise<ParsedCategorisationResult[]> {
   if (input.places.length === 0) return [];
   const model = input.model?.trim() || CATEGORISATION_MODEL;
+  const timeoutMs = input.timeoutMs ?? 60_000;
   const contexts = input.places.map((place) =>
     buildPlaceContext(place, input.allPlaces),
   );
-  const response = await (input.fetchImpl ?? fetch)(
+  // Bounded + abortable, like Ask: the timeout aborts the real fetch,
+  // and the race unblocks the caller even if a fetch implementation
+  // ignores the signal.
+  const timeoutController = new AbortController();
+  const timer = setTimeout(() => timeoutController.abort(), timeoutMs);
+  const signal =
+    input.signal === undefined
+      ? timeoutController.signal
+      : AbortSignal.any([input.signal, timeoutController.signal]);
+  const fetchPromise = (input.fetchImpl ?? fetch)(
     "https://api.openai.com/v1/chat/completions",
     {
       method: "POST",
@@ -516,8 +531,38 @@ export async function categoriseBatch(
         temperature: 0,
         response_format: { type: "json_object" },
       }),
+      signal,
     },
   );
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    const t = setTimeout(
+      () =>
+        reject(
+          new Error(
+            `Indexing batch timed out after ${Math.round(timeoutMs / 1000)} seconds — nothing from this batch was saved.`,
+          ),
+        ),
+      timeoutMs,
+    );
+    fetchPromise.then(
+      () => clearTimeout(t),
+      () => clearTimeout(t),
+    );
+  });
+  let response: Response;
+  try {
+    response = await Promise.race([fetchPromise, timeoutPromise]);
+  } catch (error) {
+    clearTimeout(timer);
+    if (timeoutController.signal.aborted && !(input.signal?.aborted ?? false)) {
+      throw new Error(
+        `Indexing batch timed out after ${Math.round(timeoutMs / 1000)} seconds — nothing from this batch was saved.`,
+        { cause: error },
+      );
+    }
+    throw error;
+  }
+  clearTimeout(timer);
   if (!response.ok) {
     const detail = await response.text().catch(() => "");
     throw new Error(

@@ -79,9 +79,13 @@ const skipOnboarding = async () => {
 };
 const closePlaceSheet = async () => {
   const close = page.getByRole('button', { name: 'Close place details' });
-  if (await close.isVisible({ timeout: 5000 }).catch(() => false)) {
+  if (await close.isVisible({ timeout: 8000 }).catch(() => false)) {
     await close.click();
-    await page.waitForTimeout(600);
+    // Wait for the sheet to actually leave: a slow catalogue load
+    // can leave the sheet up after the click, and the next step's
+    // button (under the sheet) times out instead of failing loudly.
+    await page.waitForSelector('.place-sheet', { state: 'detached', timeout: 8000 }).catch(() => {});
+    await page.waitForTimeout(400);
   }
 };
 const zoomOut = async (n) => {
@@ -206,6 +210,25 @@ await page.waitForTimeout(1500);
 await page.goto(`${base}?place=L2227`, { waitUntil: 'networkidle' });
 await page.waitForTimeout(1500);
 await closePlaceSheet();
+// v0.30.0: a reload resets layers to off (the app offers "Restore
+// my last layers" instead of auto-restoring), and a deep link
+// reveals exactly one place — closing its sheet clears the reveal
+// (highlightIds are reset with the selection) — so "Show everything"
+// from before the reload leaves ZERO markers on screen and the pill
+// check below passes vacuously. Turn every layer on here, after the
+// reload, or the check is meaningless. (Whether the reveal SHOULD
+// survive closing the sheet is a spoiler-lane question — flagged to
+// the lead — not something this probe decides.)
+await nav('Layers').click();
+await page.waitForTimeout(800);
+for (;;) {
+  const next = page.locator('.layer-manager input[type="checkbox"]:not(:checked)').first();
+  if ((await next.count()) === 0) break;
+  await next.click();
+  await page.waitForTimeout(120);
+}
+await page.locator('.sidebar.is-layers-sheet .brand-header .icon-button').click();
+await page.waitForTimeout(1000);
 await zoomInToMax();
 await page.waitForTimeout(1500);
 const pillCheck = await page.evaluate(() => {

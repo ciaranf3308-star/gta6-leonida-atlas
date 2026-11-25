@@ -207,7 +207,7 @@ describe("merging a restored AI index", () => {
     expect(addedAttempted).toBe(1);
   });
 
-  it("restores into the store and persists it, without touching a running job's status", () => {
+  it("restores into the store and persists it, without touching a running job's status", async () => {
     const storage = memoryStorage({
       "leonida-ai-categories-v1": JSON.stringify({
         L1: record("L1", { status: "corrected", userCategory: "shop" }),
@@ -220,7 +220,9 @@ describe("merging a restored AI index", () => {
     // A reloaded "running" job reads as paused (it was interrupted);
     // put it back to running the way the live runner does, then merge.
     useAiIndexStore.getState().setJob({ status: "running" });
-    const result = useAiIndexStore
+    // NOTE (v0.30.0 cross-lane): mergeImportedAi is async since the
+    // data+SW lane moved the AI index to IndexedDB.
+    const result = await useAiIndexStore
       .getState()
       .mergeImportedAi(
         [record("L2", { status: "suggested" })],

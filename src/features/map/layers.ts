@@ -1,5 +1,6 @@
 import type { LayerDefinition, Place } from '../../domain/types';
 import { COLLECTABLE_CARD_PLACES, COLLECTABLE_SETS } from '../../data/collectables';
+import { visiblePlaces } from '../spoiler/visibility';
 
 /**
  * Spoiler-free fork: every public layer starts OFF. The map opens as a blank
@@ -242,18 +243,17 @@ export const DEFAULT_LAYERS: LayerDefinition[] = [
 /**
  * Spoiler gate for search and results: a public place is only listed when its
  * layer is turned on. Personal markers are always listed — they are the
- * user's own notes.
+ * user's own notes. The rule itself lives in features/spoiler/visibility.ts
+ * (one source of truth); this stays as the call-site name. A revealed
+ * place (Ask answer, Find tap, deep link) is listed too — see the reveal
+ * set in that module.
  */
 export function filterByVisibleLayers(
   places: readonly Place[],
   layers: readonly LayerDefinition[],
+  revealIds: ReadonlySet<string> = new Set(),
 ): Place[] {
-  const visible = new Set(
-    layers.filter((layer) => layer.visible).map((layer) => layer.id),
-  );
-  return places.filter(
-    (place) => place.layerId === 'my-markers' || visible.has(place.layerId),
-  );
+  return visiblePlaces(places, layers, revealIds);
 }
 
 /** Unpositioned records remain available to the catalogue; the spatial index omits them. */

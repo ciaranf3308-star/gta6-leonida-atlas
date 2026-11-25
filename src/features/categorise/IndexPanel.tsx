@@ -47,9 +47,13 @@ export interface IndexPanelProps {
 export default function IndexPanel(props: IndexPanelProps) {
   const categories = useAiIndexStore((s) => s.categories);
   const job = useAiIndexStore((s) => s.job);
+  const storageError = useAiIndexStore((s) => s.storageError);
   const requeuedUnsure = useAiIndexStore((s) => s.requeuedUnsure);
   const startRequestId = useAiIndexStore((s) => s.startRequestId);
   const [running, setRunning] = useState(false);
+  /** True when another tab already holds the index-job lock — this
+   * tab does not start a second run. Cleared when a run starts here. */
+  const [lockNotice, setLockNotice] = useState(false);
   const pauseRef = useRef(false);
   const cancelRef = useRef(false);
   /** StrictMode double-invokes effects in dev; the ref guard makes a
@@ -139,20 +143,48 @@ export default function IndexPanel(props: IndexPanelProps) {
     cancelRef.current = false;
     runningRef.current = true;
     setRunning(true);
+    setLockNotice(false);
     try {
-      await runIndexJob({
-        places: todo,
-        allPlaces: props.places,
-        apiKey,
-        model: getAskModel(),
-        shouldPause: () => pauseRef.current,
-        shouldCancel: () => cancelRef.current,
-        applyResults: (results) =>
-          useAiIndexStore.getState().applyResults(results),
-        markAttempted: (placeIds) =>
-          useAiIndexStore.getState().markAttempted(placeIds),
-        setJob: (patch) => useAiIndexStore.getState().setJob(patch),
-      });
+      const run = () =>
+        runIndexJob({
+          places: todo,
+          allPlaces: props.places,
+          apiKey,
+          model: getAskModel(),
+          shouldPause: () => pauseRef.current,
+          shouldCancel: () => cancelRef.current,
+          applyResults: (results, model) =>
+            useAiIndexStore.getState().applyResults(results, model),
+          // One atomic write per batch: the AI results AND the
+          // attempted marking commit together — a place can never
+          // count as attempted with no type recorded.
+          applyBatch: (results, placeIds, model) =>
+            useAiIndexStore.getState().applyBatch(results, placeIds, model),
+          setJob: (patch) => useAiIndexStore.getState().setJob(patch),
+        });
+      // One tab runs the job at a time (Web Locks). Two tabs
+      // indexing the same places would interleave their writes and
+      // the progress counts would disagree — the second tab waits
+      // and says so instead of starting a duplicate run. The lock
+      // is held for the whole run; if the tab dies, the lock is
+      // released and the other tab can start again.
+      if (typeof navigator !== "undefined" && "locks" in navigator) {
+        const claimed = await navigator.locks.request(
+          "leonida-ai-index-job",
+          { ifAvailable: true },
+          async () => {
+            await run();
+            return true;
+          },
+        );
+        if (claimed !== true) setLockNotice(true);
+      } else {
+        // No Web Locks on this browser: the batches themselves are
+        // still atomic, so the index stays consistent — but two tabs
+        // could both run and duplicate API calls. The gap is named
+        // here, not hidden.
+        await run();
+      }
     } finally {
       runningRef.current = false;
       setRunning(false);
@@ -181,9 +213,13 @@ export default function IndexPanel(props: IndexPanelProps) {
     pauseRef.current = false;
   }
 
-  function retryUnsure() {
-    useAiIndexStore.getState().retryUnsure();
-    void start();
+  async function retryUnsure() {
+    // Await the re-queue first: start() reads the attempted list
+    // fresh, and starting before the re-queue lands would compute
+    // the "to do" list from the stale one and skip the not-sure
+    // places this retry is for.
+    await useAiIndexStore.getState().retryUnsure();
+    await start();
   }
 
   return (
@@ -368,6 +404,29 @@ export default function IndexPanel(props: IndexPanelProps) {
         <p className="inline-error" role="alert">
           Indexing stopped: {job.error} Nothing was lost — the places already
           indexed stay saved, and you can try again.
+        </p>
+      )}
+      {storageError && (
+        <div className="inline-error" role="alert">
+          <p>
+            The index could not be saved on this device: {storageError} Your
+            places already indexed are safe — nothing was marked done that
+            was not saved.
+          </p>
+          <button
+            type="button"
+            className="button"
+            onClick={() => void useAiIndexStore.getState().load()}
+          >
+            Try saving again
+          </button>
+        </div>
+      )}
+      {lockNotice && (
+        <p className="inline-error" role="status">
+          The index job is already running in another tab — this tab will
+          not start a second one. Finish or stop it there, then start
+          again here.
         </p>
       )}
       {!hasKey ? (

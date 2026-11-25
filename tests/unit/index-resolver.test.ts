@@ -276,10 +276,10 @@ describe("index resolver v2 — the job runner (mocked fetch)", () => {
       fetchImpl,
       shouldPause: () => false,
       shouldCancel: () => false,
-      applyResults: (results) =>
-        useAiIndexStore.getState().applyResults(results),
-      markAttempted: (placeIds) =>
-        useAiIndexStore.getState().markAttempted(placeIds),
+      applyResults: (results, model) =>
+        useAiIndexStore.getState().applyResults(results, model),
+      applyBatch: (results, attemptedPlaceIds, model) =>
+        useAiIndexStore.getState().applyBatch(results, attemptedPlaceIds, model),
       setJob: (patch) => useAiIndexStore.getState().setJob(patch),
       batchDelayMs: 0,
     });
@@ -340,10 +340,10 @@ describe("index resolver v2 — the job runner (mocked fetch)", () => {
       fetchImpl,
       shouldPause: () => false,
       shouldCancel: () => false,
-      applyResults: (results) =>
-        useAiIndexStore.getState().applyResults(results),
-      markAttempted: (placeIds) =>
-        useAiIndexStore.getState().markAttempted(placeIds),
+      applyResults: (results, model) =>
+        useAiIndexStore.getState().applyResults(results, model),
+      applyBatch: (results, attemptedPlaceIds, model) =>
+        useAiIndexStore.getState().applyBatch(results, attemptedPlaceIds, model),
       setJob: (patch) => useAiIndexStore.getState().setJob(patch),
       batchDelayMs: 0,
     });

@@ -549,18 +549,18 @@ function Results({
     const houses = housesToCheck(allPlaces, anchor, (place) =>
       countyForPlace(place) === county.id,
     );
-    return { county, nearest, housesTotal: houses.total, equipment };
+    return { county, nearest, housesTotal: houses.total, houses: houses.places, equipment };
   }, [filters.query, filters.countyId, mapCenter, allPlaces, placeTags]);
 
   function showHousesToCheck() {
     if (!gymHint) return;
-    useMapStore.getState().setLayers(
-      useMapStore
-        .getState()
-        .layers.map((layer) =>
-          layer.id === 'breakable' ? { ...layer, visible: true } : layer,
-        ),
-    );
+    // Reveal ONLY these houses (v0.30.0): their pins render as
+    // highlights, with the county filter on — the whole Breakable
+    // homes layer stays exactly as it was, so no unrelated house
+    // appears island-wide as a side effect of this tap.
+    useMapStore
+      .getState()
+      .setHighlights(gymHint.houses.map((place) => place.id));
     useUiStore.getState().setFilters({
       query: '',
       countyId: gymHint.county.id,

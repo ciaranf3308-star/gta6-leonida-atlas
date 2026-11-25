@@ -21,6 +21,18 @@ import {
 } from './gtadb-tiles';
 import { buildSpatialIndex, clusterPlaces, querySpatialIndex, selectHeroPlaces, type PlaceCluster, type SpatialIndex } from './spatial';
 import { startTilePrefetch } from './tile-prefetch';
+import { TILE_ERROR_DATA_URI } from './tile-error';
+import {
+  FALLBACK_GEOMETRY,
+  fitPaddingFor,
+  markerBoxHidden,
+  measureChromeGeometry,
+  observeChromeGeometry,
+  type ChromeGeometry,
+} from './chrome-geometry';
+import { markerColor, markerIcon } from './marker-icon';
+import { computeLabelPlacements, type LabelCandidate } from './label-placement';
+import { addIsolationLayers } from './isolation-layer';
 import {
   iconKeyForAiRecord,
   iconKeyForPlace,
@@ -28,8 +40,9 @@ import {
 } from './place-icons';
 import type { AiCategoryRecord } from '../categorise/categories';
 import type { Isolation } from './isolation';
+import { isPlaceVisible } from '../spoiler/visibility';
 import { loadSavedCamera, shouldResumeCamera } from './camera-persistence';
-import { runToLatLngs, useAfterHoursGeo } from './after-hours-geo';
+import { useAfterHoursGeo } from './after-hours-geo';
 import 'leaflet/dist/leaflet.css';
 import './map.css';
 
@@ -76,64 +89,6 @@ function leafletBounds(bounds: MapBounds): L.LatLngBoundsExpression {
   ];
 }
 
-function markerIcon(
-  group: PlaceCluster,
-  layer: LayerDefinition | undefined,
-  selected: boolean,
-  color?: string,
-  found?: boolean,
-  highlighted?: boolean,
-  iconSvg?: string,
-  clusterIconSvg?: string,
-  explored?: boolean,
-): L.DivIcon {
-  const cluster = group.places.length > 1;
-  const content = document.createElement('span');
-  content.className = cluster ? 'atlas-cluster-face' : 'atlas-pin-face';
-  content.style.setProperty('--pin-color', color ?? layer?.style.color ?? '#e8823a');
-  content.setAttribute('aria-hidden', 'true');
-  // Unnamed "?" pins wear the is-unnamed class: small, quiet, never
-  // labelled — the street-zoom noise was dozens of full-size black
-  // roundels with long "?, Downtown, Vice City" pills.
-  const unnamed = group.places[0]?.title?.startsWith('?') ?? false;
-  if (cluster) {
-    // v0.16.0: a cluster is a small icon pin, not a giant pink number.
-    // It wears its best member's glyph (named first, enterable next)
-    // and carries the count as one tiny badge — the reference never
-    // shows a number as the whole marker.
-    content.innerHTML = clusterIconSvg ?? '';
-    const badge = document.createElement('span');
-    badge.className = 'atlas-cluster-count';
-    badge.textContent = group.places.length > 99 ? '99+' : String(group.places.length);
-    content.append(badge);
-  } else {
-    // A GTA blip: white pictogram in the layer-coloured roundel — never a
-    // bare coloured dot. Found places keep their glyph and gain a tick.
-    content.innerHTML = iconSvg ?? '';
-    if (found) {
-      const badge = document.createElement('span');
-      badge.className = 'atlas-found-badge';
-      badge.textContent = '✓';
-      content.append(badge);
-    }
-  }
-  // The hit area is 48px on every pin — a thumb-sized target, not the
-  // 24px roundel. The visible blip face stays 28px (38px for clusters)
-  // centred inside it, via map.css. The map still shows the same pins.
-  const size = 48;
-  return L.divIcon({
-    html: content,
-    className: `atlas-map-marker ${cluster ? 'is-cluster' : ''} ${selected ? 'is-selected' : ''} ${found && !cluster ? 'is-found' : ''} ${explored && !found && !cluster ? 'is-explored' : ''} ${highlighted ? 'is-highlighted' : ''} ${group.places[0]?.layerId === 'regions' ? 'is-region' : ''} ${unnamed ? 'is-unnamed' : ''}`,
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
-  });
-}
-
-function markerColor(place: Place): string | undefined {
-  const tag = place.tags.find((tag) => tag.startsWith('color:'));
-  return tag?.slice('color:'.length);
-}
-
 export default function MapView(props: MapViewProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const callbacks = useRef(props);
@@ -150,18 +105,27 @@ export default function MapView(props: MapViewProps) {
   const retina =
     typeof window !== "undefined" && window.devicePixelRatio >= 2;
   const descriptionId = useId();
-  // v0.23.0: fit the island into the VISIBLE band — between the hero
-  // (banner + search + chips, two chip rows on phones) and the bottom
-  // nav. The old [24,24] padding left the island small with empty sea
-  // around it. Every fit-to-Leonida call goes through here.
-  const fitAllOptions = (animate: boolean): L.FitBoundsOptions => ({
-    paddingTopLeft: L.point(12, window.innerWidth <= 599 ? 204 : 158),
-    // The empty prompt owns the bottom ~132px on first open — the
-    // island's southern tip (the Keys) must sit above it, not under
-    // it. Once layers are on the prompt is gone and it is the nav.
-    paddingBottomRight: L.point(12, props.promptVisible ? 150 : 84),
-    animate,
-  });
+  // v0.30.0: the fit framing is MEASURED (chrome-geometry.ts) —
+  // the island fits into the VISIBLE band below the hero and above
+  // the bottom nav (or the taller empty-map prompt while it is up).
+  // The geometry is re-measured on every marker render and whenever
+  // the chrome resizes, so a wrapped chip row or a taller hero moves
+  // the framing without a code edit.
+  const geometryRef = useRef<ChromeGeometry>(FALLBACK_GEOMETRY);
+  const getGeometry = (): ChromeGeometry => {
+    const host = hostRef.current;
+    if (!host) return geometryRef.current;
+    geometryRef.current = measureChromeGeometry(host);
+    return geometryRef.current;
+  };
+  const fitAllOptions = (animate: boolean): L.FitBoundsOptions => {
+    const padding = fitPaddingFor(getGeometry(), props.promptVisible === true);
+    return {
+      paddingTopLeft: L.point(12, padding.top),
+      paddingBottomRight: L.point(12, padding.bottom),
+      animate,
+    };
+  };
   const index = useMemo(() => buildSpatialIndex(props.places), [props.places]);
   // v0.29.0: memo for the hero/cluster grouping step of renderMarkers.
   // A layer toggle re-runs the marker effect, and the grouping (hero
@@ -282,7 +246,11 @@ export default function MapView(props: MapViewProps) {
         // (coords.z 0 + 1 = tile zoom 6) and 1 off retina.
         maxNativeZoom: retina ? 0 : 1,
         bounds: leafletBounds(GTADB_TILE_BOUNDS),
-        errorTileUrl: `${base.endsWith('/') ? base : `${base}/`}assets/gta6-leonida-atlas/tiles/ocean.jpg`,
+        // v0.30.0: a failed tile shows the error tile, NOT ocean —
+        // the worker refuses to substitute ocean for land, and the
+        // error tile (dark slate, hatched) reads as "not loaded" at
+        // a glance instead of painting water over land (v0.24 P0).
+        errorTileUrl: TILE_ERROR_DATA_URI,
         noWrap: true,
         // v0.29.0: two rings of buffered tiles around the viewport
         // instead of one — a pan by a screenful stays inside tiles
@@ -300,9 +268,23 @@ export default function MapView(props: MapViewProps) {
       // this map instance is torn down.
       const prefetch = startTilePrefetch(activeMap, tiles, base);
       tiles.on('tileerror', () => {
-        // Missing tiles are ocean the source never drew; the ocean tile
-        // above covers them. Only a wholesale failure is worth surfacing.
+        // A tile error now means the tile genuinely failed: the
+        // worker answers real ocean itself, so an error tile is a
+        // land (or coast) tile that did not load — the next pan
+        // retries it. Only a wholesale failure is worth surfacing.
       });
+      // v0.30.0: tiles painted before the service worker took
+      // control can sit as error tiles after a failed first paint —
+      // give them one second chance through the active worker, but
+      // only when an error tile is actually on screen (a blind
+      // redraw on every mount would flicker the whole map).
+      if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+        void navigator.serviceWorker.ready.then(() => {
+          const host = activeMap.getContainer();
+          if (host.querySelector('img[src^="data:image/svg+xml"]'))
+            tiles.redraw();
+        });
+      }
       // v0.18.0: NO sea canvas. The sea grade used to live in a canvas
       // over the tiles (sea-overlay.ts, water-mask stencil) and it
       // seamed: the grade ended mid-screen where the mask rect ended
@@ -398,8 +380,12 @@ export default function MapView(props: MapViewProps) {
         north: bounds.getNorth(),
       }).filter((place) => {
         const layer = layersById.get(place.layerId);
+        // Spoiler visibility (features/spoiler/visibility.ts): a place
+        // renders when its layer is on, it is the user's own marker,
+        // or it is in the current reveal set (Ask highlights / the
+        // selected place). Nothing else gets a pin.
         return (
-          (layer?.visible || props.highlightIds?.has(place.id)) &&
+          isPlaceVisible(place, props.layers, props.highlightIds) &&
           (layer?.minZoom === undefined || currentZoom >= layer.minZoom) &&
           (layer?.maxZoom === undefined || currentZoom <= layer.maxZoom)
         );
@@ -453,69 +439,28 @@ export default function MapView(props: MapViewProps) {
           groupCache.current.delete(oldest);
         }
       }
-      let labelCount = 0;
-      // v0.25.0: a label's placed rect, so a later label that would
-      // land on top of an earlier one is skipped instead of piling
-      // up — three 200px labels from pins 30px apart ("Metro
-      // Station, Downtown, Vice City" over "Parking Lot, Downtown,
-      // Vice City" over "Park, Downtown, Vice City") read as one
-      // smudge. The first label wins; the skipped pin still shows.
-      const placedLabels: { left: number; right: number; top: number; bottom: number }[] = [];
-      // v0.17.0: label-collision check — a label runs right from its
-      // pin, so when another pin sits just to the right (Leonida Keys
-      // into Grassrivers, in his screenshot) the text runs straight
-      // into that pin and the next label. Those pins label left.
+      // v0.30.0: the pin layer is clamped to the visible band, and
+      // the band is MEASURED (chrome-geometry.ts) — the hero, the
+      // illustration note, the edge stack, the zoom pill / desktop
+      // navigation and the attribution are read off the live DOM
+      // every render, so a resized chrome moves the clamp with it.
+      // A pin whose 48px box touches any chrome rect is not
+      // rendered at all (v0.25.0 clamp, v0.26.1 whole-box test).
       const groupPoints = groups.map((g) =>
         map.latLngToContainerPoint(toMapCoordinate(g.position)),
       );
-      // v0.25.0: the pin layer is clamped to the visible band. The
-      // hero (banner + search + chips + note) covers the top ~200px
-      // on phones, the edge stack and the zoom pill own the right
-      // edge, the attribution owns the bottom strip — a pin whose
-      // container point falls in one of those rects is half-hidden
-      // behind opaque chrome, so it is not rendered at all. It comes
-      // back the moment the camera moves it into the open band, and
-      // the camera never rests on a chrome pin: the place sheet
-      // selects the place, not the hidden pin.
-      const mapSize = map.getSize();
-      const phoneLayout = window.innerWidth <= 599;
-      const topChrome = phoneLayout ? 200 : 162;
-      // v0.26.1: test the whole 48px marker BOX, not just its centre
-      // point. The marker is a 48px square centred on its anchor
-      // (divIcon iconAnchor [24, 24]) — a pin whose centre clears
-      // chrome can still hang its bottom half behind the zoom pill:
-      // v0.26's review measured a roundel at (328, 559) whose bottom
-      // 11px sat behind the pill's top edge, because the old clamp
-      // tested the centre (583) against a pill top of 598. The pill
-      // is two 48px buttons + 1px gap + 2px border = 99px tall, at
-      // right 12px, bottom 76px (150px while the prompt is up).
-      // Every chrome rect below is tested as a box overlap.
+      const geometry = getGeometry();
+      // Diagnostic hook for the geometry probe
+      // (scripts/check-v030-geometry.mjs): the measured rects, so a
+      // harness can prove the clamp follows live chrome changes.
+      (window as unknown as { __vicewireChromeGeometry?: ChromeGeometry }).__vicewireChromeGeometry =
+        geometry;
       const PIN_HALF = 24;
-      const pillBottom = props.promptVisible ? 150 : 76;
-      const pillTop = mapSize.y - pillBottom - 99;
-      const pillLeft = mapSize.x - 62;
-      const pillRight = mapSize.x - 12;
-      const inChrome = (p: L.Point): boolean => {
-        const left = p.x - PIN_HALF;
-        const right = p.x + PIN_HALF;
-        const top = p.y - PIN_HALF;
-        const bottom = p.y + PIN_HALF;
-        if (top < topChrome + 12) return true;
-        // Cut off at the screen edge: a pin whose box crosses the
-        // left or right edge is half off-screen.
-        if (left < 24 || right > mapSize.x - 24) return true;
-        // Edge stack (layers + recenter, right edge below the hero).
-        if (right > mapSize.x - 72 && top <= topChrome + 116 && bottom >= topChrome)
-          return true;
-        // Zoom pill, bottom-right.
-        if (right > pillLeft && left < pillRight && bottom >= pillTop && top <= mapSize.y - pillBottom)
-          return true;
-        if (bottom > mapSize.y - 40) return true;
-        return false;
-      };
       const shown = groups
         .map((group, gi) => ({ group, point: groupPoints[gi]! }))
-        .filter(({ point }) => !inChrome(point));
+        .filter(({ point }) => !markerBoxHidden(point, PIN_HALF, geometry));
+      const markers: L.Marker[] = [];
+      const labelCandidates: LabelCandidate[] = [];
       for (let si = 0; si < shown.length; si++) {
         const { group, point: pinPoint } = shown[si]!;
         const place = group.places[0]!;
@@ -567,6 +512,7 @@ export default function MapView(props: MapViewProps) {
           riseOnHover: true,
           zIndexOffset: selected ? 1500 : (layer?.order ?? 0) * 5,
         }).addTo(markerGroup);
+        markers.push(marker);
         const markerElement = marker.getElement();
         markerElement?.setAttribute('aria-label', title);
         if (interactive)
@@ -641,7 +587,6 @@ export default function MapView(props: MapViewProps) {
         if (
           !isCluster &&
           props.preferences.showLabels &&
-          labelCount < 65 &&
           // Unnamed "?" places never get a name pill — their titles
           // are "?, Downtown, Vice City" and at street zoom the pills
           // overlapped the search, the chips and each other.
@@ -652,59 +597,36 @@ export default function MapView(props: MapViewProps) {
           // (zoom 0.5+) the labels come back for every place.
           (selected || props.highlightIds?.has(place.id) || place.layerId === 'regions' || currentZoom >= 0.5)
         ) {
-          const label = document.createElement('span');
-          label.textContent = place.title;
-          // v0.17.0: a label runs right from its pin — when another
-          // pin sits just to the right of it (Leonida Keys into
-          // Grassrivers, in his screenshot) the text runs straight
-          // into that pin and the next label. Those pins label left,
-          // over empty sea, instead.
-          // v0.25.0: the same flip keeps a label off the right-edge
-          // chrome (edge stack, zoom pill) and off the screen edge —
-          // "Hote…" cut off at the right edge is a label that ran
-          // out of screen. When there is no room on either side the
-          // label is skipped outright rather than cut off.
-          const labelWidth = Math.min(210, place.title.length * 6 + 16);
-          const rightEdge = pinPoint.x + 10 + labelWidth;
-          const rightHitsChrome =
-            rightEdge > mapSize.x - 72 &&
-            ((pinPoint.y >= topChrome && pinPoint.y <= topChrome + 116) ||
-              (pinPoint.y >= pillTop && pinPoint.y <= mapSize.y - pillBottom));
-          const labelLeft =
-            shown.some(
-              (other, oi) =>
-                oi !== si &&
-                Math.abs(other.point.y - pinPoint.y) < 28 &&
-                other.point.x > pinPoint.x &&
-                other.point.x - pinPoint.x < 90,
-            ) ||
-            rightEdge > mapSize.x - 8 ||
-            rightHitsChrome;
-          const labelFits = !labelLeft || pinPoint.x - 10 - labelWidth >= 8;
-          const labelRect = {
-            left: labelLeft ? pinPoint.x - 10 - labelWidth : pinPoint.x + 10,
-            right: labelLeft ? pinPoint.x - 10 : pinPoint.x + 10 + labelWidth,
-            top: pinPoint.y - 10,
-            bottom: pinPoint.y + 10,
-          };
-          const overlapsLabel = placedLabels.some(
-            (r) =>
-              labelRect.left < r.right + 4 &&
-              labelRect.right > r.left - 4 &&
-              labelRect.top < r.bottom + 2 &&
-              labelRect.bottom > r.top - 2,
-          );
-          if (labelFits && !overlapsLabel) {
-            marker.bindTooltip(label, {
-              permanent: true,
-              direction: labelLeft ? 'left' : 'right',
-              offset: labelLeft ? [-10, 0] : [10, 0],
-              className: `atlas-place-label ${selected ? 'is-selected' : ''}`,
-            });
-            placedLabels.push(labelRect);
-          }
-          labelCount++;
+          // v0.30.0: placement (which side, or skipped) is decided
+          // after the loop by label-placement.ts — the 65-label
+          // budget and first-wins overlap rule live there.
+          labelCandidates.push({ index: si, title: place.title, point: pinPoint });
         }
+      }
+      // v0.30.0: labels are placed (and bound) after all markers
+      // exist — placement is a pure function of the shown points and
+      // the measured chrome (label-placement.ts), not interleaved
+      // with marker creation.
+      const placements = computeLabelPlacements(
+        labelCandidates,
+        groupPoints,
+        geometry,
+      );
+      for (const [si, side] of placements) {
+        const marker = markers[si];
+        const candidate = labelCandidates.find((c) => c.index === si);
+        if (!marker || !candidate) continue;
+        const label = document.createElement('span');
+        label.textContent = candidate.title;
+        const placed = shown[si]!.group.places[0]!;
+        const isSelected =
+          shown[si]!.group.places.length === 1 && placed.id === props.selectedId;
+        marker.bindTooltip(label, {
+          permanent: true,
+          direction: side,
+          offset: side === 'left' ? [-10, 0] : [10, 0],
+          className: `atlas-place-label ${isSelected ? 'is-selected' : ''}`,
+        });
       }
     };
     const scheduleRender = () => {
@@ -717,7 +639,16 @@ export default function MapView(props: MapViewProps) {
     // of the tap waiting on the whole rebuild before anything moves.
     scheduleRender();
     map.on('moveend zoomend resize', scheduleRender);
+    // v0.30.0: chrome resizes (hero height, pill position, bottom nav)
+    // re-measure the geometry and re-render, so the clamp follows a
+    // resized chrome without a map move — no hardcoded offsets. The
+    // observer is re-created whenever this effect re-runs, so newly
+    // mounted chrome (e.g. the county title) is picked up then.
+    const stopObservingChrome = hostRef.current
+      ? observeChromeGeometry(hostRef.current, scheduleRender)
+      : () => {};
     return () => {
+      stopObservingChrome();
       cancelAnimationFrame(frame);
       map.off('moveend zoomend resize', scheduleRender);
       markerGroup.clearLayers();
@@ -791,106 +722,21 @@ export default function MapView(props: MapViewProps) {
   //
   // The mask's outer ring is the full TILE bounds, not the app
   // bounds: fitting a wide county into a portrait phone shows map
-  // past the app edge (bright ocean.jpg error tiles), and a mask cut
-  // to the app bounds leaves that strip lit — a straight horizontal
-  // cut across the screen. The coastline is drawn twice — a dark
+  // past the app edge (dark error tiles where a tile failed), and a
+  // mask cut to the app bounds leaves that strip lit — a straight
+  // horizontal cut across the screen. The coastline is drawn twice — a dark
   // under-stroke, then ivory — so the delicate line reads on bright
   // sand, bright sea and dark forest alike.
+  // Area isolation (v0.15.0 After Hours): the surrounding counties
+  // desaturate and the isolated area gets a delicate boundary line.
+  // The layers themselves live in isolation-layer.ts; this effect
+  // only wires them to the map lifecycle.
   const geo = useAfterHoursGeo();
   useEffect(() => {
     if (!map) return;
     const isolation = props.isolation;
     if (!isolation) return;
-    const outer: L.LatLngExpression[] = [
-      [GTADB_TILE_BOUNDS.south, GTADB_TILE_BOUNDS.west],
-      [GTADB_TILE_BOUNDS.south, GTADB_TILE_BOUNDS.east],
-      [GTADB_TILE_BOUNDS.north, GTADB_TILE_BOUNDS.east],
-      [GTADB_TILE_BOUNDS.north, GTADB_TILE_BOUNDS.west],
-    ];
-    const added: L.Layer[] = [];
-    const countyGeo = isolation.countyId ? geo?.counties[isolation.countyId] : undefined;
-    if (countyGeo && countyGeo.loops.length > 0) {
-      const mask = L.polygon(
-        [outer, ...countyGeo.loops.map((loop) => runToLatLngs(loop))],
-        {
-          color: '#0b1018',
-          weight: 0,
-          fillColor: '#0b1018',
-          fillOpacity: 0.55,
-          interactive: false,
-        },
-      ).addTo(map);
-      added.push(mask);
-      for (const run of countyGeo.coast) {
-        const latlngs = runToLatLngs(run);
-        added.push(
-          L.polyline(latlngs, {
-            color: '#0b1018',
-            weight: 4,
-            opacity: 0.5,
-            interactive: false,
-          }).addTo(map),
-        );
-        added.push(
-          L.polyline(latlngs, {
-            color: '#f6f0e5',
-            weight: 2,
-            opacity: 0.9,
-            interactive: false,
-          }).addTo(map),
-        );
-      }
-      for (const run of countyGeo.estimate) {
-        const latlngs = runToLatLngs(run);
-        added.push(
-          L.polyline(latlngs, {
-            color: '#0b1018',
-            weight: 3.5,
-            opacity: 0.4,
-            interactive: false,
-          }).addTo(map),
-        );
-        added.push(
-          L.polyline(latlngs, {
-            color: '#f6f0e5',
-            weight: 1.5,
-            opacity: 0.75,
-            dashArray: '5 5',
-            interactive: false,
-          }).addTo(map),
-        );
-      }
-    } else {
-      const b = isolation.bounds;
-      const hole: L.LatLngExpression[] = [
-        [b.south, b.west],
-        [b.south, b.east],
-        [b.north, b.east],
-        [b.north, b.west],
-      ];
-      added.push(
-        L.polygon([outer, hole], {
-          color: '#0b1018',
-          weight: 0,
-          fillColor: '#0b1018',
-          fillOpacity: 0.55,
-          interactive: false,
-        }).addTo(map),
-      );
-      added.push(
-        L.rectangle(leafletBounds(b), {
-          color: '#f6f0e5',
-          weight: 1,
-          opacity: 0.65,
-          dashArray: '5 5',
-          fill: false,
-          interactive: false,
-        }).addTo(map),
-      );
-    }
-    return () => {
-      for (const layer of added) layer.remove();
-    };
+    return addIsolationLayers(map, isolation, geo);
   }, [map, props.isolation, geo]);
 
   useEffect(() => {
