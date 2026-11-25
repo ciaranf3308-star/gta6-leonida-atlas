@@ -17,8 +17,13 @@
  * (native max detail, one tile pixel per canonical unit). The tile layer
  * must declare minZoom -5 / maxZoom 1 in Leaflet zoom (GridLayer defaults
  * minZoom 0, which loads nothing below zoom 0) and must NOT use
- * zoomOffset / minNativeZoom / maxNativeZoom — those clamp the tile zoom
- * Leaflet computes, which would break the mapping above.
+ * zoomOffset / minNativeZoom — those clamp the tile zoom Leaflet
+ * computes, which would break the mapping above. maxNativeZoom IS used,
+ * on retina only (MapView): 0, so at map zoom 1 Leaflet requests the
+ * z6 grid (coords.z 0, +1 -> tile zoom 6) and scales it 2x instead of
+ * asking for tile zoom 7, which does not exist — see the P0 note on
+ * leafletTileToGtadb. Off retina maxNativeZoom is 1 (map zoom 1 IS
+ * tile zoom 6 there).
  *
  * RETINA (v0.22.0 fix — the v0.20.2 retina was broken and nobody
  * caught it): on DPR >= 2 the layer displays each 256px tile at 128
@@ -83,6 +88,23 @@ export const GTADB_ENHANCED_TILE_REVISION = "v0.20.2-realism-filter" as const;
  */
 export const GTADB_ILLUSTRATED_TILE_REVISION = "v0.22-island-view" as const;
 export const GTADB_ILLUSTRATED_MAX_ZOOM = 3 as const;
+/**
+ * ViceWire pyramid (overhaul, 2026-11-25): ONE geometry-driven render
+ * for tile zooms 0-6 — scripts/render-vicewire.py. The real GTADB day
+ * tiles, classified per surface (sea/sand/green/urban/buildings/roads
+ * treated independently), with hill-shading from the GTADB elevation
+ * grid and road centrelines from fbrito's verified CC BY vectors at
+ * low zoom / our own skeleton at street zoom. One style at every zoom,
+ * so the z3 -> z4 pop is gone by construction. Replaces the
+ * illustrated (z0-3) + enhanced (z4-6) split; those pyramids stay on
+ * disk as the previous generation but are no longer served.
+ *
+ * CACHE RULE (same as enhanced): a re-render must change the tile path
+ * AND the revision below AND the service-worker cache
+ * (finalize-build.mjs folds vicewire-v1 into its fingerprint).
+ */
+export const GTADB_VICEWIRE_TILE_REVISION = "vicewire-v1" as const;
+export const GTADB_VICEWIRE_TILE_DIR = "vicewire-v1" as const;
 export const GTADB_DAY_TILE_ZOOM_OFFSET = 5 as const;
 export const GTADB_DAY_TILE_MIN_ZOOM = 0 as const;
 export const GTADB_DAY_TILE_MAX_ZOOM = 6 as const;
@@ -101,15 +123,39 @@ export interface GtadbTileRef {
   tileX: number;
 }
 
-/** Leaflet tile coordinates (CRS.Simple) -> GTADB tile file coordinates. */
+/** Leaflet tile coordinates (CRS.Simple) -> GTADB tile file coordinates.
+ * The pyramid ends at tile zoom 6 (GTADB_DAY_TILE_MAX_ZOOM). On retina
+ * the caller passes coords.z + 1, so at map zoom 1 the computed zoom
+ * is 7 — a tile that does not exist. Clamp to 6 AND halve the indices:
+ * each zoom-6 tile covers four zoom-7 tiles, so the zoom-6 tile
+ * containing the requested ground is (floor(tileX/2), floor(tileY/2)).
+ * A bare Math.min(zoom, 6) would be wrong: the zoom-7 indices run ~2x
+ * the zoom-6 range, so the clamped ref would point at a tile twice as
+ * far from the origin (or 404). This clamp is the safety net, not the
+ * primary guard: MapView sets maxNativeZoom 0 on retina, so Leaflet
+ * never asks for z7-scale coords at max zoom — it requests the z6 grid
+ * and scales it 2x. The halving must still be right, because the file
+ * it picks is the tile the ground belongs to (the pre-maxNativeZoom
+ * bug was Leaflet displaying that whole file in each quarter-size
+ * slot, a 2x2 repetition — the file was never wrong, the slot was).
+ * Verified against the Ajax Gym ground truth: (1420, 1766) is z5
+ * (57, 69) / z6 (114, 139), and the retina max-zoom ref halves to
+ * exactly the non-retina max-zoom ref for the same ground. */
 export function leafletTileToGtadb(
   leafletTileX: number,
   leafletTileY: number,
   leafletZoom: number,
 ): GtadbTileRef {
-  const zoom = leafletZoom + GTADB_DAY_TILE_ZOOM_OFFSET;
+  let zoom = leafletZoom + GTADB_DAY_TILE_ZOOM_OFFSET;
   const offset = 2 ** (zoom + 1);
-  return { zoom, tileX: leafletTileX + offset, tileY: leafletTileY + offset };
+  let tileX = leafletTileX + offset;
+  let tileY = leafletTileY + offset;
+  while (zoom > GTADB_DAY_TILE_MAX_ZOOM) {
+    tileX = Math.floor(tileX / 2);
+    tileY = Math.floor(tileY / 2);
+    zoom -= 1;
+  }
+  return { zoom, tileX, tileY };
 }
 
 export function gtadbTileFileName(tile: GtadbTileRef): string {
@@ -117,14 +163,13 @@ export function gtadbTileFileName(tile: GtadbTileRef): string {
 }
 
 /** Same-origin tile URL for a Leaflet tile request.
- * v0.20.2: serves the enhanced pyramid (tiles/enhanced/) — the real
- * GTADB day tiles through one realism filter, geography locked 1:1.
- * Not the pale day tiles, and not v0.19/v0.20's repaint.
- * Island view (2026-11-25): tile zooms 0-3 serve the illustrated
- * pyramid (tiles/illustrated/) — one AI illustration traced from the
- * real map; tile zooms 4-6 serve the real enhanced tiles. Pin
- * coordinates are unchanged: the illustration is only a backdrop, so
- * a pin lands on the same geographic spot at every zoom. */
+ * ViceWire (overhaul, 2026-11-25): serves the vicewire-v1 pyramid
+ * (tiles/vicewire-v1/) at ALL tile zooms 0-6 — one geometry-driven
+ * render, one style, no z3 -> z4 switch. The illustrated (z0-3) and
+ * enhanced (z4-6) pyramids are the previous generation and are no
+ * longer served. Pin coordinates are unchanged: the render is a
+ * restyle of the real in-game map, geography locked 1:1, so a pin
+ * lands on the same geographic spot at every zoom. */
 export function gtadbTileUrl(
   base: string,
   leafletTileX: number,
@@ -133,9 +178,7 @@ export function gtadbTileUrl(
 ): string {
   const prefix = base.endsWith("/") ? base : `${base}/`;
   const tile = leafletTileToGtadb(leafletTileX, leafletTileY, leafletZoom);
-  const pyramid =
-    tile.zoom <= GTADB_ILLUSTRATED_MAX_ZOOM ? "illustrated" : "enhanced";
-  return `${prefix}assets/gta6-leonida-atlas/tiles/${pyramid}/${gtadbTileFileName(
+  return `${prefix}assets/gta6-leonida-atlas/tiles/${GTADB_VICEWIRE_TILE_DIR}/${gtadbTileFileName(
     tile,
   )}`;
 }

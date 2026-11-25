@@ -18,8 +18,8 @@ async function openPanel(
 }
 
 async function expectTilesLoaded(page: Page): Promise<void> {
-  // GTADB In-Game Day tiles: at least one loaded tile from the bundled set.
-  const tile = page.locator('.leaflet-tile-loaded[src*="tiles/enhanced/"]').first();
+  // ViceWire tiles: at least one loaded tile from the bundled set.
+  const tile = page.locator('.leaflet-tile-loaded[src*="tiles/vicewire-v1/"]').first();
   await expect(tile).toBeVisible();
   await expect(tile).toHaveJSProperty('complete', true);
   expect(

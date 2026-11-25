@@ -234,19 +234,24 @@ for (const url of [...precache, ...threeDimensionalAssets]) {
 // tiles at the same filenames and the content hash above — which only
 // covers the app shell and precached assets — did not move, so the old
 // cache (and its stale tiles) survived. The fingerprint is the list of
-// tile paths + sizes for BOTH pyramids (enhanced z0-6, illustrated
-// z0-3): cheap (stat only, no content reads) and it moves on any tile
-// re-render. A tile re-render must ALSO change the tile path (see
-// gtadb-tiles.ts) — both layers, not one hope.
+// tile paths + sizes for ALL pyramids (enhanced z0-6, illustrated
+// z0-3, vicewire-v1 z0-6): cheap (stat only, no content reads) and it
+// moves on any tile re-render. A tile re-render must ALSO change the
+// tile path (see gtadb-tiles.ts) — both layers, not one hope.
 const tileDir = join(outDir, "assets/gta6-leonida-atlas/tiles/enhanced");
 const illustratedDir = join(
   outDir,
   "assets/gta6-leonida-atlas/tiles/illustrated",
 );
+const vicewireDir = join(
+  outDir,
+  "assets/gta6-leonida-atlas/tiles/vicewire-v1",
+);
 try {
-  for (const [dir, topZoom] of [
-    [tileDir, 6],
-    [illustratedDir, 3],
+  for (const [dir, topZoom, label] of [
+    [tileDir, 6, "enhanced"],
+    [illustratedDir, 3, "illustrated"],
+    [vicewireDir, 6, "vicewire-v1"],
   ]) {
     for (let zoom = 0; zoom <= topZoom; zoom++) {
       let names;
@@ -257,7 +262,7 @@ try {
       }
       for (const name of names) {
         const { size } = await stat(join(dir, String(zoom), name));
-        contentHash.update(`${dir === illustratedDir ? "illustrated" : "enhanced"}/${zoom}/${name}:${size}\n`);
+        contentHash.update(`${label}/${zoom}/${name}:${size}\n`);
       }
     }
   }

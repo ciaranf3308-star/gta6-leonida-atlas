@@ -15,8 +15,6 @@ import {
   type MapBounds,
 } from './coordinates';
 import {
-  GTADB_DAY_TILE_ZOOM_OFFSET,
-  GTADB_ILLUSTRATED_MAX_ZOOM,
   GTADB_TILE_BOUNDS,
   gtadbTileUrl,
 } from './gtadb-tiles';
@@ -243,8 +241,20 @@ export default function MapView(props: MapViewProps) {
       // and Leaflet hands it coords.z, the tile zoom — the offset
       // only feeds the default URL builder, which the override
       // bypasses, so the +1 is passed explicitly here instead.
-      // minZoom / maxZoom stay -5..1, so at map zoom 1 the tile
-      // zoom still clamps to tile zoom 6 (native max). Do not
+      // minZoom / maxZoom stay -5..1. Retina overzoom (P0 fix,
+      // 2026-11-25): the pyramid ends at tile zoom 6, so at map
+      // zoom 1 retina must NOT ask for tile zoom 7 — the +1 would
+      // request a 512-grid that does not exist. The old clamp
+      // (leafletTileToGtadb halves z7-scale indices to z6) picked
+      // the right tile FILE but Leaflet displayed the whole 512px
+      // tile in each 128px slot, so every z6 tile painted 2x2 and
+      // the street view repeated like wallpaper (walk caught it:
+      // 54 img elements, 20 distinct URLs at Ambrosia max zoom).
+      // maxNativeZoom: 0 on retina makes Leaflet request the z6
+      // grid (coords.z 0, +1 -> tile zoom 6) and scale it 2x — the
+      // 512px file lands 1:1 on device pixels at DPR 2, each slot
+      // a different tile, geography correct. Non-retina keeps
+      // maxNativeZoom 1 (map zoom 1 IS tile zoom 6 there). Do not
       // "simplify" this back to tileSize 256: the walk's dpr2 check
       // (256px tile at 128 CSS px) and framing check exist to catch
       // exactly that.
@@ -252,6 +262,10 @@ export default function MapView(props: MapViewProps) {
         tileSize: retina ? 128 : 256,
         minZoom: MIN_ZOOM,
         maxZoom: MAX_ZOOM,
+        // Retina overzoom: the pyramid ends at tile zoom 6, so the
+        // layer's native max in coords.z terms is 0 on retina
+        // (coords.z 0 + 1 = tile zoom 6) and 1 off retina.
+        maxNativeZoom: retina ? 0 : 1,
         bounds: leafletBounds(GTADB_TILE_BOUNDS),
         errorTileUrl: `${base.endsWith('/') ? base : `${base}/`}assets/gta6-leonida-atlas/tiles/ocean.jpg`,
         noWrap: true,

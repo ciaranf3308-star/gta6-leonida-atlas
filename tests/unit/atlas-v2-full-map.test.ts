@@ -39,7 +39,7 @@ describe('GTADB In-Game Day tiles', () => {
     // Leaflet zoom 1 (tile zoom 6): x = floor(1420/128) = 11, y = floor(-1766/128) = -14.
     expect(leafletTileToGtadb(11, -14, 1)).toEqual({ zoom: 6, tileX: 139, tileY: 114 });
     expect(gtadbTileUrl('/gta6-leonida-atlas/', 5, -7, 0)).toBe(
-      '/gta6-leonida-atlas/assets/gta6-leonida-atlas/tiles/enhanced/5/5,57,69.jpg',
+      '/gta6-leonida-atlas/assets/gta6-leonida-atlas/tiles/vicewire-v1/5/5,57,69.jpg',
     );
   });
 
@@ -48,24 +48,23 @@ describe('GTADB In-Game Day tiles', () => {
     expect(leafletTileToGtadb(0, 1, -5)).toEqual({ zoom: 0, tileX: 2, tileY: 3 });
   });
 
-  it('serves the illustrated island at tile zooms 0-3 and the real map at 4-6', () => {
-    // Island view: one AI illustration traced from the real map, sliced
-    // into tiles for z0-z3 only. Street zoom stays the real enhanced
-    // GTADB tiles. The switch is at tile zoom 3/4, i.e. Leaflet -2/-1.
+  it('serves the ViceWire pyramid at every tile zoom 0-6 (one style, no switch)', () => {
+    // ViceWire overhaul (2026-11-25): one geometry-driven render for
+    // z0-6 replaces the illustrated (z0-3) + enhanced (z4-6) split.
+    // No z3 -> z4 style cliff by construction. Pin coordinates never
+    // change: the tile file name is the same at every zoom.
     expect(gtadbTileUrl('/gta6-leonida-atlas/', -2, -2, -5)).toBe(
-      '/gta6-leonida-atlas/assets/gta6-leonida-atlas/tiles/illustrated/0/0,0,0.jpg',
+      '/gta6-leonida-atlas/assets/gta6-leonida-atlas/tiles/vicewire-v1/0/0,0,0.jpg',
     );
     expect(gtadbTileUrl('/gta6-leonida-atlas/', 0, 0, -2)).toContain(
-      '/tiles/illustrated/3/',
+      '/tiles/vicewire-v1/3/',
     );
     expect(gtadbTileUrl('/gta6-leonida-atlas/', 0, 0, -1)).toContain(
-      '/tiles/enhanced/4/',
+      '/tiles/vicewire-v1/4/',
     );
     expect(gtadbTileUrl('/gta6-leonida-atlas/', 5, -7, 0)).toBe(
-      '/gta6-leonida-atlas/assets/gta6-leonida-atlas/tiles/enhanced/5/5,57,69.jpg',
+      '/gta6-leonida-atlas/assets/gta6-leonida-atlas/tiles/vicewire-v1/5/5,57,69.jpg',
     );
-    // Same tile file name on both sides of the switch: the pin
-    // coordinates never change, only the backdrop does.
     expect(gtadbTileUrl('/gta6-leonida-atlas/', 0, 0, -2)).toContain('3,');
     expect(gtadbTileUrl('/gta6-leonida-atlas/', 0, 0, -1)).toContain('4,');
   });

@@ -322,6 +322,26 @@ describe("generated service worker privacy and availability", () => {
     expect(afterCache).toBeTruthy();
     expect(afterCache).not.toBe(beforeCache);
   }, 60_000);
+
+  it("changes the cache when only vicewire-v1 tile bytes change", async () => {
+    const directory = await fixture();
+    const tile = join(
+      directory,
+      "dist/assets/gta6-leonida-atlas/tiles/vicewire-v1/5/5,57,69.jpg",
+    );
+    await mkdir(dirname(tile), { recursive: true });
+    await writeFile(tile, "tile-bytes-v1");
+    finalize(directory);
+    const before = await readFile(join(directory, "dist/sw.js"), "utf8");
+    const beforeCache = before.match(/const CACHE="([^"]+)"/)?.[1];
+    expect(beforeCache).toBeTruthy();
+    await writeFile(tile, "tile-bytes-v2-longer");
+    finalize(directory);
+    const after = await readFile(join(directory, "dist/sw.js"), "utf8");
+    const afterCache = after.match(/const CACHE="([^"]+)"/)?.[1];
+    expect(afterCache).toBeTruthy();
+    expect(afterCache).not.toBe(beforeCache);
+  }, 60_000);
 });
 
 function runBootstrap(
