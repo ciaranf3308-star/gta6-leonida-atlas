@@ -17,7 +17,7 @@ import { useAiIndexStore } from '../../src/features/categorise/store';
 const snapshot = JSON.parse(
   readFileSync(
     new URL(
-      '../../public/assets/street-leonida/maps/gtadb-landmarks-d406fea.json',
+      '../../public/assets/street-leonida/maps/gtadb-landmarks-2e9e194.json',
       import.meta.url,
     ),
     'utf8',
@@ -39,23 +39,23 @@ describe('onboarding audit — the places really are mapped', () => {
   const places = catalogueFromSnapshot(snapshot);
   const counts = new Map(layerCounts(places, DEFAULT_LAYERS).map((c) => [c.layerId, c]));
 
-  it('has 3,781 places in the catalogue', () => {
-    expect(places.length).toBe(3781);
-    expect(totalMappedPlaces(places)).toBe(3781);
+  it('has 4,407 places in the catalogue', () => {
+    expect(places.length).toBe(4407);
+    expect(totalMappedPlaces(places)).toBe(4407);
   });
 
   it('matches the counts the UI claims per layer', () => {
-    expect(counts.get('interiors')).toMatchObject({ total: 77, positioned: 76, unpositioned: 1 });
-    expect(counts.get('breakable')).toMatchObject({ total: 52, positioned: 47, unpositioned: 5 });
+    expect(counts.get('interiors')).toMatchObject({ total: 83, positioned: 82, unpositioned: 1 });
+    expect(counts.get('breakable')).toMatchObject({ total: 47, positioned: 42, unpositioned: 5 });
     expect(counts.get('shops-food')).toMatchObject({ total: 30, positioned: 27, unpositioned: 3 });
     expect(counts.get('shops-vehicles')).toMatchObject({ total: 9, positioned: 9, unpositioned: 0 });
     expect(counts.get('shops-weapons')).toMatchObject({ total: 0, positioned: 0, unpositioned: 0 });
-    expect(counts.get('shops-style')).toMatchObject({ total: 0, positioned: 0, unpositioned: 0 });
-    expect(counts.get('lootable')).toMatchObject({ total: 52, positioned: 52, unpositioned: 0 });
+    expect(counts.get('shops-style')).toMatchObject({ total: 1, positioned: 1, unpositioned: 0 });
+    expect(counts.get('lootable')).toMatchObject({ total: 53, positioned: 53, unpositioned: 0 });
     expect(counts.get('gyms')).toMatchObject({ total: 8, positioned: 6, unpositioned: 2 });
     expect(counts.get('equipment')).toMatchObject({ total: 3, positioned: 2, unpositioned: 1 });
-    expect(counts.get('community')).toMatchObject({ total: 679, positioned: 646 });
-    expect(counts.get('uncertain')).toMatchObject({ total: 2860, positioned: 2806 });
+    expect(counts.get('community')).toMatchObject({ total: 747, positioned: 717 });
+    expect(counts.get('uncertain')).toMatchObject({ total: 3415, positioned: 3355 });
     expect(counts.get('regions')).toMatchObject({ total: 6, positioned: 6 });
   });
 

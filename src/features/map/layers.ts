@@ -13,27 +13,28 @@ import { visiblePlaces } from '../spoiler/visibility';
  * services layer is split four ways by the game's filing — Weapons
  * (Ammu-Nation), Style (clothing / tattoo / hair), Food & Drink
  * (food, bars, convenience) and Vehicles (gas, mod, Pay 'n' Spray).
- * The split is real but honest: at GTADB revision d406fea only two of
- * the four have verified named pins (Food & Drink 30, Vehicles 9).
- * Weapons and Style have none — every #guns / #clothes / #hair /
- * #tattoos / #shoes record is still an unnamed "?" or filed under
- * Robberies / Breakable homes — so those layers exist with 0 places and
- * the Layers list says so instead of showing an empty toggle.
+ * The split is real but honest: at GTADB revision 2e9e194 three of
+ * the four have verified named pins (Food & Drink 30, Vehicles 9,
+ * Style 1 — the Au Courant hair salon). Weapons has none — every
+ * #guns / #clothes / #tattoos / #shoes record is still an unnamed
+ * "?" or filed under Robberies / Breakable homes — so that layer
+ * exists with 0 places and the Layers list says so instead of
+ * showing an empty toggle.
  *
- * Layer counts below are the verified counts at GTADB revision d406fea
- * (3,754 records), computed by catalogueFromSnapshot and asserted in
+ * Layer counts below are the verified counts at GTADB revision 2e9e194
+ * (4,380 records), computed by catalogueFromSnapshot and asserted in
  * tests/unit/atlas-spoiler-free.test.ts. Uncertain GTADB records stay in
  * 'uncertain' whatever their tags say, except breakable houses: a
  * residential+enterable record, a Capri rob-house candidate, or the Port
  * Gellhorn trailer park is a breakable home even when its name is "?".
- * The 385 enterable records split across Interiors (77 named venues),
- * Breakable homes (52 houses/apartments/trailers — 47 positioned, 5
- * guide examples searchable-only), Lootable (52 shops) and Unverified
+ * The 386 enterable records split across Interiors (83 named venues),
+ * Breakable homes (47 houses/apartments/trailers — 42 positioned, 5
+ * guide examples searchable-only), Lootable (53 shops) and Unverified
  * (the rest — unnamed, no confirmed use). The 8 named
- * residential+enterable records (Venture Apts, Jason's House, Lucia's
- * Apartment, Pegassi Residences…) moved from Interiors / Unverified
+ * residential+enterable records (Venture Apts, Jason's House, Bayside
+ * Apartments, Pegassi Residences…) moved from Interiors / Unverified
  * into Breakable homes; the 5 guide examples add the 'enterable' tag,
- * so the built catalogue counts 390 enterable places in total.
+ * so the built catalogue counts 391 enterable places in total.
  *
  * `order` does double duty: the Layers list shows highest first, and the
  * map draws highest last (on top). So the order below IS the list order:
@@ -90,7 +91,7 @@ export const DEFAULT_LAYERS: LayerDefinition[] = [
     id: 'breakable',
     name: 'Breakable homes',
     description:
-      'Houses, apartments and trailers you can break into — 33 tagged in GTADB (none in Capri), the 13 Capri rob-house candidates, the Port Gellhorn trailer park, and guide-named examples like Parlor Apartments and the Lost Vista trailers. Not every breakable home: most houses have no tag in the data. On the in-game map, dark blue means you can go in, light blue means closed.',
+      'Houses, apartments and trailers you can break into — 33 tagged in GTADB (none in Capri), the 8 Capri rob-house candidates, the Port Gellhorn trailer park, and guide-named examples like Parlor Apartments and the Lost Vista trailers. Not every breakable home: most houses have no tag in the data. On the in-game map, dark blue means you can go in, light blue means closed.',
     category: 'activity',
     mapIndex: 'robberies',
     visible: false,

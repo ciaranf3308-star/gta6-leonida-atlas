@@ -26,7 +26,7 @@ console.log('horizontal overflow px:', overflow);
 // and prove the places are mapped, with real counts (no 5k).
 await page.getByText('Welcome to Leonida').waitFor({ timeout: 30000 });
 console.log('welcome sheet shown on first launch');
-for (const countText of ['3,781 places', 'Lootable buildings', 'Interiors / Enterable', 'Breakable homes']) {
+for (const countText of ['4,407 places', 'Lootable buildings', 'Interiors / Enterable', 'Breakable homes']) {
   if (!(await page.getByText(countText).first().isVisible()))
     throw new Error(`welcome sheet missing: ${countText}`);
 }
@@ -196,12 +196,12 @@ await page.getByRole('button', { name: 'Close Ask Nylah' }).click();
 await nav('Layers').click();
 await page.getByText('Sort the unnamed places').waitFor({ timeout: 10000 });
 await page.locator('.index-sources').waitFor({ timeout: 10000 });
-for (const sourceText of ['Tags · 588', 'Same spot · 0', 'Guide match · 0', 'Analogue address · 0', 'AI suggested · 0', 'Not sure · 0', 'To go · 2,732']) {
+for (const sourceText of ['Tags · 580', 'Same spot · 0', 'Guide match · 0', 'Analogue address · 0', 'AI suggested · 0', 'Not sure · 0', 'To go · 3,280']) {
   if (!(await page.getByText(sourceText, { exact: true }).isVisible()))
     throw new Error(`index sources missing: ${sourceText}`);
 }
 await page.screenshot({ path: '/tmp/index-sources.png', fullPage: false });
-console.log('Index sources row: Tags 588, rest 0 on a fresh phone, 2,732 to go');
+console.log('Index sources row: Tags 580, rest 0 on a fresh phone, 3,280 to go');
 // Ask API-key onboarding: inline key field, paste + save right there.
 // Ask keeps its messages for the page session, so reload for a fresh Ask.
 await page.reload({ waitUntil: 'networkidle' });

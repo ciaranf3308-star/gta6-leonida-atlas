@@ -16,7 +16,7 @@ import { userTagsMatchLayer } from './user-tags';
  *   or "gym equipment" answers from equipment first, never from the
  *   member gyms.
  *
- * The public data has exactly one gym tag in the whole 3,754-record
+ * The public data has exactly one gym tag in the whole 4,380-record
  * snapshot (Ajax Gym, L1869) and no guide lists a gym — or equipment —
  * in Capri. The equipment the user knows about in Capri is in a garage
  * in a house: no public source can pin that house, and the app must not

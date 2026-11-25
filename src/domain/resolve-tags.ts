@@ -7,24 +7,23 @@ import {
 /**
  * Resolve "?" places from the map data's own tags — no AI, no guessing.
  *
- * Of the 2,732 unnamed records in the GTADB snapshot, 588 carry a tag
- * that resolves to a real type (residential 332, retail 93, natural 47,
- * transportation 37, leisure 25, government 13, restaurant 11, shop tags
- * ~40, plus gym/fitness 0 in GTADB itself, hospital/police 2, cinema/
- * tennis/racetrack/marina 5 — the extended rules below). Those get a
- * resolved type here, labelled "from the map data" — the name stays "?"
- * and the type is only as good as the tag. A further 101 carry only a
- * hotel or industrial tag, which says "a building" and nothing more —
- * those stay unknown, not "Other". The rest carry no usable tag (1,108
- * have no tags at all, 942 only internal notes like `enterable`) and
- * stay "not sure" until the resolver's coordinate / guide / analogue
- * steps or the AI job runs on the user's phone, or he marks them
- * himself. Nothing here invents a type: a tag that says nothing about
- * use resolves to nothing.
+ * Of the 3,280 unnamed records in the GTADB snapshot, 580 carry a tag
+ * that resolves to a real type (house 331, transport 37, services 17,
+ * restaurant 14, shop 104, leisure 28, landmark 47, petrol 2 — the
+ * extended rules below). Those get a resolved type here, labelled "from
+ * the map data" — the name stays "?" and the type is only as good as
+ * the tag. A further 98 carry only a hotel or industrial tag, which
+ * says "a building" and nothing more — those stay unknown, not
+ * "Other". The rest carry no usable tag (1,711 have no tags at all,
+ * 989 carry tags that resolve to nothing) and stay "not sure" until
+ * the resolver's coordinate / guide / analogue steps or the AI job
+ * runs on the user's phone, or he marks them himself. Nothing here
+ * invents a type: a tag that says nothing about use resolves to
+ * nothing.
  *
- * Counts (GTADB d406fea, checked 2026-11-23): residential 332, retail
- * 93, natural 47, transportation 37, leisure 25, government 13,
- * restaurant 11, shop tags ~40.
+ * Counts (GTADB 2e9e194, checked 2026-11-25): house 331, transport 37,
+ * services 17, restaurant 14, shop 104, leisure 28, landmark 47,
+ * petrol 2.
  */
 
 export interface TagResolution {

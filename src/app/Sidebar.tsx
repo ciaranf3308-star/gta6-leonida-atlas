@@ -265,7 +265,7 @@ function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allP
   const attempted = useAiIndexStore((s) => s.job.attemptedPlaceIds.length);
   const ready = usePersistenceStore((s) => s.ready);
   /** "?" places the map data's own tags cannot resolve — the indexing
-   * job's real remaining work (2,144 on a fresh phone). */
+   * job's real remaining work (2,700 on a fresh phone). */
   const unnamedRemaining = tagResolutionCounts(allPlaces).remaining;
   function chooseCounty(id: string | null) {
     useUiStore.getState().setFilters({ countyId: id, area: null });

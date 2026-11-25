@@ -25,6 +25,15 @@ all 2,198 previous identifiers. It adds 1,233 records, with 3,340 positioned and
 91 unpositioned records in total. Existing saved places still refer to the same
 IDs. A public map position may move when the source record changes.
 
+The November 25, 2026 landmark refresh uses GTADB commit
+`2e9e194b497d7a1a7da4f2288c1065dc0b913e80` and keeps all 3,754 previous
+identifiers. It adds 626 records and removes none, with 4,286 positioned
+and 94 unpositioned records in total (1,064 named, 3,316 unnamed). 171 of
+the records carry no address at all — positioned pins with a photo but no
+name or area — and stay "?" until GTADB names them. Existing saved places
+still refer to the same IDs. A public map position may move when the
+source record changes.
+
 The app keeps the established GTADB-derived coordinate frame aligned between the 2D map and the 3D explorer.
 
 ## Uncertainty labels

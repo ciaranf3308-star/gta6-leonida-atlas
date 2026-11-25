@@ -1,7 +1,7 @@
 /** Immutable provenance for the GTADB community-reconstruction input. */
 export const GTADB_SOURCE = 'https://github.com/rolux/gtadb.org' as const;
 export const GTADB_BASEMAP_REVISION = '7c3f8c295d64254e6b6d269b77c6f84fc4339f9c' as const;
-export const GTADB_REVISION = 'd406fea099e1df2bce42fd6b87eed04bce646629' as const;
+export const GTADB_REVISION = '2e9e194b497d7a1a7da4f2288c1065dc0b913e80' as const;
 export const GTADB_LICENSE = 'CC BY 4.0' as const;
 export const GTADB_PREFERRED_SOURCE = 'https://map.gtadb.org' as const;
 export const GTADB_LICENSE_URL = 'https://creativecommons.org/licenses/by/4.0/' as const;
@@ -12,7 +12,7 @@ export const GTADB_PRESENTATION_NOTICE =
 export const GTADB_ATTRIBUTION =
   `GTADB / Map GTA community reconstruction · preferred source ${GTADB_PREFERRED_SOURCE} · ${GTADB_LICENSE} ${GTADB_LICENSE_URL} · pinned revision ${GTADB_REVISION} · ${GTADB_PRESENTATION_NOTICE} · not an official Rockstar map` as const;
 export const GTADB_SNAPSHOT_SHA256 =
-  'e251f3e6ad89834959340d5408c51118f68b36c3d9c7801cfa34bcc745993ae8' as const;
+  '1b17f71a135ae87133ff03f270bbb81d9dc040def43f28ea5199738e51f45168' as const;
 
 export type GtadbCoordinate = readonly [number, number];
 export type GtadbPhotoSize = readonly [number, number];
@@ -37,7 +37,16 @@ export type GtadbLandmarkTuple = readonly [
 export type GtadbConfidence = 'SUPPORTED' | 'UNKNOWN';
 export type GtadbNameEvidence = 'KNOWN' | 'UNKNOWN';
 export type GtadbPlacementEvidence = 'APPROXIMATE' | 'UNPOSITIONED';
-export type GtadbLevelTag = 'L1' | 'L2' | 'L3' | 'L4' | 'L5';
+export type GtadbLevelTag =
+  | 'L1'
+  | 'L2'
+  | 'L3'
+  | 'L4'
+  | 'L5'
+  | 'L6'
+  | 'L7'
+  | 'L8'
+  | 'L9';
 export type GtadbUncertaintyReason =
   | 'unknown-name'
   | 'unconfirmed'
@@ -89,7 +98,9 @@ export interface GtadbCatalogueStats {
 }
 
 const UNKNOWN_NAME = /\?/;
-const GTADB_LEVEL_TAG = /^l([1-5])$/i;
+const GTADB_LEVEL_TAG = /^l([1-9])$/i; // L6-L8 were already in the d406fea
+// snapshot and L9 arrived with 2e9e194; the old L1-L5 range silently
+// dropped them from levelTags.
 const UNCONFIRMED_TAG = /^un(?:confirmed|comfirmed)$/i;
 const DEMOLISHED_TAG = /^demolished$/i;
 const UNCERTAINTY_SIGNALS: ReadonlyArray<{

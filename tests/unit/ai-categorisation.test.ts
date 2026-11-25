@@ -40,7 +40,7 @@ import {
 const snapshot = JSON.parse(
   readFileSync(
     new URL(
-      "../../public/assets/street-leonida/maps/gtadb-landmarks-d406fea.json",
+      "../../public/assets/street-leonida/maps/gtadb-landmarks-2e9e194.json",
       import.meta.url,
     ),
     "utf8",
@@ -90,20 +90,21 @@ function aiRecord(
 }
 
 describe("AI categorisation — real counts (no invented figures)", () => {
-  it("counts the catalogue honestly: 3,781 places in-app, 3,754 GTADB records, 2,732 unnamed, 986 named", () => {
+  it("counts the catalogue honestly: 4,407 places in-app, 4,380 GTADB records, 3,280 unnamed, 1,064 named", () => {
     const places = catalogueFromSnapshot(snapshot);
-    expect(places).toHaveLength(3781);
-    // 3,754 GTADB + 6 regions + 8 member gyms + 3 free outdoor + 5 card pins.
+    expect(places).toHaveLength(4407);
+    // 4,380 GTADB + 6 regions + 8 member gyms + 3 free outdoor + 5
+    // breakable-home guide examples + 5 card pins.
     expect(places.filter((p) => p.layerId === "gyms")).toHaveLength(8);
     expect(places.filter((p) => p.layerId === "equipment")).toHaveLength(3);
     expect(places.filter((p) => p.layerId === "regions")).toHaveLength(6);
     const audit = unnamedTagAudit(places);
-    expect(audit.unnamed).toBe(2732);
-    expect(audit.withUsefulTags).toBe(1042);
-    expect(audit.noTags).toBe(1108);
-    expect(audit.onlyInternalTags).toBe(582);
+    expect(audit.unnamed).toBe(3280);
+    expect(audit.withUsefulTags).toBe(1013);
+    expect(audit.noTags).toBe(1711);
+    expect(audit.onlyInternalTags).toBe(556);
     expect(audit.withUsefulTags + audit.noTags + audit.onlyInternalTags).toBe(
-      2732,
+      3280,
     );
   });
 });
@@ -485,16 +486,16 @@ describe("AI categorisation — on-device storage", () => {
         L939: aiRecord({ placeId: "L939", confidence: 0.3, status: "unsure" }),
       },
       { status: "paused", attemptedPlaceIds: ["L818", "L939"], updatedAt: "t" },
-      2732,
+      3280,
     );
     expect(counts).toEqual({
       attempted: 2,
       categorised: 1,
       unsure: 1,
-      remaining: 2730,
+      remaining: 3278,
       // The unsure place is still "to go" (remaining) but was already
       // run once, so it is not pending — only the never-run places are.
-      pending: 2729,
+      pending: 3277,
     });
   });
 });

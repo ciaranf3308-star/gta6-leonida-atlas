@@ -111,7 +111,7 @@ async function tileFixture() {
     "assets/app-test.js": 'console.log("public app")',
     "assets/app-test.css": "body{color:black}",
     "assets/gta6-leonida-atlas/basemap.svg": "<svg><title>Original</title></svg>",
-    "assets/street-leonida/maps/gtadb-landmarks-d406fea.json":
+    "assets/street-leonida/maps/gtadb-landmarks-2e9e194.json":
       '{"landmarks":[]}',
     // The fallback: ocean.jpg IS the graded pure-sea tile.
     "assets/gta6-leonida-atlas/tiles/ocean.jpg": "ocean bytes",

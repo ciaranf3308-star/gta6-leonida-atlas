@@ -10,8 +10,8 @@ import type { Place } from '../domain/types';
  * are reassigned to the 'breakable' layer there (src/data/catalogue.ts):
  * the 33 residential+enterable records (8 named, 25 unnamed — Venture
  * Apartments North/South L192/L193, Jason's House L266, the Washington
- * Beach houses L4/L8/L9/L10…), the 13 Capri rob-house candidates (10
- * enterable + 3 residential "?" records), and the Port Gellhorn Trailer
+ * Beach houses L4/L8/L9/L10…), the 8 Capri rob-house candidates (6
+ * enterable + 2 residential "?" records), and the Port Gellhorn Trailer
  * Park (L1062). Those are real pins; these entries are the guide-named
  * examples with no pin.
  *

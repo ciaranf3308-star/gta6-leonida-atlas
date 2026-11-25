@@ -14,7 +14,7 @@ describe('Street Leonida atlas DOM budget', () => {
   it('keeps the complete searchable catalogue while windowing visible SVG markers', async () => {
     const snapshot = JSON.parse(
       await readFile(
-        `${root}/public/assets/street-leonida/maps/gtadb-landmarks-d406fea.json`,
+        `${root}/public/assets/street-leonida/maps/gtadb-landmarks-2e9e194.json`,
         'utf8',
       ),
     ) as GtadbMapSnapshot;
@@ -29,8 +29,8 @@ describe('Street Leonida atlas DOM budget', () => {
     const result = renderGtadbLandmarkLayer(layer, snapshot);
     const domMarkers = layer.innerHTML.match(/data-gtadb-id="/g)?.length ?? 0;
 
-    expect(result.catalogueCount).toBe(3_754);
-    expect(result.renderedCount).toBe(3_663);
+    expect(result.catalogueCount).toBe(4_380);
+    expect(result.renderedCount).toBe(4_286);
     expect(domMarkers).toBeGreaterThan(40);
     expect(domMarkers).toBeLessThanOrEqual(GTADB_MAP_MARKER_DOM_BUDGET);
     expect(attributes.get('data-gtadb-dom-marker-count')).toBe(String(domMarkers));

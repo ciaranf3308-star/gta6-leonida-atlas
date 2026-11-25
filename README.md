@@ -65,7 +65,7 @@ line in the old README described the upstream project, not this one.
 
 - **Basemap + places:** GTADB / Map GTA community reconstruction
   — data CC BY 4.0, code MIT (`github.com/rolux/gtadb.org`).
-  Landmark catalogue pinned at revision `d406fea`. Map artwork
+  Landmark catalogue pinned at revision `2e9e194`. Map artwork
   © Rockstar Games.
 - **Elevation (hill-shade only):** GTADB `elevation.bin`, licence-grey
   (GTADB FAQ, Aug 2026: "remodeled from the ground up… mostly

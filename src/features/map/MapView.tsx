@@ -393,7 +393,7 @@ export default function MapView(props: MapViewProps) {
       // v0.16.0: full-map zoom shows hero pins only — about two dozen
       // small icon pins, no clustering, no counts. Zooming in brings
       // the full layers back, clustered, capped at 120 DOM markers.
-      // That cap is the lag fix: 3,754 places never become 3,754 pins.
+      // That cap is the lag fix: 4,380 places never become 4,380 pins.
       // v0.29.0: the grouping step is memoized (see groupCache above)
       // — a layer toggle at a stationary camera reuses the groups
       // instead of re-sorting / re-clustering the same visible set.

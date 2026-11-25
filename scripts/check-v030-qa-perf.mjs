@@ -176,7 +176,7 @@ const settled = await settleTiles(page);
 const tSettled = Math.round(now() - t0);
 let tCatalogue = -1;
 try {
-  await page.getByText(/3,781 places are in the map/).waitFor({ timeout: 15000 });
+  await page.getByText(/4,407 places are in the map/).waitFor({ timeout: 15000 });
   tCatalogue = Math.round(now() - t0);
 } catch {
   // tCatalogue stays -1: the catalogue text never appeared.
@@ -371,7 +371,7 @@ const toggleTiming = async (click) => {
     await page.waitForTimeout(120);
   }
   await settleTiles(page);
-  // Layers tab -> Interiors checkbox (385 enterable places; dense downtown).
+  // Layers tab -> Interiors checkbox (386 enterable places; dense downtown).
   await page.getByRole('button', { name: 'Layers', exact: true }).click();
   await page.waitForTimeout(600);
   const interiors = page.getByRole('checkbox', { name: /Interiors/ });

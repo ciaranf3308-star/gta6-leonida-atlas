@@ -18,7 +18,7 @@ import {
 const snapshot = JSON.parse(
   readFileSync(
     new URL(
-      '../../public/assets/street-leonida/maps/gtadb-landmarks-d406fea.json',
+      '../../public/assets/street-leonida/maps/gtadb-landmarks-2e9e194.json',
       import.meta.url,
     ),
     'utf8',
@@ -148,17 +148,17 @@ describe('Breakable homes — the systemic model, not a list', () => {
     ).toBe(false);
   });
 
-  it('holds the 33 GTADB-tagged houses, the 13 Capri candidates and the trailer park — and labels the gap', () => {
+  it('holds the 33 GTADB-tagged houses, the 8 Capri candidates and the trailer park — and labels the gap', () => {
     const places = catalogueFromSnapshot(snapshot);
     const breakable = places.filter((p) => p.layerId === 'breakable');
-    expect(breakable).toHaveLength(52);
-    expect(breakable.filter((p) => p.position)).toHaveLength(47);
+    expect(breakable).toHaveLength(47);
+    expect(breakable.filter((p) => p.position)).toHaveLength(42);
     const resEnt = places.filter(
       (p) => p.tags.includes('residential') && p.tags.includes('enterable'),
     );
     expect(resEnt).toHaveLength(33);
     expect(resEnt.every((p) => p.layerId === 'breakable')).toBe(true);
-    expect(breakable.filter((p) => p.region.startsWith('Capri'))).toHaveLength(13);
+    expect(breakable.filter((p) => p.region.startsWith('Capri'))).toHaveLength(8);
     const trailerPark = places.find((p) => p.id === 'L1062');
     expect(trailerPark?.layerId).toBe('breakable');
     expect(isBreakablePlace(trailerPark!)).toBe(true);
@@ -167,19 +167,19 @@ describe('Breakable homes — the systemic model, not a list', () => {
     expect(resEnt.filter((p) => p.region.startsWith('Capri'))).toHaveLength(0);
   });
 
-  it('counts enterable places by venue type — 390 in total, houses included', () => {
+  it('counts enterable places by venue type — 391 in total, houses included', () => {
     const places = catalogueFromSnapshot(snapshot);
     const counts = venueTypeCounts(places);
     const total = Object.values(counts).reduce((sum, n) => sum + n, 0);
-    expect(total).toBe(390);
+    expect(total).toBe(391);
     expect(counts).toEqual({
-      house: 36,
+      house: 32,
       apartment: 5,
       trailer: 2,
-      shop: 138,
+      shop: 139,
       bar: 6,
       gym: 0,
-      other: 203,
+      other: 207,
     });
   });
 });
@@ -198,7 +198,7 @@ describe('Interior houses + venue type filters', () => {
     expect(trailers).toHaveLength(2);
     expect(trailers.every((p) => p.tags.includes('enterable'))).toBe(true);
     const houses = filterPlaces(places, { ...baseFilters, venueType: 'house' }, [], [], []);
-    expect(houses).toHaveLength(36);
+    expect(houses).toHaveLength(32);
   });
 });
 
@@ -227,17 +227,17 @@ describe('Resolve every POI — from the map data’s own tags', () => {
     ).toBeNull();
   });
 
-  it('counts the real resolution: 588 resolved from tags, 2,144 still unknown', () => {
+  it('counts the real resolution: 580 resolved from tags, 2,700 still unknown', () => {
     const places = catalogueFromSnapshot(snapshot);
     const counts = tagResolutionCounts(places);
-    expect(counts.resolved).toBe(588);
-    expect(counts.remaining).toBe(2144);
-    expect(counts.byCategory.house).toBe(332);
-    expect(counts.byCategory.shop).toBe(106);
+    expect(counts.resolved).toBe(580);
+    expect(counts.remaining).toBe(2700);
+    expect(counts.byCategory.house).toBe(331);
+    expect(counts.byCategory.shop).toBe(104);
     // Extended rules (resolver v2): hospital/police 2 services,
     // cinema/tennis/racetrack/marina 5 leisure.
-    expect(counts.byCategory.services).toBe(19);
-    expect(counts.byCategory.leisure).toBe(30);
+    expect(counts.byCategory.services).toBe(17);
+    expect(counts.byCategory.leisure).toBe(28);
   });
 
   it('searching "house" finds a residential "?"', () => {

@@ -94,8 +94,8 @@ export default function IndexPanel(props: IndexPanelProps) {
     [unnamed, job.attemptedPlaceIds],
   );
   const hasKey = getAskApiKey().length > 0;
-  /** Real totals, from the snapshot itself: 2,768 places have no
-   * confirmed name; 2,732 of them are still "?" (this job's scope) and
+  /** Real totals, from the snapshot itself: 3,316 places have no
+   * confirmed name; 3,280 of them are still "?" (this job's scope) and
    * 36 show a tentative name with a "?". There is no "5k". */
   const names = nameCounts(props.places);
   /** "?" places the map data's own tags already resolve to a type — no

@@ -111,7 +111,7 @@ describe("Ask cards — the verdict stays short", () => {
   it("keeps the first two sentences of the proximity summary, never the whole paragraph", () => {
     expect(
       shortVerdict(
-        "There is no gym near Capri in the map data. The nearest is Grand Majestic Gym, in Tequesta, Vice City — about 5700 map units away, a long way across the map. House gyms and workout gear inside houses are not in the public map data yet — no source lists them. If you mark a house gym yourself, Ask will use your marker next time. 13 houses in Capri are worth checking — listed below. None of them is a verified gym.",
+        "There is no gym near Capri in the map data. The nearest is Grand Majestic Gym, in Tequesta, Vice City — about 5700 map units away, a long way across the map. House gyms and workout gear inside houses are not in the public map data yet — no source lists them. If you mark a house gym yourself, Ask will use your marker next time. 8 houses in Capri are worth checking — listed below. None of them is a verified gym.",
       ),
     ).toBe(
       "There is no gym near Capri in the map data. The nearest is Grand Majestic Gym, in Tequesta, Vice City — about 5700 map units away, a long way across the map.",

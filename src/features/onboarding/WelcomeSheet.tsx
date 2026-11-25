@@ -28,8 +28,8 @@ export interface WelcomeSheetProps {
 /**
  * Forced first-launch onboarding (v0.11.0). The map opens blank on
  * purpose so nothing is spoiled — but the reason this sheet cannot be
- * dismissed with an × is the indexing job: 2,732 places are still "?",
- * 588 already have a type from the map data's own tags, 2,144 still
+ * dismissed with an × is the indexing job: 3,280 places are still "?",
+ * 580 already have a type from the map data's own tags, 2,700 still
  * have nothing to read, and the ONLY way they get sorted is this job,
  * on this phone, with the user's own OpenAI key.
  *

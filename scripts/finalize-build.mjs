@@ -243,7 +243,7 @@ const precache = [
   `${base}icons/icon-512.png`,
   ...assets.filter((url) => !threeDimensionalAssets.includes(url)),
   `${base}assets/gta6-leonida-atlas/basemap.svg`,
-  `${base}assets/street-leonida/maps/gtadb-landmarks-d406fea.json`,
+  `${base}assets/street-leonida/maps/gtadb-landmarks-2e9e194.json`,
 ];
 // Startup-needed chunks (v0.30.1, QA Finding #3): Vite
 // modulepreloads the chunks the entry point imports at startup.

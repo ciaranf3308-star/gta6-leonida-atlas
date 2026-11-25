@@ -2,21 +2,24 @@ import type { Place } from './types';
 import { isUnnamedPlace } from './types';
 
 /**
- * Tags, in plain English — the halfway point for the 2,732 unnamed "?"
+ * Tags, in plain English — the halfway point for the 3,280 unnamed "?"
  * records.
  *
  * A "?" record does not need a full proper name to be useful: a correct
- * TAG says what it is. 1,624 of the 2,732 still-"?" records already carry
- * some tag in the GTADB data — but 582 of those carry only internal
- * notes (map-level tags like l4, or //notes), so 1,042 carry a tag that
- * actually says what the place is (residential 332, enterable 218,
- * retail 93, hotel 41, shop types, …) — and 1,108 carry no tag at all.
- * (2,768 records have no confirmed name in total; the other 36 show a
- * tentative name with a "?".)
+ * TAG says what it is. 1,569 of the 3,280 still-"?" records already carry
+ * some tag in the GTADB data — but 556 of those carry only internal
+ * notes (map-level tags like l4, or //notes), so 1,013 carry a tag that
+ * actually says what the place is (residential 331, enterable 210,
+ * retail 91, hotel 38, shop types, …) — and 1,711 carry no tag at all.
+ * (3,316 records have no confirmed name in total; the other 36 show a
+ * tentative name with a "?".) 171 of the 3,280 are blank records with
+ * no address at all — positioned pins with a photo but no name or area
+ * — added (or blanked) upstream at 2e9e194; they stay "?" until GTADB
+ * names them.
  * The app just never showed any of them in plain words. No tags are
  * invented here: these labels only translate tags the source already
- * supplied. GTADB's own newer data is byte-identical to the pinned
- * snapshot (checked 23 Nov 2026), and no other trusted source names
+ * supplied. The snapshot is pinned at 2e9e194 (25 Nov 2026) and the
+ * counts above are measured from it; no other trusted source names
  * these places — so nothing below adds a tag, it only reads them.
  * The user's bet — that a lot of them are gym equipment in houses — is
  * NOT confirmed by any tag: 0 GTADB records carry a gym/fitness/

@@ -5,7 +5,7 @@ import { isUnnamedPlace } from '../../domain/types';
  * First-run onboarding — the fix for "none of the places are showing".
  *
  * The map opens blank on purpose (spoiler-free: every public layer starts
- * off), but nothing on screen said that, or that 3,781 places are mapped
+ * off), but nothing on screen said that, or that 4,407 places are mapped
  * and waiting behind the layer toggles. The welcome sheet says so in plain
  * words, shows the real counts per layer, and offers one-tap quick starts
  * that turn on just one layer. Layers stay off until the user chooses one.
@@ -78,16 +78,16 @@ export interface LayerCount {
 
 /**
  * Real per-layer counts from the loaded catalogue. Audited against the
- * GTADB snapshot d406fea: 3,781 places total — community 679 (646
- * positioned), interiors 77 (76), breakable homes 52 (47 positioned, 5
- * guide examples searchable-only), shops 39 (36), lootable 52 (52), gyms 8
+ * GTADB snapshot 2e9e194: 4,407 places total — community 747 (717
+ * positioned), interiors 83 (82), breakable homes 47 (42 positioned, 5
+ * guide examples searchable-only), shops 40 (37), lootable 53 (53), gyms 8
  * (6), free outdoor 3 (2 positioned, 1 listed by name only), regions 6
- * (6), uncertain 2,860 (2,806), cards 5 positioned pins across 18 sets
- * (480 cards in total, the rest have no verified position yet). The 2,732
+ * (6), uncertain 3,415 (3,355), cards 5 positioned pins across 18 sets
+ * (480 cards in total, the rest have no verified position yet). The 3,280
  * unnamed "?" records stay in these counts and on the map, in the
  * unverified layer — they are the level of detail the map needs, and
- * hiding them would hide the work still to do. Names: 986 confirmed,
- * 2,768 without a confirmed name (2,732 still "?" plus 36 tentative
+ * hiding them would hide the work still to do. Names: 1,064 confirmed,
+ * 3,316 without a confirmed name (3,280 still "?" plus 36 tentative
  * "Name?" records) — see nameCounts(). There is no "5k".
  */
 export function layerCounts(
@@ -127,11 +127,11 @@ export function countUnnamedPlaces(places: readonly Place[]): number {
 export interface NameCounts {
   /** GTADB records in the catalogue (not regions, gyms, cards or markers). */
   total: number;
-  /** Confirmed name — the snapshot's own knownNameCount. Verified 23 Nov 2026: 986. */
+  /** Confirmed name — the snapshot's own knownNameCount. Verified 25 Nov 2026: 1,064. */
   known: number;
-  /** No confirmed name — the snapshot's unknownNameCount: 2,768. */
+  /** No confirmed name — the snapshot's unknownNameCount: 3,316. */
   unknown: number;
-  /** Still "?" — the AI job's scope: 2,732. */
+  /** Still "?" — the AI job's scope: 3,280. */
   questionMark: number;
   /** Shows a name with a "?" ("Parsons Hotel?") — the name itself is not confirmed: 36. */
   tentative: number;
@@ -139,13 +139,13 @@ export interface NameCounts {
 
 /**
  * The real name counts, from the GTADB snapshot's own counts field
- * (recordCount 3,754, knownNameCount 986, unknownNameCount 2,768 —
- * verified against the snapshot 23 Nov 2026). There is no "5k": that was
+ * (recordCount 4,380, knownNameCount 1,064, unknownNameCount 3,316 —
+ * verified against the snapshot 25 Nov 2026). There is no "5k": that was
  * ever only a rough guess, never a count. The 36-record gap between the
- * app's "?" count (2,732) and the snapshot's unknown count (2,768) is
+ * app's "?" count (3,280) and the snapshot's unknown count (3,316) is
  * the tentative names — "Parsons Hotel?" and the like, where the name
  * itself carries a "?" and the source counts it unknown. Those 36 keep
- * showing their tentative name; only the 2,732 still-"?" records are in
+ * showing their tentative name; only the 3,280 still-"?" records are in
  * the AI job's scope.
  */
 export function nameCounts(places: readonly Place[]): NameCounts {

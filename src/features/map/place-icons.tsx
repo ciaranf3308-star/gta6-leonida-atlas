@@ -67,7 +67,7 @@ import { effectiveAiCategory, type AiCategoryId, type AiCategoryRecord } from '.
  * The icon system — one designed set for the whole atlas.
  *
  * PROVENANCE (no invented logos, no scraped closed-site assets):
- * - The GTADB snapshot the app ships (`gtadb-landmarks-d406fea.json`)
+ * - The GTADB snapshot the app ships (`gtadb-landmarks-2e9e194.json`)
  *   carries NO icon or blip field at all — only `tags` and a `color`.
  *   There is no authentic per-place blip asset in the data to reuse.
  * - So the pins follow the form of the game's own map legend: a GTA

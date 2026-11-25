@@ -200,21 +200,21 @@ describe('GTADB catalogue normalization', () => {
       GTADB_SOURCE: 'https://github.com/rolux/gtadb.org',
       GTADB_PREFERRED_SOURCE: 'https://map.gtadb.org',
       GTADB_PINNED_DATA_URL:
-        'https://github.com/rolux/gtadb.org/blob/d406fea099e1df2bce42fd6b87eed04bce646629/map/data/6/landmarks.json',
-      GTADB_REVISION: 'd406fea099e1df2bce42fd6b87eed04bce646629',
+        'https://github.com/rolux/gtadb.org/blob/2e9e194b497d7a1a7da4f2288c1065dc0b913e80/map/data/6/landmarks.json',
+      GTADB_REVISION: '2e9e194b497d7a1a7da4f2288c1065dc0b913e80',
       GTADB_LICENSE: 'CC BY 4.0',
       GTADB_LICENSE_URL: 'https://creativecommons.org/licenses/by/4.0/',
       GTADB_PRESENTATION_NOTICE:
         'transformed presentation · deterministic, pixel-aligned transform · community placement APPROXIMATE · approximate visualization scale',
       GTADB_ATTRIBUTION:
-        'GTADB / Map GTA community reconstruction · preferred source https://map.gtadb.org · CC BY 4.0 https://creativecommons.org/licenses/by/4.0/ · pinned revision d406fea099e1df2bce42fd6b87eed04bce646629 · transformed presentation · deterministic, pixel-aligned transform · community placement APPROXIMATE · approximate visualization scale · not an official Rockstar map',
-      GTADB_SNAPSHOT_SHA256: 'e251f3e6ad89834959340d5408c51118f68b36c3d9c7801cfa34bcc745993ae8',
+        'GTADB / Map GTA community reconstruction · preferred source https://map.gtadb.org · CC BY 4.0 https://creativecommons.org/licenses/by/4.0/ · pinned revision 2e9e194b497d7a1a7da4f2288c1065dc0b913e80 · transformed presentation · deterministic, pixel-aligned transform · community placement APPROXIMATE · approximate visualization scale · not an official Rockstar map',
+      GTADB_SNAPSHOT_SHA256: '1b17f71a135ae87133ff03f270bbb81d9dc040def43f28ea5199738e51f45168',
     });
   });
 
   it('ships the complete, attributed normalized snapshot (catches partial or unpinned sync output)', () => {
     const snapshotPath = new URL(
-      '../../public/assets/street-leonida/maps/gtadb-landmarks-d406fea.json',
+      '../../public/assets/street-leonida/maps/gtadb-landmarks-2e9e194.json',
       import.meta.url,
     );
     const snapshot = JSON.parse(readFileSync(snapshotPath, 'utf8')) as {
@@ -234,19 +234,32 @@ describe('GTADB catalogue normalization', () => {
       attribution: GTADB_ATTRIBUTION,
     });
     expect(snapshot.counts).toEqual({
-      recordCount: 3_754,
-      positionedCount: 3_663,
-      unpositionedCount: 91,
-      knownNameCount: 986,
-      unknownNameCount: 2_768,
+      recordCount: 4_380,
+      positionedCount: 4_286,
+      unpositionedCount: 94,
+      knownNameCount: 1_064,
+      unknownNameCount: 3_316,
     });
-    expect(snapshot.landmarks).toHaveLength(3_754);
+    expect(snapshot.landmarks).toHaveLength(4_380);
 
+    // 2e9e194 ships 171 records with NO address at all (161 added
+    // blank, 10 blanked upstream) — positioned pins with a photo but no
+    // name or area. They are real "?" places, never invented names:
+    // every one is UNKNOWN, 169 positioned and 2 searchable-only.
+    const blank = snapshot.landmarks.filter(
+      ({ inGameAddress }: { inGameAddress: string }) => !inGameAddress.trim(),
+    );
+    expect(blank).toHaveLength(171);
     expect(
-      snapshot.landmarks
-        .filter(({ inGameAddress }) => !inGameAddress.trim())
-        .map(({ id, confidence, evidence }) => ({ id, confidence, name: evidence.name })),
-    ).toEqual([]);
+      blank.map(({ id, confidence, evidence }: { id: string; confidence: string; evidence: { name: string } }) => ({
+        id,
+        confidence,
+        name: evidence.name,
+      })),
+    ).toEqual(
+      blank.map(({ id }: { id: string }) => ({ id, confidence: 'UNKNOWN', name: 'UNKNOWN' })),
+    );
+    expect(blank.filter(({ inGameCoordinates }: { inGameCoordinates: unknown }) => inGameCoordinates !== null)).toHaveLength(169);
     // L1 was renamed upstream between revisions (was "?", now "Vice Regal").
     expect(snapshot.landmarks.find(({ id }) => id === 'L1')).toMatchObject({
       confidence: 'SUPPORTED',
@@ -310,7 +323,7 @@ describe('GTADB catalogue normalization', () => {
       )
       .digest('hex');
     expect(sourceValueDigest).toBe(
-      '76dbfbac1e82ac8a15bd8da80c909e5c479cbfe94cae0b8baaec7ea6d607100e',
+      '53374bce930d79cc63b669d324569fd31ec4e302f715cb5610c9e179debf5a0f',
     );
   });
 });

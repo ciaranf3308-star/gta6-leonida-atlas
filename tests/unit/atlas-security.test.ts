@@ -51,7 +51,7 @@ async function fixture() {
     "assets/walk-world-test.js": 'console.log("optional 3D")',
     "assets/gta6-leonida-atlas/basemap.svg":
       "<svg><title>Original</title></svg>",
-    "assets/street-leonida/maps/gtadb-landmarks-d406fea.json":
+    "assets/street-leonida/maps/gtadb-landmarks-2e9e194.json":
       '{"landmarks":[]}',
   };
   for (const [path, contents] of Object.entries(files)) {

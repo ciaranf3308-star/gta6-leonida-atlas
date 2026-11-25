@@ -6,10 +6,10 @@ import { DEFAULT_ASK_MODEL } from "../ask/openai";
 /**
  * AI categorisation of the unnamed "?" places — the index job.
  *
- * 2,768 of the 3,754 GTADB records have no confirmed name; 2,732 of
+ * 3,316 of the 4,380 GTADB records have no confirmed name; 3,280 of
  * them are still "?" and are this job's scope (the other 36 show a
- * tentative name with a "?"). 1,042 of the 2,732 already carry a tag
- * that says what they are (house, shop, petrol station) and 1,108 carry
+ * tentative name with a "?"). 1,013 of the 3,280 already carry a tag
+ * that says what they are (house, shop, petrol station) and 1,711 carry
  * no tag at all — and with no tag and no analogue address there is
  * nothing for the AI to read, so those stay "not sure" rather than
  * guessed. A gym tag, for instance, appears on exactly one record in

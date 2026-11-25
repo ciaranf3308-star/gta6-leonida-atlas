@@ -289,7 +289,7 @@ function Credits() {
         <p>
           The pinned revision is{" "}
           <code className="project-revision">{GTADB_REVISION}</code>. The
-          catalogue contains 3,754 records: 3,663 positioned records and 91
+          catalogue contains 4,380 records: 4,286 positioned records and 94
           without coordinates.
         </p>
         <p>

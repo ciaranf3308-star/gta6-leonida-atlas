@@ -4,8 +4,8 @@ import { isEnterablePlace } from './tags';
 /**
  * Interiors and breakable homes.
  *
- * What the data actually says (GTADB snapshot d406fea, checked 2026-11-23):
- * - 385 places carry the `enterable` tag; 159 of them are named.
+ * What the data actually says (GTADB snapshot 2e9e194, checked 2026-11-25):
+ * - 386 places carry the `enterable` tag; 168 of them are named.
  * - 33 places are `residential` + `enterable` — houses with an interior.
  *   GTADB tags ZERO of them in Capri, and ZERO trailer tags anywhere, so
  *   "33 enterable houses" is a tagging gap, not the real game. Capri alone

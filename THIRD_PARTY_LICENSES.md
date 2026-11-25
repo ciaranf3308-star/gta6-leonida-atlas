@@ -12,7 +12,7 @@ Some data and cartographic source material used by GTA6 Leonida Atlas originates
 
 - Source: https://github.com/rolux/gtadb.org
 - Map: https://map.gtadb.org
-- Pinned landmark catalogue revision: `d406fea099e1df2bce42fd6b87eed04bce646629`
+- Pinned landmark catalogue revision: `2e9e194b497d7a1a7da4f2288c1065dc0b913e80`
 - Basemap: the GTADB In-Game Day tile pyramid (`tiles-source/day/`,
   tracked in git), served through a fixed per-pixel colour grade
   (`scripts/grade-tiles.py`, v0.28.0). Geography locked 1:1 to the

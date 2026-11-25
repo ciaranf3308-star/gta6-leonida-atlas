@@ -13,7 +13,7 @@ import {
 const snapshot = JSON.parse(
   readFileSync(
     new URL(
-      "../../public/assets/street-leonida/maps/gtadb-landmarks-d406fea.json",
+      "../../public/assets/street-leonida/maps/gtadb-landmarks-2e9e194.json",
       import.meta.url,
     ),
     "utf8",
@@ -117,24 +117,24 @@ describe("Gyms and Workout equipment layers", () => {
 
   it("merges the gyms into the catalogue alongside the community records", () => {
     const places = catalogueFromSnapshot(snapshot);
-    expect(places).toHaveLength(3781);
-    expect(places.filter((p) => p.position === null)).toHaveLength(99);
+    expect(places).toHaveLength(4407);
+    expect(places.filter((p) => p.position === null)).toHaveLength(102);
     expect(places.filter((p) => p.layerId === "gyms")).toHaveLength(8);
     expect(places.filter((p) => p.layerId === "equipment")).toHaveLength(3);
-    expect(places.filter((p) => p.layerId === "interiors")).toHaveLength(77);
-    expect(places.filter((p) => p.layerId === "breakable")).toHaveLength(52);
+    expect(places.filter((p) => p.layerId === "interiors")).toHaveLength(83);
+    expect(places.filter((p) => p.layerId === "breakable")).toHaveLength(47);
     expect(places.filter((p) => p.layerId === "shops-food")).toHaveLength(30);
     expect(places.filter((p) => p.layerId === "shops-vehicles")).toHaveLength(9);
     expect(places.filter((p) => p.layerId === "shops-weapons")).toHaveLength(0);
-    expect(places.filter((p) => p.layerId === "shops-style")).toHaveLength(0);
+    expect(places.filter((p) => p.layerId === "shops-style")).toHaveLength(1);
     expect(
       places.filter((p) => p.layerId.startsWith("shops-")),
-    ).toHaveLength(39);
-    expect(places.filter((p) => p.layerId === "lootable")).toHaveLength(52);
+    ).toHaveLength(40);
+    expect(places.filter((p) => p.layerId === "lootable")).toHaveLength(53);
     expect(
       places.filter((p) => p.layerId.startsWith("cards:")),
     ).toHaveLength(5);
-    expect(new Set(places.map((p) => p.id)).size).toBe(3781);
+    expect(new Set(places.map((p) => p.id)).size).toBe(4407);
   });
 });
 
@@ -185,11 +185,14 @@ describe("Map Index categories (v0.21.0) — the game's own filters, not the dat
     }
     expect(counts.get('activities')).toBe(12);
     expect(counts.get('collectibles')).toBe(5);
-    expect(counts.get('exploration')).toBe(665);
+    expect(counts.get('exploration')).toBe(737);
     expect(counts.get('food-drink')).toBe(30);
-    expect(counts.get('robberies')).toBe(104);
-    expect(counts.get('unverified')).toBe(2860);
-    expect(counts.get('vehicles')).toBe(105);
+    expect(counts.get('robberies')).toBe(100);
+    expect(counts.get('unverified')).toBe(3415);
+    expect(counts.get('vehicles')).toBe(107);
+    // One Style place now exists: the Au Courant hair salon in Peacock
+    // Bay, the first shops-style record in the snapshot.
+    expect(counts.get('style')).toBe(1);
     // Honest zeroes, not invented pins: no verified Personal places
     // (safehouse / garages / ATMs) and no mapped missions yet.
     expect(counts.get('personal') ?? 0).toBe(0);

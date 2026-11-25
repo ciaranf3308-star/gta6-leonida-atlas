@@ -28,7 +28,7 @@ const ALLOWED = [
   '/node_modules/leaflet/dist/leaflet.css',
   '/node_modules/leaflet.markercluster/dist/leaflet.markercluster.js',
   '/node_modules/leaflet.markercluster/dist/MarkerCluster.css',
-  '/public/assets/street-leonida/maps/gtadb-landmarks-d406fea.json',
+  '/public/assets/street-leonida/maps/gtadb-landmarks-2e9e194.json',
 ];
 
 const PAGE = `<!DOCTYPE html><html><head><meta charset="utf-8">
@@ -40,7 +40,7 @@ const PAGE = `<!DOCTYPE html><html><head><meta charset="utf-8">
 <script src="/node_modules/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
 <script>
 window.__probe = (async () => {
-  const res = await fetch('/public/assets/street-leonida/maps/gtadb-landmarks-d406fea.json');
+  const res = await fetch('/public/assets/street-leonida/maps/gtadb-landmarks-2e9e194.json');
   const snap = await res.json();
   // The snapshot landmarks carry inGameCoordinates [x, y]; the app
   // normalises them through catalogueFromSnapshot, but for a

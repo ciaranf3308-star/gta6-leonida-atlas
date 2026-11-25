@@ -69,13 +69,13 @@ await page.goto(base, { waitUntil: 'networkidle' });
 await page.getByText('Welcome to Leonida').waitFor({ timeout: 30000 });
 await shot('01-welcome');
 console.log('01 welcome overflow:', await overflow());
-// Real counts, no 5k: 3,781 places, 986 confirmed names, 2,768 without.
-// (exact: the empty-map prompt behind the sheet says "3,781 places
+// Real counts, no 5k: 4,407 places, 1,064 confirmed names, 3,316 without.
+// (exact: the empty-map prompt behind the sheet says "4,407 places
 // are in the map" in the same sentence, so the loose text matches twice.)
-await page.getByText('3,781 places', { exact: true }).waitFor({ timeout: 10000 });
-await page.getByText(/986 places have a confirmed name/).waitFor({ timeout: 10000 });
-await page.getByText(/2,768 do not yet/).waitFor({ timeout: 10000 });
-console.log('01 real counts shown (3,781 / 986 / 2,768)');
+await page.getByText('4,407 places', { exact: true }).waitFor({ timeout: 10000 });
+await page.getByText(/1,064 places have a confirmed name/).waitFor({ timeout: 10000 });
+await page.getByText(/3,316 do not yet/).waitFor({ timeout: 10000 });
+console.log('01 real counts shown (4,407 / 1,064 / 3,316)');
 
 // The bottom nav is the way around: five labelled tabs, always visible.
 for (const label of ['Map', 'Find', 'Layers', 'Saved', 'Ask']) {
@@ -161,12 +161,12 @@ await page.getByText('Houses in Capri to check').waitFor({ timeout: 10000 });
 // v0.13.0: the verdict is short on purpose (first two sentences
 // only) — the houses count lives in the section header below the
 // cards, not in the verdict sentence. The section IS the answer.
-await page.getByText('Houses in Capri to check (13)').waitFor({ timeout: 10000 });
+await page.getByText('Houses in Capri to check (8)').waitFor({ timeout: 10000 });
 await page.getByRole('button', { name: 'Mark as workout spot' }).first().waitFor({ timeout: 10000 });
 await page.waitForTimeout(1000);
 await shot('06-ask-capri-houses');
 console.log('06 overflow:', await overflow());
-console.log('06 Ask answered Capri honestly: no gym + 13 houses to check');
+console.log('06 Ask answered Capri honestly: no gym + 8 houses to check');
 // One tap on a house starts a workout-spot marker there.
 await page.getByRole('button', { name: 'Mark as workout spot' }).first().click();
 await page.waitForTimeout(800);
@@ -237,13 +237,13 @@ console.log('11 overflow:', await overflow());
 await nav('Layers').click();
 await page.getByText('Sort the unnamed places').waitFor({ timeout: 10000 });
 await page.getByText('0 sorted so far').waitFor({ timeout: 10000 });
-await page.getByText(/2,768 places have no confirmed name/).waitFor({ timeout: 10000 });
+await page.getByText(/3,316 places have no confirmed name/).waitFor({ timeout: 10000 });
 await page.getByText('Indexing needs your OpenAI key').waitFor({ timeout: 10000 });
 await page.waitForTimeout(800);
 await shot('12-layers-index-zero');
 console.log('12 overflow:', await overflow());
 await measureTapTargets('12 Layers');
-console.log('12 index panel says plainly: never run, 0 sorted, 2,768 unnamed');
+console.log('12 index panel says plainly: never run, 0 sorted, 3,316 unnamed');
 
 // Add workout spot, from Layers -> placement mode, then "Use map
 // center" opens the editor with the workout kind preset and a real

@@ -12,7 +12,7 @@ import { isUnnamedPlace } from '../../src/domain/types';
 const snapshot = JSON.parse(
   readFileSync(
     new URL(
-      '../../public/assets/street-leonida/maps/gtadb-landmarks-d406fea.json',
+      '../../public/assets/street-leonida/maps/gtadb-landmarks-2e9e194.json',
       import.meta.url,
     ),
     'utf8',
@@ -20,13 +20,13 @@ const snapshot = JSON.parse(
 );
 
 describe('Unnamed "?" records — tags are the halfway point', () => {
-  it('audits the real snapshot: 1,042 usefully tagged, 582 internal-only, 1,108 bare', () => {
+  it('audits the real snapshot: 1,013 usefully tagged, 556 internal-only, 1,711 bare', () => {
     const places = catalogueFromSnapshot(snapshot);
     const audit = unnamedTagAudit(places);
-    expect(audit.unnamed).toBe(2732);
-    expect(audit.withUsefulTags).toBe(1042);
-    expect(audit.onlyInternalTags).toBe(582);
-    expect(audit.noTags).toBe(1108);
+    expect(audit.unnamed).toBe(3280);
+    expect(audit.withUsefulTags).toBe(1013);
+    expect(audit.onlyInternalTags).toBe(556);
+    expect(audit.noTags).toBe(1711);
     expect(audit.withUsefulTags + audit.onlyInternalTags + audit.noTags).toBe(
       audit.unnamed,
     );

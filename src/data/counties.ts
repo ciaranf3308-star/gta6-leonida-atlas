@@ -3,8 +3,8 @@ import type { MapBounds } from '../features/map/coordinates';
 
 /**
  * Leonida's five counties. Extents are ESTIMATES, derived from the GTADB
- * records whose in-game address names the county (355 records at GTADB
- * revision d406fea): each rect is the bounding box of that county's named,
+ * records whose in-game address names the county (415 records at GTADB
+ * revision 2e9e194): each rect is the bounding box of that county's named,
  * positioned records. The official poster prints county names but no
  * boundary lines, and GTADB notes its boundary lines remain disabled while
  * reviewed — so no rect here is an official border. A place is assigned to

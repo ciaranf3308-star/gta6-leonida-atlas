@@ -35,7 +35,7 @@ function memoryStorage(initial: Record<string, string> = {}): StorageLike {
 const snapshot = JSON.parse(
   readFileSync(
     new URL(
-      "../../public/assets/street-leonida/maps/gtadb-landmarks-d406fea.json",
+      "../../public/assets/street-leonida/maps/gtadb-landmarks-2e9e194.json",
       import.meta.url,
     ),
     "utf8",

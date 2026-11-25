@@ -35,7 +35,7 @@ function memoryStorage(initial: Record<string, string> = {}): StorageLike {
 const snapshot = JSON.parse(
   readFileSync(
     new URL(
-      "../../public/assets/street-leonida/maps/gtadb-landmarks-d406fea.json",
+      "../../public/assets/street-leonida/maps/gtadb-landmarks-2e9e194.json",
       import.meta.url,
     ),
     "utf8",
@@ -390,10 +390,10 @@ describe("index resolver v2 — order and real-snapshot yields", () => {
     expect(resolvePlaceDeterministically(named, [named])).toBeNull();
   });
 
-  it("resolves 658 of 2,732 '?' from data alone on the real snapshot — 2,074 left for the LLM", { timeout: 30_000 }, () => {
+  it("resolves 651 of 3,280 '?' from data alone on the real snapshot — 2,629 left for the LLM", { timeout: 30_000 }, () => {
     const places = catalogueFromSnapshot(snapshot);
     const unnamed = places.filter(isUnnamedPlace);
-    expect(unnamed).toHaveLength(2732);
+    expect(unnamed).toHaveLength(3280);
     const bySource: Record<string, number> = {};
     let unresolved = 0;
     for (const target of unnamed) {
@@ -401,20 +401,20 @@ describe("index resolver v2 — order and real-snapshot yields", () => {
       if (!resolved) unresolved += 1;
       else bySource[resolved.source] = (bySource[resolved.source] ?? 0) + 1;
     }
-    // Tags (extended rules) 588, same-spot coordinate 9, guide pin 1,
-    // analogue keywords 60 — measured, not estimated.
-    expect(bySource).toEqual({ tag: 588, coordinate: 9, guide: 1, analogue: 60 });
-    expect(unresolved).toBe(2074);
+    // Tags (extended rules) 580, same-spot coordinate 13, guide pin 1,
+    // analogue keywords 57 — measured, not estimated.
+    expect(bySource).toEqual({ tag: 580, coordinate: 13, guide: 1, analogue: 57 });
+    expect(unresolved).toBe(2629);
     const tagCounts = tagResolutionCounts(places);
-    expect(tagCounts.resolved).toBe(588);
-    expect(tagCounts.remaining).toBe(2144);
+    expect(tagCounts.resolved).toBe(580);
+    expect(tagCounts.remaining).toBe(2700);
     expect(tagCounts.byCategory).toEqual({
-      house: 332,
+      house: 331,
       transport: 37,
-      services: 19,
-      restaurant: 15,
-      shop: 106,
-      leisure: 30,
+      services: 17,
+      restaurant: 14,
+      shop: 104,
+      leisure: 28,
       landmark: 47,
       petrol: 2,
     });

@@ -253,8 +253,8 @@ export const DEFAULT_PREFERENCES: Preferences = {
 
 /**
  * An unnamed GTADB record: its in-game address starts with "?" — e.g.
- * "?, Washington Beach, Vice Beach". 2,768 of the 3,754 records at GTADB
- * revision d406fea have no confirmed name (986 do); 2,732 of the 2,768 are
+ * "?, Washington Beach, Vice Beach". 3,316 of the 4,380 records at GTADB
+ * revision 2e9e194 have no confirmed name (1,064 do); 3,280 of the 3,316 are
  * still "?" and the other 36 show a tentative name with a "?" ("Parsons
  * Hotel?"). They stay on
  * the map, in the unverified layer: no name is ever invented for them, and

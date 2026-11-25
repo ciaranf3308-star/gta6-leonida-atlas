@@ -21,7 +21,7 @@ import { retrieveForAsk } from "../../src/features/ask/retrieval";
 const snapshot = JSON.parse(
   readFileSync(
     new URL(
-      "../../public/assets/street-leonida/maps/gtadb-landmarks-d406fea.json",
+      "../../public/assets/street-leonida/maps/gtadb-landmarks-2e9e194.json",
       import.meta.url,
     ),
     "utf8",
@@ -75,13 +75,13 @@ describe("navigation filters — one system, map and Find", () => {
 });
 
 describe("real counts — no 5k, ever", () => {
-  it("counts the snapshot's own names: 986 known, 2,768 unknown, 2,732 still ?", () => {
+  it("counts the snapshot's own names: 1,064 known, 3,316 unknown, 3,280 still ?", () => {
     const places = catalogueFromSnapshot(snapshot);
     const counts = nameCounts(places);
-    expect(counts.total).toBe(3754);
-    expect(counts.known).toBe(986);
-    expect(counts.unknown).toBe(2768);
-    expect(counts.questionMark).toBe(2732);
+    expect(counts.total).toBe(4380);
+    expect(counts.known).toBe(1064);
+    expect(counts.unknown).toBe(3316);
+    expect(counts.questionMark).toBe(3280);
     expect(counts.tentative).toBe(36);
     expect(counts.questionMark + counts.tentative).toBe(counts.unknown);
   });
@@ -97,7 +97,7 @@ describe("real counts — no 5k, ever", () => {
 });
 
 describe("Capri gym hunting — honest, from the real data", () => {
-  it("finds 0 gym tags in the snapshot outside Ajax Gym, and 197 Capri records", () => {
+  it("finds 0 gym tags in the snapshot outside Ajax Gym, and 226 Capri records", () => {
     const places = catalogueFromSnapshot(snapshot);
     // GTADB records only — the curated gyms carry a 'gym' tag by
     // construction, so they are not part of this claim.
@@ -107,7 +107,7 @@ describe("Capri gym hunting — honest, from the real data", () => {
     const gymTagged = gtadb.filter((p) => p.tags.some((t) => /^#?(gym|fitness|workout)$/.test(t)));
     expect(gymTagged.map((p) => p.id)).toEqual(["L1869"]);
     const capri = places.filter((p) => p.title.includes("Capri") || p.region.includes("Capri"));
-    expect(capri.length).toBe(197);
+    expect(capri.length).toBe(226);
     expect(capri.filter((p) => p.tags.includes("enterable")).length).toBe(12);
     expect(capri.filter((p) => p.tags.includes("residential")).length).toBe(3);
     expect(capri.filter((p) => p.tags.some((t) => /^#?(gym|fitness|workout)$/.test(t)))).toHaveLength(0);
@@ -176,11 +176,14 @@ describe("Capri gym hunting — honest, from the real data", () => {
     });
     expect(result.nearCount).toBe(0);
     expect(result.housesAreaName).toBe("Capri");
-    // 12 enterable in Capri, but 2 are named gas stations — the 10
-    // unnamed enterable "?" plus the 3 residential-tagged "?" are the
-    // houses to check.
-    expect(result.housesToCheckTotal).toBe(13);
-    expect(result.housesToCheck).toHaveLength(13);
+    // 12 enterable in Capri, but 2 are named gas stations — the 6
+    // unnamed enterable "?" plus the 2 residential-tagged "?" are the
+    // houses to check. Four of the old 13 gained real names upstream
+    // (Capri Classics, Gibson Brothers Bank, Woodhatch Gunsmith, Still
+    // Waters) and one lost its enterable tag, so the candidate list
+    // shrank because GTADB resolved them, not because houses vanished.
+    expect(result.housesToCheckTotal).toBe(8);
+    expect(result.housesToCheck).toHaveLength(8);
     // The houses are candidates only: none of them is in the gym records.
     const recordIds = new Set(result.records.map((p) => p.id));
     for (const house of result.housesToCheck) {
@@ -188,7 +191,7 @@ describe("Capri gym hunting — honest, from the real data", () => {
       expect(house.title.startsWith("?")).toBe(true);
     }
     // ...and the verdict says so in plain words.
-    expect(result.proximitySummary).toMatch(/13 houses in Capri are worth checking/);
+    expect(result.proximitySummary).toMatch(/8 houses in Capri are worth checking/);
     expect(result.proximitySummary).toMatch(/None of them is a verified gym/);
   });
 
@@ -272,10 +275,10 @@ describe("Gyms vs workout equipment — the split (user, 2026-11-23)", () => {
     expect(result.proximitySummary).toMatch(/no workout equipment near capri/i);
     expect(result.proximitySummary).toMatch(/Jason's house deck/);
     expect(result.proximitySummary).toMatch(/garage in a house/);
-    // Same 13 houses to check — as equipment candidates, not gyms.
+    // Same 8 houses to check — as equipment candidates, not gyms.
     expect(result.housesKind).toBe("equipment");
     expect(result.housesAreaName).toBe("Capri");
-    expect(result.housesToCheckTotal).toBe(13);
+    expect(result.housesToCheckTotal).toBe(8);
     expect(result.proximitySummary).toMatch(/None of them is verified workout equipment/);
   });
 

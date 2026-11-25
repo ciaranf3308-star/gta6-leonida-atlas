@@ -23,7 +23,7 @@ export { GTADB_MAP_MARKER_DOM_BUDGET } from './walk-map-marker-window';
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 export const GTADB_MAP_ASSET_URL =
-  publicPath('assets/street-leonida/maps/gtadb-landmarks-d406fea.json');
+  publicPath('assets/street-leonida/maps/gtadb-landmarks-2e9e194.json');
 
 export interface GtadbMapSnapshotSource {
   readonly repository: string;
