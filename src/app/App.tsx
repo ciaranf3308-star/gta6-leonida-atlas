@@ -674,7 +674,6 @@ export default function App() {
           boundsFocus={boundsFocus}
           isolation={isolation}
           onExitIsolation={exitIsolation}
-          attributionHidden={navTab === 'map' && !selected && status === 'ready' && showingCount === 0 && anyPublicLayerVisible}
           promptVisible={navTab === 'map' && !selected && status === 'ready' && showingCount === 0 && anyPublicLayerVisible}
           editorMode={editorMode}
           preferences={preferences}

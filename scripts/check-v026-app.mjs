@@ -139,9 +139,16 @@ check(
 );
 check('edge stack (layers + recenter) visible', (await page.locator('.atlas-edge-stack').isVisible()) && (await page.locator('.atlas-edge-stack button').count()) === 2);
 check('zoom pill visible', await page.locator('.atlas-edge-zoom').isVisible());
+// v0.31.2: the map view carries no text labels any more — the
+// "ViceWire map: the real in-game map, restyled" note and the
+// GTADB attribution footer are both gone from the map (the user
+// asked for a clean map). The credit lives on in the app: the
+// Layers sheet footer (checked in (d)) and About → Credits &
+// sources (full GTADB section + CC BY 4.0 licence link).
 check(
-  'attribution visible on the map once layers are on',
-  (await page.locator('.atlas-map-attribution').count()) === 1,
+  'map view carries no text labels',
+  (await page.locator('.atlas-map-attribution').count()) === 0 &&
+    (await page.locator('.atlas-map-illustration-note').count()) === 0,
 );
 check('no horizontal overflow', await page.evaluate(() => document.documentElement.scrollWidth <= 390));
 const clouds = await page.evaluate(() =>
@@ -187,6 +194,15 @@ check(
 );
 check('no Business group in Layers', !/\bBusiness\b/.test(layersText));
 check('Layers sheet drops the intro paragraph', !/Nothing is shown until you choose it/.test(layersText));
+// v0.31.2: the on-map attribution footer is gone, so the Layers
+// sheet footer is one of the two places the GTADB credit still
+// lives in the app (the other is About → Credits & sources).
+const layersSheetText = await layersSheet.innerText();
+check(
+  'Layers footer still carries the GTADB credit (CC BY 4.0)',
+  layersSheetText.includes('GTADB') && layersSheetText.includes('CC BY 4.0'),
+  layersSheetText.slice(0, 120),
+);
 // The map hero (wordmark + search pill) is not in the DOM while a
 // panel is open — the panel replaces it by design — so the probe
 // for "the island is visible above the sheet" is the tiles

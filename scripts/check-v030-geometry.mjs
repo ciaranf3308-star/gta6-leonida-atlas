@@ -112,12 +112,15 @@ const m0 = await markerCount();
 const t0 = await paneTranslateY();
 check('baseline geometry is measured (not the fallback)', !!g0 && g0.width === 390, JSON.stringify(g0));
 check('baseline has markers on screen', m0 > 0 && m0 <= 120, `markers=${m0}`);
-// Regression guard (v0.30.0): the stack, pill and attribution are
-// siblings of the Leaflet canvas, not children of it — the first
-// cut of measureChromeGeometry queried them from the canvas and
-// they all came back null, so the clamp silently stopped avoiding
-// the pill. The probe asserts they are measured, at the rects the
-// calibration probe recorded.
+// Regression guard (v0.30.0): the stack and pill are siblings of
+// the Leaflet canvas, not children of it — the first cut of
+// measureChromeGeometry queried them from the canvas and they all
+// came back null, so the clamp silently stopped avoiding the pill.
+// The probe asserts they are measured, at the rects the
+// calibration probe recorded. The attribution is NOT in this guard
+// any more: v0.31.2 removed the on-map footer (the user asked for a
+// clean map), so attributionTop is null by design and the 40px
+// bottom strip guards pins instead.
 check(
   'edge stack is measured (not null)',
   !!g0?.edgeStack && Math.abs(g0.edgeStack.left - 330) <= 2 && Math.abs(g0.edgeStack.top - 196) <= 2,
@@ -129,8 +132,8 @@ check(
   JSON.stringify(g0?.zoomControls),
 );
 check(
-  'attribution is measured (not null)',
-  typeof g0?.attributionTop === 'number' && Math.abs(g0.attributionTop - 740) <= 5,
+  'attribution is gone by design (null) — the 40px bottom strip guards pins',
+  g0?.attributionTop === null,
   `attributionTop=${g0?.attributionTop}`,
 );
 await shot('a-geometry-baseline');
@@ -156,10 +159,10 @@ const m1 = await markerCount();
 const dHero = (g1?.heroBottom ?? 0) - (g0?.heroBottom ?? 0);
 check('heroBottom follows the +60px hero', Math.abs(dHero - 60) <= 5, `Δ=${dHero}`);
 // topBand is topChromeBottom + 12, and topChromeBottom is the MAX
-// of hero/note/title — at baseline the illustration note binds
-// (~217, below the 198 hero), so topBand moves by 60 minus the
-// note's ~19px lead, not by the full 60. What must hold is that
-// the grown hero now dominates the band: topBand = heroBottom + 12.
+// of hero/note/title — v0.31.2 removed the illustration note, so
+// at baseline the hero already binds and topBand = heroBottom + 12.
+// What must hold is that the grown hero still dominates the band:
+// topBand = heroBottom + 12, and it moves down by the full 60.
 check(
   'topBand follows the grown hero (hero now dominates)',
   Math.abs((g1?.topBand ?? 0) - ((g1?.heroBottom ?? 0) + 12)) <= 1,

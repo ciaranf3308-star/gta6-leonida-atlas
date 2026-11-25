@@ -2,6 +2,17 @@
 
 Release history, newest first.
 
+## v0.31.2 — 2026-11-25
+
+**Released: Clean map — the text labels are off the map view.**
+
+The map view carries no text labels any more: the "ViceWire map: the real in-game map, restyled — geography unchanged" note and the GTADB attribution footer are both gone from the map itself. The credit lives on in the app, not deleted — About → Credits & sources carries the full GTADB section with the CC BY 4.0 licence link, and the Layers sheet footer names the GTADB basemap.
+
+- Removed both labels from `MapView` (the attribution footer and the illustration note), the now-dead `attributionHidden` prop and its pass in `App`, and the dead CSS for both classes (base, 650px, 599px, and the place-sheet `data-details` hide rules). The chrome geometry reads both elements as absent (`null`) and falls back to the 40px bottom strip, so no pin clamp changed — the geometry probe now asserts `attributionTop` is null by design, and the illustration note no longer binds the top band (the hero dominates from the start, `topBand = heroBottom + 12` at baseline too).
+- Attribution is not deleted, just moved off the map: About → Credits & sources has the full GTADB / Map GTA section (the GTADB link, the pinned revision, the Creative Commons Attribution 4.0 International licence link), and the Layers sheet footer reads "The basemap is the GTADB in-game map (map artwork © Rockstar Games, CC BY 4.0), colour-graded only — geography unchanged." The app walk now asserts the map view carries no text labels and the Layers footer still carries the GTADB credit.
+- How to tell the version: Settings → About shows the version at the top, with the full release history below it. The quick check is Layers: Robberies → "Bank jobs & vaults" and Collectibles → "Collectibles · Loot Map" means v0.31.1 or later. If the phone still shows the old build, fully close the app and reopen it — an installed PWA can hold the previous worker for one more session.
+- Verified (lead integration, 2026-11-25): `tsc --noEmit` clean; eslint 0 errors (1 pre-existing warning); full unit suite 905/905 over 93 files; one-command production build (`ATLAS_BASE_PATH=/gta6-leonida-atlas/`, bundle `assets/index-bVj5Lthz.js`, SW cache `atlas-b40404d5-a4fcabcbd41e`, generated worker verified in the same command, CORE 41 entries, 31,527 graded tiles); app walk `scripts/check-v026-app.mjs` 43/43 PASS (the two new checks — map view carries no text labels, Layers footer still carries the GTADB credit — pass; the old attribution check was replaced); geometry probe `scripts/check-v030-geometry.mjs` 16/16 all passed (`attributionTop` null by design, `topBand = heroBottom + 12` from baseline, hero and pill still measured); basemap walk `scripts/check-graded-walk.mjs` OK (aborted 1 / error tiles 1 / ocean 0); loot probe `scripts/check-v031-loot.mjs` 32/32 all passed; spoiler probe `scripts/check-v030-spoiler.mjs` 21/21 PASS; reveal probe `scripts/check-v030-reveal-persist.mjs` ALL PASS (4/4); fix probe `scripts/check-v0261-fix.mjs` PASS (10/10). One lint repair in the probe edit itself (`sheetText` collided with the existing first-open variable — renamed to `layersSheetText`).
+
 ## v0.31.1 — 2026-11-25
 
 **Released: Loot Map — 29 bank jobs and 20 collectibles, both off by default.**

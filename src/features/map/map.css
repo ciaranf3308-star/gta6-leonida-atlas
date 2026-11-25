@@ -475,59 +475,6 @@
   outline: 2px solid #fff;
   outline-offset: -4px;
 }
-.atlas-map-attribution {
-  position: absolute;
-  z-index: 500;
-  left: 12px;
-  bottom: 12px;
-  padding: 5px 8px;
-  border-radius: 5px;
-  background: #0b1018e6;
-  color: #7c8a9c;
-  /* One line, always — it used to wrap to two and the second line was
-     clipped by the bottom of the map. Clear of the zoom controls. */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: calc(100% - 90px);
-  font-size: 9px;
-  line-height: 1.4;
-  max-width: min(85%, 440px);
-}
-.atlas-map-attribution a {
-  color: #e8dcc4;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-/* Island-view label: one small smoked line just below the filter
-   chips, following the tiles actually on screen. It is the honest
-   label for the illustrated island view — never present the
-   illustration as the real map. TOP, not bottom: the bottom spot
-   (above the attribution) sits under the empty-map prompt on first
-   open — the prompt is a sibling overlay in a higher stacking
-   context, so the label's z-index never wins and the first thing
-   the user sees is the illustration with no label at all. Up here
-   nothing covers it. Hidden with the attribution when a place
-   sheet is open on phones. */
-.atlas-map-illustration-note {
-  position: absolute;
-  z-index: 500;
-  left: 12px;
-  /* Just below the slimmed hero (banner 48 + search 44 + chips 38
-   * + gaps ≈ 146px). */
-  top: 154px;
-  padding: 5px 8px;
-  border-radius: 5px;
-  background: #0b1018e6;
-  color: #e8dcc4;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  /* Clear of the right-edge stack (48px buttons at right:12px). */
-  max-width: min(calc(100% - 80px), 440px);
-  font-size: 9px;
-  line-height: 1.4;
-}
 .atlas-map-editor-hint {
   position: absolute;
   z-index: 550;
@@ -632,16 +579,6 @@
   border: 0;
 }
 @media (max-width: 650px) {
-  .atlas-map-attribution {
-    left: 10px;
-    bottom: 10px;
-    font-size: 8px;
-  }
-  .atlas-map-illustration-note {
-    left: 10px;
-    top: 150px;
-    font-size: 8px;
-  }
   .atlas-map-navigation {
     right: 12px;
     bottom: 75px;
@@ -670,20 +607,11 @@
   }
   /* Phones carry the wrapped two-row chips, so the hero is ~188px
    * tall: every overlay that sits below it moves down with it. */
-  .atlas-map-illustration-note {
-    top: 196px;
-  }
   .county-map-title {
     top: 196px;
   }
   .atlas-edge-stack {
     top: 196px;
-  }
-  .atlas-app[data-details='true'] .atlas-map-attribution {
-    display: none;
-  }
-  .atlas-app[data-details='true'] .atlas-map-illustration-note {
-    display: none;
   }
   .atlas-app[data-details='true'] .atlas-map-editor-hint {
     bottom: calc(52dvh + 20px);

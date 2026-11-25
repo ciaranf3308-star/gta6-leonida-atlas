@@ -66,10 +66,6 @@ export interface MapViewProps {
   exploredIds?: ReadonlySet<string>;
   /** Ask Nylah highlights — rendered even when their layer is off. */
   highlightIds?: ReadonlySet<string>;
-  /** Hide the attribution line — the empty-map prompt owns the
-   * bottom of the screen while it is up, and the attribution
-   * half-hidden behind it read as broken. */
-  attributionHidden?: boolean;
   /** The empty-map prompt is up — the zoom pill lifts above it
    * (bottom 150px) instead of sitting half-hidden behind it. */
   promptVisible?: boolean;
@@ -928,26 +924,15 @@ export default function MapView(props: MapViewProps) {
           <Minus size={22} />
         </button>
       </div>
-      {!props.attributionHidden && (
-        <div className="atlas-map-attribution">
-          <a href="https://map.gtadb.org" target="_blank" rel="noreferrer">
-            GTADB / Map GTA
-          </a>
-          <span> · </span>
-          <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">
-            CC BY 4.0
-          </a>
-          <span> · © Rockstar Games · Places approximate</span>
-        </div>
-      )}
-      {/* Map style note (ViceWire overhaul, 2026-11-25): one
-          geometry-driven render at every zoom — the real in-game map,
-          restyled, geography unchanged. No AI illustration any more,
-          so the old island/street label is gone. Plain, small, it
-          sits just below the filter chips (map.css). */}
-      <div className="atlas-map-illustration-note">
-        ViceWire map: the real in-game map, restyled — geography unchanged
-      </div>
+      {/* v0.31.2: the map view carries no text labels any more — the
+          "ViceWire map: the real in-game map, restyled" note and the
+          GTADB attribution footer are both gone from here (the user
+          asked for a clean map). The credit lives on in the app:
+          About → Credits & sources carries the full GTADB section
+          with the CC BY 4.0 licence link, and the Layers sheet
+          footer names the GTADB basemap. The chrome geometry reads
+          both elements as absent (null) and falls back to the 40px
+          bottom strip, so removing them changes no clamp. */}
       {mapError ? (
         <div className="atlas-map-error" role="alert">
           <span>{mapError}</span>
