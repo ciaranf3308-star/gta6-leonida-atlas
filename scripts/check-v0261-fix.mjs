@@ -220,13 +220,29 @@ await closePlaceSheet();
 // survive closing the sheet is a spoiler-lane question — flagged to
 // the lead — not something this probe decides.)
 await nav('Layers').click();
-await page.waitForTimeout(800);
-for (;;) {
-  const next = page.locator('.layer-manager input[type="checkbox"]:not(:checked)').first();
-  if ((await next.count()) === 0) break;
-  await next.click();
-  await page.waitForTimeout(120);
-}
+await page.waitForTimeout(1500);
+// Turn every layer on. NOTE: this deliberately toggles the
+// checkboxes with a synthetic DOM click (evaluate), not Playwright
+// clicks: Playwright's click times out here reporting the first
+// unchecked box "not visible" for the whole 10 s, while the
+// browser's own checkVisibility() on the same element in the same
+// state returns true (display block, visibility visible, opacity 1,
+// 26x26 box at y757, document visible and focused) — the same
+// clicks succeed in a standalone replication of this exact flow.
+// The checkbox interaction itself is covered by the app walk; this
+// probe only needs the layers ON so the pill check below has
+// markers to test. A synthetic .click() still goes through React's
+// onChange (setLayers) exactly like a real tap.
+await page.evaluate(() => {
+  document
+    .querySelectorAll('.layer-manager input[type="checkbox"]:not(:checked)')
+    .forEach((box) => box.click());
+});
+await page.waitForTimeout(1500);
+const layersOn = await page.evaluate(
+  () => document.querySelectorAll('.layer-manager input[type="checkbox"]:checked').length,
+);
+check('step 3 setup: layers turned on', layersOn >= 15, `checked=${layersOn}`);
 await page.locator('.sidebar.is-layers-sheet .brand-header .icon-button').click();
 await page.waitForTimeout(1000);
 await zoomInToMax();
