@@ -270,6 +270,23 @@ export function isUnnamedPlace(place: Pick<Place, 'title'>): boolean {
   return name === '' || name.startsWith('?') || name.startsWith('Unnamed ');
 }
 
+/**
+ * The headline a "?" place shows where a title is the headline (the
+ * place sheet, the marker tooltip): the in-game address minus its "?"
+ * name — "?, Washington Beach, Vice Beach" becomes "Washington Beach,
+ * Vice Beach". The "?" is never the headline: the sheet's own "What we
+ * know" section already says the name is unknown, and the area is the
+ * useful part. A bare "?" with no address falls back to the area, then
+ * to "Unnamed place". Named places keep their title untouched.
+ */
+export function displayTitleFor(place: Pick<Place, 'title' | 'region'>): string {
+  if (!isUnnamedPlace(place)) return place.title;
+  const rest = place.title.split(',').slice(1).join(',').trim();
+  if (rest) return rest;
+  if (place.region) return `Unnamed place in ${place.region}`;
+  return 'Unnamed place';
+}
+
 /** Places with a real name — the only ones the map, counts, search and Ask show by default. */
 export function namedPlaces<T extends Pick<Place, 'title'>>(places: readonly T[]): T[] {
   return places.filter((place) => !isUnnamedPlace(place));

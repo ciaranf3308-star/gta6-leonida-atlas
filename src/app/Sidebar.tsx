@@ -10,7 +10,7 @@ import {
   X,
 } from 'lucide-react';
 import type { Place } from '../domain/types';
-import { isUnnamedPlace } from '../domain/types';
+import { displayTitleFor, isUnnamedPlace } from '../domain/types';
 import {
   useDomainStore,
   useMapStore,
@@ -21,7 +21,7 @@ import {
 import { useAiIndexStore } from '../features/categorise/store';
 import { COUNTIES, countyForPlace, countyIdForPosition } from '../data/counties';
 import { areaIsolation, areaOptions, countyIsolation } from '../features/map/isolation';
-import { countyOutlineSvg, useAfterHoursGeo } from '../features/map/after-hours-geo';
+import { countyOutlineSvg, islandOutlineSvg, useAfterHoursGeo } from '../features/map/after-hours-geo';
 import { useCountyArt } from '../features/art/ai-images';
 import { DEFAULT_LAYERS } from '../features/map/layers';
 import {
@@ -207,6 +207,8 @@ function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allP
   // Traced county outlines (After Hours geo) and key-painted county art.
   const geo = useAfterHoursGeo();
   const countyArt = useCountyArt();
+  // The whole island, traced, for the "All Leonida" card.
+  const islandOutline = islandOutlineSvg(geo);
   const totalById = new Map(progress.map((entry) => [entry.layerId, entry.total]));
   const ordered = [...layers].sort((a, b) => b.order - a.order);
   // Trading-card sets live in one group at the bottom: only the sets with
@@ -331,10 +333,24 @@ function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allP
         <div className="county-grid">
           <button
             type="button"
-            className={`county-card ${filters.countyId === null ? 'active' : ''}`}
+            className={`county-card is-all ${filters.countyId === null ? 'active' : ''}`}
             aria-pressed={filters.countyId === null}
             onClick={() => chooseCounty(null)}
           >
+            {/* The island, traced from the real map — the same traced
+                geometry the county cards draw, so the card is never
+                an empty dark tile. No "AI image" tag: this is traced
+                geometry, not AI art. */}
+            {islandOutline && (
+              <svg
+                className="county-outline"
+                viewBox={islandOutline.viewBox}
+                preserveAspectRatio="xMidYMid slice"
+                aria-hidden="true"
+              >
+                <path d={islandOutline.coast} className="county-outline-coast" />
+              </svg>
+            )}
             <strong>All Leonida</strong>
             <small>The whole map</small>
           </button>
@@ -614,14 +630,14 @@ function Results({
             const aiCategory = effectiveAiCategory(aiCategories[place.id]);
             // A categorised "?" shows as "?" + its AI type — the name stays "?".
             // A "?" the map data's tags resolve to a type shows the same way.
-            // An unresolved "?" stays "?".
+            // An unresolved "?" is headlined by its area, never by "?".
             const tagResolution = tagResolutionFor(place);
             const displayTitle =
               isUnnamedPlace(place) && aiCategory
                 ? `? · ${aiCategoryShortLabel(aiCategory)}`
                 : isUnnamedPlace(place) && tagResolution
                   ? `? · ${aiCategoryShortLabel(tagResolution.category)}`
-                  : place.title;
+                  : displayTitleFor(place);
             const distance =
               place.position && mapCenter
                 ? distanceWord(distanceBetween(place.position, mapCenter))

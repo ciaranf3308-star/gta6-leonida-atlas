@@ -1128,6 +1128,15 @@ h3 {
   text-transform: uppercase;
   text-shadow: none;
 }
+/* "All Leonida" — the whole island, traced: a deep-teal sea to
+ * green gradient under the ivory island outline, so the card is
+ * never the one empty dark tile among five photographed ones. */
+.county-card.is-all {
+  background: linear-gradient(160deg, #0e4a5e 0%, #083344 55%, #0a2e1f 100%);
+}
+.county-card.is-all small {
+  color: #d8e4e8;
+}
 .county-card strong {
   font-family: var(--condensed);
   font-size: 16px;
@@ -1491,10 +1500,11 @@ h3 {
 }
 /* Review (v0.22 baseline): the sheet opened ~90% of the screen
  * while the reference sheet is a compact card — head, actions, and
- * a peek of what follows. 72dvh on phones, still scrollable. */
+ * a peek of what follows. 60dvh on phones (v0.25.0, was 72dvh),
+ * still scrollable. */
 @media (max-width: 599px) {
   .place-sheet {
-    max-height: 72dvh;
+    max-height: 60dvh;
   }
 }
 /* ---- Place card head (v0.23.0, reference bottom sheet): the
@@ -1506,15 +1516,15 @@ h3 {
  * unchanged; the head is what reads at a glance. ---- */
 .place-card-head {
   display: grid;
-  grid-template-columns: 116px minmax(0, 1fr);
-  gap: 14px;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 12px;
   margin-top: 8px;
   position: relative;
 }
 .place-card-photo {
   position: relative;
-  width: 116px;
-  height: 116px;
+  width: 96px;
+  height: 96px;
   border-radius: 14px;
   overflow: hidden;
   border: 1px solid #f6f0e51f;
@@ -1528,14 +1538,14 @@ h3 {
   height: 100%;
 }
 .place-card-photo .place-photo img {
-  height: 116px;
+  height: 96px;
 }
 /* The map crop is a Leaflet map: without an explicit height the
  * container is 0px and the "picture" is only its caption — the
  * v0.21 card shipped exactly that bug (caption, no image). */
 .place-card-photo .place-map-crop {
   width: 100%;
-  height: 116px;
+  height: 96px;
 }
 .place-card-photo .place-map-crop .leaflet-container {
   width: 100%;
@@ -1607,8 +1617,43 @@ h3 {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+/* Expanded, the clamp lifts and the whole description shows — a
+ * description that ends mid-sentence ("…giving…") reads as a
+ * cut-off, not a summary, so long ones get a Read more toggle. */
+.place-card-desc.is-expanded {
+  display: block;
+  -webkit-line-clamp: unset;
+  overflow: visible;
+}
+.place-card-desc-more {
+  margin-top: 4px;
+  padding: 2px 0;
+  font-size: 12px;
+  color: var(--gold);
+}
 .place-card-desc:empty {
   display: none;
+}
+/* Category chips (reference sheet: "Major City / Activities /
+ * Stores"): quiet smoked-glass pills under the description, real
+ * categories only — a region's kind plus what is actually near it. */
+.place-card-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 0;
+}
+.place-card-chips span {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #f6f0e52e;
+  background: #0b1018a6;
+  font-family: var(--condensed);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #e8e2d4;
 }
 .place-card-bookmark {
   position: absolute;
@@ -1646,7 +1691,7 @@ h3 {
   display: grid;
   grid-template-columns: 1.2fr 1fr 1fr;
   gap: 8px;
-  margin: 16px 0 0;
+  margin: 12px 0 0;
 }
 .place-card-actions .button {
   width: 100%;

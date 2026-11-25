@@ -3,6 +3,7 @@ import L from 'leaflet';
 import { Layers, LocateFixed, Minus, Plus } from 'lucide-react';
 import { useUiStore } from '../../stores/atlas';
 import type { LayerDefinition, Place, Position, Preferences } from '../../domain/types';
+import { displayTitleFor } from '../../domain/types';
 import {
   BASEMAP_BOUNDS,
   INITIAL_BOUNDS,
@@ -396,6 +397,13 @@ export default function MapView(props: MapViewProps) {
             maxMarkers: 120,
           }).slice(0, 120);
       let labelCount = 0;
+      // v0.25.0: a label's placed rect, so a later label that would
+      // land on top of an earlier one is skipped instead of piling
+      // up — three 200px labels from pins 30px apart ("Metro
+      // Station, Downtown, Vice City" over "Parking Lot, Downtown,
+      // Vice City" over "Park, Downtown, Vice City") read as one
+      // smudge. The first label wins; the skipped pin still shows.
+      const placedLabels: { left: number; right: number; top: number; bottom: number }[] = [];
       // v0.17.0: label-collision check — a label runs right from its
       // pin, so when another pin sits just to the right (Leonida Keys
       // into Grassrivers, in his screenshot) the text runs straight
@@ -403,9 +411,38 @@ export default function MapView(props: MapViewProps) {
       const groupPoints = groups.map((g) =>
         map.latLngToContainerPoint(toMapCoordinate(g.position)),
       );
-      for (let gi = 0; gi < groups.length; gi++) {
-        const group = groups[gi]!;
-        const pinPoint = groupPoints[gi]!;
+      // v0.25.0: the pin layer is clamped to the visible band. The
+      // hero (banner + search + chips + note) covers the top ~200px
+      // on phones, the edge stack and the zoom pill own the right
+      // edge, the attribution owns the bottom strip — a pin whose
+      // container point falls in one of those rects is half-hidden
+      // behind opaque chrome, so it is not rendered at all. It comes
+      // back the moment the camera moves it into the open band, and
+      // the camera never rests on a chrome pin: the place sheet
+      // selects the place, not the hidden pin.
+      const mapSize = map.getSize();
+      const phoneLayout = window.innerWidth <= 599;
+      const topChrome = phoneLayout ? 200 : 162;
+      const pillBottom = props.promptVisible ? 150 : 76;
+      const pillTop = mapSize.y - pillBottom - 97;
+      const inChrome = (p: L.Point): boolean => {
+        if (p.y < topChrome + 12) return true;
+        // Cut off at the screen edge: a pin whose centre is within
+        // half a pin of the left or right edge is half off-screen.
+        // The marker element is 48px wide (roundel plus count
+        // badge), so half a pin is 24px — a 14px margin still left
+        // the badge hanging off the edge.
+        if (p.x < 24 || p.x > mapSize.x - 24) return true;
+        if (p.x > mapSize.x - 72 && p.y >= topChrome && p.y <= topChrome + 116) return true;
+        if (p.x > mapSize.x - 72 && p.y >= pillTop && p.y <= mapSize.y - pillBottom) return true;
+        if (p.y > mapSize.y - 40) return true;
+        return false;
+      };
+      const shown = groups
+        .map((group, gi) => ({ group, point: groupPoints[gi]! }))
+        .filter(({ point }) => !inChrome(point));
+      for (let si = 0; si < shown.length; si++) {
+        const { group, point: pinPoint } = shown[si]!;
         const place = group.places[0]!;
         const layer = layersById.get(place.layerId);
         const isCluster = group.places.length > 1;
@@ -416,7 +453,7 @@ export default function MapView(props: MapViewProps) {
         const draggable = selected && place.evidence === 'personal' && props.editorMode === 'move';
         const title = isCluster
           ? `Explore ${group.places.length.toLocaleString()} places`
-          : `${place.title}${selected ? ', selected' : ''}`;
+          : `${displayTitleFor(place)}${selected ? ', selected' : ''}`;
         // A cluster wears its best member's glyph: a named place first,
         // then an enterable one, so the pin still says what it is.
         const representative =
@@ -547,19 +584,50 @@ export default function MapView(props: MapViewProps) {
           // Grassrivers, in his screenshot) the text runs straight
           // into that pin and the next label. Those pins label left,
           // over empty sea, instead.
-          const labelLeft = groupPoints.some(
-            (other, oi) =>
-              oi !== gi &&
-              Math.abs(other.y - pinPoint.y) < 28 &&
-              other.x > pinPoint.x &&
-              other.x - pinPoint.x < 90,
+          // v0.25.0: the same flip keeps a label off the right-edge
+          // chrome (edge stack, zoom pill) and off the screen edge —
+          // "Hote…" cut off at the right edge is a label that ran
+          // out of screen. When there is no room on either side the
+          // label is skipped outright rather than cut off.
+          const labelWidth = Math.min(210, place.title.length * 6 + 16);
+          const rightEdge = pinPoint.x + 10 + labelWidth;
+          const rightHitsChrome =
+            rightEdge > mapSize.x - 72 &&
+            ((pinPoint.y >= topChrome && pinPoint.y <= topChrome + 116) ||
+              (pinPoint.y >= pillTop && pinPoint.y <= mapSize.y - pillBottom));
+          const labelLeft =
+            shown.some(
+              (other, oi) =>
+                oi !== si &&
+                Math.abs(other.point.y - pinPoint.y) < 28 &&
+                other.point.x > pinPoint.x &&
+                other.point.x - pinPoint.x < 90,
+            ) ||
+            rightEdge > mapSize.x - 8 ||
+            rightHitsChrome;
+          const labelFits = !labelLeft || pinPoint.x - 10 - labelWidth >= 8;
+          const labelRect = {
+            left: labelLeft ? pinPoint.x - 10 - labelWidth : pinPoint.x + 10,
+            right: labelLeft ? pinPoint.x - 10 : pinPoint.x + 10 + labelWidth,
+            top: pinPoint.y - 10,
+            bottom: pinPoint.y + 10,
+          };
+          const overlapsLabel = placedLabels.some(
+            (r) =>
+              labelRect.left < r.right + 4 &&
+              labelRect.right > r.left - 4 &&
+              labelRect.top < r.bottom + 2 &&
+              labelRect.bottom > r.top - 2,
           );
-          marker.bindTooltip(label, {
-            permanent: true,
-            direction: labelLeft ? 'left' : 'right',
-            offset: labelLeft ? [-10, 0] : [10, 0],
-            className: `atlas-place-label ${selected ? 'is-selected' : ''}`,
-          });
+          if (labelFits && !overlapsLabel) {
+            marker.bindTooltip(label, {
+              permanent: true,
+              direction: labelLeft ? 'left' : 'right',
+              offset: labelLeft ? [-10, 0] : [10, 0],
+              className: `atlas-place-label ${selected ? 'is-selected' : ''}`,
+            });
+            placedLabels.push(labelRect);
+          }
           labelCount++;
         }
       }
@@ -818,6 +886,8 @@ export default function MapView(props: MapViewProps) {
       {/* Decorative clouds over the sea at island zoom (map.css) —
         pure CSS, no asset, pointer-events none, below the pins. */}
       <div className="atlas-clouds" aria-hidden="true">
+        <span />
+        <span />
         <span />
         <span />
         <span />

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { County } from '../../data/counties';
+import { INITIAL_BOUNDS } from './coordinates';
 
 /**
  * Traced county outlines (After Hours, v0.15.0) — built by
@@ -112,6 +113,29 @@ export function countyOutlineSvg(
     viewBox: `${b.west} ${-b.north} ${b.east - b.west} ${b.north - b.south}`,
     coast: toPath(countyGeo.coast),
     estimate: toPath(countyGeo.estimate),
+  };
+}
+
+/**
+ * Island outline for the "All Leonida" county card: every county's
+ * traced coast runs in one SVG over the whole island — the same
+ * traced geometry the county cards draw, no invented line. Null when
+ * the geo file has not loaded (the card falls back to its gradient).
+ */
+export function islandOutlineSvg(
+  geo: AfterHoursGeo | null,
+): { viewBox: string; coast: string } | null {
+  if (!geo) return null;
+  const runs = Object.values(geo.counties).flatMap((county) => county.coast);
+  if (runs.length === 0) return null;
+  const toPath = (runs: [number, number][][]): string =>
+    runs
+      .map((run) => `M${run.map(([x, y]) => `${x},${-y}`).join(' L')}`)
+      .join(' ');
+  const b = INITIAL_BOUNDS;
+  return {
+    viewBox: `${b.west} ${-b.north} ${b.east - b.west} ${b.north - b.south}`,
+    coast: toPath(runs),
   };
 }
 

@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Bookmark, Camera, Check, Dumbbell, ExternalLink, Footprints, Home, MapPin, Move, Navigation, Pencil, Scan, Sparkles, Star, Tag, X } from 'lucide-react';
 import type { Place, Position } from '../../domain/types';
-import { isUnnamedPlace } from '../../domain/types';
+import { displayTitleFor, isUnnamedPlace } from '../../domain/types';
+import { topCategoriesNear } from '../../domain/nearby-categories';
 import { categoryLabel } from '../../app/categories';
 import {
   displayTagsFor,
@@ -39,6 +40,8 @@ import {
 } from '../../stores/atlas';
 import { finishNoteSave, reconcileNoteDraft, type NoteDraft } from './note-draft';
 import { getResearchForPlace } from '../street-leonida/leonida-research';
+import { getLocalStreetPlaces } from '../street-leonida/page-data';
+import type { StreetPlaceCategory } from '../street-leonida/types';
 import RegionalResearch from './RegionalResearch';
 import { COUNTIES } from '../../data/counties';
 import { countyIsolation } from '../map/isolation';
@@ -206,6 +209,32 @@ export default function PlaceDetails({
   }, [place.position]);
   const cardSubtitle =
     cardCounty || place.region || placeTypeLine(place) || categoryLabel(place.category);
+  // The headline never shows "?" — an unnamed place is headlined by
+  // its area ("Washington Beach, Vice Beach"), never by its missing
+  // name. The eyebrow says so too: UNVERIFIED PLACE, not the generic
+  // LEONIDA · PLACE.
+  const displayTitle = displayTitleFor(place);
+  // Long descriptions clamp to three lines with a Read more toggle —
+  // a clamped mid-sentence ("…giving…") reads as a cut-off, not a
+  // summary. Whether it clamps is measured, not guessed from the
+  // character count: at this column width three lines hold ~90
+  // characters, so a 105-character description already overflows
+  // while a 180-character threshold would leave it cut with no way
+  // to read the rest. The toggle shows exactly when the clamped text
+  // overflows; once expanded it stays as Show less.
+  const [descExpanded, setDescExpanded] = useState(false);
+  const descRef = useRef<HTMLParagraphElement | null>(null);
+  const [descOverflows, setDescOverflows] = useState(false);
+  useEffect(() => {
+    const el = descRef.current;
+    if (!el || descExpanded) return;
+    const measure = () => setDescOverflows(el.scrollHeight > el.clientHeight + 1);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [description, descExpanded]);
+  const showDescToggle = descOverflows || descExpanded;
   // Interior status, in plain words at the top of the sheet: enterable /
   // unknown (never a false no), what kind of venue, what you do inside,
   // and whether it is a breakable house. A house with no enterable tag
@@ -214,6 +243,47 @@ export default function PlaceDetails({
   // What the map data's tags say this "?" is — a resolved type from the
   // tags, never a name. The name stays "?" until a source names it.
   const tagResolution = tagResolutionFor(place);
+  // Category chips (reference sheet: "Major City / Activities /
+  // Stores"): real data only. A region gets its kind from the local
+  // catalogue (City / Region / Natural area) plus the top Map Index
+  // categories of verified places near it; any other place gets its
+  // own category, its tag-resolved type, and its layer's group.
+  const cardChips = useMemo(() => {
+    const chips: string[] = [];
+    if (place.layerId === 'regions') {
+      const local = getLocalStreetPlaces().items.find(
+        (item) => `region:${item.slug}` === place.id,
+      );
+      const kindLabels: Record<StreetPlaceCategory, string> = {
+        CITY: 'City',
+        REGION: 'Region',
+        DISTRICT: 'District',
+        LANDMARK: 'Landmark',
+        BUSINESS: 'Business',
+        NATURAL_AREA: 'Natural area',
+        INFRASTRUCTURE: 'Infrastructure',
+        OTHER: 'Place',
+      };
+      if (local) chips.push(kindLabels[local.category]);
+      if (place.position) {
+        for (const { category } of topCategoriesNear(place.position, allPlaces)) {
+          const label = categoryLabel(category);
+          if (!chips.includes(label)) chips.push(label);
+        }
+      }
+      return chips.slice(0, 3);
+    }
+    const category = categoryLabel(place.category);
+    if (category) chips.push(category);
+    const typeLabel = tagResolution?.label ?? aiDisplay?.label;
+    if (typeLabel && !chips.includes(typeLabel)) chips.push(typeLabel);
+    const layer = DEFAULT_LAYERS.find((l) => l.id === place.layerId);
+    if (layer) {
+      const group = categoryLabel(layer.mapIndex);
+      if (group && !chips.includes(group)) chips.push(group);
+    }
+    return chips.slice(0, 3);
+  }, [place, allPlaces, tagResolution, aiDisplay]);
   const [correcting, setCorrecting] = useState(false);
   const [correctChoice, setCorrectChoice] = useState<AiCategoryId>('house');
   const [correctShopType, setCorrectShopType] = useState('');
@@ -293,7 +363,13 @@ export default function PlaceDetails({
     <aside className="place-sheet" aria-label="Place details">
       <div className="sheet-grabber" aria-hidden="true" />
       <header className="place-sheet-top">
-        <span className="eyebrow">{isPersonal ? 'MY MARKER' : 'LEONIDA · PLACE'}</span>
+        <span className="eyebrow">
+          {isPersonal
+            ? 'MY MARKER'
+            : isUnnamedPlace(place)
+              ? 'UNVERIFIED PLACE'
+              : 'LEONIDA · PLACE'}
+        </span>
         <button
           className="icon-button"
           aria-label="Close place details"
@@ -339,9 +415,37 @@ export default function PlaceDetails({
             </span>
           </div>
           <div className="place-card-text">
-            <h2>{place.title}</h2>
+            {/* The headline never shows "?" — an unnamed place is
+                headlined by its area, never by its missing name. */}
+            <h2>{displayTitle}</h2>
             <span className="place-card-county">{cardSubtitle}</span>
-            {description.trim() ? <p className="place-card-desc">{description}</p> : null}
+            {description.trim() ? (
+              <>
+                <p
+                  ref={descRef}
+                  className={`place-card-desc ${descExpanded ? 'is-expanded' : ''}`}
+                >
+                  {description}
+                </p>
+                {showDescToggle && (
+                  <button
+                    type="button"
+                    className="text-button place-card-desc-more"
+                    aria-expanded={descExpanded}
+                    onClick={() => setDescExpanded((v) => !v)}
+                  >
+                    {descExpanded ? 'Show less' : 'Read more'}
+                  </button>
+                )}
+              </>
+            ) : null}
+            {cardChips.length > 0 && (
+              <p className="place-card-chips" aria-label="What this place is">
+                {cardChips.map((chip) => (
+                  <span key={chip}>{chip}</span>
+                ))}
+              </p>
+            )}
           </div>
           <button
             type="button"
@@ -400,8 +504,11 @@ export default function PlaceDetails({
         )}
         {!photoUrl && (
           <p className="help-text">
-            No photo of this building yet — add your own in-game screenshot. Photos stay on
-            this device and are never in backups.
+            {/* A region is not a building: "No photo of this building
+                yet" on a whole city is wrong. */}
+            {place.layerId === 'regions'
+              ? 'No photo of this area yet — add your own in-game screenshot. Photos stay on this device and are never in backups.'
+              : 'No photo of this place yet — add your own in-game screenshot. Photos stay on this device and are never in backups.'}
           </p>
         )}
         {/* Reference action row — one row of three, for every place,
