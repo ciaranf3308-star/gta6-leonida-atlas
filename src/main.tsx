@@ -66,6 +66,35 @@ if (import.meta.env.PROD && "serviceWorker" in navigator) {
         void registration.update().catch(() => {
           /* Update check is best-effort; the map works without it. */
         });
+        // v0.30.1 (QA Finding #2): the new worker does not always
+        // activate from the skipWaiting() call in its install
+        // handler — measured 7 of 9 first reloads left it sitting in
+        // `waiting` in this Chromium, with the old worker controlling
+        // the page for the whole session. Prompt it explicitly once
+        // it is installed: a skipWaiting() call on an
+        // already-installed waiting worker activates it immediately,
+        // the claim() in its activate handler then hands control to
+        // it, and the controllerchange listener below reloads once
+        // to the new shell. Without the prompt the update took two
+        // opens; with it, one.
+        const promptWaitingWorker = () => {
+          registration.waiting?.postMessage({ type: "SKIP_WAITING" });
+        };
+        const watchInstalling = (worker: ServiceWorker | null) => {
+          if (!worker) return;
+          if (worker.state === "installed") {
+            promptWaitingWorker();
+            return;
+          }
+          worker.addEventListener("statechange", () => {
+            if (worker.state === "installed") promptWaitingWorker();
+          });
+        };
+        promptWaitingWorker();
+        watchInstalling(registration.installing);
+        registration.addEventListener("updatefound", () => {
+          watchInstalling(registration.installing);
+        });
         const hadController = Boolean(navigator.serviceWorker.controller);
         let reloading = false;
         navigator.serviceWorker.addEventListener("controllerchange", () => {

@@ -65,6 +65,13 @@ export interface AiMigrationRecord {
   categories: number;
   attempted: number;
   source: "localStorage-v1" | "none";
+  /**
+   * Records present in the legacy store that did not survive the
+   * migration (dropped by the lenient parse, or failing the strict
+   * record shape). Absent (not zero) when nothing was skipped, so
+   * older meta rows keep their exact shape.
+   */
+  skipped?: number;
 }
 
 export const AI_MIGRATION_META_KEY = "ai-migration-v1";
@@ -126,6 +133,19 @@ export async function loadAiIndex(
   };
 }
 
+/** How many category entries the legacy store holds, before any parsing. */
+function countLegacyRecords(raw: string | null): number {
+  if (!raw) return 0;
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))
+      return 0;
+    return Object.keys(parsed as Record<string, unknown>).length;
+  } catch {
+    return 0;
+  }
+}
+
 /**
  * Migrate the localStorage index into IndexedDB, atomically.
  *
@@ -134,23 +154,56 @@ export async function loadAiIndex(
  * inside that same transaction. Returns the migrated counts. The
  * caller must only remove the localStorage keys after this resolves
  * — if it throws, nothing was written and the old data is untouched.
+ *
+ * Drift tolerance (v0.30.1): legacy data is the user's own history
+ * and may predate fields the strict record shape now requires. One
+ * bad record must never strand the whole index behind an error
+ * banner (QA Finding #1). So each record is validated on its own:
+ * a record missing `model` — the shape every record written before
+ * model tracking had — is repaired with the honest default
+ * 'unknown' instead of claiming a model it never had; any other
+ * record failing the strict shape is skipped and counted, never
+ * thrown. The skipped count is recorded in the migration meta.
+ * This leniency lives ONLY here: batches and backup imports still
+ * fail loudly on a bad record (a bad batch must never report
+ * success), because those paths receive app-written or
+ * user-supplied data, not legacy history.
  */
 export async function migrateAiIndexFromLocalStorage(
   storage: StorageLike,
   db: AiIndexDatabase = aiIndexDb,
 ): Promise<AiMigrationRecord> {
-  const categories = parseAiCategories(
-    storage.getItem(AI_CATEGORIES_STORAGE_KEY),
-  );
+  const rawCategories = storage.getItem(AI_CATEGORIES_STORAGE_KEY);
+  const categories = parseAiCategories(rawCategories);
   const job = parseIndexJob(storage.getItem(AI_INDEX_JOB_STORAGE_KEY));
-  const records = Object.values(categories).map((record) =>
-    parseAiCategoryRecord(record),
-  );
+  const records: AiCategoryRecord[] = [];
+  let skipped = countLegacyRecords(rawCategories) - Object.keys(categories).length;
+  for (const record of Object.values(categories)) {
+    try {
+      records.push(parseAiCategoryRecord(record));
+      continue;
+    } catch {
+      // Fall through to repair-or-skip below.
+    }
+    if ((record as { model?: unknown }).model === undefined) {
+      try {
+        records.push(
+          parseAiCategoryRecord({ ...record, model: "unknown" }),
+        );
+        continue;
+      } catch {
+        // Still invalid without its model — skip it like any other
+        // drifted record.
+      }
+    }
+    skipped += 1;
+  }
   const record: AiMigrationRecord = {
     migratedAt: new Date().toISOString(),
     categories: records.length,
     attempted: job.attemptedPlaceIds.length,
     source: "localStorage-v1",
+    ...(skipped > 0 ? { skipped } : {}),
   };
   await db.transaction(
     "rw",

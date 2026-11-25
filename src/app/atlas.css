@@ -2421,6 +2421,13 @@ h3 {
   font-size: 14px;
   min-height: 56px;
 }
+/* v0.30.1: the count sits on its own line under the layer name.
+ * It used to run straight on after the <strong> with no space, so
+ * it read "Named regions6 on the map" (QA Finding #4). */
+.welcome-counts small {
+  display: block;
+  margin-top: 2px;
+}
 .welcome-icon {
   width: 40px;
   height: 40px;

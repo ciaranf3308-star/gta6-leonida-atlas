@@ -213,6 +213,61 @@ describe("AI index in transactional IndexedDB — migration (v0.30.0)", () => {
     expect(snapshot.migration?.source).toBe("none");
     expect(snapshot.categories).toEqual({});
   });
+
+  it("a record missing `model` is repaired with 'unknown' instead of aborting the migration (v0.30.1)", async () => {
+    const storage = memoryStorage({
+      [AI_CATEGORIES_STORAGE_KEY]: JSON.stringify({
+        L1: record({ placeId: "L1" }),
+        // L2 predates model tracking (or was hand-edited): no `model`.
+        L2: {
+          placeId: "L2",
+          aiCategory: "gym",
+          confidence: 0.9,
+          reason: "Test record.",
+          indexedAt: time,
+          status: "suggested",
+          source: "ai",
+        },
+        L3: record({ placeId: "L3", aiCategory: "shop" }),
+      }),
+      [AI_INDEX_JOB_STORAGE_KEY]: JSON.stringify(
+        job({ status: "paused", attemptedPlaceIds: ["L1", "L2", "L3"] }),
+      ),
+    });
+    const migrated = await migrateAiIndexFromLocalStorage(storage, aiDb);
+    expect(migrated.categories).toBe(3);
+    expect(migrated.skipped ?? 0).toBe(0);
+    const snapshot = await loadAiIndex(aiDb);
+    expect(Object.keys(snapshot.categories)).toEqual(["L1", "L2", "L3"]);
+    // The repair is honest provenance: the record predates model
+    // tracking, so it says so instead of claiming a model it never had.
+    expect(snapshot.categories["L2"]?.model).toBe("unknown");
+    expect(snapshot.categories["L2"]?.aiCategory).toBe("gym");
+  });
+
+  it("drifted records are skipped and counted instead of aborting the migration (v0.30.1)", async () => {
+    const storage = memoryStorage({
+      [AI_CATEGORIES_STORAGE_KEY]: JSON.stringify({
+        L1: record({ placeId: "L1" }),
+        L2: record({ placeId: "L2", indexedAt: "not-a-date" }),
+        L3: record({ placeId: "L3", reason: "x".repeat(1001) }),
+        L4: record({ placeId: "L4", shopType: "y".repeat(61) }),
+        L5: record({ placeId: "L5", confidence: 1.5 }),
+      }),
+      [AI_INDEX_JOB_STORAGE_KEY]: JSON.stringify(
+        job({
+          status: "paused",
+          attemptedPlaceIds: ["L1", "L2", "L3", "L4", "L5"],
+        }),
+      ),
+    });
+    const migrated = await migrateAiIndexFromLocalStorage(storage, aiDb);
+    expect(migrated.categories).toBe(1);
+    expect(migrated.skipped).toBe(4);
+    const snapshot = await loadAiIndex(aiDb);
+    expect(Object.keys(snapshot.categories)).toEqual(["L1"]);
+    expect(snapshot.migration?.source).toBe("localStorage-v1");
+  });
 });
 
 describe("AI index in transactional IndexedDB — atomic batches and save truth (v0.30.0)", () => {

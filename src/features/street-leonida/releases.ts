@@ -11,6 +11,23 @@ export interface LeonidaAtlasRelease {
 /** Retained public history starts at v0.5.0; the newest release stays first. */
 export const LEONIDA_ATLAS_RELEASES: readonly LeonidaAtlasRelease[] = [
   {
+    version: "v0.30.1",
+    date: "2026-11-25",
+    title: "QA fixes — migration, one-open PWA update, offline first visit, onboarding counts",
+    summary:
+      "Independent QA's verdict on v0.30.0 was SHIP, with four findings. v0.30.1 fixes exactly those four — a legacy AI record that aborted the whole migration, a PWA update that took two opens, an offline reload that failed after exactly one visit, and onboarding counts jammed against their layer names. No visual changes, no basemap changes, no new features.",
+    status: "public",
+    highlights: [
+      "Migration no longer aborts on one bad legacy record (src/db/ai-index.ts): the migration fed lenient-parsed legacy data into the strict backup validator, so one record missing `model` threw and 0 categories landed with an error banner, keys preserved but stuck. Each record is now validated on its own: a record missing `model` — the shape every record written before model tracking had — is repaired with the honest default 'unknown' (model is provenance/display only, never a claim about what made the record); any other record failing the strict shape is skipped and counted in the migration meta (`skipped`, present only when > 0, so older meta rows keep their exact shape). The strict-throw stays everywhere else: a bad indexing batch or backup import still fails loudly, because those paths receive app-written or user-supplied data, not legacy history. Two new unit tests (tests/unit/ai-index-storage.test.ts): a model-less seed migrates the rest cleanly with the repaired record landing as 'unknown'; a drifted seed (bad timestamp, 1001-char reason, 61-char shopType, confidence 1.5) lands only the good record with skipped 4.",
+      "A PWA update now lands on the first open (scripts/finalize-build.mjs, src/main.tsx): measured 2/9 first-reload activations before the fix — the new worker installed in ~1–1.5 s and then sat in `waiting` for the full 20 s poll while the old worker controlled the page, in 7 of 9 runs. Install-time skipWaiting() alone did not reliably activate the worker in this Chromium, so the app now also prompts an already-installed waiting worker explicitly: the worker listens for a { type: 'SKIP_WAITING' } message, and main.tsx posts it the moment a worker finishes installing (updatefound → statechange to 'installed', plus a check of any worker already waiting at registration time). The controllerchange reload then fires once and the new shell loads. A suspected claim() bug in the activate handler was checked and ruled out before shipping: the .then(claim) is chained onto the cache-deletion promise inside waitUntil, and a mock-run of the handler confirms claim() is called — the waiting state, not the claim, was the fault.",
+      "Offline reload works after exactly one visit (scripts/finalize-build.mjs): dist/index.html modulepreloads the 3D chunk walk-geography-*.js, which the app needs at startup — but the chunk lived in APP_FILES, not CORE, so install never precached it, and the first visit's preload fetch raced ahead of the not-yet-controlling worker and never landed in the cache. finalize now derives the startup-needed chunks from the built index.html's modulepreload links and precaches them in CORE (excluding them from the lazy 3D list so nothing is listed twice) — general, not a one-off filename: whatever the bundler preloads next release is covered. CORE grows 40 → 41 entries (only walk-geography was missing); the content-hash cache name moves accordingly.",
+      "Onboarding 'What is mapped' counts no longer jam against the layer name (src/app/atlas.css): the count <small> ran straight on after the layer <strong> with no space, rendering 'Named regions6 on the map'. The small now displays on its own line under the name (display: block, 2px top margin) — the same fix covers the Trading cards row, whose sentence also ran on. Verified by scripts/check-v0301-welcome.mjs at 390px DPR 2 (text read + screenshot).",
+    ],
+    verification: [
+      "Migration (unit, reproduce-then-verify): the two new tests failed before the fix with BackupValidationError — 'aiCategory.model must be text' and 'aiCategory.indexedAt must be an ISO UTC timestamp' — the exact abort QA saw. After the fix: tests/unit/ai-index-storage.test.ts 14/14 (12 existing + 2 new).",
+    ],
+  },
+  {
     version: "v0.30.0",
     date: "2026-11-25",
     title: "Reproducible from a clean checkout — content-hash versioning, honest docs, CI on the branch",

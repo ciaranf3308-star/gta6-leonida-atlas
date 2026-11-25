@@ -245,6 +245,25 @@ const precache = [
   `${base}assets/gta6-leonida-atlas/basemap.svg`,
   `${base}assets/street-leonida/maps/gtadb-landmarks-d406fea.json`,
 ];
+// Startup-needed chunks (v0.30.1, QA Finding #3): Vite
+// modulepreloads the chunks the entry point imports at startup.
+// Those belong in CORE, not APP_FILES: on the first visit the
+// preload fetch races ahead of the not-yet-controlling worker and
+// never lands in the cache, so an offline reload after exactly one
+// visit fails to hydrate (the 3D chunk walk-geography-*.js). Derive
+// them from the built index.html instead of naming files, so
+// whatever the bundler preloads next release is covered too.
+for (const match of html.matchAll(
+  /<link rel="modulepreload"[^>]*href="([^"]+)"/g,
+)) {
+  const url = match[1];
+  if (url.startsWith(base) && !precache.includes(url)) precache.push(url);
+}
+// A startup chunk stops being a lazy 3D asset once it is precached.
+for (let i = threeDimensionalAssets.length - 1; i >= 0; i--) {
+  if (precache.includes(threeDimensionalAssets[i]))
+    threeDimensionalAssets.splice(i, 1);
+}
 const contentHash = createHash("sha256").update(
   html + JSON.stringify([precache, threeDimensionalAssets]),
 );
@@ -389,6 +408,15 @@ async function countOptional(cache){
   return optionalCount;
 }
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)));self.skipWaiting();});
+// v0.30.1: install-time skipWaiting() alone does not reliably
+// activate the new worker — measured 7 of 9 first reloads left it
+// sitting in 'waiting' in this Chromium, with the old worker
+// controlling the page for the whole session. So the page also
+// prompts an already-installed waiting worker explicitly (see
+// main.tsx): a skipWaiting() call on an installed worker activates
+// it immediately. Both paths call the same thing; the prompt is the
+// one that lands.
+self.addEventListener('message',event=>{if(event.data&&event.data.type==='SKIP_WAITING')self.skipWaiting();});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith(PREFIX)&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()));});
 self.addEventListener('fetch',event=>{
   const request=event.request,url=new URL(request.url);
