@@ -220,6 +220,14 @@ export function layersRequestedByQuestion(
   // is shops. 'lootable' (shops) only joins when the question is not a
   // house question.
   if (lootPhrases.some((p) => hasPhrase(q, p)) && !asksHouses) has('lootable');
+  // Bank jobs & vaults are their own layer, not the lootable SHOPS
+  // layer: "bank job", "vault" and "heist" ask for the Loot Map jobs.
+  // A generic "rob" question still asks for the shops (unchanged above).
+  const heistPhrases = [
+    'bank job', 'bank jobs', 'bank vault', 'bank vaults', 'vault', 'vaults',
+    'payday loan', 'payday loans', 'heist', 'heists',
+  ];
+  if (heistPhrases.some((p) => hasPhrase(q, p))) has('loot-heists');
   // Breakable homes are systemic, not a list: the question asks for the
   // Breakable homes layer — the 33 GTADB-tagged houses, the Capri rob
   // houses, the trailer parks, the guide examples, and the user's own
@@ -264,6 +272,14 @@ export function layersRequestedByQuestion(
     )
   ) {
     for (const layer of layers) if (layer.id.startsWith('cards:')) ids.add(layer.id);
+    // The Loot Map collectibles (meditations, magazines, watches) are
+    // collectibles too — a "collectibles" question asks for both.
+    has('loot-collectibles');
+  }
+  // Meditation and magazine questions ask for the Loot Map collectibles
+  // only — never the trading-card sets.
+  if (['meditation', 'meditations', 'magazine', 'magazines'].some((p) => hasPhrase(q, p))) {
+    has('loot-collectibles');
   }
   if (['my marker', 'my markers', 'my note', 'my notes', 'my places'].some((p) => hasPhrase(q, p)))
     has('my-markers');
@@ -378,6 +394,8 @@ function placeNounForLayers(layerIds: readonly string[]): string {
     if (layerIds[0] === 'gyms') return 'gym';
     if (layerIds[0] === 'breakable') return 'breakable home';
     if (layerIds[0] === 'lootable') return 'lootable building';
+    if (layerIds[0] === 'loot-heists') return 'bank job';
+    if (layerIds[0] === 'loot-collectibles') return 'collectible';
     if (layerIds[0]?.startsWith('shops-')) return 'shop';
     if (layerIds[0] === 'interiors') return 'enterable building';
     if (layerIds[0]?.startsWith('cards:')) return 'card';

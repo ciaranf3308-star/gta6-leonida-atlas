@@ -47,6 +47,18 @@ County stunt-jump counts and 100% completion thresholds used by GTA6 Leonida Atl
 
 The same repository's 798 markers (`data/gta-6-markers.csv` / `data/gta-6-markers.json`) were NOT imported: their `x`/`y` are normalized 0–1 schematic coordinates on the source's own map. Fitted against the GTADB frame on the 774 markers whose ids match GTADB records, the best affine transform leaves a median error of ~2.1 km (p90 ~3.9 km, max ~8.5 km; only 2 of 774 within 100 m). The 774 matched markers duplicate places the GTADB catalogue already carries with verified positions; the 24 unmatched markers cannot be verified at all. See `hidden_files/v031-county/markers-inventory.md` in the project goal workspace for the full per-type analysis. County extents shown in the atlas remain estimates — the official poster prints county names but no boundary lines.
 
+## GTA 6 Loot Map / theihtishaam
+
+Bank jobs & vaults (29 places) and Loot Map collectibles (20 places) used by GTA6 Leonida Atlas (v0.31.1) originate from the GTA 6 Loot Map community dataset. Only PLACE DATA was used — coordinates, names and guide descriptions, read from the dataset's JSON place lists (`public/collectible-guides.json`, `guides.json`, `guide-positions.json`). No code from that repository was run, installed, imported or copied.
+
+- Source: https://github.com/theihtishaam/GTA-6-Interactive-Map-and-Loot-Tracker
+- Pinned version: `v0.1.5`, commit `95dabd3` (2026-11-25)
+- Files used: `guides.json` (75 records — 29 heists and 10 collectibles imported) and `collectible-guides.json` (10 meditations, all imported). Normalised 0–1 coordinates were converted to GTADB game metres (gameX = x · 13824 − 10240, gameY = 10496 − y · 19456) and verified before import: in bounds, inside the GTADB landmass box, no position conflicts, no duplicates of existing card pins, landmarkId cross-checked against the GTADB snapshot.
+- Data license: MIT
+- Attribution: `GTA 6 Loot Map` and contributors
+
+Records NOT imported: earbuds (15 — duplicate GTADB shop venues), leisure (8), reward (8), bag (1), story missions (176 — spoiler design needed, separate lane), `landmarks.json` (a GTADB re-import), `roads.json`, and `community.json` (empty). Two heist records were excluded for position conflicts (venue vs registered marker >100 m apart: downtown-shorefront ~553 m, rockridge-shorefront ~147 m). One meditation (Kalaga) and one card (Vicki) were duplicates of existing places and imported once / excluded respectively. Every imported record is UNVERIFIED-tier (evidence: 'uncertain') — community-sourced guide positions (PowerPyx / games.gg), registered from guide screenshots, not in-game verified — and both layers are OFF by default. See `hidden_files/v031-loot/VERIFICATION.md` and `REJECTED.md` in the project goal workspace for the full per-record verification.
+
 ## GTADB code
 
 If code is copied directly from `gtadb.org`, it remains subject to that project's MIT license and copyright notices. This release is structured to keep direct third-party code notices here when applicable.

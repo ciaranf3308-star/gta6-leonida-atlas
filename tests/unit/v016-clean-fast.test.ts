@@ -76,6 +76,27 @@ describe('v0.16.0 hero pins at full-map zoom', () => {
     // 40 places in one cell: only one hero pin survives from that cell.
     expect(selectHeroPlaces(places)).toHaveLength(1);
   });
+
+  it('v0.31.1: named Loot Map places can be heroes — unverified "?" places still cannot', () => {
+    // Before v0.31.1 the hero filter dropped every 'uncertain' place,
+    // so turning on Bank jobs at island zoom showed nothing at all —
+    // the layers looked empty. Loot places are named guide positions
+    // (only their verification is pending), so they belong on the
+    // island overview. A tentative GTADB name ("Parsons Hotel?") is
+    // still not a confirmed name, so it stays out.
+    const places: Place[] = [
+      place('loot:guide-afternoon-delight', -6360, 3590, 'loot-heists', 'Afternoon Delight', 'uncertain'),
+      place('loot:guide-meditation-jasons-house', -2353, -5532, 'loot-collectibles', 'Jason’s House meditation', 'uncertain'),
+      place('tentative-1', 3000, 5000, 'community', 'Parsons Hotel?', 'uncertain'),
+      place('unnamed-1', -5000, -5000, 'community', '?', 'uncertain'),
+      place('named-1', 2000, 8000, 'interiors', 'Dynamix Fitness'),
+    ];
+    expect(selectHeroPlaces(places).map((p) => p.id)).toEqual([
+      'named-1',
+      'loot:guide-afternoon-delight',
+      'loot:guide-meditation-jasons-house',
+    ]);
+  });
 });
 
 describe('v0.16.0 marker cap — the lag fix', () => {

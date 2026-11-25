@@ -172,6 +172,34 @@ export const DEFAULT_LAYERS: LayerDefinition[] = [
     interactive: true,
   },
   {
+    id: 'loot-heists',
+    name: 'Bank jobs & vaults',
+    description:
+      'Bank jobs, vaults and payday loans from the GTA 6 Loot Map community dataset — 29 places. Community-sourced guide positions, not in-game verified. A job is a robbery target, not a shop: the shops you can hold up live in Lootable buildings.',
+    category: 'activity',
+    mapIndex: 'robberies',
+    visible: false,
+    order: 88,
+    source: 'GTA 6 Loot Map (MIT) · community-sourced, unverified',
+    style: { color: '#ffb020', radius: 7 },
+    icon: 'banknote',
+    interactive: true,
+  },
+  {
+    id: 'loot-collectibles',
+    name: 'Collectibles · Loot Map',
+    description:
+      'Meditations, magazines, cards and watches from the GTA 6 Loot Map community dataset — 20 places. Community-sourced guide positions, not in-game verified. Trading-card sets live in their own Cards layers.',
+    category: 'collectible',
+    mapIndex: 'collectibles',
+    visible: false,
+    order: 19,
+    source: 'GTA 6 Loot Map (MIT) · community-sourced, unverified',
+    style: { color: '#2ec4b6', radius: 6 },
+    icon: 'sparkles',
+    interactive: true,
+  },
+  {
     id: 'gyms',
     name: 'Gyms',
     description:

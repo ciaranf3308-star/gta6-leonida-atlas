@@ -1,5 +1,6 @@
 import type { Category, PersonalMarker, Place } from '../domain/types';
 import { COLLECTABLE_CARD_PLACES } from './collectables';
+import { LOOT_MAP_PLACES } from './loot-map';
 import { BREAKABLE_HOME_PLACES } from './breakable-homes';
 import { EQUIPMENT_PLACES, GYM_PLACES } from './gyms';
 import { getLocalStreetPlaces } from '../features/street-leonida/page-data';
@@ -278,6 +279,7 @@ export function catalogueFromSnapshot(input: unknown): Place[] {
     ...EQUIPMENT_PLACES,
     ...BREAKABLE_HOME_PLACES,
     ...COLLECTABLE_CARD_PLACES,
+    ...LOOT_MAP_PLACES,
   ];
 }
 

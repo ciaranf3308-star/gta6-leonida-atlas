@@ -97,7 +97,7 @@ describe("real counts — no 5k, ever", () => {
 });
 
 describe("Capri gym hunting — honest, from the real data", () => {
-  it("finds 0 gym tags in the snapshot outside Ajax Gym, and 226 Capri records", () => {
+  it("finds 0 gym tags in the snapshot outside Ajax Gym, and 227 Capri records", () => {
     const places = catalogueFromSnapshot(snapshot);
     // GTADB records only — the curated gyms carry a 'gym' tag by
     // construction, so they are not part of this claim.
@@ -107,7 +107,10 @@ describe("Capri gym hunting — honest, from the real data", () => {
     const gymTagged = gtadb.filter((p) => p.tags.some((t) => /^#?(gym|fitness|workout)$/.test(t)));
     expect(gymTagged.map((p) => p.id)).toEqual(["L1869"]);
     const capri = places.filter((p) => p.title.includes("Capri") || p.region.includes("Capri"));
-    expect(capri.length).toBe(226);
+    // 227, not 226: the Smooth Sand meditation sits on a sandbar off
+    // Capri (region "Capri, Mariana County") — the one Loot Map place
+    // in Capri.
+    expect(capri.length).toBe(227);
     expect(capri.filter((p) => p.tags.includes("enterable")).length).toBe(12);
     expect(capri.filter((p) => p.tags.includes("residential")).length).toBe(3);
     expect(capri.filter((p) => p.tags.some((t) => /^#?(gym|fitness|workout)$/.test(t)))).toHaveLength(0);

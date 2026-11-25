@@ -160,6 +160,8 @@ const CROSS_LAYER_KEYWORDS: Readonly<Record<string, readonly string[]>> = {
   gyms: ['gym', 'gyms', 'fitness', 'workout', 'weights', 'bench', 'exercise'],
   equipment: ['equipment', 'workout', 'weights', 'bench', 'kettlebell', 'dumbbell'],
   lootable: ['loot', 'lootable', 'rob', 'robbery', 'robberies', 'burglar', 'burglary', 'steal', 'hold up'],
+  'loot-heists': ['bank job', 'bank jobs', 'bank vault', 'bank vaults', 'vault', 'vaults', 'payday loan', 'payday loans', 'heist', 'heists'],
+  'loot-collectibles': ['meditation', 'meditations', 'magazine', 'magazines'],
   breakable: ['breakable', 'break into', 'break-in', 'burglar', 'burglary', 'rob a house'],
   interiors: ['interior', 'interiors', 'enterable', 'go inside', 'inside'],
   shops: ['shop', 'shops', 'store', 'stores', 'buy'],

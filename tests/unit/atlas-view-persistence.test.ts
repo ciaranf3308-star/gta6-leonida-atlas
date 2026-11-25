@@ -76,11 +76,11 @@ describe('Map-view persistence — layers survive a reload', () => {
     const names = ordered.map((l) => l.name);
     expect(names.slice(0, 6)).toEqual([
       'Lootable buildings',
+      'Bank jobs & vaults',
       'Interiors / Enterable',
       'Breakable homes',
       'Weapons shops',
       'Style shops',
-      'Food & drink shops',
     ]);
     expect(names.slice(-2)).toEqual([
       'Cards · Vice City Narcos',

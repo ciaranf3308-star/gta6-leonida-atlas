@@ -117,7 +117,7 @@ describe("Gyms and Workout equipment layers", () => {
 
   it("merges the gyms into the catalogue alongside the community records", () => {
     const places = catalogueFromSnapshot(snapshot);
-    expect(places).toHaveLength(4407);
+    expect(places).toHaveLength(4456);
     expect(places.filter((p) => p.position === null)).toHaveLength(102);
     expect(places.filter((p) => p.layerId === "gyms")).toHaveLength(8);
     expect(places.filter((p) => p.layerId === "equipment")).toHaveLength(3);
@@ -134,7 +134,9 @@ describe("Gyms and Workout equipment layers", () => {
     expect(
       places.filter((p) => p.layerId.startsWith("cards:")),
     ).toHaveLength(5);
-    expect(new Set(places.map((p) => p.id)).size).toBe(4407);
+    expect(places.filter((p) => p.layerId === "loot-heists")).toHaveLength(29);
+    expect(places.filter((p) => p.layerId === "loot-collectibles")).toHaveLength(20);
+    expect(new Set(places.map((p) => p.id)).size).toBe(4456);
   });
 });
 
@@ -184,10 +186,10 @@ describe("Map Index categories (v0.21.0) — the game's own filters, not the dat
       expect(counts.get(dead) ?? 0).toBe(0);
     }
     expect(counts.get('activities')).toBe(12);
-    expect(counts.get('collectibles')).toBe(5);
+    expect(counts.get('collectibles')).toBe(25);
     expect(counts.get('exploration')).toBe(737);
     expect(counts.get('food-drink')).toBe(30);
-    expect(counts.get('robberies')).toBe(100);
+    expect(counts.get('robberies')).toBe(129);
     expect(counts.get('unverified')).toBe(3415);
     expect(counts.get('vehicles')).toBe(107);
     // One Style place now exists: the Au Courant hair salon in Peacock
@@ -201,7 +203,7 @@ describe("Map Index categories (v0.21.0) — the game's own filters, not the dat
   });
 
   it('maps layers to categories: lootable + breakable are Robberies, gyms + equipment are Activities', () => {
-    for (const place of places.filter((p) => p.layerId === 'lootable' || p.layerId === 'breakable')) {
+    for (const place of places.filter((p) => p.layerId === 'lootable' || p.layerId === 'breakable' || p.layerId === 'loot-heists')) {
       expect(place.category).toBe('robberies');
     }
     for (const place of places.filter((p) => p.layerId === 'gyms' || p.layerId === 'equipment')) {
@@ -210,7 +212,7 @@ describe("Map Index categories (v0.21.0) — the game's own filters, not the dat
     for (const place of places.filter((p) => p.layerId === 'uncertain')) {
       expect(place.category).toBe('unverified');
     }
-    for (const place of places.filter((p) => p.layerId.startsWith('cards:'))) {
+    for (const place of places.filter((p) => p.layerId.startsWith('cards:') || p.layerId === 'loot-collectibles')) {
       expect(place.category).toBe('collectibles');
     }
     for (const place of places.filter((p) => p.layerId === 'regions')) {

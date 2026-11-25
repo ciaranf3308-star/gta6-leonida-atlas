@@ -35,7 +35,14 @@ export function selectHeroPlaces(
     isValidPosition(place.position),
   );
   const named = (place: PositionedPlace) =>
-    place.title !== '?' && place.evidence !== 'uncertain';
+    place.title !== '?' &&
+    // v0.31.1: the Loot Map places are named guide positions, only
+    // their verification is pending — unlike the unnamed "?" places
+    // they belong on the island overview. Tentative GTADB names
+    // ("Name?") stay out: their names are not confirmed.
+    (place.evidence !== 'uncertain' ||
+      place.layerId === 'loot-heists' ||
+      place.layerId === 'loot-collectibles');
   const regions = positioned.filter((place) => place.layerId === 'regions').slice(0, 12);
   const picked: PositionedPlace[] = [...regions];
   const pickedIds = new Set(picked.map((place) => place.id));

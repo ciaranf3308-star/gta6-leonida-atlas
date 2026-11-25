@@ -39,9 +39,9 @@ describe('onboarding audit — the places really are mapped', () => {
   const places = catalogueFromSnapshot(snapshot);
   const counts = new Map(layerCounts(places, DEFAULT_LAYERS).map((c) => [c.layerId, c]));
 
-  it('has 4,407 places in the catalogue', () => {
-    expect(places.length).toBe(4407);
-    expect(totalMappedPlaces(places)).toBe(4407);
+  it('has 4,456 places in the catalogue', () => {
+    expect(places.length).toBe(4456);
+    expect(totalMappedPlaces(places)).toBe(4456);
   });
 
   it('matches the counts the UI claims per layer', () => {
@@ -52,6 +52,8 @@ describe('onboarding audit — the places really are mapped', () => {
     expect(counts.get('shops-weapons')).toMatchObject({ total: 0, positioned: 0, unpositioned: 0 });
     expect(counts.get('shops-style')).toMatchObject({ total: 1, positioned: 1, unpositioned: 0 });
     expect(counts.get('lootable')).toMatchObject({ total: 53, positioned: 53, unpositioned: 0 });
+    expect(counts.get('loot-heists')).toMatchObject({ total: 29, positioned: 29, unpositioned: 0 });
+    expect(counts.get('loot-collectibles')).toMatchObject({ total: 20, positioned: 20, unpositioned: 0 });
     expect(counts.get('gyms')).toMatchObject({ total: 8, positioned: 6, unpositioned: 2 });
     expect(counts.get('equipment')).toMatchObject({ total: 3, positioned: 2, unpositioned: 1 });
     expect(counts.get('community')).toMatchObject({ total: 747, positioned: 717 });

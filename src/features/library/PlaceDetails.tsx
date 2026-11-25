@@ -606,6 +606,8 @@ export default function PlaceDetails({
         <p className="place-badges" aria-label="What this place is">
           {interior.breakable && <span>Breakable home</span>}
           {place.layerId === 'lootable' && <span>Lootable</span>}
+          {place.layerId === 'loot-heists' && <span>Bank job</span>}
+          {place.layerId === 'loot-collectibles' && <span>Collectible</span>}
           {interior.status === 'enterable' && <span>Can go inside</span>}
           {interior.possibleBreakable && !interior.breakable && (
             <span>Possible enterable house</span>
@@ -618,9 +620,11 @@ export default function PlaceDetails({
             ? 'My marker · saved on this device'
             : !place.position
               ? 'No mapped position'
-              : place.evidence === 'uncertain'
-                ? 'Unverified place · position not confirmed'
-                : 'Community placement · approximate'}
+              : place.layerId === 'loot-heists' || place.layerId === 'loot-collectibles'
+                ? 'Loot Map · community-sourced, unverified'
+                : place.evidence === 'uncertain'
+                  ? 'Unverified place · position not confirmed'
+                  : 'Community placement · approximate'}
         </p>
         {aiDisplay && aiCategory && (
           <p className="ai-chip" role="status">

@@ -370,6 +370,8 @@ export function iconKeyForLayer(layerId: string): IconKey {
     'shops-food': 'food',
     'shops-vehicles': 'car',
     lootable: 'dollarsign',
+    'loot-heists': 'banknote',
+    'loot-collectibles': 'sparkles',
     gyms: 'gym',
     equipment: 'weight',
     uncertain: 'question',

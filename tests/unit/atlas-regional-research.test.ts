@@ -6,6 +6,7 @@ import { catalogueFromSnapshot } from "../../src/data/catalogue";
 import { BREAKABLE_HOME_PLACES } from "../../src/data/breakable-homes";
 import { COLLECTABLE_CARD_PLACES } from "../../src/data/collectables";
 import { GYM_PLACES, EQUIPMENT_PLACES } from "../../src/data/gyms";
+import { LOOT_MAP_PLACES } from "../../src/data/loot-map";
 import { filterPlaces } from "../../src/domain/filter";
 import ExplorerView from "../../src/features/explorer/ExplorerView";
 import RegionalResearch from "../../src/features/library/RegionalResearch";
@@ -116,7 +117,8 @@ describe("regional source discoveries", () => {
         GYM_PLACES.length +
         EQUIPMENT_PLACES.length +
         BREAKABLE_HOME_PLACES.length +
-        COLLECTABLE_CARD_PLACES.length,
+        COLLECTABLE_CARD_PLACES.length +
+        LOOT_MAP_PLACES.length,
     );
     const raw = snapshot.landmarks.find(
       (place: { id: string }) => place.id === "L399",

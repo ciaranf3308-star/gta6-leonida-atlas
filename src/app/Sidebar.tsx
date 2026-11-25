@@ -450,9 +450,12 @@ function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allP
           </p>
         )}
       </details>
-      {CATEGORY_GROUPS.filter((group) => group.id === 'my-markers' || group.id === 'unverified').map(
-        (group) => groupSection(group),
-      )}
+      {CATEGORY_GROUPS.filter(
+        (group) =>
+          group.id === 'my-markers' ||
+          group.id === 'unverified' ||
+          group.id === 'collectibles',
+      ).map((group) => groupSection(group))}
       <NarrowFilters allPlaces={allPlaces} />
       <IndexPanel
         places={allPlaces}
@@ -493,7 +496,9 @@ function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allP
         The basemap is the GTADB in-game map (map artwork © Rockstar Games, CC BY 4.0),
         colour-graded only — geography unchanged. Place positions are approximate
         community data. County stunt counts and 100% thresholds: gta6-leonida-map-data
-        (gta6maps.io), CC BY 4.0 — county extents are estimates.
+        (gta6maps.io), CC BY 4.0 — county extents are estimates. Bank jobs and Loot Map
+        collectibles: GTA 6 Loot Map dataset (MIT), community-sourced — positions
+        unverified.
       </p>
     </div>
   );
