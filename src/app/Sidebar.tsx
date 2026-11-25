@@ -20,6 +20,8 @@ import {
 } from '../stores/atlas';
 import { useAiIndexStore } from '../features/categorise/store';
 import { COUNTIES, countyForPlace, countyIdForPosition } from '../data/counties';
+import { STUNT_JUMPS_TOTAL } from '../data/completion';
+import { CompletionPanel } from '../features/completion/CompletionPanel';
 import { areaIsolation, areaOptions, countyIsolation } from '../features/map/isolation';
 import { countyOutlineSvg, islandOutlineSvg, useAfterHoursGeo } from '../features/map/after-hours-geo';
 import { useCountyArt } from '../features/art/ai-images';
@@ -362,6 +364,7 @@ function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allP
             )}
             <strong>All Leonida</strong>
             <small>The whole map</small>
+            <small className="county-stunts">{STUNT_JUMPS_TOTAL} stunt jumps across Leonida</small>
           </button>
           {COUNTIES.map((county) => {
             // Art: a key-painted image wins over the bundled photograph.
@@ -403,6 +406,7 @@ function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allP
                 {artSrc && <span className="county-art-tag">AI image</span>}
                 <strong>{county.name.replace(' County', '')}</strong>
                 <small>{county.area}</small>
+                <small className="county-stunts">{county.stuntJumps} stunt jumps</small>
               </button>
             );
           })}
@@ -412,6 +416,7 @@ function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allP
           — the official map prints county names but no boundary lines.
         </p>
       </section>
+      <CompletionPanel />
       {attempted === 0 && unnamedRemaining > 0 && (
         <button
           type="button"
@@ -487,7 +492,8 @@ function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allP
       <p className="empty-state">
         The basemap is the GTADB in-game map (map artwork © Rockstar Games, CC BY 4.0),
         colour-graded only — geography unchanged. Place positions are approximate
-        community data.
+        community data. County stunt counts and 100% thresholds: gta6-leonida-map-data
+        (gta6maps.io), CC BY 4.0 — county extents are estimates.
       </p>
     </div>
   );

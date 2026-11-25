@@ -12,6 +12,7 @@ import { projectPath, publicPath } from "../explorer/public-path";
 import { LEONIDA_ATLAS_RELEASES } from "../street-leonida/releases";
 import { AnalyticsPreferences } from "../../app/AnalyticsConsent";
 import { ATLAS_PROJECT_META } from "../../app/seo";
+import { COMPLETION_SOURCE } from "../../data/completion";
 import "./project.css";
 
 export interface ProjectPageProps {
@@ -324,6 +325,36 @@ function Credits() {
             Generation manifest
           </a>
           .
+        </p>
+      </Section>
+      <Section title="gta6-leonida-map-data / gta6maps.io">
+        <p>
+          County stunt-jump counts (130 across Leonida) and the 100%
+          completion thresholds (19 categories, 1,325 required) come from{" "}
+          <a href={COMPLETION_SOURCE.repo} target="_blank" rel="noreferrer">
+            gta6-leonida-map-data
+          </a>{" "}
+          (gta6maps.io), pinned at commit{" "}
+          <code className="project-revision">{COMPLETION_SOURCE.commit.slice(0, 7)}</code>.
+          The dataset is licensed under{" "}
+          <a href={COMPLETION_SOURCE.licenseUrl} rel="license noreferrer" target="_blank">
+            Creative Commons Attribution 4.0 International
+          </a>{" "}
+          and archived at{" "}
+          <a href={COMPLETION_SOURCE.doiUrl} target="_blank" rel="noreferrer">
+            Zenodo DOI {COMPLETION_SOURCE.doi}
+          </a>
+          .
+        </p>
+        <p>
+          Only the aggregate counts were used: stunt jumps per county and the
+          per-category required / total numbers. The dataset&apos;s 798 marker
+          positions were NOT imported — they are schematic coordinates on the
+          source&apos;s own map, typically ~2 km from the verified GTADB
+          position for the same place, and every one of the 774 markers that
+          match a GTADB record duplicates a place the atlas already carries.
+          County extents shown in the atlas remain estimates: the official
+          poster prints county names but no boundary lines.
         </p>
       </Section>
       <Section title="Rockstar Games references">

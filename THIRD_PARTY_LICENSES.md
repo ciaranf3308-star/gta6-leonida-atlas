@@ -32,6 +32,21 @@ Adaptations made in this repository may include coordinate transforms, filtering
 
 Data originating from `gtadb.org` remains under CC BY 4.0 and must retain attribution.
 
+## gta6-leonida-map-data / gta6maps.io
+
+County stunt-jump counts and 100% completion thresholds used by GTA6 Leonida Atlas (v0.31.0) originate from `gta6-leonida-map-data`.
+
+- Source: https://github.com/duanhesen/gta6-leonida-map-data
+- Site: https://gta6maps.io
+- Pinned commit: `1c5977bb9c40401667a192f14239beebbde54211` (2026-11-23)
+- Files used: `data/leonida-counties-summary.csv` (130 stunt jumps by county — Vice-Dale 53, Kelly 29, Lummox 19, Mariana 16, Leonard 13) and `data/completion-100-thresholds.json` (19 categories; 1,325 required for 100%, 1,962 in game in total). Only aggregate counts were used — no per-item detail, no story content.
+- Data license: Creative Commons Attribution 4.0 International (`CC BY 4.0`)
+- License URL: https://creativecommons.org/licenses/by/4.0/
+- Archive: Zenodo DOI 10.5281/zenodo.24412576 (https://doi.org/10.5281/zenodo.24412576)
+- Attribution: `gta6-leonida-map-data` and contributors
+
+The same repository's 798 markers (`data/gta-6-markers.csv` / `data/gta-6-markers.json`) were NOT imported: their `x`/`y` are normalized 0–1 schematic coordinates on the source's own map. Fitted against the GTADB frame on the 774 markers whose ids match GTADB records, the best affine transform leaves a median error of ~2.1 km (p90 ~3.9 km, max ~8.5 km; only 2 of 774 within 100 m). The 774 matched markers duplicate places the GTADB catalogue already carries with verified positions; the 24 unmatched markers cannot be verified at all. See `hidden_files/v031-county/markers-inventory.md` in the project goal workspace for the full per-type analysis. County extents shown in the atlas remain estimates — the official poster prints county names but no boundary lines.
+
 ## GTADB code
 
 If code is copied directly from `gtadb.org`, it remains subject to that project's MIT license and copyright notices. This release is structured to keep direct third-party code notices here when applicable.

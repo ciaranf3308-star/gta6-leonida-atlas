@@ -1178,12 +1178,154 @@ h3 {
   color: var(--muted);
   line-height: 1.4;
 }
+/* Stunt jumps per county (gta6-leonida-map-data) — the stat line under
+ * the area line. Sunset, so it reads as a number, not a label. */
+.county-card small.county-stunts {
+  color: var(--orange);
+  font-weight: 600;
+}
 .county-card.active {
   border-color: var(--coral);
   box-shadow: 0 0 0 1px var(--coral);
 }
 .county-cards .help-text {
   margin: 10px 0 0;
+}
+/* ---- 100% completion tracker (v0.31.0). ---- */
+/* The panel is a .layer-group <details>; its summary carries the
+ * overall percentage, so the tally reads at a glance while closed. */
+.completion-panel summary {
+  flex-wrap: wrap;
+}
+.completion-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface-raised);
+  overflow: hidden;
+  margin-top: 6px;
+}
+.completion-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--coral);
+}
+.completion-bar--overall {
+  height: 8px;
+  margin: 10px 0 0;
+}
+.completion-bar--overall > span {
+  background: var(--orange);
+}
+.completion-overall-note {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 8px 0 4px;
+}
+.completion-rows {
+  display: grid;
+}
+.completion-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 0;
+  border-top: 1px solid var(--border-soft);
+}
+.completion-row-main {
+  flex: 1;
+  min-width: 0;
+}
+.completion-row-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.completion-row-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text);
+}
+.completion-row-count {
+  margin-left: auto;
+  font-family: var(--condensed);
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.completion-done {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #0b1018;
+  background: var(--orange);
+  border-radius: 999px;
+  padding: 2px 7px;
+}
+.completion-row-note {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 6px 0 0;
+  line-height: 1.5;
+}
+.completion-steppers {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.completion-stepper {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  border: 1px solid var(--border-soft);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+.completion-stepper:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.completion-stepper:not(:disabled):active {
+  border-color: var(--coral);
+  color: var(--coral);
+}
+.completion-error {
+  font-size: 13px;
+  color: var(--pink-soft);
+  margin: 12px 0 0;
+}
+.completion-error-dismiss {
+  background: none;
+  border: 0;
+  color: var(--text);
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  font-size: 13px;
+}
+.completion-footer {
+  margin-top: 14px;
+  border-top: 1px solid var(--border-soft);
+  padding-top: 4px;
+}
+.completion-reset {
+  background: none;
+  border: 0;
+  color: var(--muted);
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  min-height: 48px;
+}
+.completion-footer .help-text {
+  margin: 4px 0 0;
 }
 .index-reminder {
   display: flex;
