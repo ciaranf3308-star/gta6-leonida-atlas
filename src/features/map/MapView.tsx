@@ -868,7 +868,7 @@ export default function MapView(props: MapViewProps) {
 
   return (
     <div
-      className={`atlas-map-view ${props.editorMode !== 'none' ? 'is-editing' : ''} ${zoom <= -2.5 ? 'is-hero-zoom' : ''} ${props.promptVisible ? 'has-prompt' : ''}`}
+      className={`atlas-map-view ${props.editorMode !== 'none' ? 'is-editing' : ''} ${zoom <= -2.5 ? 'is-hero-zoom' : ''} ${props.promptVisible ? 'has-prompt' : ''} ${props.selectedId !== null ? 'has-details' : ''}`}
     >
       <p id={descriptionId} className="map-sr-only">
         Interactive map using the GTADB in-game map of Leonida, with approximate game

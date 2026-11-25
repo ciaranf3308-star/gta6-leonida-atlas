@@ -18,6 +18,7 @@ import { saveCamera } from '../features/map/camera-persistence';
 import AskPanel from '../features/ask/AskPanel';
 import { useAiIndexStore } from '../features/categorise/store';
 import WelcomeSheet from '../features/onboarding/WelcomeSheet';
+import { firstOpenPlace } from '../features/onboarding/first-open';
 import {
   hasSeenIndexOnboarding,
   markIndexOnboardingSeen,
@@ -84,6 +85,15 @@ export default function App() {
   const editorMode = useMapStore((s) => s.editorMode);
   const draftPosition = useMapStore((s) => s.draftPosition);
   const [welcomeOpen, setWelcomeOpen] = useState(false);
+  /** First-open region sheet (v0.26.0): the map opens blank on
+   * purpose, so the first thing a new player sees is the Vice City
+   * region sheet — not the "nothing showing yet" banner. Dismissed
+   * once per session: closing the sheet (or picking layers from it)
+   * never re-opens it, and the fired ref stops it coming back after
+   * the layers are turned off again. */
+  const [firstOpenDismissed, setFirstOpenDismissed] = useState(false);
+  const [firstOpenActive, setFirstOpenActive] = useState(false);
+  const firstOpenFired = useRef(false);
   /** v0.16.0 — clean launch: the saved view is NEVER re-applied on
    * open. His screenshot had a "27" badge and a wall of pink clusters
    * because a saved "Show everything" came back on its own. The map
@@ -101,17 +111,6 @@ export default function App() {
    * saved view (if any) has been applied — otherwise the first render's
    * blank defaults would overwrite the user's saved layers. */
   const [viewRestored, setViewRestored] = useState(false);
-  /** First run: once the catalogue is loaded, the forced indexing
-   * onboarding shows BEFORE the map is usable — it is the one thing
-   * that cannot be skipped past with an ×. A new key (v0.11.0) means
-   * everyone sees it once after this update, even users who already
-   * dismissed the old welcome sheet. */
-  useEffect(() => {
-    if (status === 'ready' && !hasSeenIndexOnboarding()) {
-      setWelcomeForced(true);
-      setWelcomeOpen(true);
-    }
-  }, [status]);
   function closeWelcome() {
     markIndexOnboardingSeen();
     setWelcomeOpen(false);
@@ -141,6 +140,21 @@ export default function App() {
   const persistenceLoading = usePersistenceStore((s) => s.status === 'loading');
   const workspaceRevision = useWorkspaceStore((s) => s.revision);
   const allPlaces = useMemo(() => [...places, ...markers.map(markerToPlace)], [places, markers]);
+  /** First run: once the catalogue is loaded, the forced indexing
+   * onboarding shows BEFORE the map is usable — it is the one thing
+   * that cannot be skipped past with an ×. A new key (v0.11.0) means
+   * everyone sees it once after this update, even users who already
+   * dismissed the old welcome sheet. A ?place= deep link opens
+   * straight to the place instead (v0.26.0): the welcome must not
+   * intercept it — the sheet would sit on top of the place the link
+   * names until Skip is tapped. A dead link (no such place once the
+   * catalogue is in) does not block the welcome. */
+  useEffect(() => {
+    if (status !== 'ready' || hasSeenIndexOnboarding()) return;
+    if (route.placeId && allPlaces.some((p) => p.id === route.placeId)) return;
+    setWelcomeForced(true);
+    setWelcomeOpen(true);
+  }, [status, route.placeId, allPlaces]);
   const deferredQuery = useDeferredValue(filters.query);
   const filtered = useMemo(
     () =>
@@ -270,6 +284,36 @@ export default function App() {
     turnOnLayers(lastSession.layerIds);
     setLastSession(null);
   }, [lastSession, turnOnLayers]);
+  /** First-open sheet (v0.26.0): picking layers from the sheet turns
+   * them on and closes the sheet, so the pins appear on the map the
+   * user was just looking at. Closing it with the × dismisses it for
+   * the session — the map stays clean, and the chips on the map are
+   * the way back to turning things on. */
+  const closeFirstOpen = useCallback(() => {
+    setFirstOpenActive(false);
+    setFirstOpenDismissed(true);
+  }, []);
+  const pickFirstOpenLayers = useCallback(
+    (layerIds: string[] | 'all') => {
+      turnOnLayers(layerIds);
+      closeFirstOpen();
+      useMapStore.getState().select(null);
+    },
+    [turnOnLayers, closeFirstOpen],
+  );
+  const restoreFirstOpen = useCallback(() => {
+    restoreLastSession();
+    closeFirstOpen();
+    useMapStore.getState().select(null);
+  }, [restoreLastSession, closeFirstOpen]);
+  const firstOpenProps = useMemo(
+    () => ({
+      onPickLayers: pickFirstOpenLayers,
+      lastSession,
+      onRestore: restoreFirstOpen,
+    }),
+    [pickFirstOpenLayers, lastSession, restoreFirstOpen],
+  );
   /** Map chips (v0.16.0, reference row: All / Locations / Activities /
    * Stores / Collectibles): one group on, the rest off — the map stays
    * fast and readable. "All" is the only one that turns everything on,
@@ -473,6 +517,66 @@ export default function App() {
     appliedPlaceRoute.current = route;
     select(place.id);
   }, [route, status, allPlaces, select]);
+  /** First-open region sheet (v0.26.0): once the welcome is out of
+   * the way and the map is clean (nothing on, nothing showing), open
+   * the Vice City region sheet — the reference composition — with
+   * its "Pick what to see" row inside. It opens WITHOUT selecting
+   * the place: select() would turn the regions layer on and fly the
+   * camera into the city, and the reference keeps the whole island
+   * in view behind the sheet. Declared after the deep-link effect
+   * and guarded by !route.placeId, so a deep link always wins.
+   * Fires once per session: the welcome re-opens it never, and
+   * turning everything off again does not either. */
+  const viceCityPlace = useMemo(() => firstOpenPlace(allPlaces), [allPlaces]);
+  useEffect(() => {
+    if (
+      firstOpenFired.current ||
+      firstOpenDismissed ||
+      welcomeOpen ||
+      route.placeId ||
+      status !== 'ready' ||
+      selected ||
+      showingCount !== 0 ||
+      anyPublicLayerVisible ||
+      !viceCityPlace
+    )
+      return;
+    firstOpenFired.current = true;
+    setFirstOpenActive(true);
+  }, [
+    firstOpenDismissed,
+    welcomeOpen,
+    route.placeId,
+    status,
+    selected,
+    showingCount,
+    anyPublicLayerVisible,
+    viceCityPlace,
+  ]);
+  /** Track the first-open sheet's life: picking another place ends
+   * it (the picker row leaves with it), and closing it without
+   * picking layers dismisses it for the session — otherwise the
+   * empty map would re-open it on the next render. Set Route on the
+   * sheet selects Vice City for real (camera flies, regions layer
+   * on) — the sheet stays, now as the normal selected sheet, with
+   * its picker row still inside. */
+  const previousSelectedId = useRef<string | null>(null);
+  useEffect(() => {
+    if (!firstOpenActive) {
+      previousSelectedId.current = selectedId;
+      return;
+    }
+    if (selectedId !== null && selectedId !== viceCityPlace?.id) {
+      setFirstOpenActive(false);
+    } else if (
+      selectedId === null &&
+      previousSelectedId.current === viceCityPlace?.id
+    ) {
+      setFirstOpenActive(false);
+      setFirstOpenDismissed(true);
+    }
+    previousSelectedId.current = selectedId;
+  }, [selectedId, firstOpenActive, viceCityPlace]);
   useEffect(() => {
     document.documentElement.dataset.reducedMotion = String(preferences.reducedMotion);
   }, [preferences.reducedMotion]);
@@ -532,8 +636,8 @@ export default function App() {
           boundsFocus={boundsFocus}
           isolation={isolation}
           onExitIsolation={exitIsolation}
-          attributionHidden={navTab === 'map' && !selected && status === 'ready' && showingCount === 0}
-          promptVisible={navTab === 'map' && !selected && status === 'ready' && showingCount === 0}
+          attributionHidden={navTab === 'map' && !selected && status === 'ready' && showingCount === 0 && anyPublicLayerVisible}
+          promptVisible={navTab === 'map' && !selected && status === 'ready' && showingCount === 0 && anyPublicLayerVisible}
           editorMode={editorMode}
           preferences={preferences}
           foundIds={new Set(visited.map((v) => v.placeId))}
@@ -613,63 +717,28 @@ export default function App() {
             </div>
           </div>
         )}
-        {/* v0.17.0: the empty-map prompt is a compact bar pinned to the
-         * bottom of the map, not a big card in the middle of it — the
-         * big card covered the whole of Leonida on first open and read
-         * as a website pop-up, not a map. Same buttons, one line of
-         * copy, and it never covers the centre of the map. */}
-        {navTab === 'map' && !selected && status === 'ready' && showingCount === 0 ? (
-          !anyPublicLayerVisible ? (
-            <div className="empty-map-prompt" role="status">
-              <strong>Nothing showing yet — pick what to see</strong>
-              <p>
-                {allPlaces.length.toLocaleString()} places are in the map — nothing is turned on yet.
-              </p>
-              <div className="empty-map-buttons">
-                <button type="button" onClick={() => turnOnLayers(['interiors'])}>
-                  Show interiors
-                </button>
-                <button type="button" onClick={() => turnOnLayers(['lootable'])}>
-                  Show lootable
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    turnOnLayers(['shops-food', 'shops-vehicles', 'shops-weapons', 'shops-style'])
-                  }
-                >
-                  Show shops
-                </button>
-                <button type="button" onClick={() => turnOnLayers('all')}>
-                  Show everything
-                </button>
-                {lastSession && (
-                  <button
-                    type="button"
-                    className="restore-last"
-                    onClick={restoreLastSession}
-                  >
-                    Restore my last layers ({lastSession.layerIds.length} on)
-                  </button>
-                )}
-              </div>
+        {/* v0.26.0: the "nothing showing yet" banner is gone — the
+         * first-open Vice City region sheet (above) is the empty
+         * state now, with its "Pick what to see" row inside. What
+         * remains of the prompt is the second case only: layers are
+         * on but nothing matches here, so the map would otherwise
+         * look broken with no explanation. One compact bar, same
+         * buttons, never the centre of the map. */}
+        {navTab === 'map' && !selected && status === 'ready' && showingCount === 0 && anyPublicLayerVisible ? (
+          <div className="empty-map-prompt" role="status">
+            <strong>Nothing showing here</strong>
+            <p>
+              Layers are on, but nothing matches in this area with these filters.
+            </p>
+            <div className="empty-map-buttons">
+              <button type="button" onClick={clearFiltersAndIsolation}>
+                Clear filters
+              </button>
+              <button type="button" onClick={() => turnOnLayers('all')}>
+                Show everything
+              </button>
             </div>
-          ) : (
-            <div className="empty-map-prompt" role="status">
-              <strong>Nothing showing here</strong>
-              <p>
-                Layers are on, but nothing matches in this area with these filters.
-              </p>
-              <div className="empty-map-buttons">
-                <button type="button" onClick={clearFiltersAndIsolation}>
-                  Clear filters
-                </button>
-                <button type="button" onClick={() => turnOnLayers('all')}>
-                  Show everything
-                </button>
-              </div>
-            </div>
-          )
+          </div>
         ) : null}
         <AskPanel
           places={allPlaces}
@@ -730,6 +799,28 @@ export default function App() {
             onAddMarkerHere={beginMarkerAt}
             onMarkWorkout={markWorkoutAt}
             onMarkBreakable={markBreakableAt}
+            firstOpen={
+              firstOpenActive && selected.id === viceCityPlace?.id
+                ? firstOpenProps
+                : undefined
+            }
+          />
+        )}
+        {/* First-open region sheet (v0.26.0): the Vice City sheet,
+         * opened without selecting the place — the island stays in
+         * view behind it. Set Route on it selects Vice City for
+         * real, and the sheet continues as the normal selected
+         * sheet above. */}
+        {firstOpenActive && viceCityPlace && !selected && (
+          <PlaceDetails
+            key={viceCityPlace.id}
+            place={viceCityPlace}
+            allPlaces={allPlaces}
+            onAddMarkerHere={beginMarkerAt}
+            onMarkWorkout={markWorkoutAt}
+            onMarkBreakable={markBreakableAt}
+            firstOpen={firstOpenProps}
+            onClose={closeFirstOpen}
           />
         )}
         {editorOpen && <MarkerEditor position={draftPosition} onClose={closeEditor} />}

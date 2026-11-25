@@ -307,11 +307,6 @@ function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allP
   }
   return (
     <div className="layer-manager">
-      <p className="panel-intro">
-        Nothing is shown until you choose it. The map always opens clean —
-        your last layers are one tap away on the map. Layers are grouped the
-        way the game files them — the pause map’s Map Index.
-      </p>
       <button
         type="button"
         className="button"
@@ -921,8 +916,19 @@ export function Sidebar({
   const navTab = useUiStore((s) => s.navTab);
   const query = useUiStore((s) => s.filters.query);
   if (navTab !== 'explore' && navTab !== 'layers' && navTab !== 'saved') return null;
+  /** Layers is a compact bottom sheet, not a full screen (v0.26.0):
+   * the reference's filter presentation is a sheet over a live map,
+   * and the panel's own intro paragraph went with the full screen —
+   * the guidance ("nothing is turned on yet") now lives in the
+   * first-open Vice City sheet. Find and Saved stay full screens:
+   * they are lists, not filters. */
+  const isLayersSheet = navTab === 'layers';
   return (
-    <aside className="sidebar" aria-label="Atlas panel">
+    <aside
+      className={`sidebar${isLayersSheet ? ' is-layers-sheet' : ''}`}
+      aria-label="Atlas panel"
+    >
+      {isLayersSheet && <div className="sheet-grabber" aria-hidden="true" />}
       <header className="brand-header">
         <div className="brand-identity">
           <img

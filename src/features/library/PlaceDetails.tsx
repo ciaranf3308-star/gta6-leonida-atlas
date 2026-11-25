@@ -52,6 +52,8 @@ export default function PlaceDetails({
   onAddMarkerHere,
   onMarkWorkout,
   onMarkBreakable,
+  firstOpen,
+  onClose,
 }: {
   place: Place;
   /** Every place, for the "Hidden collectables" row: verified card pins
@@ -67,6 +69,18 @@ export default function PlaceDetails({
    * found a house / apartment / trailer he can break into, and most
    * breakable homes have no tag in the public data at all. */
   onMarkBreakable?: (place: Place) => void;
+  /** First-open sheet (v0.26.0): "Pick what to see" — the layer
+   * buttons that used to live in the empty-map banner, now inside
+   * the Vice City sheet, right under the card head. */
+  firstOpen?: {
+    onPickLayers: (layerIds: string[] | 'all') => void;
+    lastSession: { layerIds: string[] } | null;
+    onRestore: () => void;
+  };
+  /** Close without selecting: the first-open sheet is not a
+   * selection, so its × cannot call select(null) — that would be a
+   * no-op and the sheet would never close. */
+  onClose?: () => void;
 }) {
   const favorite = useUserStore((s) => s.favorites.some((f) => f.placeId === place.id));
   const found = useUserStore((s) => s.visited.some((v) => v.placeId === place.id));
@@ -373,7 +387,7 @@ export default function PlaceDetails({
         <button
           className="icon-button"
           aria-label="Close place details"
-          onClick={() => useMapStore.getState().select(null)}
+          onClick={() => (onClose ? onClose() : useMapStore.getState().select(null))}
         >
           <X size={20} />
         </button>
@@ -464,6 +478,54 @@ export default function PlaceDetails({
               ? 'Map view of this spot — not a photo'
               : ''}
         </p>
+        {/* First-open sheet (v0.26.0): "Pick what to see", right
+         * under the card head so it reads without scrolling — the
+         * layer buttons the old empty-map banner carried, now
+         * inside the Vice City sheet. One tap turns the layers on
+         * and closes the sheet, so the pins appear on the island
+         * the user was just looking at. */}
+        {firstOpen && (
+          <section className="detail-section first-open-picker" aria-label="Pick what to see">
+            <h3>Pick what to see</h3>
+            <p className="help-text">
+              {allPlaces.length.toLocaleString()} places are in the map — nothing is turned
+              on yet.
+            </p>
+            <div className="empty-map-buttons">
+              <button type="button" onClick={() => firstOpen.onPickLayers(['interiors'])}>
+                Show interiors
+              </button>
+              <button type="button" onClick={() => firstOpen.onPickLayers(['lootable'])}>
+                Show lootable
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  firstOpen.onPickLayers([
+                    'shops-food',
+                    'shops-vehicles',
+                    'shops-weapons',
+                    'shops-style',
+                  ])
+                }
+              >
+                Show shops
+              </button>
+              <button type="button" onClick={() => firstOpen.onPickLayers('all')}>
+                Show everything
+              </button>
+              {firstOpen.lastSession && (
+                <button
+                  type="button"
+                  className="restore-last"
+                  onClick={firstOpen.onRestore}
+                >
+                  Restore my last layers ({firstOpen.lastSession.layerIds.length} on)
+                </button>
+              )}
+            </div>
+          </section>
+        )}
         <div className="button-row">
           <button
             type="button"

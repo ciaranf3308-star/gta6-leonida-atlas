@@ -2,6 +2,19 @@
 
 Release history, newest first.
 
+## v0.26.0 — 2026-11-25
+
+**Released: First open is a place, not a banner — the Vice City sheet, Layers as a sheet, no more half-hidden recenter.**
+
+- The empty prompt is gone as the first-open state: the map now opens on the Vice City region sheet — the reference composition (real map crop, county line, description, Set Route / View Area / Add to List) with a "Pick what to see" row inside it (Show interiors / lootable / shops / everything, plus Restore my last layers when there is one). One tap turns the layers on and closes the sheet, so the pins appear on the island the user was just looking at. The sheet opens without selecting the place, so the camera keeps the whole island in view and no layer is turned on behind the user's back; Set Route on it selects Vice City for real and the sheet continues as the normal selected sheet. Closing it with the × dismisses it for the session — the map stays clean, and the chips on the map are the way back. The old "Nothing showing yet" banner survives only for the other case: layers on, but nothing matches here.
+- Layers is a compact bottom sheet on phones, not a full screen: it covers the bottom ~78dvh, the island stays visible above it, and the panel's intro paragraph went with the full screen (the guidance now lives in the first-open sheet). Find and Saved stay full screens — they are lists, not filters. All 9 Map Index groups with honest counts are unchanged.
+- The recenter button is no longer half-hidden behind the place sheet: while a sheet is open the whole right-edge stack hides — the sheet's own actions and its close button are the way back, and the stack returns with the map. (On a 780px phone the 60dvh sheet's top edge sat above the bottom of the stack, cutting the recenter button in half.)
+- Clouds go genuinely bold: near-opaque lobes (0.85–0.98), a bright white core in every cluster, 3px blur instead of 5px, clusters ~30% larger — they read as clouds over the sea at island zoom instead of haze at the margins.
+- A ?place= deep link opens straight to the place now: the forced welcome sheet no longer intercepts it on a fresh profile. A dead link (no such place once the catalogue is in) does not block the welcome.
+- Basemap (tiles/vicewire-v3/): street-zoom city depth — roof tones modulated by the source's own smoothed luminance, four-direction bevels on all building components, wider per-component tones; warmer island-scale city ground with a faint mottling and the street grid drawn faintly at z0, so the city reads as a warm built-up mass instead of one flat pale patch; highway strokes continuous (skeleton gaps bridged with the verified fbrito centreline within 12 units); the faint white speckle on grey ground gone (fine grain is water-only now). New tiles live at tiles/vicewire-v3/; the service-worker cache name moves with them, so no phone can serve the old tiles. Road names are still absent — fbrito's roads.json carries 0 named features, so there is no verified source for labels.
+- Verified: typecheck clean, lint clean, unit tests, one-command production build, 390px walk scripts/check-v026-app.mjs at DPR 2 (41/41: first-open sheet, Layers sheet, recenter hide, bold clouds, deep link, tag/explored reload). Honest sandbox grade 8/10 — all five v0.25 review app items fixed and walked; capped because street zoom is unverified in this build (v3 z5/z6 mid-render, flat-teal fallback behind the card), the Vice City crop reads as an empty teal square, and All Leonida is still an outline. User verdict is the final mark.
+- Kept: ViceWire categories, place card, your tags, spoiler-free defaults (everything off on first launch), 48px targets, Ask spoiler rule, backup v3.
+
 ## v0.25.0 — 2026-11-25
 
 **Released: The road stops glitching: one water, shaded blocks, no missing rows.**
