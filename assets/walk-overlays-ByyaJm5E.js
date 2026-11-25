@@ -3,7 +3,7 @@ import{_ as e,d as t,g as n,h as r,i,l as a,m as o,o as s,r as c,s as l,u}from".
       <circle r="145" fill="#102a35" stroke="#f8f2df" stroke-width="60"/>
       <text y="70" text-anchor="middle" fill="#ffffff" font-size="200" font-family="Inter, sans-serif" font-weight="700">${n+1}</text>
     </g>`:``}).join(``);return`
-    <title>Leonida Atlas — community cartography</title>
+    <title>ViceWire — community cartography</title>
     <desc>Original cartographic presentation derived from pinned GTADB / Yanis v16 community map tiles. Coastlines, roads, land cover and placements are APPROXIMATE, not official. Unmapped source areas are UNKNOWN. The established GTADB coordinate transform is unchanged. ${i}</desc>
     <defs>
       <pattern id="${e}-unknown" width="500" height="500" patternUnits="userSpaceOnUse" patternTransform="rotate(35)">

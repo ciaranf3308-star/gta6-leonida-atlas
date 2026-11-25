@@ -22,7 +22,7 @@
     gtag('js',new Date());
     var safeLocation=parentOrigin+base;
     gtag('config',id,{send_page_view:false,cookie_domain:'none',cookie_path:base,cookie_prefix:'atlas',cookie_flags:'SameSite=Lax;Secure',page_location:safeLocation,page_referrer:'',allow_google_signals:false,allow_ad_personalization_signals:false});
-    gtag('event','page_view',{page_title:'Leonida Atlas',page_location:safeLocation,page_referrer:''});
+    gtag('event','page_view',{page_title:'ViceWire',page_location:safeLocation,page_referrer:''});
     var script=document.createElement('script');script.async=true;script.src='https://www.googletagmanager.com/gtag/js?id='+id;document.head.appendChild(script);
   });
   send('atlas:analytics:ready');
