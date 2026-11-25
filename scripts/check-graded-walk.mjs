@@ -259,15 +259,6 @@ const probeContext = await browser.newContext({
   serviceWorkers: 'block',
 });
 const probePage = await probeContext.newPage();
-let abortedTiles = 0;
-await probePage.route('**/tiles/graded/6/*', async (route) => {
-  if (abortedTiles === 0) {
-    abortedTiles++;
-    await route.abort();
-  } else {
-    await route.continue();
-  }
-});
 await probePage.goto(`${base}?place=${PLACES.ambrosia}`, { waitUntil: 'networkidle' });
 await probePage.waitForTimeout(2500);
 const probeSkip = probePage.getByRole('button', { name: /Skip for now/ });
@@ -286,6 +277,36 @@ for (let i = 0; i < 16; i++) {
   await btn.click();
   await probePage.waitForTimeout(350);
 }
+await probePage.waitForTimeout(1500);
+// Settle at max zoom FIRST, then drag two tiles right (the map's
+// keepBuffer 2 already holds those tiles, so no fresh requests),
+// register the abort, then drag one more tile: the newly exposed
+// column requests fresh z6 tiles for the settled view, so the aborted
+// one stays in the viewport and Leaflet paints the error tile into
+// its slot. (Aborting mid-zoom instead loses the tile: Leaflet's
+// _abortLoading prunes tiles from the intermediate zoom before the
+// error ever fires — the first attempt's aborted tile left no trace
+// at all. And a single one-tile drag right after settling requests
+// nothing: keepBuffer 2 already loaded it.)
+const dragRightOneTile = async () => {
+  await probePage.mouse.move(195, 422);
+  await probePage.mouse.down();
+  await probePage.mouse.move(451, 422, { steps: 10 });
+  await probePage.mouse.up();
+  await probePage.waitForTimeout(600);
+};
+await dragRightOneTile();
+await dragRightOneTile();
+let abortedTiles = 0;
+await probePage.route('**/tiles/graded/6/*', async (route) => {
+  if (abortedTiles === 0) {
+    abortedTiles++;
+    await route.abort();
+  } else {
+    await route.continue();
+  }
+});
+await dragRightOneTile();
 await probePage.waitForTimeout(1500);
 const errorTilesProbe = await probePage.locator('.leaflet-tile[src^="data:image/svg+xml"]').count();
 const oceanTilesProbe = await probePage.locator('.leaflet-tile-loaded[src*="tiles/ocean.jpg"]').count();
