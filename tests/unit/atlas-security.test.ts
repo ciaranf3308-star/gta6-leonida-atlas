@@ -289,7 +289,7 @@ describe("generated service worker privacy and availability", () => {
           ? { status: 200, body: "ocean bytes" }
           : { status: 404, body: "Not Found" },
     });
-    const tile = "/atlas/assets/gta6-leonida-atlas/tiles/enhanced/0/0,0,-1.jpg";
+    const tile = "/atlas/assets/gta6-leonida-atlas/tiles/graded/0/0,0,-1.jpg";
     const response = await harness.dispatch(tile);
     expect(response?.status).toBe(200);
     expect(await response?.text()).toBe("ocean bytes");
@@ -303,11 +303,11 @@ describe("generated service worker privacy and availability", () => {
     ]);
   });
 
-  it("changes the cache when only enhanced tile bytes change", async () => {
+  it("changes the cache when only graded tile bytes change", async () => {
     const directory = await fixture();
     const tile = join(
       directory,
-      "dist/assets/gta6-leonida-atlas/tiles/enhanced/5/5,57,69.jpg",
+      "dist/assets/gta6-leonida-atlas/tiles/graded/5/5,57,69.jpg",
     );
     await mkdir(dirname(tile), { recursive: true });
     await writeFile(tile, "tile-bytes-v1");
@@ -323,7 +323,11 @@ describe("generated service worker privacy and availability", () => {
     expect(afterCache).not.toBe(beforeCache);
   }, 60_000);
 
-  it("changes the cache when only vicewire-v3 tile bytes change", async () => {
+  it("does NOT change the cache when a file appears at a dead tile path", async () => {
+    // v0.28: the ViceWire pyramids, illustrated and enhanced are
+    // stripped — the fingerprint covers tiles/graded/ only, so bytes
+    // at a dead path (a stray vicewire-v3 file, a resurrected old
+    // pyramid) must never move the cache and resurrect stale tiles.
     const directory = await fixture();
     const tile = join(
       directory,
@@ -339,8 +343,7 @@ describe("generated service worker privacy and availability", () => {
     finalize(directory);
     const after = await readFile(join(directory, "dist/sw.js"), "utf8");
     const afterCache = after.match(/const CACHE="([^"]+)"/)?.[1];
-    expect(afterCache).toBeTruthy();
-    expect(afterCache).not.toBe(beforeCache);
+    expect(afterCache).toBe(beforeCache);
   }, 60_000);
 });
 

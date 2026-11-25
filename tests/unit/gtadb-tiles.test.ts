@@ -64,7 +64,7 @@ describe('leafletTileToGtadb', () => {
 describe('gtadbTileUrl', () => {
   it('never requests a zoom-7 tile at retina max zoom', () => {
     const url = gtadbTileUrl('/gta6-leonida-atlas/', 22, -28, 2);
-    expect(url).toContain('/tiles/vicewire-v3/6/6,114,139.jpg');
+    expect(url).toContain('/tiles/graded/6/6,114,139.jpg');
     expect(url).not.toContain('/7/');
     expect(gtadbTileFileName(leafletTileToGtadb(22, -28, 2))).toBe('6/6,114,139.jpg');
   });

@@ -137,7 +137,7 @@ await page.waitForTimeout(1200);
 const hillsClouds = await cloudStats();
 check('hills: clouds at v0.25 strength (max lobe alpha <= 0.6)', hillsClouds.maxAlpha <= 0.6, JSON.stringify(hillsClouds));
 await shot('hills-z3');
-const hillsTiles = await page.locator('.leaflet-tile-loaded[src*="tiles/vicewire-v3/"]').count();
+const hillsTiles = await page.locator('.leaflet-tile-loaded[src*="tiles/graded/"]').count();
 check('hills: map tiles loaded across the frame', hillsTiles >= 20, `tiles=${hillsTiles}`);
 
 // (1b) The Keys at the same camera.

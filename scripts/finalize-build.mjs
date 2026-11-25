@@ -234,30 +234,21 @@ for (const url of [...precache, ...threeDimensionalAssets]) {
 // tiles at the same filenames and the content hash above — which only
 // covers the app shell and precached assets — did not move, so the old
 // cache (and its stale tiles) survived. The fingerprint is the list of
-// tile paths + sizes for ALL pyramids (enhanced z0-6, illustrated
-// z0-3, vicewire-v3 z0-6): cheap (stat only, no content reads) and it
-// moves on any tile re-render. A tile re-render must ALSO change the
-// tile path (see gtadb-tiles.ts) — both layers, not one hope.
-// v0.27: the fingerprint now covers vicewire-v3 (the live pyramid)
-// instead of vicewire-v2. v2 stays on disk in public/ and dist/ as
-// the previous generation, like enhanced/illustrated, but it is no
-// longer served, so its bytes cannot stale the cache and it is no
-// longer fingerprinted. (A tile re-render must still change the tile
-// path — see gtadb-tiles.ts — so a future v4 gets its own entry.)
-const tileDir = join(outDir, "assets/gta6-leonida-atlas/tiles/enhanced");
-const illustratedDir = join(
+// tile paths + sizes for the live pyramid (graded z0-6): cheap (stat
+// only, no content reads) and it moves on any tile re-render. A tile
+// re-render must ALSO change the tile path (see gtadb-tiles.ts) —
+// both layers, not one hope.
+// v0.28: the fingerprint covers tiles/graded/ only. The ViceWire
+// pyramids (v1/v2/v3), illustrated and enhanced are no longer on
+// disk, so they are no longer fingerprinted — a future re-render gets
+// its own tile path and its own entry here.
+const gradedDir = join(
   outDir,
-  "assets/gta6-leonida-atlas/tiles/illustrated",
-);
-const vicewireDir = join(
-  outDir,
-  "assets/gta6-leonida-atlas/tiles/vicewire-v3",
+  "assets/gta6-leonida-atlas/tiles/graded",
 );
 try {
   for (const [dir, topZoom, label] of [
-    [tileDir, 6, "enhanced"],
-    [illustratedDir, 3, "illustrated"],
-    [vicewireDir, 6, "vicewire-v3"],
+    [gradedDir, 6, "graded"],
   ]) {
     for (let zoom = 0; zoom <= topZoom; zoom++) {
       let names;

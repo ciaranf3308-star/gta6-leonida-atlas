@@ -11,6 +11,27 @@ export interface LeonidaAtlasRelease {
 /** Retained public history starts at v0.5.0; the newest release stays first. */
 export const LEONIDA_ATLAS_RELEASES: readonly LeonidaAtlasRelease[] = [
   {
+    version: "v0.28.0",
+    date: "2026-11-25",
+    title: "Strip it all — the real GTADB map, colour-graded only",
+    summary:
+      "The user's verdict on v0.27 was final: 'Yep waste of time ... Strip it all, use GTA DB maps.. filter the colours instead.' v0.28 strips the whole ViceWire repaint and serves the real GTADB in-game day tiles through ONE colour grade only — deeper blues, better contrast, realistic colours — with the hill-shading he praised kept as a luminance-only term inside the grade. No generative AI anywhere. Building footprints stay visible because the grade never paints over them.",
+    status: "public",
+    highlights: [
+      "The ViceWire repaint is dead: v0.28 serves the real GTADB day tiles through one colour grade only (scripts/grade-tiles.py). Deeper teal sea (saturation 1.90x, value 0.72x), a strong luminance S-curve (0.30) for real contrast, richer greens, warmer sand and roads. No generative AI, no illustrated redraw, no geometry-driven repaint, no surface classification, no painted roads/buildings/water. Every output pixel comes from exactly one source pixel at the same coordinates, and the grade is a pure function of the pixel's own colour plus one smooth low-frequency lighting term — so zooming never flickers or pops. No grain, no stipple: both washed out the dark outlines that give buildings their shape.",
+      "Hill-shading kept, by his word ('Hills shading looks very nice btw !!'): the elevation-gradient hill-shade from v0.27 stays as a luminance-only multiplier inside the grade — same formula (NW light, azimuth 315, altitude 45, factor 1.0 + (shade − 0.707) × 0.45), gated off the water by the grade's own soft sea mask exactly as v0.27 gated it to land, smooth and low-frequency (the grid is 12 game units per px) so it can never draw or erase a building edge. Gradients only, render-time only, never vendored; absolute heights unverified.",
+      "The grade is deliberately strong — the v0.20.2 grade measured as '0 difference' on his phone. Proof, measured not claimed: pure sea (47,144,176) goes from saturation 0.73 / value 0.69 to saturation 1.00 / value 0.40; street-zoom luminance spread rises 31% (std 0.071 → 0.093) so dark outlines separate from light roofs; hill factor spans 0.682–1.132 over the northern hills, 0.924–1.056 over flat downtown (buildings untouched), exactly 1.000 over open sea. Raw-vs-graded 100% crops at street, district and island zoom show the difference at a glance.",
+      "The superseded pyramids are gone, not just unserved: vicewire-v1/v2/v3, illustrated and enhanced are removed from the repo — the deploy ships tiles/graded/ only. They are regenerable from scripts + tiles-source/day if ever needed. New tiles live at tiles/graded/ (31,022 + 505 ocean-fill y=0 rows, graded from the day sea's own colour through the same pipeline, each verified pure ocean against the z2 water mask). The service-worker cache name moves with the new path, and the fingerprint covers tiles/graded/ only — a new negative test proves a file at a dead tile path can no longer move the cache.",
+    ],
+    verification: [
+      "Render: 31,022 tiles plus 505 fill-ocean tiles, 0 errors, 197 MB. scripts/grade-tiles.py --check: every zoom matches its expected count and the determinism check passes.",
+      "390px basemap walk (scripts/check-graded-walk.mjs), DPR 2, fresh + cached: 15/15 PASS. Island fit view loads 29 tiles with 0 ocean-fallback tiles and 4 real z1 y=0 fill tiles requested; Vice City max zoom 30/30 distinct z6, centre-tile stddev 60.0; Ambrosia max zoom 24/24 distinct z6, centre-tile stddev 59.8, 0 ocean-fallback; 0 tile-zoom-7 requests, 0 failed tile requests, 0 console errors, 0 horizontal overflow. Screenshots in hidden_files/v028-walk-basemap/.",
+      "390px app walk (scripts/check-v026-app.mjs), DPR 2: 41/41 PASS, plus the fix probe (scripts/check-v0261-fix.mjs) 9/9: hills and Keys at the zoom-out camera with clouds at v0.25 strength, Layers groups first and in order on open, 0 zoom-pill overlaps at the downtown max-zoom camera, 0 console errors, 0 failed requests. (One stale vicewire-v3 selector in the probe counted 0 tiles until it was fixed to tiles/graded/ — a stale test, not an app bug.)",
+      "Unit: 798/798 tests pass. Typecheck clean, lint clean. Production build as one command (ATLAS_BASE_PATH=/gta6-leonida-atlas/ vite build && node scripts/finalize-build.mjs), bundle index-DvFc2Xj_.js, service-worker cache atlas-b40404d5-ca52b1dbb254.",
+      "Honest grade, basemap lane (sandbox, not the user's verdict): 6/10 vs the reference — the real map, visibly deeper and higher-contrast, building shapes clear at street zoom, hills shaded; capped because a colour grade cannot add 3D relief or road names (the source pixels don't carry them), the first-open sheet still hides most of the island, and the clouds are v0.25 haze, not the reference's bold clouds. The user's on-device verdict is the final mark.",
+    ],
+  },
+  {
     version: "v0.27.0",
     date: "2026-11-25",
     title: "The map gets depth — the v3 basemap, plus the cloud fix",

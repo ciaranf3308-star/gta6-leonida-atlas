@@ -58,12 +58,14 @@ export const GTADB_DAY_TILE_REVISION =
  * v0.19.0/v0.20.0's illustrated redraw (tiles/redrawn/, a repaint)
  * is dead by the user's decision (2026-11-24 22:48): the reference
  * image is a render, not a real map, and the repaint ended up worse
- * than the real map. Do not revive it.
+ * than the real map. Do not revive it. The app served the enhanced
+ * pyramid in v0.20.2-v0.22; v0.28 serves the graded pyramid instead
+ * (same idea, stronger grade, no grain).
  *
  * CACHE RULE (the v0.20 lesson): a tile re-render must NEVER ship new
  * bytes at an old tile URL. The installed PWA caches tiles
  * cache-first, so same-filename tiles were served stale forever.
- * Every re-render changes the tile path (tiles/enhanced/ now) AND the
+ * Every re-render changes the tile path (tiles/graded/ now) AND the
  * revision below AND the service-worker cache (finalize-build.mjs
  * folds the tile fingerprint into its content hash, and the generated
  * worker skipWaits so the update activates immediately).
@@ -89,22 +91,38 @@ export const GTADB_ENHANCED_TILE_REVISION = "v0.20.2-realism-filter" as const;
 export const GTADB_ILLUSTRATED_TILE_REVISION = "v0.22-island-view" as const;
 export const GTADB_ILLUSTRATED_MAX_ZOOM = 3 as const;
 /**
- * ViceWire pyramid (overhaul, 2026-11-25): ONE geometry-driven render
- * for tile zooms 0-6 — scripts/render-vicewire.py. The real GTADB day
- * tiles, classified per surface (sea/sand/green/urban/buildings/roads
- * treated independently), with hill-shading from the GTADB elevation
- * grid and road centrelines from fbrito's verified CC BY vectors at
- * low zoom / our own skeleton at street zoom. One style at every zoom,
- * so the z3 -> z4 pop is gone by construction. Replaces the
- * illustrated (z0-3) + enhanced (z4-6) split; those pyramids stay on
- * disk as the previous generation but are no longer served.
+ * Graded pyramid (v0.28.0, user verdict 2026-11-25 08:23): the ViceWire
+ * geometry-driven repaint is DEAD — the user called v0.27 a waste of
+ * time. The basemap is the real GTADB day tiles as-is, through ONE
+ * colour grade only — scripts/grade-tiles.py, a fixed per-pixel grade
+ * (deeper teal sea, stronger luminance S-curve, richer greens, warmer
+ * sand and roads, NO grain, NO stipple). Geography is locked 1:1:
+ * every output pixel comes from exactly one source pixel at the same
+ * coordinates — no resampling, no blur, no warp, no new roads, no new
+ * coastline, no painted buildings or water. The raw tiles already
+ * draw real building footprints; the grade only stretches the colours
+ * that are there, so the dark outlines that give buildings their
+ * shape survive. The same fixed parameters run over all 31,022 tiles
+ * at every zoom, so zooming in feels like getting closer to the same
+ * map, never a different map loading. The v0.20.2 grade measured as
+ * "0 difference" on the user's phone, so this grade is deliberately
+ * strong (sea value x0.72, saturation x1.90, contrast 0.30) and the
+ * raw-vs-graded proof crops must show it before it ships.
  *
- * CACHE RULE (same as enhanced): a re-render must change the tile path
- * AND the revision below AND the service-worker cache
- * (finalize-build.mjs folds vicewire-v3 into its fingerprint).
+ * The missing y=0 ocean rows at z1-3 (505 tiles, verified pure ocean
+ * against the z2 water mask, same mechanism as v0.25) are graded from
+ * the day sea's own colour through the same pipeline.
+ *
+ * CACHE RULE (the v0.20 lesson): a tile re-render must NEVER ship new
+ * bytes at an old tile URL. The installed PWA caches tiles
+ * cache-first, so same-filename tiles were served stale forever.
+ * Every re-render changes the tile path (tiles/graded/ now) AND the
+ * revision below AND the service-worker cache (finalize-build.mjs
+ * folds the tile fingerprint into its content hash, and the generated
+ * worker skipWaits so the update activates immediately).
  */
-export const GTADB_VICEWIRE_TILE_REVISION = "vicewire-v3" as const;
-export const GTADB_VICEWIRE_TILE_DIR = "vicewire-v3" as const;
+export const GTADB_GRADED_TILE_REVISION = "v0.28-colour-grade" as const;
+export const GTADB_GRADED_TILE_DIR = "graded" as const;
 export const GTADB_DAY_TILE_ZOOM_OFFSET = 5 as const;
 export const GTADB_DAY_TILE_MIN_ZOOM = 0 as const;
 export const GTADB_DAY_TILE_MAX_ZOOM = 6 as const;
@@ -163,18 +181,14 @@ export function gtadbTileFileName(tile: GtadbTileRef): string {
 }
 
 /** Same-origin tile URL for a Leaflet tile request.
- * ViceWire v3 (round 3, 2026-11-25): serves the vicewire-v3 pyramid
- * (tiles/vicewire-v3/) at ALL tile zooms 0-6 — one geometry-driven
- * render, one style, no z3 -> z4 switch. v2 fixes the v0.24 review's
- * basemap items: the Ambrosia road checkerboard (flat road bed over
- * the classification-gap corridor), one water family (global sea mask
- * splits sea from inland water), shaded city blocks (building seams
- * from the source's own luminance gradient), and the missing y=0
- * ocean rows at z1-3 (filled, verified pure ocean). The illustrated
- * (z0-3) and enhanced (z4-6) pyramids are the previous generation and
- * are no longer served. Pin coordinates are unchanged: the render is
- * a restyle of the real in-game map, geography locked 1:1, so a pin
- * lands on the same geographic spot at every zoom. */
+ * Graded pyramid (v0.28.0): serves the graded tiles (tiles/graded/)
+ * at ALL tile zooms 0-6 — the real GTADB day tiles through one colour
+ * grade, one style, no z3 -> z4 switch. The ViceWire repaint
+ * (tiles/vicewire-v1/v2/v3/), the illustrated island (tiles/illustrated/)
+ * and the v0.20.2 enhanced pyramid (tiles/enhanced/) are the previous
+ * generations and are no longer served — and no longer on disk.
+ * Pin coordinates are unchanged: the grade never moves geography, so
+ * a pin lands on the same geographic spot at every zoom. */
 export function gtadbTileUrl(
   base: string,
   leafletTileX: number,
@@ -183,7 +197,7 @@ export function gtadbTileUrl(
 ): string {
   const prefix = base.endsWith("/") ? base : `${base}/`;
   const tile = leafletTileToGtadb(leafletTileX, leafletTileY, leafletZoom);
-  return `${prefix}assets/gta6-leonida-atlas/tiles/${GTADB_VICEWIRE_TILE_DIR}/${gtadbTileFileName(
+  return `${prefix}assets/gta6-leonida-atlas/tiles/${GTADB_GRADED_TILE_DIR}/${gtadbTileFileName(
     tile,
   )}`;
 }

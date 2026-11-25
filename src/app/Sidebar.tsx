@@ -477,8 +477,8 @@ function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allP
         </div>
       </section>
       <p className="empty-state">
-        The basemap is the GTADB in-game map (map artwork © Rockstar Games, CC BY 4.0). Roads
-        use Open GTA 6 Map data (fbritoferreira, CC BY 4.0). Place positions are approximate
+        The basemap is the GTADB in-game map (map artwork © Rockstar Games, CC BY 4.0),
+        colour-graded only — geography unchanged. Place positions are approximate
         community data.
       </p>
     </div>

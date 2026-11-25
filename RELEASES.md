@@ -2,6 +2,17 @@
 
 Release history, newest first.
 
+## v0.28.0 — 2026-11-25
+
+**Released: Strip it all — the real GTADB map, colour-graded only.**
+
+- The ViceWire repaint is dead by the user's verdict ("Yep waste of time ... Strip it all, use GTA DB maps.. filter the colours instead"). v0.28 serves the real GTADB in-game day tiles through ONE colour grade only (scripts/grade-tiles.py): deeper teal sea, a stronger luminance S-curve for real contrast, richer greens, warmer sand and roads, realistic colours. No generative AI, no illustrated redraw, no geometry-driven repaint, no surface classification, no painted roads/buildings/water. Every output pixel comes from exactly one source pixel at the same coordinates — the raw tiles already draw real building footprints, and the grade only stretches the colours that are there, so the dark outlines that give buildings their shape survive. No grain, no stipple — both washed the outlines out.
+- Hill-shading kept, by his word ("Hills shading looks very nice btw !!"): the elevation-gradient hill-shade from v0.27 stays as a luminance-only multiplier inside the grade — same formula (NW light, azimuth 315, altitude 45, factor 1.0 + (shade − 0.707) × 0.45), gated off the water, smooth and low-frequency so it can never draw or erase a building edge. Gradients only, render-time only, never vendored.
+- The grade is deliberately strong — the v0.20.2 grade measured as "0 difference" on his phone. Sea saturation 0.73 → 1.00, value 0.69 → 0.40 (deep teal); street-zoom luminance spread up +31%; hills factor 0.682–1.132, flat city 0.924–1.056, open sea exactly 1.000. Raw-vs-graded 100% crops prove it before shipping.
+- The superseded pyramids are gone from the repo and the deploy: vicewire-v1/v2/v3, illustrated, enhanced — removed, not just unserved. They are regenerable from scripts + tiles-source/day if ever needed. New tiles live at tiles/graded/ (31,022 + 505 ocean-fill y=0 rows); the service-worker cache name moves with them, so no phone can serve the old repaint. The fingerprint covers tiles/graded/ only — a file at a dead tile path can no longer move the cache (new negative test).
+- Verified: 31,022 tiles + 505 fill, 0 errors, 197 MB; --check counts all OK, determinism OK. 798/798 unit tests, typecheck clean, lint clean, one-command production build (bundle index-DvFc2Xj_.js, SW cache atlas-b40404d5-ca52b1dbb254). 390px basemap walk 15/15 at DPR 2, fresh + cached (island 29 tiles, 0 ocean-fallback, 4 real z1 y=0 fill tiles; VC max zoom 30/30 distinct z6, centre stddev 60.0; Ambrosia 24/24, stddev 59.8; 0 z7, 0 failed, 0 console errors). 390px app walk 41/41 plus the fix probe 9/9 (one stale vicewire-v3 selector in the probe, fixed to graded/, no app bug). Honest sandbox grade 6/10 — the real map, visibly deeper and higher-contrast, building shapes clear, hills shaded; capped because a colour grade cannot add 3D relief or road names (the source pixels don't carry them), the first-open sheet still hides most of the island, and the clouds are v0.25 haze, not the reference's bold clouds. User verdict is the final mark.
+- Kept: ViceWire categories, place card, your tags, spoiler-free defaults (everything off on first launch), 48px targets, Ask spoiler rule, backup v3, the v0.26.1 cloud/Layers/pill fixes.
+
 ## v0.27.0 — 2026-11-25
 
 **Released: The map gets depth — the v3 basemap, plus the cloud fix.**
