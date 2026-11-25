@@ -235,15 +235,15 @@ for (const url of [...precache, ...threeDimensionalAssets]) {
 // covers the app shell and precached assets — did not move, so the old
 // cache (and its stale tiles) survived. The fingerprint is the list of
 // tile paths + sizes for ALL pyramids (enhanced z0-6, illustrated
-// z0-3, vicewire-v2 z0-6): cheap (stat only, no content reads) and it
+// z0-3, vicewire-v3 z0-6): cheap (stat only, no content reads) and it
 // moves on any tile re-render. A tile re-render must ALSO change the
 // tile path (see gtadb-tiles.ts) — both layers, not one hope.
-// v0.25: the fingerprint now covers vicewire-v2 (the live pyramid)
-// instead of vicewire-v1. v1 stays on disk in public/ and dist/ as
+// v0.27: the fingerprint now covers vicewire-v3 (the live pyramid)
+// instead of vicewire-v2. v2 stays on disk in public/ and dist/ as
 // the previous generation, like enhanced/illustrated, but it is no
 // longer served, so its bytes cannot stale the cache and it is no
 // longer fingerprinted. (A tile re-render must still change the tile
-// path — see gtadb-tiles.ts — so a future v3 gets its own entry.)
+// path — see gtadb-tiles.ts — so a future v4 gets its own entry.)
 const tileDir = join(outDir, "assets/gta6-leonida-atlas/tiles/enhanced");
 const illustratedDir = join(
   outDir,
@@ -251,13 +251,13 @@ const illustratedDir = join(
 );
 const vicewireDir = join(
   outDir,
-  "assets/gta6-leonida-atlas/tiles/vicewire-v2",
+  "assets/gta6-leonida-atlas/tiles/vicewire-v3",
 );
 try {
   for (const [dir, topZoom, label] of [
     [tileDir, 6, "enhanced"],
     [illustratedDir, 3, "illustrated"],
-    [vicewireDir, 6, "vicewire-v2"],
+    [vicewireDir, 6, "vicewire-v3"],
   ]) {
     for (let zoom = 0; zoom <= topZoom; zoom++) {
       let names;

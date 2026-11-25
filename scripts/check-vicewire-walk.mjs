@@ -1,7 +1,7 @@
 /* global document, innerWidth, innerHeight */
 /* ^ browser globals, only used inside page.evaluate() callbacks. */
 /* ViceWire basemap walk (round 2, 2026-11-25): 390px, DPR 2, fresh AND
-   cached loads. Proves the new vicewire-v2 pyramid at every zoom and
+   cached loads. Proves the new vicewire-v3 pyramid at every zoom and
    the P0 fix (deepest zoom on land must show land tiles, never the
    ocean fallback), plus the v2 review items: the Ambrosia highway
    must read as a clean road (eye-check 04), the y=0 ocean rows at
@@ -10,7 +10,7 @@
      ATLAS_BASE_PATH=/gta6-leonida-atlas/ npm run build
      ATLAS_BASE_PATH=/gta6-leonida-atlas/ npm run start   (port 4330)
      node scripts/check-vicewire-walk.mjs
-   Screenshots land in hidden_files/v024-walk-basemap/ (goal workspace).
+   Screenshots land in hidden_files/v027-walk-basemap/ (goal workspace).
    Exit 1 on any failed assertion. */
 import { chromium } from 'playwright';
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -20,7 +20,7 @@ import { homedir } from 'node:os';
 const base = 'http://127.0.0.1:4330/gta6-leonida-atlas/';
 const outDir = join(
   homedir(),
-  'workspace/goals/gta-6-leonida-map-spoiler-free-pwa/hidden_files/v024-walk-basemap',
+  'workspace/goals/gta-6-leonida-map-spoiler-free-pwa/hidden_files/v027-walk-basemap',
 );
 mkdirSync(outDir, { recursive: true });
 
@@ -81,7 +81,7 @@ const closePlaceSheet = async () => {
   }
 };
 const loadedTiles = (zoom) =>
-  page.locator(`.leaflet-tile-loaded[src*="tiles/vicewire-v2/${zoom}/"]`);
+  page.locator(`.leaflet-tile-loaded[src*="tiles/vicewire-v3/${zoom}/"]`);
 const zoomInToMax = async () => {
   for (let i = 0; i < 16; i++) {
     const btn = page.getByRole('button', { name: 'Zoom in' });
@@ -105,7 +105,7 @@ const z6Stats = async () =>
   page.evaluate(() => {
     const srcs = [...document.querySelectorAll('.leaflet-tile-loaded')]
       .map((img) => img.getAttribute('src'))
-      .filter((s) => s && s.includes('vicewire-v2/6/'));
+      .filter((s) => s && s.includes('vicewire-v3/6/'));
     return { total: srcs.length, distinct: new Set(srcs).size };
   });
 // fallback (ocean.jpg) is flat teal, variance ~0. Draws the loaded tile
@@ -154,7 +154,7 @@ check(islandTiles > 0, 'island fit view loads tiles');
 // anywhere on the island view.
 const oceanFit = await page.locator('.leaflet-tile-loaded[src*="tiles/ocean.jpg"]').count();
 check(oceanFit === 0, `island fit view shows no ocean-fallback tiles — saw ${oceanFit}`);
-const y0Tiles = [...tileUrls].filter((u) => /\/vicewire-v2\/1\/1,0,/.test(u));
+const y0Tiles = [...tileUrls].filter((u) => /\/vicewire-v3\/1\/1,0,/.test(u));
 check(y0Tiles.length > 0, `island fit view requests real z1 y=0 fill tiles — saw ${y0Tiles.length}`);
 await page.screenshot({ path: join(outDir, '01-island.png') });
 

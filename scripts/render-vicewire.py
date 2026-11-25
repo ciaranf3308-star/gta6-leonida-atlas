@@ -54,8 +54,31 @@ APPROACH — geometry-driven render (not a grade, not a generation):
     z3 -> z4 pop is gone by construction. Output is 512px tiles
     (v0.20's sharpness proof: 2x display density, 1:1 device pixels
     at DPR 2, crisp at DPR 3) under a FRESH versioned path
-    (tiles/vicewire-v2/ in v0.25; v1 was vicewire-v1/) — never reuse
-    a tile path; the v0.20 stale tiles cost a whole pass.
+    (tiles/vicewire-v3/ in v0.26; v2 was vicewire-v2/, v1 vicewire-v1/)
+    — never reuse a tile path; the v0.20 stale tiles cost a whole pass.
+
+v0.26 (review of live v0.25.0, 7/10): (1) street-zoom city depth —
+the v0.25 block paint OVERWROTE the source's own luminance with a
+flat BLOCK_TONE, so the real roof-to-roof contrast (measured: lum
+std 0.052 inside the building mask downtown, per-component means
+nearly identical, std 0.021) was discarded; the paint now modulates
+by the smoothed source luminance, the bevel runs on ALL building
+components (the <3000px gate left 86% of downtown roofs unbevelled)
+in all four directions (light from the NW: light N+W edges, dark
+S+E — a roof with light north/west and dark south/east reads as a
+raised block), and per-component tones widen to +/-10%. (2) City
+slabs at island scale: URBAN_LOW/FLAT warmer and a touch darker,
+plus a faint value-noise mottling on city ground so the island-view
+city is not one flat pale patch. (3) Highway strokes dashed — diag2
+measured ONE 17-unit gap in the Ambrosia highway skeleton (the
+light mask covers the polyline; a skeleton fragment was pruned
+away), so strokes now bridge gaps with the verified fbrito
+centreline where it runs within 12 units of any skeleton pixel:
+it can only join two skeleton pieces, never draw a road where none
+is near. (4) White speckle on grey ground: the fine grain (sigma
+1.6) is now water-only — flat land never needed anti-banding dither,
+and the eroded-bed measurement (raw stddev 1.3) proved the speckle
+IS the grain.
 
 v0.25 (review of live v0.24.0, 6/10): (1) the Ambrosia road
 checkerboard — the road corridor was bare-terrain green (low
@@ -101,7 +124,7 @@ from scipy import ndimage as ndi
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "tiles-source/day")
-DST = os.path.join(ROOT, "public/assets/gta6-leonida-atlas/tiles/vicewire-v2")
+DST = os.path.join(ROOT, "public/assets/gta6-leonida-atlas/tiles/vicewire-v3")
 QUALITY = 92
 OUT = 512  # 2x display density; source is 256px, classes read nearest
 
@@ -125,8 +148,8 @@ CREAM = np.array([246.0, 238.0, 218.0])     # minor-street core (no pink)
 SAND_FLAT = np.array([238.0, 216.0, 170.0])  # gold sand
 GREEN_FLAT = np.array([74.0, 140.0, 88.0])    # rich green land
 FOREST_FLAT = np.array([52.0, 118.0, 70.0])    # deep forest green
-URBAN_FLAT = np.array([198.0, 192.0, 178.0])   # warm-grey city ground
-URBAN_LOW = np.array([186.0, 178.0, 164.0])    # warmer city ground, island view (v0.25: was cool grey 178,176,170 — the pale slabs)
+URBAN_FLAT = np.array([206.0, 190.0, 162.0])   # warm-grey city ground (v0.26: warmer, a touch darker — the island-view slabs read as flat pale patches)
+URBAN_LOW = np.array([198.0, 180.0, 148.0])    # warmer city ground, island view (v0.26: was 186,178,164 — still pale)
 ROCK_FLAT = np.array([110.0, 145.0, 100.0])   # muted mid-green bare terrain
 BLOCK_TONE = np.array([172.0, 166.0, 150.0])  # muted roof tone, one shade
 SEA_SHORE = np.array([46.0, 178.0, 198.0])   # bright cyan shallows
@@ -738,10 +761,14 @@ def render(arr, zoom, tile_y, tile_x):
     lum_mod = 1.0 + np.clip((lum512 - 0.5) * 0.16, -0.07, 0.07)
     tex = _terrain_texture(zoom, tile_x, tile_y)
     green_tex = 1.0 + tex * 0.06 * green512
+    # v0.26: the same faint mottling on city ground (cityness-gated),
+    # so the island-view city is not one flat pale patch. Green keeps
+    # its own canopy texture; the two never mix.
+    urb_tex = 1.0 + tex * 0.05 * (urban_w * cityness)
     # Hill-shade from the elevation grid (real relief, NW light).
     # Replaces most of the fake mottling's job: the value noise stays
     # as a faint canopy texture only.
-    mod = lum_mod * green_tex
+    mod = lum_mod * green_tex * urb_tex
     if hill is not None:
         mod = mod * hill
     out = out * (1.0 - land512[..., None]) + out * mod[..., None] * land512[..., None]
@@ -834,36 +861,74 @@ def render(arr, zoom, tile_y, tile_x):
             lab_b, n_b = ndi.label(building, structure=np.ones((3, 3), dtype=int))
             sizes_b = ndi.sum_labels(np.ones_like(lab_b), lab_b, range(1, n_b + 1)) if n_b else []
             tone = np.ones(building.shape, dtype=np.float32)
-            small = np.zeros(building.shape, dtype=bool)
             for i, size in enumerate(sizes_b, start=1):
-                if size < 3000:
-                    small[lab_b == i] = True
-                    tone[lab_b == i] = 0.94 + 0.12 * (((i * 2654435761) % 1000) / 1000.0)
+                # v0.26: per-component tones widen to +/-10% (was +/-6%).
+                # Measured (diag1): per-component mean luminance barely
+                # differs (std 0.021 downtown), so component tones
+                # alone can never separate roofs — the per-pixel
+                # luminance below does the real work.
+                tone[lab_b == i] = 0.90 + 0.20 * (((i * 2654435761) % 1000) / 1000.0)
             b512 = _up2_nearest(building).astype(np.float32)
             tone512 = _up2_nearest(tone)
+            # v0.26: the v0.25 paint overwrote the source's own
+            # luminance with a flat BLOCK_TONE, discarding the real
+            # roof-to-roof contrast (diag1: lum std 0.052 inside the
+            # building mask downtown, p10 0.61 / p90 0.74). Modulate
+            # the tone by the SMOOTHED source luminance (sigma 1.5 at
+            # 512 keeps roof-scale variation, kills JPEG noise), so
+            # each roof wears its own shade. No geometry invented:
+            # every value comes from the source pixels under it.
+            lum_s = ndi.gaussian_filter(lum512, 1.5)
+            roof_mult = np.clip(0.92 + 1.4 * (lum_s - 0.676), 0.77, 1.27)
             m = b512 * land512
-            out = out * (1.0 - m[..., None]) + (BLOCK_TONE[None, None, :] * tone512[..., None]) * m[..., None]
-            if zoom >= 5 and small.any():
-                s512 = _up2_nearest(small).astype(np.float32)
+            roof_rgb = BLOCK_TONE[None, None, :] * (tone512 * roof_mult)[..., None]
+            out = out * (1.0 - m[..., None]) + roof_rgb * m[..., None]
+            if zoom >= 5:
+                # v0.26: bevel on ALL building components (the v0.25
+                # <3000px gate left 86% of downtown roofs unbevelled)
+                # and in ALL FOUR directions — light from the NW, so
+                # north and west edges catch light, south and east
+                # fall into shade. A roof with light N+W and dark S+E
+                # reads as a raised block; N/S alone read as seams.
+                # The bevel is masked by ~bed512, so no curb shading
+                # is painted along road corridors.
+                bev = b512 if bed512 is None else b512 * (1.0 - bed512)
+                bev = bev * land512
 
-                def _band(mask, k, direction):
-                    """Pixels within k px of an edge in `direction`:
-                    north = below a north-facing edge, south = above a
-                    south-facing edge. `direction` +1 shifts down."""
-                    if direction > 0:
-                        shifted = np.vstack([np.zeros((k, OUT), dtype=np.float32), mask[:-k, :]])
+                def _band(mask, k, axis, direction):
+                    """Pixels within k px of an edge: axis 0 = vertical
+                    (direction +1: below a north-facing edge, -1: above
+                    a south-facing edge), axis 1 = horizontal (+1: right
+                    of a west-facing edge, -1: left of an east-facing
+                    edge)."""
+                    if axis == 0:
+                        if direction > 0:
+                            shifted = np.vstack([np.zeros((k, OUT), dtype=np.float32), mask[:-k, :]])
+                        else:
+                            shifted = np.vstack([mask[k:, :], np.zeros((k, OUT), dtype=np.float32)])
                     else:
-                        shifted = np.vstack([mask[k:, :], np.zeros((k, OUT), dtype=np.float32)])
+                        if direction > 0:
+                            shifted = np.hstack([np.zeros((OUT, k), dtype=np.float32), mask[:, :-k]])
+                        else:
+                            shifted = np.hstack([mask[:, k:], np.zeros((OUT, k), dtype=np.float32)])
                     return mask * (1.0 - shifted)
 
-                north1 = _band(s512, 1, +1)
-                north3 = _band(s512, 3, +1)
-                south1 = _band(s512, 1, -1)
-                south3 = _band(s512, 3, -1)
-                _paint(out, north3 * land512 * 0.15, np.array([255.0, 255.0, 255.0]))
-                _paint(out, north1 * land512 * 0.35, np.array([255.0, 255.0, 255.0]))
-                _paint(out, south3 * land512 * 0.18, np.array([0.0, 0.0, 0.0]))
-                _paint(out, south1 * land512 * 0.40, np.array([0.0, 0.0, 0.0]))
+                north3 = _band(bev, 3, 0, +1)
+                north1 = _band(bev, 1, 0, +1)
+                south3 = _band(bev, 3, 0, -1)
+                south1 = _band(bev, 1, 0, -1)
+                west3 = _band(bev, 3, 1, +1)
+                west1 = _band(bev, 1, 1, +1)
+                east3 = _band(bev, 3, 1, -1)
+                east1 = _band(bev, 1, 1, -1)
+                _paint(out, north3 * 0.15, np.array([255.0, 255.0, 255.0]))
+                _paint(out, north1 * 0.35, np.array([255.0, 255.0, 255.0]))
+                _paint(out, west3 * 0.12, np.array([255.0, 255.0, 255.0]))
+                _paint(out, west1 * 0.30, np.array([255.0, 255.0, 255.0]))
+                _paint(out, south3 * 0.18, np.array([0.0, 0.0, 0.0]))
+                _paint(out, south1 * 0.40, np.array([0.0, 0.0, 0.0]))
+                _paint(out, east3 * 0.15, np.array([0.0, 0.0, 0.0]))
+                _paint(out, east1 * 0.35, np.array([0.0, 0.0, 0.0]))
             # --- building seams (v0.25): the source draws rooftops
             # as flat blocks with slightly darker outlines and
             # internal divisions (verified on 6,114,139: luminance
@@ -880,7 +945,7 @@ def render(arr, zoom, tile_y, tile_x):
             seam = _smoothstep(grad, 0.031, 0.078)
             _paint(
                 out,
-                _up2_nearest(seam) * b512 * land512 * 0.50,
+                _up2_nearest(seam) * b512 * land512 * 0.60,
                 np.array([0.0, 0.0, 0.0]),
             )
     else:
@@ -923,11 +988,14 @@ def render(arr, zoom, tile_y, tile_x):
         # resolution at island scale — not drawing them is honest
         # cartographic generalisation, not missing data. At z3 the
         # minor web read as pink spaghetti in preview v3-1, so minors
-        # are 1px and faint there too.
+        # are 1px and faint there too. v0.26: streets ARE drawn at z0
+        # (faint, 0.30) — without them the island-view city is one flat
+        # tan patch; a 1px cream mesh at ~1.5px spacing reads as dense
+        # built-up texture, not individual streets.
         core_a = {
             KIND_HIGHWAY: 1.0,
             KIND_MAIN: 0.95,
-            KIND_STREET: {0: 0.0, 1: 0.55, 2: 0.8, 3: 0.8}[zoom],
+            KIND_STREET: {0: 0.30, 1: 0.55, 2: 0.8, 3: 0.8}[zoom],
             KIND_MINOR: {0: 0.0, 1: 0.0, 2: 0.5, 3: 0.6}[zoom],
         }
         core_c = {
@@ -986,9 +1054,33 @@ def render(arr, zoom, tile_y, tile_x):
         def dil(mask, size):
             return ndi.binary_dilation(mask, np.ones((size, size), dtype=bool))
 
-        hwy512 = _up2_nearest(hwy)
-        main512 = _up2_nearest(main)
-        minor512 = _up2_nearest(minor)
+        # --- gap bridging (v0.26): the skeleton is exact where it
+        # exists, but diag2 measured ONE 17-unit stretch of the
+        # Ambrosia highway with no skeleton at all (the light mask
+        # covers the polyline; a skeleton fragment was pruned away),
+        # which reads as a dashed stroke. Where a verified fbrito
+        # centreline runs within 12 units of any skeleton pixel, its
+        # pixels join the stroke: a centreline pixel can only bridge
+        # a gap between two skeleton pieces, never draw a road where
+        # none is near (parallel streets are 100+ units apart, the
+        # bridge radius is 12). R scales with zoom in output px.
+        skel512 = _up2_nearest(skel.astype(np.float32)) > 0.5
+        d_skel512 = ndi.distance_transform_edt(~skel512)
+        R512 = {4: 8, 5: 24, 6: 48}[zoom]
+        near_skel = (d_skel512 <= R512) & (d_skel512 > 2)
+
+        def _fill(kind):
+            """Centreline pixels of `kind` near the skeleton, for
+            bridging skeleton gaps. Empty when the tile has no such
+            road."""
+            centre = masks.get(kind)
+            if centre is None:
+                return np.zeros((OUT, OUT), dtype=bool)
+            return (centre > 0) & near_skel
+
+        hwy512 = (_up2_nearest(hwy) > 0) | _fill(KIND_HIGHWAY)
+        main512 = (_up2_nearest(main) > 0) | _fill(KIND_MAIN)
+        minor512 = (_up2_nearest(minor) > 0) | _fill(KIND_STREET) | _fill(KIND_MINOR)
         # Thin cores on the flat road bed (v0.25) — no halo, no wash.
         if hwy512.any():
             _paint(out, dil(hwy512, 5).astype(np.float32) * 0.85, SUNSET)
@@ -999,7 +1091,10 @@ def render(arr, zoom, tile_y, tile_x):
                 # Skeleton lines with no fbrito road within 8 px are
                 # driveways, parking aisles and alleys, not streets:
                 # paint them fainter so the real street grid reads.
-                minor_known = _up2_nearest((minor & (kind256 != 0)).astype(np.float32))
+                # Bridge pixels sit on a centreline, so they are
+                # "known" by construction.
+                minor_known = (_up2_nearest((minor & (kind256 != 0)).astype(np.float32)) > 0)
+                minor_known = minor_known | (_fill(KIND_STREET) | _fill(KIND_MINOR))
                 minor_unknown = _up2_nearest((minor & (kind256 == 0)).astype(np.float32))
                 _paint(out, dil(minor_known, 4).astype(np.float32) * 0.95, CREAM)
                 _paint(out, dil(minor_unknown, 4).astype(np.float32) * 0.4, CREAM)
@@ -1026,10 +1121,14 @@ def render(arr, zoom, tile_y, tile_x):
 
     # --- fine grain (hdr6-style, anti-banding): deterministic per-tile
     # noise, +/-2 levels. Seeded from the tile coords so the render is
-    # reproducible and identical across runs.
+    # reproducible and identical across runs. v0.26: WATER-ONLY — the
+    # sea's smooth gradient is the only thing that can band after
+    # JPEG; flat land never needed dither, and the eroded-bed
+    # measurement (raw stddev 1.3 on flat ROAD_BED) proved the faint
+    # white speckle on grey ground at max zoom IS this grain.
     rng = np.random.default_rng((zoom * 1000003 + tile_y * 9176 + tile_x * 131) % (2**32))
     grain = rng.normal(0.0, 1.6, (OUT, OUT, 1)).astype(np.float32)
-    out = out + grain
+    out = out + grain * water512[..., None]
 
     return np.clip(out, 0, 255).astype(np.uint8)
 

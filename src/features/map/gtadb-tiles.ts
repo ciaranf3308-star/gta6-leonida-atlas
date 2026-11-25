@@ -101,10 +101,10 @@ export const GTADB_ILLUSTRATED_MAX_ZOOM = 3 as const;
  *
  * CACHE RULE (same as enhanced): a re-render must change the tile path
  * AND the revision below AND the service-worker cache
- * (finalize-build.mjs folds vicewire-v2 into its fingerprint).
+ * (finalize-build.mjs folds vicewire-v3 into its fingerprint).
  */
-export const GTADB_VICEWIRE_TILE_REVISION = "vicewire-v2" as const;
-export const GTADB_VICEWIRE_TILE_DIR = "vicewire-v2" as const;
+export const GTADB_VICEWIRE_TILE_REVISION = "vicewire-v3" as const;
+export const GTADB_VICEWIRE_TILE_DIR = "vicewire-v3" as const;
 export const GTADB_DAY_TILE_ZOOM_OFFSET = 5 as const;
 export const GTADB_DAY_TILE_MIN_ZOOM = 0 as const;
 export const GTADB_DAY_TILE_MAX_ZOOM = 6 as const;
@@ -163,8 +163,8 @@ export function gtadbTileFileName(tile: GtadbTileRef): string {
 }
 
 /** Same-origin tile URL for a Leaflet tile request.
- * ViceWire v2 (round 2, 2026-11-25): serves the vicewire-v2 pyramid
- * (tiles/vicewire-v2/) at ALL tile zooms 0-6 — one geometry-driven
+ * ViceWire v3 (round 3, 2026-11-25): serves the vicewire-v3 pyramid
+ * (tiles/vicewire-v3/) at ALL tile zooms 0-6 — one geometry-driven
  * render, one style, no z3 -> z4 switch. v2 fixes the v0.24 review's
  * basemap items: the Ambrosia road checkerboard (flat road bed over
  * the classification-gap corridor), one water family (global sea mask
