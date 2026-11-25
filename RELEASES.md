@@ -2,6 +2,17 @@
 
 Release history, newest first.
 
+## v0.24.0 — 2026-11-25
+
+**Released: One map, every zoom — the ViceWire basemap plus the rebuilt app chrome.**
+
+- One geometry-driven tile pyramid, tiles/vicewire-v1/, z0–z6, replaces the illustrated (z0–z3) + enhanced (z4–z6) split, so the z3→z4 style cliff is gone by construction. Rendered from OUR day tiles (surfaces classified per tile), fbritoferreira "Open GTA 6 Map" CC BY 4.0 vectors for roads at low zoom, our own road skeleton at street zoom, hill-shading from the GTADB elevation grid, goal palette. 31,022 tiles, 0 errors.
+- P0 fixed: deepest zoom on a DPR ≥ 2 phone used to render empty ocean (tile zoom 7 requested, 404, service worker answered ocean.jpg). Clamped to tile zoom 6 and fixed the retina scaling so z6 tiles paint 1:1, not 2×2. Walk now zooms to max on land (Vice City and Ambrosia) and asserts real land tiles load.
+- App chrome (v0.23.0): slim empty prompt, CSS clouds, island fits the visible band, all five chips fit, "?" pins small and labelless with dark badges, place card rebuilt with a map crop that actually renders, county line, description, Set Route / View Area / Add to List, sheet capped at 72dvh, Layers badge is a dot.
+- Attribution: roads credit added (Open GTA 6 Map, fbritoferreira, CC BY 4.0). Elevation grid is leak-derived — used for hill-shading gradients only, never vendored, never presented as cleanly sourced.
+- Verified: 787 unit tests, 390px walks 45/45 (app) and 15/15 (basemap) at DPR 2, fresh + cached. Honest sandbox grade 7/10 vs the reference — street-zoom city blocks are still flat muted masses, no vector coastline/label crispness or 3D relief yet. User verdict is the final mark.
+- Kept: ViceWire categories, place card, your tags, spoiler-free defaults, 48px targets, Ask spoiler rule, backup v3.
+
 ## v0.22.0 — 2026-11-25
 
 **Released: The island view, illustrated — and the street view stays real.**
