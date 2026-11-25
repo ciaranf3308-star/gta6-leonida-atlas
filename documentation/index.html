@@ -11,9 +11,17 @@
     <link rel="manifest" href="/gta6-leonida-atlas/manifest.webmanifest" />
     <link rel="apple-touch-icon" href="/gta6-leonida-atlas/icons/icon-192.png" />
     <meta name="description" content="Learn how to explore the ViceWire, use the GTADB in-game basemap and distinguish confirmed evidence from approximate community mapping.">
+    <!-- v0.29.0: the 2.8 MB place catalogue is fetched after the JS
+         bundle parses and React mounts; preloading it lets the
+         browser start it with the HTML parse instead, so the
+         catalogue is usually already there when the app asks for it.
+         Same URL the app fetches (src/data/catalogue.ts) or the
+         preload is wasted; on repeat visits the service worker
+         serves it from cache either way. -->
+    <link rel="preload" href="/gta6-leonida-atlas/assets/street-leonida/maps/gtadb-landmarks-d406fea.json" as="fetch" crossorigin="anonymous" />
     <link rel="icon" type="image/svg+xml" href="/gta6-leonida-atlas/favicon.svg" />
     <title>GTA 6 Map Guide: GTADB In-Game Map, Sources &amp; Atlas Controls</title>
-    <script type="module" crossorigin src="/gta6-leonida-atlas/assets/index-DvFc2Xj_.js"></script>
+    <script type="module" crossorigin src="/gta6-leonida-atlas/assets/index-AY5db6r8.js"></script>
     <link rel="modulepreload" crossorigin href="/gta6-leonida-atlas/assets/jsx-runtime-DyZJNswf.js">
     <link rel="modulepreload" crossorigin href="/gta6-leonida-atlas/assets/public-path-U2E4Y9CW.js">
     <link rel="modulepreload" crossorigin href="/gta6-leonida-atlas/assets/walk-geography-yrqsL7gC.js">
