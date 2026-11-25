@@ -111,8 +111,12 @@ console.log(`Ask "Clear highlights" after sheet close: ${clearText}`);
 await page.screenshot({ path: `${OUT}reveal-ask-after-close.png` });
 
 // 3. Clearing the reveal (Ask "Clear highlights") must remove the pin.
-// ("Turn everything off" only turns layers off — it never touches
-// highlights, and it is disabled when no public layer is on.)
+// ("Turn everything off" now ALSO clears highlights — the v0.30
+// kill-switch fix — and stays enabled while any highlight exists.
+// Before that fix it only turned layers off and was disabled with no
+// layer on, which is why an earlier version of this probe timed out
+// clicking it. This probe clears via Ask instead, which is the
+// explicit per-reveal path.)
 // Click it while Ask is still open.
 if ((await clearBtn.count()) > 0) {
   await clearBtn.first().click();
