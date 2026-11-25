@@ -66,6 +66,14 @@ export const useMapStore = create<{
   mapCenter: Position | null;
   setLayers: (layers: LayerDefinition[]) => void;
   select: (place: Place | null) => void;
+  /** Move the camera to a position WITHOUT selecting anything — the
+   * sheet-close recenter (v0.30.0): the focus had centred the place
+   * above the sheet, so after the sheet closes it sits under the top
+   * chrome and the pin clamp hides it. setFocus re-flies it to the
+   * centre of the visible band while the reveal (or its layer) keeps
+   * the pin on screen. Bumps the focus requestId like select() does,
+   * so MapView's focus effect runs again. */
+  setFocus: (position: Position | null) => void;
   setEditor: (mode: 'none' | 'create' | 'move') => void;
   setPosition: (position: Position) => void;
   setMarkerKindPreset: (kind: 'workout' | 'breakable' | null) => void;
@@ -96,6 +104,13 @@ export const useMapStore = create<{
       draftPosition: null,
     }));
     atlasRegistry.emit('selection', place?.id ?? null);
+  },
+  setFocus: (position) => {
+    set((state) => ({
+      focus: position
+        ? { position, requestId: (state.focus?.requestId ?? 0) + 1 }
+        : null,
+    }));
   },
   setEditor: (editorMode) => set({ editorMode, draftPosition: null }),
   setPosition: (draftPosition) => set({ draftPosition }),

@@ -31,7 +31,11 @@ export type RevealIds = ReadonlySet<string>;
  * The reveal set for one render: the Ask highlights plus the place
  * whose sheet is open. The selected place is itself a reveal — its
  * pin must not vanish while its sheet is open just because its layer
- * is off and the highlights were cleared.
+ * is off and the highlights were cleared. And the pin must not vanish
+ * when the sheet closes either: App recenters a still-visible
+ * deselected place into the visible band (the focus had centred it
+ * above the sheet, so it would otherwise sit under the top chrome
+ * and the pin clamp would hide it while the highlight is still there).
  */
 export function revealSet(
   highlightIds: Iterable<string>,

@@ -591,6 +591,30 @@ export default function App() {
     }
     previousSelectedId.current = selectedId;
   }, [selectedId, firstOpenActive, viceCityPlace]);
+  /** A reveal's pin must not vanish when its sheet closes (v0.30.0).
+   * The focus had centred the place above the sheet, so after the
+   * sheet closes the pin sits under the top chrome and the pin clamp
+   * hides it — while the highlight itself is still there (Ask still
+   * shows "Clear highlights (1)"). When the selection closes on a
+   * place that stays visible (still revealed, or its layer is on),
+   * glide it to the centre of the visible band with no sheet offset,
+   * so the pin lands mid-screen and stays on the map. Only the
+   * deselect transition fires this — layer toggles, pans and zooms
+   * never move the camera. If the reveal was cleared too, nothing
+   * stays visible, so the camera stays put. */
+  const previousSelectedForReveal = useRef<string | null>(null);
+  useEffect(() => {
+    const prev = previousSelectedForReveal.current;
+    previousSelectedForReveal.current = selectedId;
+    if (prev === null || selectedId !== null) return;
+    const place = allPlaces.find((p) => p.id === prev);
+    if (!place?.position) return;
+    const stillVisible =
+      highlightIds.includes(prev) ||
+      layers.some((l) => l.id === place.layerId && l.visible);
+    if (!stillVisible) return;
+    useMapStore.getState().setFocus(place.position);
+  }, [selectedId, highlightIds, allPlaces, layers]);
   useEffect(() => {
     document.documentElement.dataset.reducedMotion = String(preferences.reducedMotion);
   }, [preferences.reducedMotion]);

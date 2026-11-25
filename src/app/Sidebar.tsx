@@ -203,6 +203,7 @@ function NarrowFilters({ allPlaces }: { allPlaces: Place[] }) {
 
 function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allPlaces: Place[] }) {
   const layers = useMapStore((s) => s.layers);
+  const highlightIds = useMapStore((s) => s.highlightIds);
   const offline = usePersistenceStore((s) => s.offline);
   // Traced county outlines (After Hours geo) and key-painted county art.
   const geo = useAfterHoursGeo();
@@ -310,16 +311,23 @@ function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allP
       <button
         type="button"
         className="button"
-        disabled={!layers.some((l) => l.visible && l.id !== 'my-markers')}
-        onClick={() =>
-          useMapStore
-            .getState()
-            .setLayers(
-              layers.map((l) =>
-                l.id === 'my-markers' ? l : { ...l, visible: false },
-              ),
-            )
+        disabled={
+          !layers.some((l) => l.visible && l.id !== 'my-markers') && highlightIds.length === 0
         }
+        onClick={() => {
+          // The one-tap kill switch (v0.30.0): layers off AND the reveal
+          // cleared. A revealed pin is visible with every layer off, so
+          // turning the layers off alone would leave a pin on screen
+          // after "everything" was turned off — the spoiler promise is
+          // that one tap leaves zero markers. My markers are untouched.
+          const store = useMapStore.getState();
+          store.setLayers(
+            layers.map((l) =>
+              l.id === 'my-markers' ? l : { ...l, visible: false },
+            ),
+          );
+          store.clearHighlights();
+        }}
       >
         Turn everything off
       </button>

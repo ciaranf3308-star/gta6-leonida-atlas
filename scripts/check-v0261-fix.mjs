@@ -212,13 +212,16 @@ await page.waitForTimeout(1500);
 await closePlaceSheet();
 // v0.30.0: a reload resets layers to off (the app offers "Restore
 // my last layers" instead of auto-restoring), and a deep link
-// reveals exactly one place — closing its sheet clears the reveal
-// (highlightIds are reset with the selection) — so "Show everything"
-// from before the reload leaves ZERO markers on screen and the pill
-// check below passes vacuously. Turn every layer on here, after the
-// reload, or the check is meaningless. (Whether the reveal SHOULD
-// survive closing the sheet is a spoiler-lane question — flagged to
-// the lead — not something this probe decides.)
+// reveals exactly one place. Closing its sheet does NOT clear the
+// reveal — the highlight survives (Ask still shows "Clear highlights
+// (1)") and v0.30.0 recenters the place into the visible band, so
+// its pin stays on screen. (An earlier cut of this probe asserted
+// the reveal vanished on sheet close: the pin was in fact hidden by
+// the chrome clamp — the focus had centred it above the sheet, so
+// after the sheet closed it sat under the top chrome at (195, 216).
+// The lead's reveal probe scripts/check-v030-reveal-persist.mjs
+// proves the fix.) Turn every layer on here, after the reload, or
+// the pill check below passes vacuously with one marker.
 await nav('Layers').click();
 await page.waitForTimeout(1500);
 // Turn every layer on. NOTE: this deliberately toggles the

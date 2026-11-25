@@ -155,7 +155,12 @@ const clouds = await page.evaluate(() =>
 check(
   'clouds are five subtle clusters (v0.25 strength, <=0.6 alpha, 5px blur)',
   clouds.length === 5 &&
-    clouds.every((c) => c.w >= 240 && c.w <= 380 && c.h >= 90 && c.h <= 130 && c.filter === 'blur(5px)') &&
+    // ±1px tolerance on the boundaries: the spans' CSS sizes sit
+    // exactly on 240/380/90/130, so a subpixel rect read (380.4,
+    // 239.6) flips an exact comparison while the render is unchanged
+    // — the check failed three runs in a row on the same in-range
+    // values before this was widened (lead, v0.30.0).
+    clouds.every((c) => c.w >= 239 && c.w <= 381 && c.h >= 89 && c.h <= 131 && c.filter === 'blur(5px)') &&
     clouds.every((c) => !/0\.[789]/.test(c.bg) && !/0\.9[0-9]/.test(c.bg)),
   JSON.stringify(clouds.map((c) => `${Math.round(c.w)}x${Math.round(c.h)} ${c.filter}`)),
 );
@@ -307,39 +312,24 @@ check(
 await page2.screenshot({ path: `${OUT}g-deep-link.png` });
 await ctx2.close();
 
-// The ViceWire pyramid (v0.24 v1, v0.25 v2, round 3 v3) still has
-// no ocean rows at z1–z3 until the basemap lane's --fill-ocean step
-// runs for the new pyramid: a tile one row north of the island
-// (tileY=0) 404s and the ocean.jpg errorTileUrl covers it by design
-// ("Missing tiles are ocean the source never drew"). Those 404s are
-// tolerated and counted. v0.25's v2 pyramid had the fill (0
-// tolerated 404s); v3's fill is pending while the basemap lane
-// renders, so a handful of y=0 404s at island fit are expected
-// here. A SECOND tolerated class is new in v0.26: the v3 render is
-// still running while this walk executes (z5 partial, z6 not
-// started), so a deep-link flight to street zoom requests v3 tiles
-// the renderer has not produced yet. A v3 tile 404 is "render
-// pending" — tolerated and counted — when the same tile exists in
-// the complete v2 inventory on disk (the render will produce it; it
-// is a real tile, not a gap). Anything else — a non-tile 404, a z7
-// request, a v3 tile that v2 never drew either outside the ocean
-// rows — is a real failure. The lead re-runs this walk after the v3
-// render completes; the render-pending count must be 0 then.
-const V2_ROOT = new URL(
-  '../public/assets/gta6-leonida-atlas/tiles/vicewire-v2/',
-  import.meta.url,
-).pathname;
+// The graded pyramid (v0.28+) has the y=0 ocean fill (505 tiles),
+// so an ocean-row 404 should never occur — but if one does, it is
+// the by-design "missing tiles are ocean the source never drew" case
+// and is tolerated and counted. The vicewire-v1/v2/v3 pyramids were
+// removed in v0.28; the matchers below read the live graded path.
+// A tile load cancelled mid-flight aborts instead of 404ing — the
+// camera flies away before it arrives, so the load is no longer
+// needed. ERR_ABORTED on a tile URL is the fly cancelling, not a
+// failure; the tile re-requests if the camera comes back.
 const isOceanRow404 = (r) =>
-  /\/tiles\/vicewire-v\d+\/\d+\/\d+,0,\d+\.jpg 404/.test(r);
+  /\/tiles\/graded\/\d+\/\d+,0,\d+\.jpg 404/.test(r);
 const isAbortedTile = (r) =>
-  /\/tiles\/vicewire-v\d+\//.test(r) && /ERR_ABORTED/.test(r);
-const isRenderPending404 = (r) => {
-  const m = r.match(/\/tiles\/vicewire-v3\/(.+?\.jpg) 404/);
-  if (!m) return false;
-  // The same tile in the complete v2 pyramid: the renderer will
-  // produce it, it just has not yet.
-  return existsSync(join(V2_ROOT, m[1]));
-};
+  /\/tiles\/graded\//.test(r) && /ERR_ABORTED/.test(r);
+// Render-pending was a v0.26 vicewire-v3 concept (the v3 render was
+// still running while the walk executed). The graded pyramid is
+// complete, so this matcher can never fire; kept for the failure
+// classification below.
+const isRenderPending404 = () => false;
 const vicewire404s = failedRequests.filter(isOceanRow404);
 const renderPending404s = failedRequests.filter(
   (r) => !isOceanRow404(r) && isRenderPending404(r),
@@ -357,7 +347,7 @@ check(
   otherFailures.length === 0,
   otherFailures.slice(0, 3).join(' | '),
 );
-console.log(`tolerated vicewire ocean-row 404s: ${vicewire404s.length}`);
+console.log(`tolerated graded ocean-row 404s: ${vicewire404s.length}`);
 console.log(`tolerated render-pending v3 tiles: ${renderPending404s.length}`);
 console.log(`tolerated fly-cancelled tile loads: ${abortedTiles.length}`);
 const tile404ConsoleErrors = consoleErrors.filter((e) => /404/.test(e));
