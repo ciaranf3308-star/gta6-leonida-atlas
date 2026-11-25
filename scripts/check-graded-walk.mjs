@@ -94,9 +94,9 @@ const clickZoom = async (target, name) => {
   if (await btn.isDisabled()) return false;
   try {
     await btn.click({ timeout: 5000 });
-  } catch {
+  } catch (error) {
     if (await btn.isDisabled()) return false;
-    throw;
+    throw error;
   }
   return true;
 };
