@@ -60,7 +60,12 @@ const page = await context.newPage();
 await page.goto(base, { waitUntil: 'networkidle' });
 await page.waitForSelector('.welcome-counts', { timeout: 20000 });
 await page.waitForTimeout(1200);
-const countsText = (await page.locator('.welcome-counts').textContent()) ?? '';
+// The jam is VISUAL: with display:block the count sits on its own
+// line under the name. textContent() concatenates the two with no
+// whitespace regardless of layout, so it can never see the fix —
+// measure what the user sees with innerText(), which is
+// layout-aware and puts block boxes on separate lines.
+const countsText = (await page.locator('.welcome-counts').innerText()) ?? '';
 console.log('counts text:', JSON.stringify(countsText.replace(/\s+/g, ' ').slice(0, 300)));
 // The jam: a letter immediately followed by digits then " on the
 // map", e.g. "Named regions6 on the map" / "Community places646".

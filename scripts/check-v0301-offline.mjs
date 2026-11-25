@@ -95,10 +95,10 @@ check(
   await page.waitForSelector('.leaflet-tile-loaded[src*="tiles/"]', { timeout: 20000 });
   await skipAndClose(page);
   await page.waitForTimeout(8000);
-  const chunkCached = await page.evaluate(async (cacheName, chunk) => {
+  const chunkCached = await page.evaluate(async ({ cacheName, chunk }) => {
     const cache = await caches.open(cacheName);
     return Boolean(await cache.match(chunk));
-  }, CACHE, CHUNK);
+  }, { cacheName: CACHE, chunk: CHUNK });
   console.log(`(a1) after one warm visit: 3D chunk cached = ${chunkCached}`);
   check('(a1) 3D chunk is cached after ONE warm visit', chunkCached);
   await context.setOffline(true);
