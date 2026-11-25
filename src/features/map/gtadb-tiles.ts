@@ -101,10 +101,10 @@ export const GTADB_ILLUSTRATED_MAX_ZOOM = 3 as const;
  *
  * CACHE RULE (same as enhanced): a re-render must change the tile path
  * AND the revision below AND the service-worker cache
- * (finalize-build.mjs folds vicewire-v1 into its fingerprint).
+ * (finalize-build.mjs folds vicewire-v2 into its fingerprint).
  */
-export const GTADB_VICEWIRE_TILE_REVISION = "vicewire-v1" as const;
-export const GTADB_VICEWIRE_TILE_DIR = "vicewire-v1" as const;
+export const GTADB_VICEWIRE_TILE_REVISION = "vicewire-v2" as const;
+export const GTADB_VICEWIRE_TILE_DIR = "vicewire-v2" as const;
 export const GTADB_DAY_TILE_ZOOM_OFFSET = 5 as const;
 export const GTADB_DAY_TILE_MIN_ZOOM = 0 as const;
 export const GTADB_DAY_TILE_MAX_ZOOM = 6 as const;
@@ -163,12 +163,17 @@ export function gtadbTileFileName(tile: GtadbTileRef): string {
 }
 
 /** Same-origin tile URL for a Leaflet tile request.
- * ViceWire (overhaul, 2026-11-25): serves the vicewire-v1 pyramid
- * (tiles/vicewire-v1/) at ALL tile zooms 0-6 — one geometry-driven
- * render, one style, no z3 -> z4 switch. The illustrated (z0-3) and
- * enhanced (z4-6) pyramids are the previous generation and are no
- * longer served. Pin coordinates are unchanged: the render is a
- * restyle of the real in-game map, geography locked 1:1, so a pin
+ * ViceWire v2 (round 2, 2026-11-25): serves the vicewire-v2 pyramid
+ * (tiles/vicewire-v2/) at ALL tile zooms 0-6 — one geometry-driven
+ * render, one style, no z3 -> z4 switch. v2 fixes the v0.24 review's
+ * basemap items: the Ambrosia road checkerboard (flat road bed over
+ * the classification-gap corridor), one water family (global sea mask
+ * splits sea from inland water), shaded city blocks (building seams
+ * from the source's own luminance gradient), and the missing y=0
+ * ocean rows at z1-3 (filled, verified pure ocean). The illustrated
+ * (z0-3) and enhanced (z4-6) pyramids are the previous generation and
+ * are no longer served. Pin coordinates are unchanged: the render is
+ * a restyle of the real in-game map, geography locked 1:1, so a pin
  * lands on the same geographic spot at every zoom. */
 export function gtadbTileUrl(
   base: string,

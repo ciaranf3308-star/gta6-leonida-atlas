@@ -2,6 +2,18 @@
 
 Release history, newest first.
 
+## v0.25.0 — 2026-11-25
+
+**Released: The road stops glitching: one water, shaded blocks, no missing rows.**
+
+- The Ambrosia checkerboard (review P1), diagnosed not guessed: the road surface in the source is pale blue-grey with spread 20-30 — too blue for the building bucket (spread ≤ 18) and too dark for the light mask — so the corridor was a hole in the building density, cityness dipped, and the land base fell back to bare-terrain green between the pale yellow lane lines, while the thin strokes flipped colour along a single line. Fixed three ways: a flat road-bed wash covers the corridor (pale ROCK-ground pixels near a skeleton line, plus the yellow lane-line mask outright), the corridor is cut out of the building mask so a road is never a roof, and the strokes are coloured by fbrito kind only — the width-ratio split that flipped CORAL/CREAM along one line is gone. The highway now reads as one continuous grey road with clean orange and cream lines.
+- One water family: a global sea mask (largest water component on the z2 grid — 11.19M px; the next largest, Lake Leonida, is 20k) splits sea from inland water. Lakes, rivers and ponds get calm mid teal with a subtle shore lightening and no foam — never the bright cyan swimming pools with a hard pale rim. The sea falloff is now a continuous exponential in canonical units, and the shore-distance field is gaussian-smoothed at load, so the Keys' vertical tonal step (the v0.24 depth-band edge) is gone by construction. Lake Leonida is a calm teal oval at island scale, not a flat dark hole.
+- City blocks, shaded from what the source pixels actually carry: the source draws rooftops as flat blocks with slightly darker outlines and internal divisions (measured on tile 6,114,139 — luminance gradient p99 25, clean outlines, not noise), so the renderer now darkens the strong-gradient pixels inside the building mask as a subtle seam, plus a 3px bevel on small (rooftop) components and a per-component roof tone. Street zoom reads as distinct building footprints instead of one flat grey mass. No geometry is invented: every edge and tone sits inside an existing footprint. Road names are still absent — fbrito's roads.json carries 0 named features, so there is no verified source for labels this round.
+- The missing y=0 ocean rows at z1-3 are filled: 505 ocean tiles, each verified pure ocean against the z2 water mask before it is rendered (0 skipped — none contained any land), so the island fit view loads real tiles and the ocean.jpg fallback never fires there. The fill renders through the same pipeline from a synthetic pure-sea source, so its depth bands and clouds match the neighbouring real tiles. z4-6 are not filled — the service-worker ocean fallback still covers water the user almost never pans to.
+- Kept: the P0 max-zoom-on-land clamp and retina scaling (VC 30/30 distinct z6, Ambrosia 24/24), one style family z0-z6, hills relief, no pink ribbons, no seams, no Keys slab. Low-zoom streets and minors are now CREAM, not CORAL — the z2 city grid read as a pink mesh — and the city ground at island scale is warmer. Cache rule: finalize-build.mjs now fingerprints tiles/vicewire-v2/ (v1 stays on disk, unfingerprinted, unserved), and the service-worker cache name moves from atlas-b40404d5-687cb473d7ab to atlas-b40404d5-729e3b8b6ae4.
+- Verified: 31,022 tiles + 505 fill, 0 errors, 451.1 MB; --check counts all OK, determinism OK. 390px basemap walk 15/15 at DPR 2, fresh + cached (island fit 0 ocean-fallback, 4 real z1 y=0 fill tiles; VC 30/30 distinct z6; Ambrosia 24/24; 0 z7, 0 failed, 0 console errors). 796 unit tests, typecheck clean, lint 0 errors. Honest sandbox grade 7/10 vs the reference — the P1 glitch, the two waters and the missing rows are fixed, and the blocks have visible footprints, but street zoom still has no true 3D relief or road names, the island-scale city slabs are warmer yet still pale flat masses, and the highway strokes read dashed rather than continuous. User verdict is the final mark.
+- Kept: ViceWire categories, place card, your tags, spoiler-free defaults, 48px targets, Ask spoiler rule, backup v3.
+
 ## v0.24.0 — 2026-11-25
 
 **Released: One map, every zoom — the ViceWire basemap plus the rebuilt app chrome.**
@@ -11,6 +23,15 @@ Release history, newest first.
 - App chrome (v0.23.0): slim empty prompt, CSS clouds, island fits the visible band, all five chips fit, "?" pins small and labelless with dark badges, place card rebuilt with a map crop that actually renders, county line, description, Set Route / View Area / Add to List, sheet capped at 72dvh, Layers badge is a dot.
 - Attribution: roads credit added (Open GTA 6 Map, fbritoferreira, CC BY 4.0). Elevation grid is leak-derived — used for hill-shading gradients only, never vendored, never presented as cleanly sourced.
 - Verified: 787 unit tests, 390px walks 45/45 (app) and 15/15 (basemap) at DPR 2, fresh + cached. Honest sandbox grade 7/10 vs the reference — street-zoom city blocks are still flat muted masses, no vector coastline/label crispness or 3D relief yet. User verdict is the final mark.
+- Kept: ViceWire categories, place card, your tags, spoiler-free defaults, 48px targets, Ask spoiler rule, backup v3.
+
+## v0.23.0 — 2026-11-25
+
+**Released: The app chrome, rebuilt — the map finally fills the screen.**
+
+- The independent baseline review's seven app items, fixed in one pass and walked before hand-back: the empty prompt slimmed (~120px, was ~25% of the screen), CSS clouds over the sea, the island fitted to the visible band, all five filter chips fitting in two rows, the "?" pins made small and labelless with dark badges, the place card rebuilt around a real map crop (the old crop rendered 0px tall), and the sheet capped at 72dvh. Layers tab badge is a dot, not a number.
+- v0.23.0 was committed as the app lane and shipped folded into v0.24.0 — it was never deployed on its own.
+- Verified: 390px walk (scripts/check-v023-app.mjs) 45/45 at DPR 2. Honest sandbox grade 7/10 vs the reference. User verdict is the final mark.
 - Kept: ViceWire categories, place card, your tags, spoiler-free defaults, 48px targets, Ask spoiler rule, backup v3.
 
 ## v0.22.0 — 2026-11-25

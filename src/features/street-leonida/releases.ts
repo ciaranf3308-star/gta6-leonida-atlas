@@ -11,6 +11,63 @@ export interface LeonidaAtlasRelease {
 /** Retained public history starts at v0.5.0; the newest release stays first. */
 export const LEONIDA_ATLAS_RELEASES: readonly LeonidaAtlasRelease[] = [
   {
+    version: "v0.25.0",
+    date: "2026-11-25",
+    title: "The road stops glitching: one water, shaded blocks, no missing rows",
+    summary:
+      "The independent re-review of v0.24.0 rated it 6/10 and named the P1 first: the Ambrosia highway read as a yellow-green checkerboard glitch at max zoom. v0.25 fixes that and the rest of the review's basemap items in the same pass — a flat road bed under the strokes, one deep-teal water family for sea and lakes alike, building seams shaded from the source's own pixels so street zoom reads as built-up, and real ocean tiles for the y=0 rows the pyramid never drew. New tiles live at tiles/vicewire-v2/; the service-worker cache name moves with them, so no phone can serve the old glitch.",
+    status: "public",
+    highlights: [
+      "The Ambrosia checkerboard, diagnosed not guessed: the road surface in the source is pale blue-grey with spread 20-30 — too blue for the building bucket (spread <= 18) and too dark for the light mask — so the corridor was a hole in the building density, cityness dipped, and the land base fell back to bare-terrain green between the pale yellow lane lines, while the thin strokes flipped colour along a single line. Fixed three ways: a flat road-bed wash covers the corridor (pale ROCK-ground pixels near a skeleton line, plus the yellow lane-line mask outright), the corridor is cut out of the building mask so a road is never a roof, and the strokes are coloured by fbrito kind only — the width-ratio split that flipped CORAL/CREAM along one line is gone. The highway now reads as one continuous grey road with clean orange and cream lines.",
+      "One water family: a global sea mask (the largest water component on the z2 grid — 11.19M px; the next largest, Lake Leonida, is 20k) splits sea from inland water. Lakes, rivers and ponds get calm mid teal with a subtle shore lightening and no foam — never the bright cyan swimming pools with a hard pale rim. The sea falloff is now a continuous exponential in canonical units, and the shore-distance field is gaussian-smoothed at load, so the Keys' vertical tonal step (the v0.24 depth-band edge) is gone by construction. Lake Leonida is a calm teal oval at island scale, not a flat dark hole.",
+      "City blocks, shaded from what the source pixels actually carry: the source draws rooftops as flat blocks with slightly darker outlines and internal divisions (measured on tile 6,114,139 — luminance gradient p99 25, clean outlines, not noise), so the renderer now darkens the strong-gradient pixels inside the building mask as a subtle seam, plus a 3px bevel on small (rooftop) components and a per-component roof tone. Street zoom reads as distinct building footprints instead of one flat grey mass. No geometry is invented: every edge and tone sits inside an existing footprint. Road names are still absent — fbrito's roads.json carries 0 named features, so there is no verified source for labels this round.",
+      "The missing y=0 ocean rows at z1-3 are filled: 505 ocean tiles, each verified pure ocean against the z2 water mask before it is rendered (0 skipped — none contained any land), so the island fit view loads real tiles and the ocean.jpg fallback never fires there. The fill renders through the same pipeline from a synthetic pure-sea source, so its depth bands and clouds match the neighbouring real tiles. z4-6 are not filled — the service-worker ocean fallback still covers water the user almost never pans to.",
+      "Kept: the P0 max-zoom-on-land clamp and retina scaling (VC 30/30 distinct z6, Ambrosia 24/24), one style family z0-z6, hills relief, no pink ribbons, no seams, no Keys slab. Low-zoom streets and minors are now CREAM, not CORAL — the z2 city grid read as a pink mesh — and the city ground at island scale is warmer. Cache rule: finalize-build.mjs now fingerprints tiles/vicewire-v2/ (v1 stays on disk, unfingerprinted, unserved), and the service-worker cache name moves from atlas-b40404d5-687cb473d7ab to atlas-b40404d5-729e3b8b6ae4.",
+    ],
+    verification: [
+      "Render: 31,022 tiles (z0 12, z1 30, z2 99, z3 374, z4 1,496, z5 5,829, z6 23,182) plus 505 fill-ocean tiles, 0 errors, 451.1 MB. scripts/render-vicewire.py --check: every zoom matches its expected count (z1 48, z2 192, z3 768 with the fill rows) and the determinism check passes. Preview eye-checked before the full run: the Ambrosia highway tile (6,97,107) went from 34,418 green pixels to 20,155 — the remainder is real grass and fields in the source, not the corridor.",
+      "390px basemap walk (scripts/check-vicewire-walk.mjs), DPR 2, fresh + cached: 15/15 PASS. Island fit view loads 28 tiles with 0 ocean-fallback tiles and 4 real z1 y=0 fill tiles requested; Vice City max zoom 30/30 distinct z6, centre-tile stddev 44.7; Ambrosia max zoom 24/24 distinct z6, centre-tile stddev 45.1, 0 ocean-fallback; cached reload 28 tiles; 0 tile-zoom-7 requests, 0 failed tile requests, 0 console errors, 0 horizontal overflow. Screenshots in hidden_files/v024-walk-basemap/.",
+      "Unit: 796 tests pass (vitest run, 2026-11-25 05:14 UTC — the run under the tile render showed 7 failures, all spawn timeouts from CPU contention; on a quiet machine it is 796/796). Typecheck clean, lint 0 errors (one pre-existing unused-import warning). Production build as one command (ATLAS_BASE_PATH=/gta6-leonida-atlas/ vite build && node scripts/finalize-build.mjs), bundle index-BLJ2CsXT.js.",
+      "Honest grade, basemap lane (sandbox, not the user's verdict): 7/10 vs the reference — the P1 glitch, the two waters and the missing rows are fixed, and the blocks have visible footprints, but street zoom still has no true 3D relief or road names, the island-scale city slabs are warmer yet still pale flat masses, and the highway strokes read dashed rather than continuous. The user's on-device verdict is the final mark.",
+    ],
+  },
+  {
+    version: "v0.24.0",
+    date: "2026-11-25",
+    title: "One map, every zoom — the ViceWire basemap plus the rebuilt app chrome",
+    summary:
+      "The overhaul's first converged build: one geometry-driven tile pyramid (tiles/vicewire-v1/, z0-z6) replaces the illustrated (z0-3) + enhanced (z4-6) split, so the z3 to z4 style cliff is gone by construction, and the v0.23.0 app chrome rides on top of it. The deepest-zoom empty-ocean P0 is fixed by clamping to tile zoom 6 and fixing the retina scaling. Independent re-review of the live build rated it 6/10, up from 4/10 — and named the next round: the Ambrosia road texture, the two waters, flat city blocks, the missing y=0 rows.",
+    status: "public",
+    highlights: [
+      "One geometry-driven tile pyramid, tiles/vicewire-v1/, z0-z6, replaces the illustrated (z0-3) + enhanced (z4-6) split, so the z3 to z4 style cliff is gone by construction. Rendered from OUR day tiles (surfaces classified per tile), fbritoferreira 'Open GTA 6 Map' CC BY 4.0 vectors for roads at low zoom, our own road skeleton at street zoom, hill-shading from the GTADB elevation grid, goal palette. 31,022 tiles, 0 errors.",
+      "P0 fixed: deepest zoom on a DPR >= 2 phone used to render empty ocean (tile zoom 7 requested, 404, service worker answered ocean.jpg). Clamped to tile zoom 6 and fixed the retina scaling so z6 tiles paint 1:1, not 2x2. The walk now zooms to max on land (Vice City and Ambrosia) and asserts real land tiles load.",
+      "App chrome (v0.23.0): slim empty prompt, CSS clouds, island fits the visible band, all five chips fit, '?' pins small and labelless with dark badges, place card rebuilt with a map crop that actually renders, county line, description, Set Route / View Area / Add to List, sheet capped at 72dvh, Layers badge is a dot.",
+      "Attribution: roads credit added (Open GTA 6 Map, fbritoferreira, CC BY 4.0). Elevation grid is leak-derived — used for hill-shading gradients only, never vendored, never presented as cleanly sourced.",
+      "Kept: ViceWire categories, place card, your tags, spoiler-free defaults, 48px targets, Ask spoiler rule, backup v3.",
+    ],
+    verification: [
+      "Unit: 787 tests pass. 390px walks 45/45 (app) and 15/15 (basemap) at DPR 2, fresh + cached. Honest sandbox grade 7/10 vs the reference — street-zoom city blocks are still flat muted masses, no vector coastline/label crispness or 3D relief yet. User verdict is the final mark.",
+      "Independent re-review of the live v0.24.0 build (hidden_files/review-v024/REVIEW.md): 6/10, up from the 4/10 baseline. P0 fixed (deepest zoom is real land: VC 30/30 distinct z6, Ambrosia 24/24, downtown VC 24/24, 0 z7 requests, 0 failed tile requests, 0 console errors); z3 to z4 cliff gone by construction. Remaining, biggest first: the Ambrosia road texture reads as a glitch at max zoom; street-zoom city still flat with no building footprints; water is two different waters (sea deep teal, lakes bright cyan with a hard pale rim); Lake Leonida a flat dark hole at island scale; a visible vertical tonal step in the sea around the Keys; pins/labels still slide under the chrome; clouds barely there; missing y=0 tile rows at z1-3. Alignment holds — coastline, lake, Keys airport and Vice City bay coincide, pins land correctly, no invented places or moved geography.",
+    ],
+  },
+  {
+    version: "v0.23.0",
+    date: "2026-11-25",
+    title: "The app chrome, rebuilt — the map finally fills the screen",
+    summary:
+      "The independent baseline review's seven app items, fixed in one pass and walked before hand-back: the empty prompt slimmed, clouds added, the island fitted to the visible band, all five chips fitting, the '?' pins made small and labelless, the place card rebuilt around a real map crop, and the sheet capped. v0.23.0 was committed as the app lane and shipped folded into v0.24.0 — it was never deployed on its own.",
+    status: "public",
+    highlights: [
+      "Slim empty prompt (~120px, was ~25% of the screen), CSS clouds over the sea, and the island fitted to the visible band so Leonida fills the map instead of sitting small in it.",
+      "All five filter chips fit in two rows (Collectibles no longer cut off), '?' pins are small and labelless with dark count badges, and the Layers tab badge is a dot, not a number.",
+      "Place card rebuilt: a rendering map crop that actually renders (the old crop was 0px tall), county line, description, Set Route / View Area / Add to List, and the raw file input hidden. The sheet is capped at 72dvh.",
+      "Kept: ViceWire categories, place card, your tags, spoiler-free defaults, 48px targets, Ask spoiler rule, backup v3.",
+    ],
+    verification: [
+      "390px walk (scripts/check-v023-app.mjs), DPR 2: 45/45 PASSED. Honest sandbox grade 7/10 vs the reference. Two latent bugs fixed pre-ship: the card crop rendering 0px tall, and a badge-dot accessibility regression (now aria-hidden). The walk caught both before hand-back. User verdict is the final mark.",
+    ],
+  },
+  {
     version: "v0.22.0",
     date: "2026-11-25",
     title:

@@ -323,11 +323,11 @@ describe("generated service worker privacy and availability", () => {
     expect(afterCache).not.toBe(beforeCache);
   }, 60_000);
 
-  it("changes the cache when only vicewire-v1 tile bytes change", async () => {
+  it("changes the cache when only vicewire-v2 tile bytes change", async () => {
     const directory = await fixture();
     const tile = join(
       directory,
-      "dist/assets/gta6-leonida-atlas/tiles/vicewire-v1/5/5,57,69.jpg",
+      "dist/assets/gta6-leonida-atlas/tiles/vicewire-v2/5/5,57,69.jpg",
     );
     await mkdir(dirname(tile), { recursive: true });
     await writeFile(tile, "tile-bytes-v1");

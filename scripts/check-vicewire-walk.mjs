@@ -1,13 +1,16 @@
 /* global document, innerWidth, innerHeight */
 /* ^ browser globals, only used inside page.evaluate() callbacks. */
-/* ViceWire basemap walk (overhaul, 2026-11-25): 390px, DPR 2, fresh AND
-   cached loads. Proves the new vicewire-v1 pyramid at every zoom and
+/* ViceWire basemap walk (round 2, 2026-11-25): 390px, DPR 2, fresh AND
+   cached loads. Proves the new vicewire-v2 pyramid at every zoom and
    the P0 fix (deepest zoom on land must show land tiles, never the
-   ocean fallback). Run AFTER the production build:
+   ocean fallback), plus the v2 review items: the Ambrosia highway
+   must read as a clean road (eye-check 04), the y=0 ocean rows at
+   z1-3 must be real tiles (no ocean.jpg fallback on the fit view).
+   Run AFTER the production build:
      ATLAS_BASE_PATH=/gta6-leonida-atlas/ npm run build
      ATLAS_BASE_PATH=/gta6-leonida-atlas/ npm run start   (port 4330)
      node scripts/check-vicewire-walk.mjs
-   Screenshots land in hidden_files/v023-walk-basemap/ (goal workspace).
+   Screenshots land in hidden_files/v024-walk-basemap/ (goal workspace).
    Exit 1 on any failed assertion. */
 import { chromium } from 'playwright';
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -17,7 +20,7 @@ import { homedir } from 'node:os';
 const base = 'http://127.0.0.1:4330/gta6-leonida-atlas/';
 const outDir = join(
   homedir(),
-  'workspace/goals/gta-6-leonida-map-spoiler-free-pwa/hidden_files/v023-walk-basemap',
+  'workspace/goals/gta-6-leonida-map-spoiler-free-pwa/hidden_files/v024-walk-basemap',
 );
 mkdirSync(outDir, { recursive: true });
 
@@ -78,7 +81,7 @@ const closePlaceSheet = async () => {
   }
 };
 const loadedTiles = (zoom) =>
-  page.locator(`.leaflet-tile-loaded[src*="tiles/vicewire-v1/${zoom}/"]`);
+  page.locator(`.leaflet-tile-loaded[src*="tiles/vicewire-v2/${zoom}/"]`);
 const zoomInToMax = async () => {
   for (let i = 0; i < 16; i++) {
     const btn = page.getByRole('button', { name: 'Zoom in' });
@@ -102,7 +105,7 @@ const z6Stats = async () =>
   page.evaluate(() => {
     const srcs = [...document.querySelectorAll('.leaflet-tile-loaded')]
       .map((img) => img.getAttribute('src'))
-      .filter((s) => s && s.includes('vicewire-v1/6/'));
+      .filter((s) => s && s.includes('vicewire-v2/6/'));
     return { total: srcs.length, distinct: new Set(srcs).size };
   });
 // fallback (ocean.jpg) is flat teal, variance ~0. Draws the loaded tile
@@ -146,6 +149,13 @@ await page.waitForTimeout(1500);
 const islandTiles = await page.locator('.leaflet-tile-loaded').count();
 console.log('island tiles loaded:', islandTiles);
 check(islandTiles > 0, 'island fit view loads tiles');
+// v2: the fill-ocean rows — the fit view must load real y=0 tiles at
+// z1 (the review's missing rows) and must NOT fall back to ocean.jpg
+// anywhere on the island view.
+const oceanFit = await page.locator('.leaflet-tile-loaded[src*="tiles/ocean.jpg"]').count();
+check(oceanFit === 0, `island fit view shows no ocean-fallback tiles — saw ${oceanFit}`);
+const y0Tiles = [...tileUrls].filter((u) => /\/vicewire-v2\/1\/1,0,/.test(u));
+check(y0Tiles.length > 0, `island fit view requests real z1 y=0 fill tiles — saw ${y0Tiles.length}`);
 await page.screenshot({ path: join(outDir, '01-island.png') });
 
 // 2. Vice City district (zoom out from the place-open view).
@@ -237,7 +247,8 @@ if (errors.length) console.log(errors.slice(0, 10).join('\n'));
 const overflow = await page.locator('html').evaluate((el) => el.scrollWidth - el.clientWidth);
 check(overflow === 0, `no horizontal overflow (${overflow}px)`);
 writeFileSync(join(outDir, 'walk-result.json'), JSON.stringify({
-  islandTiles, z6vc, z6vcDistinct: z6vcStats.distinct, stddevVc,
+  islandTiles, oceanFit, y0TilesRequested: y0Tiles.length,
+  z6vc, z6vcDistinct: z6vcStats.distinct, stddevVc,
   z6amb, z6ambDistinct: z6ambStats.distinct, stddevAmb, oceanTiles, cachedTiles,
   tileUrlsSeen: tileUrls.size, z7Requests: z7.length,
   failedTileRequests: tileFailures.length, consoleErrors: errors.length,

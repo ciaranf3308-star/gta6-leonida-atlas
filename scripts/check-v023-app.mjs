@@ -1,3 +1,5 @@
+/* global document, getComputedStyle */
+/* ^ browser globals, only used inside page.evaluate() callbacks. */
 // v0.23.0 app-chrome + independent-review walk (390px, DPR 2).
 // Covers the review items against v0.22.0: slim empty prompt,
 // all five chips fit, edge stack + zoom pill, clouds + tighter fit,

@@ -54,8 +54,27 @@ APPROACH — geometry-driven render (not a grade, not a generation):
     z3 -> z4 pop is gone by construction. Output is 512px tiles
     (v0.20's sharpness proof: 2x display density, 1:1 device pixels
     at DPR 2, crisp at DPR 3) under a FRESH versioned path
-    (tiles/vicewire-v1/) — never reuse a tile path; the v0.20 stale
-    tiles cost a whole pass.
+    (tiles/vicewire-v2/ in v0.25; v1 was vicewire-v1/) — never reuse
+    a tile path; the v0.20 stale tiles cost a whole pass.
+
+v0.25 (review of live v0.24.0, 6/10): (1) the Ambrosia road
+checkerboard — the road corridor was bare-terrain green (low
+building density => low cityness => ROCK) with the source's pale
+lane lines showing between thin strokes, and the 1px edge shading
+fired on every JPEG-noise edge of the giant paved-ground component.
+Fixed with a flat road bed under the strokes, the corridor cut out
+of the building mask, edge shading only on small (rooftop)
+components as a 3px bevel, per-component roof tones, and kind-only
+stroke colours (the width-ratio split flipped CORAL/CREAM along a
+single line). (2) One water family: a global sea mask (largest
+water component on the z2 grid) splits sea from inland water —
+lakes/rivers/ponds get calm mid teal with a subtle shore
+lightening, no foam, no bright cyan. (3) The sea falloff is now a
+continuous exponential in canonical units (no band edges), and the
+shore-distance field is gaussian-smoothed at load (the uint8
+quantisation steps were the Keys tonal step). (4) The missing
+y=0 ocean rows at z1-3 are filled (--fill-ocean), verified pure
+ocean against the z2 water mask.
 
 PALETTE (goal-matched, After Hours family):
   sea abyss #053A4C -> deep teal -> bright cyan shallows; rich deep
@@ -82,7 +101,7 @@ from scipy import ndimage as ndi
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "tiles-source/day")
-DST = os.path.join(ROOT, "public/assets/gta6-leonida-atlas/tiles/vicewire-v1")
+DST = os.path.join(ROOT, "public/assets/gta6-leonida-atlas/tiles/vicewire-v2")
 QUALITY = 92
 OUT = 512  # 2x display density; source is 256px, classes read nearest
 
@@ -107,13 +126,21 @@ SAND_FLAT = np.array([238.0, 216.0, 170.0])  # gold sand
 GREEN_FLAT = np.array([74.0, 140.0, 88.0])    # rich green land
 FOREST_FLAT = np.array([52.0, 118.0, 70.0])    # deep forest green
 URBAN_FLAT = np.array([198.0, 192.0, 178.0])   # warm-grey city ground
-URBAN_LOW = np.array([178.0, 176.0, 170.0])    # cooler city ground, island view
+URBAN_LOW = np.array([186.0, 178.0, 164.0])    # warmer city ground, island view (v0.25: was cool grey 178,176,170 — the pale slabs)
 ROCK_FLAT = np.array([110.0, 145.0, 100.0])   # muted mid-green bare terrain
 BLOCK_TONE = np.array([172.0, 166.0, 150.0])  # muted roof tone, one shade
 SEA_SHORE = np.array([46.0, 178.0, 198.0])   # bright cyan shallows
 SEA_MID = np.array([14.0, 102.0, 130.0])
 SEA_DEEP = np.array([8.0, 76.0, 100.0])
 SEA_ABYSS = np.array([5.0, 58.0, 76.0])      # #053A4C
+INLAND = np.array([11.0, 96.0, 122.0])       # calm inland water: mid teal,
+# between SEA_MID and SEA_DEEP — never the bright cyan the sea wears
+# at the shore, and never the flat dark hole the lake was at island
+# scale. (v0.25: rivers/lakes/ponds are NOT sea.)
+ROAD_BED = np.array([176.0, 174.0, 162.0])   # flat paved road surface —
+# one continuous grey under the strokes, so the source's pale lane
+# lines and the mottled ground under them can never show through as
+# stripes. (v0.25: the Ambrosia checkerboard.)
 
 # --- fbrito vector roads/rails (vendored, CC BY 4.0) ---
 FBRITO_DIR = os.path.join(ROOT, "scripts/vendor/fbrito")
@@ -359,21 +386,124 @@ def _surface_mask(zoom, tile_y, tile_x, layer):
     return np.zeros((256, 256), dtype=np.float32)
 
 
-def _sea_from_distance(dist_px, zoom, px_scale=2.0):
-    """Sea RGB from distance-to-land in output px (same band logic as
-    v0.20, ViceWire palette: brighter, wider shallows band)."""
-    h, w = dist_px.shape
-    zscale = 2.0 ** (zoom - 5)
-    shore_hi = max(1.5, 14.0 * zscale) * px_scale
-    mid_hi = max(5.0, 36.0 * zscale) * px_scale
-    sea = np.tile(SEA_ABYSS, (h, w, 1)).astype(np.float32)
-    band_mid = _smoothstep(dist_px, mid_hi, mid_hi * 0.35)
-    band_shore = _smoothstep(dist_px, shore_hi, shore_hi * 0.3)
-    _paint(sea, band_mid, SEA_MID)
-    _paint(sea, band_shore, SEA_SHORE)
-    far = _smoothstep(dist_px, mid_hi * 2.0, mid_hi * 4.0)
-    _paint(sea, far * 0.5, SEA_DEEP)
+_sea_mask_cache = None
+SEA_MASK_PATH = os.path.join(ROOT, "scripts/sea-mask-z2.png")
+
+
+_z2w_cache = None
+
+
+def _z2_water():
+    """Water bool array on the z2 grid (3072x4096, 1 px = 8 units),
+    same construction as build-shore-distance.py: z2 day tiles,
+    missing slots are open ocean by construction."""
+    global _z2w_cache
+    if _z2w_cache is not None:
+        return _z2w_cache
+    W, H = 3072, 4096
+    water = np.ones((H, W), dtype=bool)
+    for ty in range(16):
+        for tx in range(12):
+            p = os.path.join(SRC, "2", f"2,{ty},{tx}.jpg")
+            if not os.path.exists(p):
+                continue  # missing slot: open ocean by construction
+            a = np.asarray(Image.open(p).convert("RGB")).astype(np.float32)
+            r, g, b = a[..., 0], a[..., 1], a[..., 2]
+            w = ((b - r) > 35) & ((b - g) > 5)
+            water[ty * 256:(ty + 1) * 256, tx * 256:(tx + 1) * 256] = w
+    _z2w_cache = water
+    return water
+
+
+def _build_sea_mask():
+    """Global sea mask on the z2 grid (3072x4096, 1 px = 8 units), same
+    grid as shore-distance.png: water mask from the z2 day tiles, label
+    the components, the largest one is the ocean. Everything else that
+    is water — Lake Leonida, rivers, ponds — is INLAND water and gets
+    the calm treatment, never the sea's depth bands or foam. (v0.25:
+    the review's 'two different waters' — bright cyan swimming-pool
+    lakes with a hard pale rim.) Saved to scripts/sea-mask-z2.png so
+    the render does not re-label 12.5M px per worker."""
+    if os.path.exists(SEA_MASK_PATH):
+        return np.asarray(Image.open(SEA_MASK_PATH).convert("L")) > 0
+    print("building sea mask from z2 day tiles ...", flush=True)
+    water = _z2_water()
+    lab, n = ndi.label(water, structure=np.ones((3, 3), dtype=int))
+    sizes = ndi.sum_labels(np.ones_like(lab), lab, range(1, n + 1))
+    sea_id = int(np.argmax(sizes)) + 1
+    print(f"sea mask: {n} water components, sea is #{sea_id} "
+          f"({sizes[sea_id - 1]:.0f} px, next largest {sorted(sizes)[-2]:.0f})",
+          flush=True)
+    sea = lab == sea_id
+    Image.fromarray((sea.astype(np.uint8) * 255), mode="L").save(SEA_MASK_PATH)
+    print(f"saved {SEA_MASK_PATH}", flush=True)
     return sea
+
+
+def _sea_mask():
+    global _sea_mask_cache
+    if _sea_mask_cache is None:
+        _sea_mask_cache = _build_sea_mask()
+    return _sea_mask_cache
+
+
+def _sample_sea_mask(zoom, tile_y, tile_x):
+    """512x512 bool: is this output pixel part of the OCEAN (the global
+    sea component), sampled NEAREST from the z2 mask. 1 z2 px = 8 units;
+    the boundary is good to ~8 units — fine for deciding sea vs inland,
+    where the two treatments differ subtly at the shore."""
+    sea = _sea_mask()
+    step = 2.0 ** (4 - zoom)  # canonical units per 512-output px
+    west = tile_x * 256 * (2.0 ** (5 - zoom)) - 16384
+    north = 16384 - tile_y * 256 * (2.0 ** (5 - zoom))
+    xs = west + (np.arange(OUT, dtype=np.float64) + 0.5) * step
+    ys = north - (np.arange(OUT, dtype=np.float64) + 0.5) * step
+    gx = np.clip(((xs + 16384) / 8.0).astype(int), 0, 3071)[None, :]
+    gy = np.clip(((16384 - ys) / 8.0).astype(int), 0, 4095)[:, None]
+    return sea[gy, gx]
+
+
+def _water_rgb(dist_px, zoom, sea_mask):
+    """Water RGB for a tile: SEA pixels get the continuous depth
+    falloff; INLAND pixels (lakes, rivers, ponds) get calm mid teal
+    with a subtle shore lightening and NO foam-bright rim.
+
+    Both use the same global distance-to-land field, so a lake's
+    lightening follows its real shore and the sea's shallows follow
+    the real coast. (v0.25: one water family — the review's lakes
+    were bright cyan swimming pools with a hard pale rim, and Lake
+    Leonida was a flat dark hole.)"""
+    sea = _sea_from_distance(dist_px, zoom)
+    units = dist_px * (2.0 ** (4 - zoom))  # canonical units
+    light = 0.20 * np.exp(-units / 8.0)
+    inland = INLAND[None, None, :] * (1.0 - light[..., None]) + SEA_SHORE[None, None, :] * light[..., None]
+    sea_m = sea_mask[..., None].astype(np.float32)
+    return sea * sea_m + inland * (1.0 - sea_m)
+
+
+def _sea_from_distance(dist_px, zoom, px_scale=2.0):
+    """Sea RGB from distance-to-land in output px.
+
+    v0.25: the v0.24 bands were wide flat tones with NARROW smoothstep
+    transitions between them (mid->abyss over 12 OUT px at z3), so the
+    open sea read as two flat colours with a visible edge — the
+    review's 'vertical tonal step' in the Keys shot. The falloff is
+    now CONTINUOUS in canonical units (same physical shore at every
+    zoom): exponentials, no edges anywhere. Shore brightens right at
+    the coast and fades gradually; the open ocean settles at the flat
+    (6, 67, 88) the v0.24 walk measured, because at the field's clip
+    (320 units) the mix is ~77% abyss / 23% mid."""
+    h, w = dist_px.shape
+    units = dist_px * (2.0 ** (4 - zoom))  # canonical units
+    w_shore = np.exp(-units / 28.0)
+    w_mid = (1.0 - w_shore) * np.exp(-units / 220.0)
+    w_abyss = (1.0 - w_shore) * (1.0 - np.exp(-units / 220.0))
+    sea = (
+        SEA_SHORE[None, None, :] * w_shore[..., None]
+        + SEA_MID[None, None, :] * w_mid[..., None]
+        + SEA_ABYSS[None, None, :] * w_abyss[..., None]
+    )
+    return sea.astype(np.float32)
 
 
 def _hash2(ix, iy, seed):
@@ -504,15 +634,21 @@ def render(arr, zoom, tile_y, tile_x):
             if size >= 400:
                 big_water[lab_w == i] = True
 
-    # --- fast path: open ocean — sea bands from the GLOBAL distance
-    # field (+ clouds at low zoom). ---
+    # --- fast path: open water — sea bands from the GLOBAL distance
+    # field (+ clouds at low zoom). v0.25: a tile that is all water is
+    # NOT necessarily sea. Lake Leonida's centre tiles are all water
+    # and all INLAND: the sea treatment painted them as a flat dark
+    # hole. The global sea mask decides per pixel; inland water gets
+    # the calm treatment (same field, so the shore lightening still
+    # follows the real lake shore). ---
     if water.mean() > 0.985:
         dist = _shore_distance(zoom, tile_y, tile_x)
         if dist is None:
             dist = ndi.distance_transform_edt(water > 0.5) * 2.0
-        out = _sea_from_distance(dist, zoom)
+        sea_m = _sample_sea_mask(zoom, tile_y, tile_x)
+        out = _water_rgb(dist, zoom, sea_m)
         if zoom <= 2:
-            cloud = _cloud_field_vw(zoom, tile_y, tile_x) * 0.30 * _up2_nearest(water_bin.astype(np.float32))
+            cloud = _cloud_field_vw(zoom, tile_y, tile_x) * 0.30 * sea_m.astype(np.float32)
             _paint(out, cloud, np.array([255.0, 255.0, 255.0]))
         return np.clip(out, 0, 255).astype(np.uint8)
 
@@ -544,12 +680,14 @@ def render(arr, zoom, tile_y, tile_x):
 
     out = np.zeros((OUT, OUT, 3), dtype=np.float32)
 
-    # --- sea: depth bands from the GLOBAL field (no seams). ---
+    # --- water: sea vs inland from the GLOBAL sea mask (no seams;
+    # the distance field is global too). ---
     dist_to_land = _shore_distance(zoom, tile_y, tile_x)
     if dist_to_land is None:
         dist_to_land = ndi.distance_transform_edt(water > 0.5) * 2.0
-    sea = _sea_from_distance(dist_to_land, zoom)
-    out = out * (1.0 - water512[..., None]) + sea * water512[..., None]
+    sea_m512 = _sample_sea_mask(zoom, tile_y, tile_x) & (water512 > 0.5)
+    water_rgb = _water_rgb(dist_to_land, zoom, sea_m512)
+    out = out * (1.0 - water512[..., None]) + water_rgb * water512[..., None]
 
     # --- land base: flat illustrated fills, then DIMENSIONAL texture.
     # (a) The source's own luminance, per-pixel, never blurred:
@@ -634,30 +772,133 @@ def render(arr, zoom, tile_y, tile_x):
     # Preview v1 used the near-white `light` mask for blocks and
     # found almost none: rooftops are NOT near-white (tile mean
     # rgb(168,176,189); building bucket is 49% of a city tile).
-    # Two tones from quantised luminance, plus fake-3D roof edge
-    # shading at street zoom (light north edge, dark south edge,
-    # INSIDE the existing footprint — no geometry invented). The
-    # `building` mask is computed above (land base) and reused here.
+    # The `building` mask is computed above (land base) and reused here.
+    #
+    # v0.25, the Ambrosia checkerboard: the bucket also matches the
+    # grey ROAD surface (same low-spread grey), so the road corridor
+    # was "building" — and the 1px north/south edge shading fired on
+    # every JPEG-noise edge of that giant ground component, i.e. white
+    # and black speckle over the whole road. Three fixes: (a) the road
+    # corridor (dilated skeleton) is cut out of the building mask, so
+    # a road is never a roof; (b) edge shading runs only on SMALL
+    # components (< 3000 px at 256 — real rooftops, not the paved
+    # ground mass), and as a 3px bevel so it is actually visible at
+    # DPR 2 (1 OUT px is half a CSS px — the v0.24 bevel was
+    # sub-pixel); (c) each small component gets its own roof tone
+    # (hash of the component id, +/-6%), so the city reads as many
+    # distinct roofs instead of one flat grey mass. No geometry is
+    # invented: every edge and tone sits inside an existing footprint.
     if zoom >= 4:
-        building = _morph(building, ndi.binary_opening, cross)
-        if building.any():
-            # ONE muted roof tone, slightly darker than the urban ground,
-            # modulated by the source luminance (already applied to the
-            # land). The v3 two-tone split (block_lum < 0.5 vs >= 0.5)
-            # read as black/white static: the source luminance inside a
-            # rooftop is JPEG noise, so the split was a checkerboard.
-            # Dimensionality comes from the edge shading alone, kept
-            # subtle (0.25 / 0.30, was 0.55 / 0.75).
-            _paint(out, _up2_nearest(building).astype(np.float32) * land512, BLOCK_TONE)
-            if zoom >= 5:
-                b512 = _up2_nearest(building).astype(np.float32)
-                north = b512 * (1.0 - np.vstack([np.zeros((1, OUT), dtype=np.float32), b512[:-1, :]]))
-                south = b512 * (1.0 - np.vstack([b512[1:, :], np.zeros((1, OUT), dtype=np.float32)]))
-                _paint(out, north * land512 * 0.35, np.array([255.0, 255.0, 255.0]))
-                _paint(out, south * land512 * 0.40, np.array([0.0, 0.0, 0.0]))
         skel, dist = _road_skeleton(light.copy())
+        # Road bed zone (diag3, tile 6,97,107): the road surface in
+        # the source is pale blue-grey with spread 20-30 — too blue
+        # for the building bucket (spread <= 18) and too dark for the
+        # light mask (mn < 192) — so the corridor is a HOLE in the
+        # building density, cityness dips, and the land base falls
+        # back to ROCK green between the lane markings. The bed
+        # therefore covers exactly that hole: pale, ROCK-ground
+        # pixels near a skeleton line (within 10px at 256 — the
+        # highway's lane lines are spaced wider than any skeleton
+        # corridor). It never touches real city ground (cityness high
+        # => rock_w low) or real green land (not pale), and the light
+        # mask + skeleton corridor are kept as a floor for the
+        # markings themselves and for dark-asphalt roads.
+        if skel.any():
+            near_road = ndi.binary_dilation(skel, np.ones((31, 31), dtype=bool))
+            near_road512 = _up2_nearest(near_road.astype(np.float32)) > 0.5
+            skel512 = _up2_nearest(skel.astype(np.float32)) > 0.5
+            road_zone = (
+                ndi.binary_dilation(light, np.ones((3, 3), dtype=bool))
+                & ndi.binary_dilation(skel, np.ones((15, 15), dtype=bool))
+            ) | ndi.binary_dilation(skel, np.ones((5, 5), dtype=bool))
+            rock_hole = (urban_w * (1.0 - cityness) > 0.25) & (lum512 > 0.55)
+            # The yellow lane lines are the `highway` mask (r>205,
+            # g>195, r-b 25-60) — pale yellow, in the classification
+            # gap like the road surface, and with no skeleton of their
+            # own (the skeleton comes from the light mask). They are
+            # road markings by definition, so they join the bed
+            # outright; the rock_hole term's near_road is widened to
+            # +/-15px at 256 so the whole highway band is covered.
+            bed512 = (
+                (ndi.binary_dilation(light512, np.ones((3, 3), dtype=bool)) & near_road512)
+                | ndi.binary_dilation(skel512, np.ones((5, 5), dtype=bool))
+                | (rock_hole & near_road512)
+                | ndi.binary_dilation(highway512, np.ones((3, 3), dtype=bool))
+            ).astype(np.float32)
+        else:
+            road_zone = np.zeros_like(skel)
+            bed512 = None
+        building = _morph(building, ndi.binary_opening, cross)
+        building = building & ~road_zone
+        if building.any():
+            lab_b, n_b = ndi.label(building, structure=np.ones((3, 3), dtype=int))
+            sizes_b = ndi.sum_labels(np.ones_like(lab_b), lab_b, range(1, n_b + 1)) if n_b else []
+            tone = np.ones(building.shape, dtype=np.float32)
+            small = np.zeros(building.shape, dtype=bool)
+            for i, size in enumerate(sizes_b, start=1):
+                if size < 3000:
+                    small[lab_b == i] = True
+                    tone[lab_b == i] = 0.94 + 0.12 * (((i * 2654435761) % 1000) / 1000.0)
+            b512 = _up2_nearest(building).astype(np.float32)
+            tone512 = _up2_nearest(tone)
+            m = b512 * land512
+            out = out * (1.0 - m[..., None]) + (BLOCK_TONE[None, None, :] * tone512[..., None]) * m[..., None]
+            if zoom >= 5 and small.any():
+                s512 = _up2_nearest(small).astype(np.float32)
+
+                def _band(mask, k, direction):
+                    """Pixels within k px of an edge in `direction`:
+                    north = below a north-facing edge, south = above a
+                    south-facing edge. `direction` +1 shifts down."""
+                    if direction > 0:
+                        shifted = np.vstack([np.zeros((k, OUT), dtype=np.float32), mask[:-k, :]])
+                    else:
+                        shifted = np.vstack([mask[k:, :], np.zeros((k, OUT), dtype=np.float32)])
+                    return mask * (1.0 - shifted)
+
+                north1 = _band(s512, 1, +1)
+                north3 = _band(s512, 3, +1)
+                south1 = _band(s512, 1, -1)
+                south3 = _band(s512, 3, -1)
+                _paint(out, north3 * land512 * 0.15, np.array([255.0, 255.0, 255.0]))
+                _paint(out, north1 * land512 * 0.35, np.array([255.0, 255.0, 255.0]))
+                _paint(out, south3 * land512 * 0.18, np.array([0.0, 0.0, 0.0]))
+                _paint(out, south1 * land512 * 0.40, np.array([0.0, 0.0, 0.0]))
+            # --- building seams (v0.25): the source draws rooftops
+            # as flat blocks with slightly darker outlines and
+            # internal divisions (verified on 6,114,139: luminance
+            # gradient p99 25 on a 0..255 scale, clean outlines, not
+            # noise). Darken the strong-gradient pixels inside the
+            # building mask — a subtle outline that makes individual
+            # roofs read, with no geometry invented. (The 1px v0.24
+            # bevel was sub-pixel at DPR 2 and invisible; the
+            # per-component tones sit on one giant merged component,
+            # so they cannot separate roofs either. The seams do the
+            # work.) Thresholds are the diag's p90/p99 in 0..1 units.
+            gy, gx = np.gradient(lum)
+            grad = np.hypot(gx, gy)
+            seam = _smoothstep(grad, 0.031, 0.078)
+            _paint(
+                out,
+                _up2_nearest(seam) * b512 * land512 * 0.50,
+                np.array([0.0, 0.0, 0.0]),
+            )
     else:
         skel, dist = None, None
+        road_zone = None
+        bed512 = None
+
+    # --- road bed (v0.25): one flat paved surface under the strokes.
+    # The Ambrosia band was green bare-terrain ground (the road
+    # surface falls in a classification gap — too blue for the
+    # building bucket, too dark for the light mask — so cityness
+    # dipped and the land base fell back to ROCK_FLAT) with the
+    # source's pale yellow lane lines showing between thin strokes.
+    # The bed covers the corridor, so the road reads as one
+    # continuous grey surface and the strokes read as lines on it,
+    # not stripes. ---
+    if zoom >= 4 and bed512 is not None and bed512.any():
+        _paint(out, bed512 * land512, ROAD_BED)
 
     # --- roads: vector strokes over the flat land. ---
     if zoom <= 3:
@@ -692,8 +933,12 @@ def render(arr, zoom, tile_y, tile_x):
         core_c = {
             KIND_HIGHWAY: SUNSET,
             KIND_MAIN: CORAL,
-            KIND_STREET: CORAL,
-            KIND_MINOR: CORAL,
+            # v0.25: streets and minors are CREAM, not CORAL — the
+            # review's lake-z2 composite showed the whole city grid
+            # as a pink mesh at z2. Pink is reserved for highways
+            # and mains; the street grid reads as pale streets.
+            KIND_STREET: CREAM,
+            KIND_MINOR: CREAM,
         }
         for kind in (KIND_MINOR, KIND_STREET, KIND_MAIN, KIND_HIGHWAY):
             m = masks.get(kind)
@@ -724,50 +969,31 @@ def render(arr, zoom, tile_y, tile_x):
     else:
         if skel is None:
             skel, dist = _road_skeleton(light.copy())
-        major_hw = 8.0 * (2.0 ** (zoom - 5))
-        w_field = np.where(skel, dist, 0.0).astype(np.float32)
-        w_smooth = ndi.gaussian_filter(w_field, 3.0) / np.maximum(
-            ndi.gaussian_filter(skel.astype(np.float32), 3.0), 1e-6
-        )
-        major = skel & (w_smooth >= major_hw)
-        lab_m, n_m = ndi.label(major, structure=np.ones((3, 3), dtype=int))
-        if n_m:
-            sizes_m = ndi.sum_labels(np.ones_like(lab_m), lab_m, range(1, n_m + 1))
-            for i, size in enumerate(sizes_m, start=1):
-                if size < 20:
-                    major[lab_m == i] = False
-        nbrs = ndi.convolve(skel.astype(int), np.ones((3, 3), dtype=int), mode="constant", cval=0) - 1
-        junction = skel & (nbrs >= 3)
-        if junction.any():
-            jzone = ndi.binary_dilation(junction, np.ones((15, 15), dtype=bool))
-            major = major & ~jzone
-        minor = skel & ~major
-        hwy_dil = ndi.binary_dilation(highway, np.ones((5, 5), dtype=bool))
-        hwy_skel = skel & hwy_dil
-        major = major | hwy_skel
-        minor = minor & ~hwy_skel
-        # Colour by fbrito kind where a vector road is within 8 px
-        # (the vectors sit a median 3.6 px off our centrelines, so the
-        # kind is reliable even though the geometry is not used here).
-        # Unclassified skeleton keeps the width-based major/minor split.
+        # Colour by fbrito kind ONLY (the kind map is a smooth dilated
+        # field, so a road keeps one colour along its length). v0.24
+        # also split by the smoothed skeleton-width ratio, and that
+        # ratio is noisy where the skeleton is sparse — it flipped
+        # CORAL/CREAM along a single line, which is half the Ambrosia
+        # barcode. The width split is gone; a wide unclassified road
+        # simply reads as a street, which is honest. Junctions are no
+        # longer punched out either — strokes cross like real roads.
         masks, kind256 = _fbrito_masks(zoom, tile_y, tile_x)
-        hwy_skel = hwy_skel | (skel & (kind256 == KIND_HIGHWAY))
-        major = (major | (skel & (kind256 == KIND_MAIN))) & ~hwy_skel
-        minor = skel & ~major & ~hwy_skel
+        hwy_dil = ndi.binary_dilation(highway, np.ones((5, 5), dtype=bool))
+        hwy = skel & ((kind256 == KIND_HIGHWAY) | hwy_dil)
+        main = skel & (kind256 == KIND_MAIN) & ~hwy
+        minor = skel & ~hwy & ~main
 
         def dil(mask, size):
             return ndi.binary_dilation(mask, np.ones((size, size), dtype=bool))
 
-        major512 = _up2_nearest(major)
+        hwy512 = _up2_nearest(hwy)
+        main512 = _up2_nearest(main)
         minor512 = _up2_nearest(minor)
-        hwy_skel512 = _up2_nearest(hwy_skel)
-        # Restrained cores (v1 lesson: the 10px 0.12 halo + full-width
-        # highway wash read as thick pink/orange at street zoom).
-        # No halo, thin cores sitting on the pale real road.
-        if major512.any():
-            _paint(out, dil(major512, 5).astype(np.float32) * 0.85, CORAL)
-        if hwy_skel512.any():
-            _paint(out, dil(hwy_skel512, 5).astype(np.float32) * 0.85, SUNSET)
+        # Thin cores on the flat road bed (v0.25) — no halo, no wash.
+        if hwy512.any():
+            _paint(out, dil(hwy512, 5).astype(np.float32) * 0.85, SUNSET)
+        if main512.any():
+            _paint(out, dil(main512, 5).astype(np.float32) * 0.85, CORAL)
         if minor512.any():
             if zoom >= 5:
                 # Skeleton lines with no fbrito road within 8 px are
@@ -787,14 +1013,15 @@ def render(arr, zoom, tile_y, tile_x):
     # as the ocean fast path — v0.20's _cloud_field rendered as giant
     # white blobs and must not be used here). ---
     if zoom <= 2:
-        cloud = _cloud_field_vw(zoom, tile_y, tile_x) * 0.30 * water512
+        cloud = _cloud_field_vw(zoom, tile_y, tile_x) * 0.30 * sea_m512.astype(np.float32)
         _paint(out, cloud, np.array([255.0, 255.0, 255.0]))
 
-    # --- shoreline foam: a crisp bright edge where water meets land
-    # (hdr6-style). The shore band in _sea_from_distance gives the
-    # bright shallows; this adds the 1-2px white waterline.
+    # --- shoreline foam: a crisp bright edge where SEA meets land
+    # (hdr6-style). v0.25: foam is sea-only — the old version foamed
+    # every water body, which is what put the hard pale rim on ponds
+    # and made lakes read as swimming pools.
     if water512.any() and land512.any():
-        foam = _smoothstep(dist_to_land, 4.0, 0.5) * water512
+        foam = _smoothstep(dist_to_land, 4.0, 0.5) * sea_m512.astype(np.float32)
         _paint(out, foam * 0.45, np.array([235.0, 248.0, 250.0]))
 
     # --- fine grain (hdr6-style, anti-banding): deterministic per-tile
@@ -932,13 +1159,74 @@ def preview():
         comp = comp.resize((768, 768), Image.NEAREST)
         comp.save(f"/tmp/vicewire/{name}.png")
         print(f"saved /tmp/vicewire/{name}.png")
+    # v0.25 review spots: the Ambrosia highway at max zoom (the
+    # checkerboard defect: z6 tiles ty 97-98, tx 107-108) and Lake
+    # Leonida at z2 (the flat dark hole / swimming-pool water).
+    for name, z, tys, txs in (
+        ("ambrosia-z6", 6, (97, 98), (107, 108)),
+        ("lake-z2", 2, (6, 7), (6, 7)),
+    ):
+        comp = Image.new("RGB", (1024, 1024))
+        for dy, ty in enumerate(tys):
+            for dx, tx in enumerate(txs):
+                p = os.path.join(SRC, str(z), f"{z},{ty},{tx}.jpg")
+                tile = Image.fromarray(render(np.asarray(Image.open(p).convert("RGB")), z, ty, tx))
+                comp.paste(tile, (dx * 512, dy * 512))
+        comp = comp.resize((768, 768), Image.NEAREST)
+        comp.save(f"/tmp/vicewire/{name}.png")
+        print(f"saved /tmp/vicewire/{name}.png")
     print(f"preview total {time.time() - t0:.1f}s")
+
+
+def fill_ocean():
+    """Ship ocean tiles for the rows the app can request but the GTADB
+    pyramid never drew (v0.25, review item 16): GTADB_TILE_BOUNDS is
+    3x4 z0 tiles (-16384..8192 x -16384..16384), but the day pyramid's
+    own grid starts at ty=1 (z1), ty=2 (z2), ty=4 (z3) — the y=0 rows
+    (and the tx=0 / far-edge rows) are missing, so the island fit view
+    fired an ocean.jpg fallback. Every missing in-bounds tile at z1-3
+    is verified pure ocean against the z2 water mask first (a tile
+    with any land in it is skipped and reported, never filled with
+    sea); the survivors are rendered from a synthetic pure-sea source
+    through the same pipeline, so their depth bands and clouds match
+    the neighbouring real tiles. z4-6 are NOT filled: 34k extra ocean
+    tiles for water the user almost never pans to — the SW ocean
+    fallback still covers those. Returns the number filled."""
+    water = _z2_water()
+    # Day-tile sea colour (the in-game map's own sea): b-r and b-g put
+    # it firmly in the water mask, so render() takes the fast path.
+    sea_src = np.tile(np.array([47, 144, 176], dtype=np.uint8), (256, 256, 1))
+    filled, skipped = 0, []
+    for z in (1, 2, 3):
+        size = 8192.0 / (2 ** z)  # units per tile
+        ntx = int(24576 // size)
+        nty = int(32768 // size)
+        step = int(size // 8)  # z2 px per tile
+        for ty in range(nty):
+            for tx in range(ntx):
+                dst = os.path.join(DST, str(z), f"{z},{ty},{tx}.jpg")
+                if os.path.exists(dst):
+                    continue
+                src = os.path.join(SRC, str(z), f"{z},{ty},{tx}.jpg")
+                if os.path.exists(src):
+                    continue  # exists in the source; the main run covers it
+                region = water[ty * step:(ty + 1) * step, tx * step:(tx + 1) * step]
+                if not region.all():
+                    skipped.append((z, ty, tx))
+                    continue
+                out = render(sea_src, z, ty, tx)
+                os.makedirs(os.path.dirname(dst), exist_ok=True)
+                Image.fromarray(out).save(dst, quality=QUALITY, optimize=True)
+                filled += 1
+    print(f"fill-ocean: {filled} tiles, skipped (not pure ocean): {skipped}")
+    return filled
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--preview", action="store_true")
     ap.add_argument("--all", action="store_true")
+    ap.add_argument("--fill-ocean", action="store_true")
     ap.add_argument("--zooms", nargs="+", type=int, default=[])
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--workers", type=int, default=4)
@@ -946,13 +1234,23 @@ def main():
     if args.preview:
         preview()
         return 0
+    if args.fill_ocean:
+        return 0 if fill_ocean() is not None else 1
     if args.check:
+        # Expected counts: the full in-bounds range at z0-3 (the fill
+        # adds the ocean rows the day pyramid never drew), the day
+        # pyramid's own counts at z4-6 (no fill there).
+        expected = {0: 12, 1: 48, 2: 192, 3: 768, 4: 1496, 5: 5829, 6: 23182}
+        ok = True
         for zoom in range(7):
             sdir = os.path.join(SRC, str(zoom))
             ddir = os.path.join(DST, str(zoom))
             s = len([n for n in os.listdir(sdir) if n.endswith(".jpg")]) if os.path.isdir(sdir) else 0
             d = len([n for n in os.listdir(ddir) if n.endswith(".jpg")]) if os.path.isdir(ddir) else 0
-            print(f"z{zoom}: day={s} vicewire={d}")
+            flag = "OK" if d == expected[zoom] else "MISMATCH"
+            if d != expected[zoom]:
+                ok = False
+            print(f"z{zoom}: day={s} vicewire={d} expected={expected[zoom]} {flag}")
         # Determinism: render one tile twice, identical bytes.
         src = os.path.join(SRC, "5/5,62,69.jpg")
         arr = np.asarray(Image.open(src).convert("RGB"))
@@ -960,7 +1258,7 @@ def main():
         b = render(arr, 5, 62, 69)
         assert np.array_equal(a, b), "non-deterministic"
         print("determinism OK")
-        return 0
+        return 0 if ok else 1
     zooms = list(range(0, 7)) if args.all else args.zooms
     if not zooms:
         print("pass --preview, --all, --zooms or --check", file=sys.stderr)

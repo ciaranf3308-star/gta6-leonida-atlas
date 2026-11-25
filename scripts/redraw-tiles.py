@@ -215,6 +215,13 @@ def _shore_distance(zoom, tile_y, tile_x, n=OUT):
                 Image.open(os.path.join(ROOT, "public/assets/gta6-leonida-atlas/shore-distance.png"))
                 .convert("L")
             ).astype(np.float32)
+            # v0.25: the field is uint8, 1 level = 8 units. Bilinear
+            # sampling of those steps made the sea bands change in
+            # visible increments at street zoom (the review's tonal
+            # step in the Keys shot). A 1.5-px gaussian on the field
+            # itself — once, at load — removes the steps; the bands
+            # are smooth fields anyway, so no coastline moves.
+            _SHORE = ndi.gaussian_filter(_SHORE, 1.5)
         except Exception:
             _SHORE = False
     if _SHORE is False:

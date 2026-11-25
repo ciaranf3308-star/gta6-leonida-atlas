@@ -39,7 +39,7 @@ describe('GTADB In-Game Day tiles', () => {
     // Leaflet zoom 1 (tile zoom 6): x = floor(1420/128) = 11, y = floor(-1766/128) = -14.
     expect(leafletTileToGtadb(11, -14, 1)).toEqual({ zoom: 6, tileX: 139, tileY: 114 });
     expect(gtadbTileUrl('/gta6-leonida-atlas/', 5, -7, 0)).toBe(
-      '/gta6-leonida-atlas/assets/gta6-leonida-atlas/tiles/vicewire-v1/5/5,57,69.jpg',
+      '/gta6-leonida-atlas/assets/gta6-leonida-atlas/tiles/vicewire-v2/5/5,57,69.jpg',
     );
   });
 
@@ -54,16 +54,16 @@ describe('GTADB In-Game Day tiles', () => {
     // No z3 -> z4 style cliff by construction. Pin coordinates never
     // change: the tile file name is the same at every zoom.
     expect(gtadbTileUrl('/gta6-leonida-atlas/', -2, -2, -5)).toBe(
-      '/gta6-leonida-atlas/assets/gta6-leonida-atlas/tiles/vicewire-v1/0/0,0,0.jpg',
+      '/gta6-leonida-atlas/assets/gta6-leonida-atlas/tiles/vicewire-v2/0/0,0,0.jpg',
     );
     expect(gtadbTileUrl('/gta6-leonida-atlas/', 0, 0, -2)).toContain(
-      '/tiles/vicewire-v1/3/',
+      '/tiles/vicewire-v2/3/',
     );
     expect(gtadbTileUrl('/gta6-leonida-atlas/', 0, 0, -1)).toContain(
-      '/tiles/vicewire-v1/4/',
+      '/tiles/vicewire-v2/4/',
     );
     expect(gtadbTileUrl('/gta6-leonida-atlas/', 5, -7, 0)).toBe(
-      '/gta6-leonida-atlas/assets/gta6-leonida-atlas/tiles/vicewire-v1/5/5,57,69.jpg',
+      '/gta6-leonida-atlas/assets/gta6-leonida-atlas/tiles/vicewire-v2/5/5,57,69.jpg',
     );
     expect(gtadbTileUrl('/gta6-leonida-atlas/', 0, 0, -2)).toContain('3,');
     expect(gtadbTileUrl('/gta6-leonida-atlas/', 0, 0, -1)).toContain('4,');
