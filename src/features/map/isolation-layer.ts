@@ -96,28 +96,27 @@ export function addIsolationLayers(
         interactive: false,
       }).addTo(map),
     );
-    // §6.1: no boundary lines. An area extent is a dim mask only —
-    // the stroked bbox edge used to sit here, and it read as an
-    // invented boundary. Counties keep their traced coastline above
-    // (real geography); areas draw nothing.
-    if (!isolation.noOutline) {
-      added.push(
-        L.rectangle(
-          [
-            [b.south, b.west],
-            [b.north, b.east],
-          ],
-          {
-            color: '#f6f0e5',
-            weight: 1,
-            opacity: 0.65,
-            dashArray: '5 5',
-            fill: false,
-            interactive: false,
-          },
-        ).addTo(map),
-      );
-    }
+    // §6.2: town/city/area isolation keeps the rect outline — the
+    // dashed edge marks the estimated extent (the member bbox),
+    // an extent indicator, not a boundary line. No boundary lines
+    // are drawn anywhere; counties keep their traced coastline
+    // above (real geography).
+    added.push(
+      L.rectangle(
+        [
+          [b.south, b.west],
+          [b.north, b.east],
+        ],
+        {
+          color: '#f6f0e5',
+          weight: 1,
+          opacity: 0.65,
+          dashArray: '5 5',
+          fill: false,
+          interactive: false,
+        },
+      ).addTo(map),
+    );
   }
   return () => {
     for (const layer of added) layer.remove();

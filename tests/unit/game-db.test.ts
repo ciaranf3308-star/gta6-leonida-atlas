@@ -371,7 +371,7 @@ describe('game-db — §3.2 derivation from the real catalogue (26 Nov 2026)', (
     expect(db.areas.size).toBe(126);
     const portGellhorn = db.areas.get('area:port-gellhorn')!;
     expect(portGellhorn.name).toBe('Port Gellhorn');
-    expect(portGellhorn.level).toBe('city');
+    expect(portGellhorn.level).toBe('town');
     expect(portGellhorn.locationIds).toContain('L629');
     expect(portGellhorn.bounds).not.toBeNull();
     expect(portGellhorn.parentId).toBe('county:kelly');

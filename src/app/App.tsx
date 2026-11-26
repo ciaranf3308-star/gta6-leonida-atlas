@@ -310,7 +310,6 @@ export default function App() {
           label: node.name,
           subtitle: `${node.locationIds.length.toLocaleString()} places`,
           bounds: node.bounds,
-          noOutline: true,
         });
         useMapStore.getState().setBoundsFocus(node.bounds);
       } else {

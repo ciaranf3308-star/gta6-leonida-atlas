@@ -50,8 +50,9 @@
  *   everywhere shown. bounds is null when the area has no positioned
  *   members — the area is still selectable and searchable; selecting
  *   it shows its member list, not a camera move. NO boundary lines
- *   are drawn anywhere: the extent is a camera focus + a dim mask,
- *   never a stroked outline.
+ *   are drawn anywhere: the extent is a camera focus + a dim mask +
+ *   the dashed rect outline marking the estimated extent — the rect
+ *   is an extent indicator, not a boundary line (§6.2).
  * - Region "Leonida" IS the state: places with that region belong
  *   to the state node, not to a second area called Leonida.
  * - Display names are title-cased from the slug ("vice-city" →
@@ -110,8 +111,11 @@ export interface AreaNode {
 export const STATE_NODE_ID = 'state:leonida';
 export const STATE_NAME = 'Leonida';
 
-/** The three cities in the step-1 level rule — kept verbatim. */
-const CITY_NAMES: readonly string[] = ['Vice City', 'Port Gellhorn', 'Vice Beach'];
+/** The two cities in DESIGN §6.1: Vice City and Vice Beach. Port
+ * Gellhorn is a TOWN (§6.1 lists it under Town) — the step-1 rule
+ * that listed it as a city was wrong, and it wrongly made the
+ * distinct 1-member node "Port Gellhorn, Kelly County" a city too. */
+const CITY_NAMES: readonly string[] = ['Vice City', 'Vice Beach'];
 
 /** Ambrosia's two sourced county claims (DESIGN §12.8). */
 export const AMBROSIA_DISPUTE = {
@@ -159,12 +163,19 @@ export function areaIdForRegionPlace(regionPlaceId: string): string {
  * The level of a named region, from the source category in
  * src/features/street-leonida/page-data.ts (the `Place` ingest drops
  * the category, so this is keyed by name and kept in sync with that
- * file): Vice City and Port Gellhorn are CITY; anything ending in
+ * file): Vice City and Vice Beach are CITY; anything ending in
  * "County" is a county; every other named region is carried as a town
  * for now — including the NATURAL_AREA regions (Grassrivers, Mount
- * Kalaga), which the §6.1 hierarchy has no level for. Step 4 refines
- * levels when the full 149-area hierarchy lands; nothing here invents
- * a neighbourhood or district.
+ * Kalaga), which the §6.1 hierarchy has no level for. The full
+ * 149-area hierarchy is derived by deriveAreaNodes (parent-aware
+ * areaLevelForNode); nothing here invents a neighbourhood or district.
+ *
+ * One deliberate divergence from page-data.ts: that file categories
+ * Port Gellhorn as CITY, but DESIGN §6.1 lists Port Gellhorn under
+ * Town, and §6.1 governs the hierarchy — so Port Gellhorn is a town
+ * here. (Whether page-data.ts's category should change is a
+ * coordinator call; it is display copy for the region page, not the
+ * hierarchy.)
  *
  * Kept for compatibility: deriveAreaNodes uses the parent-aware
  * `areaLevelForNode` below. This name-only version is the fallback
@@ -172,8 +183,7 @@ export function areaIdForRegionPlace(regionPlaceId: string): string {
  */
 export function areaLevelForName(name: string): AreaNode['level'] {
   if (name.endsWith(' County')) return 'county';
-  if (name === 'Vice City' || name === 'Port Gellhorn' || name === 'Vice Beach')
-    return 'city';
+  if (name === 'Vice City' || name === 'Vice Beach') return 'city';
   return 'town';
 }
 
@@ -598,7 +608,7 @@ export function deriveAreaNodes(
     } else {
       node.bounds = boundsForLocations(members);
       node.extentNote = node.bounds
-        ? 'Extent is the bounding box of positioned member locations (estimate) — no official boundary lines are published.'
+        ? 'The estimated extent is the bounding box of positioned member locations — no official boundary lines are published.'
         : 'No positioned member locations yet — no extent. The area is still selectable and searchable; selecting it shows its member list, not a camera move.';
     }
   }

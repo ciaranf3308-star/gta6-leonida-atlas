@@ -33,12 +33,6 @@ export interface Isolation {
    * traced coastline from after-hours-geo.json instead of the rect.
    * Undefined for towns/areas, which keep the rect outline. */
   countyId?: string;
-  /** §6.1: no boundary lines are drawn anywhere. An area extent is a
-   * camera focus + a dim mask, never a stroked outline — drawing the
-   * bbox edge would invent a boundary. Set for area isolations;
-   * counties keep their traced coastline (real geography, not a
-   * boundary line). */
-  noOutline?: boolean;
 }
 
 function pad(bounds: MapBounds, fraction = 0.12): MapBounds {
@@ -88,10 +82,12 @@ export function countyIsolation(county: County): Isolation {
 }
 
 /** Isolation for one town/city/area, from its own places. Null when
- * the area has no positioned places to draw a box around. The box is
- * a camera focus + dim mask only — noOutline: the extent is an
- * estimate, and a stroked edge would read as an invented boundary
- * (§6.1). */
+ * the area has no positioned places to draw a box around. The box
+ * is a camera focus + dim mask + the rect outline: §6.2 keeps the
+ * rect outline for town isolation — the dashed edge marks the
+ * estimated extent (the member bbox, labelled "estimated extent"
+ * on the area page), an extent indicator, not a boundary line
+ * (no boundary lines are drawn anywhere). */
 export function areaIsolation(
   area: string,
   places: readonly Place[],
@@ -103,7 +99,6 @@ export function areaIsolation(
     label: area,
     subtitle: `${inArea.length.toLocaleString()} places`,
     bounds,
-    noOutline: true,
   };
 }
 

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { catalogueFromSnapshot } from '../../src/data/catalogue';
 import { COUNTIES } from '../../src/data/counties';
 import { BASEMAP_BOUNDS } from '../../src/features/map/coordinates';
-import { areaOptions } from '../../src/features/map/isolation';
+import { areaIsolation, areaOptions } from '../../src/features/map/isolation';
 import { buildGameDatabase, type GameDatabase } from '../../src/domain/game-db';
 import {
   areaCentroid,
@@ -82,11 +82,11 @@ describe('geography — §6.1 hierarchy (step 4)', () => {
     }
     expect(byLevel.get('state')).toBe(1);
     expect(byLevel.get('county')).toBe(5);
-    // 4 "cities": Vice City, Port Gellhorn, Vice Beach, plus the
-    // one-member path node "Port Gellhorn, Kelly County" — a data
-    // quirk, a distinct node whose name is also Port Gellhorn.
-    expect(byLevel.get('city')).toBe(4);
-    expect(byLevel.get('town')).toBe(87);
+    // 2 cities (§6.1: Vice City and Vice Beach only). Port Gellhorn
+    // is a TOWN, so both Port Gellhorn nodes are towns — the
+    // 1-member path node "Port Gellhorn, Kelly County" included.
+    expect(byLevel.get('city')).toBe(2);
+    expect(byLevel.get('town')).toBe(89);
     expect(byLevel.get('neighbourhood')).toBe(22);
     expect(byLevel.get('district')).toBe(7);
   });
@@ -147,6 +147,7 @@ describe('geography — §6.1 hierarchy (step 4)', () => {
     ).toEqual(['Leonida', 'Vice-Dale County', 'Vice City', 'Downtown']);
     const portGellhorn = db.areas.get('area:port-gellhorn')!;
     expect(portGellhorn.parentId).toBe('county:kelly');
+    expect(portGellhorn.level).toBe('town');
     expect(portGellhorn.childrenIds).toEqual([]);
     const state = db.areas.get(STATE_NODE_ID)!;
     expect(state.parentId).toBeNull();
@@ -174,6 +175,12 @@ describe('geography — §6.1 hierarchy (step 4)', () => {
     expect(portGellhorns.map((n) => n.path).sort()).toEqual([
       'Port Gellhorn',
       'Port Gellhorn, Kelly County',
+    ]);
+    // Both are towns (§6.1) — including the 1-member disambiguation
+    // node, which step 4 wrongly counted as a city.
+    expect(portGellhorns.map((n) => n.level).sort()).toEqual([
+      'town',
+      'town',
     ]);
   });
 
@@ -215,6 +222,25 @@ describe('geography — §6.1 hierarchy (step 4)', () => {
 });
 
 describe('geography — §6.1 extents (step 4)', () => {
+  it('§6.2 town isolation keeps the rect outline, labelled "estimated extent"', () => {
+    const places = catalogueFromSnapshot(snapshot);
+    const isolation = areaIsolation('Capri', places);
+    expect(isolation).not.toBeNull();
+    expect(isolation!.label).toBe('Capri');
+    // No opt-out exists: the Isolation type has no noOutline flag,
+    // so the layer builder draws the rect outline unconditionally
+    // (counties keep their traced coastline via countyId instead).
+    expect(isolation!).not.toHaveProperty('noOutline');
+    expect(isolation!.countyId).toBeUndefined();
+    // The extent is named "estimated extent" where the area UI
+    // shows it (AreaPage extent note).
+    const db = buildFullDb();
+    expect(db.areas.get('area:capri')!.extentNote).toMatch(/estimated extent/);
+    expect(db.areas.get('area:capri')!.extentNote).toMatch(
+      /no official boundary/,
+    );
+  });
+
   it('bounds a city by its positioned members, padded 12% / ≥200 units', () => {
     const db = buildFullDb();
     const viceCity = db.areas.get('area:vice-city')!;
