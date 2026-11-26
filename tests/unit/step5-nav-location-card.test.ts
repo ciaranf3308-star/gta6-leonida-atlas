@@ -314,9 +314,31 @@ describe('location-card actions per opportunity kind (step 5)', () => {
     ).toEqual(['Mark as looted', 'Mark as discovered', 'Mark as explored']);
   });
 
-  it('a gym-only location gets no completion action — no verb is invented for it', () => {
+  it('a gym-only location gets the discovered fallback — one honest action, no invented verb', () => {
     const db = buildFullDb();
-    expect(locationCardActions(locationCard(db, 'gym:ajax')!, db)).toEqual([]);
+    const actions = locationCardActions(locationCard(db, 'gym:ajax')!, db);
+    expect(actions).toHaveLength(1);
+    const only = actions[0]!;
+    expect(only.kind).toBe('record');
+    if (only.kind === 'record') {
+      expect(only.label).toBe('Mark as discovered');
+      expect(only.verb).toBe('discovered');
+      expect(only.target).toEqual({ type: 'location', id: 'gym:ajax' });
+      expect(only.done).toBe(false);
+    }
+  });
+
+  it('the discovered fallback never duplicates the discovered row a verb-bearing location already has', () => {
+    const db = buildFullDb();
+    const actions = locationCardActions(
+      locationCard(db, 'breakable:parlor-apartments')!,
+      db,
+    );
+    expect(
+      actions.filter(
+        (action) => action.kind === 'record' && action.label === 'Mark as discovered',
+      ),
+    ).toHaveLength(1);
   });
 
   it('completed state reads back from the log: Looted ×2, Discovered ✓, Collected ✓', () => {

@@ -25,10 +25,13 @@
  * (discoveredLocationIds). Looted targets the OPPORTUNITY, so the
  * count is per hold-up / job / break-in, not per building.
  *
- * Kinds with no action in step 5 (gym, workout-equipment, activity,
- * vehicle-loot, easter-egg, mission) render nothing here — the spec
- * names no verb for them, and inventing one would be a guess. That
- * gap is flagged in the step-5 report for the coordinator to rule on.
+ * Kinds with no action of their own (gym, workout-equipment, activity,
+ * vehicle-loot, easter-egg, mission) still get the fallback below:
+ * "Mark as discovered" on the location itself. 'discovered' is an
+ * existing model verb targeting the location — finding the place is
+ * the completion — so nothing is invented. The fallback fires only
+ * when no record or collect action exists yet, so it can never
+ * duplicate the discovered row above.
  */
 import type {
   CompletionTarget,
@@ -149,6 +152,30 @@ export function locationCardActions(
       done: explored,
       doneLabel: 'Explored ✓',
       count: explored ? 1 : 0,
+    });
+  }
+
+  // Fallback (coordinator ruling, step-6 follow-up): a location whose
+  // opportunities carry no verb at all — gym, workout-equipment,
+  // activity, vehicle-loot, easter-egg, mission, a shop with no
+  // robbery-shop, or no opportunities — still gets one honest action:
+  // "Mark as discovered" on the location itself. It only fires when
+  // no record or collect action exists yet, so it can never duplicate
+  // the discovered row above.
+  const hasRecordOrCollect = actions.some(
+    (action) => action.kind === 'record' || action.kind === 'collect',
+  );
+  if (!hasRecordOrCollect) {
+    actions.push({
+      key: 'discovered',
+      kind: 'record',
+      label: 'Mark as discovered',
+      detail: 'This place',
+      target: { type: 'location', id: view.location.id },
+      verb: 'discovered',
+      done: discovered,
+      doneLabel: 'Discovered ✓',
+      count: discovered ? 1 : 0,
     });
   }
 
