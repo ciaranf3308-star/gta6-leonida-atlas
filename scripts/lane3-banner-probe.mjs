@@ -21,11 +21,10 @@
 //   - L3-3 banner "Clear filters" -> narrow filter cleared, 17 grouped
 //     rects back, banner gone (action preserved).
 //   - L3-4 banner "Show everything" from the same no-regions state ->
-//     measured honestly: it turns layers on but does NOT clear the
-//     narrow filter (App.tsx turnOnLayers touches layers only), so
-//     the honest expectation is banner gone + places showing; if it
-//     stays, that is a REAL finding about the button's promise, not
-//     a probe bug — report it as such.
+//     layers on AND the narrow filter cleared (v0.32.1 Finding 4 fix:
+//     turnOnLayers now also runs the "Clear filters" reset), so
+//     places show and the banner goes away; if it stays, that is a
+//     REAL regression of the fix, not a probe bug — report it as such.
 //   - L3-5 all layers off again -> banner absent, no regions (the
 //     first-open hint stays dismissed — persisted once any layer was
 //     turned on, by design; L3-0 proves it on a fresh profile).
@@ -242,7 +241,7 @@ console.log('after Show everything:', JSON.stringify({ labels: m.labelCount, rec
 check(
   'L3-4b "Show everything": layers on, places showing, banner gone',
   m.nothingBanner === false && m.markerCount > 0,
-  `banner=${m.nothingBanner} markers=${m.markerCount} labels=${m.labelCount} rects=${m.regionRectCount} — NOTE: turnOnLayers touches layers only, NOT the Saved-only narrow filter; if this FAILS it is a real finding about the button's promise (see DEMOS-REGIONS.md), not a probe bug`,
+  `banner=${m.nothingBanner} markers=${m.markerCount} labels=${m.labelCount} rects=${m.regionRectCount} — NOTE (v0.32.1 Finding 4 fix): turnOnLayers now clears the narrow filter too; if this FAILS it is a real regression of that fix (see DEMOS-REGIONS.md), not a probe bug`,
 );
 
 // ---------- L3-5. All layers off again: banner absent, no regions ----------
