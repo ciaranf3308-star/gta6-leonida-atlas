@@ -370,6 +370,11 @@ export default function AskPanel(props: AskPanelProps) {
               apiKey,
               model: getAskModel(),
               signal: controller.signal,
+              // Nightlife evidence for the tools path (DESIGN §7.4
+              // case 3): the same maps the local finder reads, keyed
+              // by Place id — GameLocation.id IS the Place id.
+              userTags: props.userTags,
+              aiCategories: props.aiCategories,
               researchDeps: {
                 queueResearch: async (request) => {
                   try {

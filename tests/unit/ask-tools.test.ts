@@ -19,6 +19,7 @@ import {
   resolveSetId,
   type ToolResult,
 } from '../../src/features/ask/tools';
+import type { AiCategoryRecord } from '../../src/features/categorise/categories';
 
 const snapshot = JSON.parse(
   readFileSync(
@@ -181,6 +182,166 @@ describe('Ask tools — §7.4 regression cases (DESIGN §7.2, real data)', () =>
       }),
     ) as { opportunities: { locationName: string | null }[] };
     expect(unfiltered.opportunities.length).toBeGreaterThan(data.opportunities.length);
+  });
+
+  // Case 3 follow-up (v0.32 step 7): the tools-side nightlife filter
+  // answers from all three evidences — source #tag, the player's own
+  // tag, confident AI "bar" — exactly as the local finder does. The
+  // maps are keyed by Place id, and GameLocation.id IS the Place id
+  // verbatim, so the tests below key the evidence by the real
+  // location id from the fixture database: a wrong key would silently
+  // drop the evidence, which is exactly the failure this lane closes.
+  type NightlifeRows = {
+    opportunities: { locationName: string | null; locationId: string }[];
+  };
+  const nightlifeArgs = {
+    anchor: { areaId: 'area:vice-city' },
+    kinds: ['shop'],
+    nightlife: true,
+    radiusUnits: 16384,
+  };
+  async function nightlifeQuery(
+    db: GameDatabase,
+    deps?: Parameters<typeof executeTool>[2],
+  ): Promise<NightlifeRows> {
+    return unwrap(
+      await executeTool(
+        db,
+        { name: 'find_nearby_opportunities', args: nightlifeArgs },
+        deps,
+      ),
+    ) as NightlifeRows;
+  }
+  /** Vice City 'shop' opportunities whose locations carry NO source
+   *  nightlife tag — the plain shops the filter must not return on
+   *  source evidence alone. Sorted by distance, nearest first. */
+  async function plainViceCityShops(db: GameDatabase) {
+    const unfiltered = unwrap(
+      await executeTool(db, {
+        name: 'find_nearby_opportunities',
+        args: {
+          anchor: { areaId: 'area:vice-city' },
+          kinds: ['shop'],
+          radiusUnits: 16384,
+        },
+      }),
+    ) as NightlifeRows;
+    return unfiltered.opportunities.filter(
+      (row) => !isNightlifeLocation(db.locations.get(row.locationId)!),
+    );
+  }
+  function confidentBarRecord(locationId: string): AiCategoryRecord {
+    return {
+      placeId: locationId,
+      aiCategory: 'bar',
+      confidence: 0.9,
+      reason: 'test',
+      model: 'test',
+      indexedAt: '2026-11-25',
+      status: 'suggested',
+    };
+  }
+
+  it('case 3b: "Nightclub in Vice City" through the tools returns the clubs AND a player-tagged bar AND a confident-AI bar — still not thirty shops', async () => {
+    const db = buildFullDb();
+    const plain = await plainViceCityShops(db);
+    // Two DISTINCT locations (one location can hold several 'shop'
+    // opportunities — the count assertion below needs two places).
+    const distinct = [...new Map(plain.map((row) => [row.locationId, row])).values()];
+    expect(distinct.length).toBeGreaterThanOrEqual(2);
+    const [tagged, aiBar] = distinct.slice(0, 2);
+    const base = await nightlifeQuery(db);
+    const data = await nightlifeQuery(db, {
+      userTags: new Map([[tagged!.locationId, ['nightclub']]]),
+      aiCategories: { [aiBar!.locationId]: confidentBarRecord(aiBar!.locationId) },
+    });
+    const ids = data.opportunities.map((row) => row.locationId);
+    const names = data.opportunities.map((row) => row.locationName ?? '');
+    // Source-tag clubs still there, plus exactly the two new
+    // evidences — nothing else leaked in.
+    expect(names.some((name) => name.includes('NINE1NINE'))).toBe(true);
+    expect(names.some((name) => name.includes('Vault'))).toBe(true);
+    expect(ids).toContain(tagged!.locationId);
+    expect(ids).toContain(aiBar!.locationId);
+    expect(data.opportunities).toHaveLength(base.opportunities.length + 2);
+    expect(data.opportunities.length).toBeLessThan(30);
+  });
+
+  it('case 3c: a location with only a user tag ("nightclub" / "bar") answers a tools nightlife question', async () => {
+    const db = buildFullDb();
+    const plain = await plainViceCityShops(db);
+    const target = plain[0]!;
+    for (const tag of ['nightclub', 'bar']) {
+      const data = await nightlifeQuery(db, {
+        userTags: new Map([[target.locationId, [tag]]]),
+      });
+      expect(data.opportunities.map((row) => row.locationId)).toContain(
+        target.locationId,
+      );
+    }
+  });
+
+  it('case 3d: a location with only a confident AI "bar" type answers a tools nightlife question', async () => {
+    const db = buildFullDb();
+    const plain = await plainViceCityShops(db);
+    const target = plain[0]!;
+    const data = await nightlifeQuery(db, {
+      aiCategories: { [target.locationId]: confidentBarRecord(target.locationId) },
+    });
+    expect(data.opportunities.map((row) => row.locationId)).toContain(
+      target.locationId,
+    );
+    // An unsure AI bar does not count — effectiveAiCategory is null.
+    const unsure = await nightlifeQuery(db, {
+      aiCategories: {
+        [target.locationId]: {
+          ...confidentBarRecord(target.locationId),
+          status: 'unsure',
+        },
+      },
+    });
+    expect(unsure.opportunities.map((row) => row.locationId)).not.toContain(
+      target.locationId,
+    );
+  });
+
+  it('case 3e: a user tag "barbecue" does NOT answer a tools nightlife question (whole-word rule)', async () => {
+    const db = buildFullDb();
+    const plain = await plainViceCityShops(db);
+    const target = plain[0]!;
+    const data = await nightlifeQuery(db, {
+      userTags: new Map([[target.locationId, ['barbecue']]]),
+    });
+    expect(data.opportunities.map((row) => row.locationId)).not.toContain(
+      target.locationId,
+    );
+    // Control: the same place IS in scope without the nightlife flag
+    // — the tag did not hide the place, the filter read it correctly.
+    const unfiltered = unwrap(
+      await executeTool(db, {
+        name: 'find_nearby_opportunities',
+        args: {
+          anchor: { areaId: 'area:vice-city' },
+          kinds: ['shop'],
+          radiusUnits: 16384,
+        },
+      }),
+    ) as NightlifeRows;
+    expect(unfiltered.opportunities.map((row) => row.locationId)).toContain(
+      target.locationId,
+    );
+  });
+
+  it('case 3f: source-#tag behaviour unchanged — empty evidence returns exactly the no-deps result', async () => {
+    const db = buildFullDb();
+    const noDeps = await nightlifeQuery(db);
+    const emptyDeps = await nightlifeQuery(db, {
+      userTags: new Map(),
+      aiCategories: {},
+    });
+    expect(emptyDeps.opportunities.map((row) => row.locationId)).toEqual(
+      noDeps.opportunities.map((row) => row.locationId),
+    );
   });
 
   it('case 4: "where can I rob a bank" returns bank-job opportunities only', async () => {

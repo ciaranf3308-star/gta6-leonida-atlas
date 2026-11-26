@@ -16,6 +16,7 @@ import {
   type ToolResult,
 } from './tools';
 import type { GameDatabase } from '../../domain/game-db';
+import type { AiCategoryRecord } from '../categorise/categories';
 
 /**
  * Ask Nylah — intent layer (DESIGN §7.3).
@@ -76,6 +77,14 @@ export interface AskWithToolsInput {
   signal?: AbortSignal;
   /** Total budget for router + narration — defaults to ASK_TIMEOUT_MS. */
   timeoutMs?: number;
+  /**
+   * Nightlife evidence for the tools path (DESIGN §7.4 case 3): the
+   * user's own tags and confident AI types, keyed by Place id —
+   * passed through to the tools as AskToolDeps. Without these the
+   * tools-side nightlife filter sees source #tags only.
+   */
+  userTags?: ReadonlyMap<string, readonly string[]>;
+  aiCategories?: Readonly<Record<string, AiCategoryRecord>>;
   researchDeps?: AskToolDeps;
 }
 
@@ -788,7 +797,13 @@ export async function askWithTools(input: AskWithToolsInput): Promise<AskWithToo
       continue;
     }
     toolCalls.push(parsed);
-    results.push(await executeTool(db, parsed, input.researchDeps ?? {}));
+    results.push(
+      await executeTool(db, parsed, {
+        ...input.researchDeps,
+        userTags: input.userTags,
+        aiCategories: input.aiCategories,
+      }),
+    );
   }
 
   // 2. Narrate the tool results — ≤2 sentences, sanitized. If the

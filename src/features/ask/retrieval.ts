@@ -4,7 +4,7 @@ import { COUNTIES, countyForPlace, countyIdFromText } from '../../data/counties'
 import { COLLECTABLE_SETS, type CollectableSet } from '../../data/collectables';
 import { ROBBABLE_SHOP_TAGS, SHOP_TAGS } from '../../data/catalogue';
 import { housesToCheck, isWorkoutMarker } from '../../domain/gym-check';
-import { normalizeUserTag, userTagsMatchLayer } from '../../domain/user-tags';
+import { userTagsMatchLayer } from '../../domain/user-tags';
 import {
   BREAKABLE_GAP_NOTE,
   DARK_BLUE_RULE,
@@ -15,10 +15,14 @@ import {
 export { isWorkoutMarker, isBreakableMarker };
 import {
   aiCategoryMatchesLayer,
-  effectiveAiCategory,
   type AiCategoryRecord,
 } from '../categorise/categories';
 import { askAllowedLayerIds } from '../spoiler/visibility';
+
+/** Shared nightlife evidence (./nightlife) — re-exported so the
+ *  local finder's import path stays stable. */
+import { isNightlifePlace } from './nightlife';
+export { isNightlifePlace };
 
 /**
  * Ask Nylah retrieval — the spoiler rule, in code.
@@ -194,14 +198,6 @@ export function nightlifeTagsForQuestion(question: string): string[] {
   return [...tags];
 }
 
-/** User-tag words for each nightlife #tag — the words a tag of his
- * own has to carry to count as that venue. */
-const NIGHTLIFE_TAG_WORDS: Record<string, readonly string[]> = {
-  '#nightclub': ['nightclub'],
-  '#stripclub': ['stripclub', 'strip club'],
-  '#bar': ['bar', 'pub'],
-};
-
 /**
  * The card set a question names, if it names one — e.g. "delight
  * dancers" (his spelling, singular) names the Delights Dancers set.
@@ -307,34 +303,6 @@ function asksForCardsOnly(question: string): boolean {
     cardWords.some((p) => hasPhrase(q, p)) &&
     !otherCollectibles.some((p) => hasPhrase(q, p))
   );
-}
-
-/** Is this place one of the nightlife venues asked for, by any
- * evidence on the device? A source #tag, the user's own tag saying
- * so, or a confident AI "bar" type (the resolver files nightclub /
- * bar / pub words as "bar", so an AI bar counts for any nightlife
- * ask). Whole-word matching on user tags, so a "barbecue" tag never
- * counts as a bar. */
-export function isNightlifePlace(
-  place: Place,
-  tags: readonly string[],
-  userTags: readonly string[] | undefined,
-  aiRecord: AiCategoryRecord | undefined | null,
-): boolean {
-  if (place.tags.some((tag) => tags.includes(tag))) return true;
-  const words = tags.flatMap((tag) => NIGHTLIFE_TAG_WORDS[tag] ?? []);
-  const mine = userTags ?? [];
-  if (
-    words.length > 0 &&
-    mine.some((tag) => {
-      const clean = normalizeUserTag(tag);
-      if (!clean) return false;
-      if (words.includes('strip club') && clean.includes('strip club')) return true;
-      return clean.split(' ').some((word) => words.includes(word));
-    })
-  )
-    return true;
-  return effectiveAiCategory(aiRecord) === 'bar';
 }
 
 /** Layer ids a question asks for, by keyword. Empty = no layer asked for. */

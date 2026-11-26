@@ -29,12 +29,15 @@
  *   Starlet Motel also has…" is forbidden — helpful finder, never
  *   volunteering extras.
  *
- * KNOWN GAP (flagged for the coordinator): the nightlife filter in
- * `find_nearby_opportunities` uses SOURCE #tags only. The retrieval
- * finder also answers from the user's own tags and confident AI "bar"
- * types; GameDatabase carries neither, so the tools path cannot see
- * them yet. A nightclub the player tagged himself answers in the
- * local finder, not through the tools.
+ * NIGHTLIFE EVIDENCE (v0.32 step-7 follow-up, DESIGN §7.4 case 3):
+ * the nightlife filter in `find_nearby_opportunities` answers from
+ * all three evidences — source #tags, the user's own tags, and
+ * confident AI "bar" types — through the shared
+ * `isNightlifeEvidence` in ./nightlife.ts. The two missing evidences
+ * arrive as AskToolDeps, keyed by Place id (= GameLocation.id), from
+ * AskPanel via askWithTools. Previously (the known gap) the tools
+ * path saw source #tags only, so a nightclub the player tagged
+ * himself answered in the local finder, not through the tools.
  */
 import {
   categoryProgress,
@@ -50,8 +53,13 @@ import {
 } from '../../domain/game-db';
 import { matchNameTier, searchAreas } from '../../domain/search';
 import { NEAR_DISTANCE_UNITS } from './retrieval';
+import { isNightlifeLocation, NIGHTLIFE_TAGS } from './nightlife';
+import type { AiCategoryRecord } from '../categorise/categories';
 import type { Enrichment } from '../../domain/enrichment';
 import type { ResearchRequest } from '../../domain/album';
+
+/** Re-exported so the tools' import path stays stable. */
+export { isNightlifeLocation } from './nightlife';
 
 export type ToolResult<T> = { ok: true; data: T } | { ok: false; error: string };
 
@@ -116,6 +124,15 @@ export interface AskToolDeps {
   findEnrichment?: (locationId: string) => Enrichment | null;
   /** Research-when-missing: queue a request for developer-side fulfilment. */
   queueResearch?: (request: ResearchRequest) => Promise<boolean>;
+  /**
+   * Nightlife evidence the database does not carry (DESIGN §7.4
+   * case 3): the user's own tags and confident AI types, keyed by
+   * Place id — GameLocation.id IS the Place id verbatim, so the
+   * tools path looks them up by `location.id`. Without these the
+   * nightlife filter sees source #tags only.
+   */
+  userTags?: ReadonlyMap<string, readonly string[]>;
+  aiCategories?: Readonly<Record<string, AiCategoryRecord>>;
 }
 
 /** Resolve a set id OR a set name ("Delights Dancers", "delights")
@@ -297,21 +314,10 @@ export interface NearbyOpportunitiesData {
   unpositionedNote: string | null;
 }
 
-const NIGHTLIFE_TAGS = ['#nightclub', '#stripclub', '#bar'];
-
-/** Tool-side nightlife evidence (DESIGN §7.4 case 3): a shop is a
- *  nightlife venue when its location carries a source #nightclub /
- *  #stripclub / #bar tag. (User tags + AI "bar" types are a known gap
- *  — see the module header.) */
-export function isNightlifeLocation(location: {
-  tags: readonly string[];
-}): boolean {
-  return location.tags.some((tag) => NIGHTLIFE_TAGS.includes(tag));
-}
-
 export function executeFindNearbyOpportunities(
   db: GameDatabase,
   args: Record<string, unknown>,
+  deps: AskToolDeps = {},
 ): ToolResult<NearbyOpportunitiesData> {
   if (!Array.isArray(args['kinds']) || args['kinds'].length === 0)
     return toolError(
@@ -381,7 +387,19 @@ export function executeFindNearbyOpportunities(
     if (!kinds.includes(opportunity.kind)) continue;
     const location = db.locations.get(opportunity.locationId);
     if (!location) continue;
-    if (nightlife && !isNightlifeLocation(location)) continue;
+    // Nightlife narrowing (DESIGN §7.4 case 3): all three evidences
+    // — source #tag, the user's own tag, confident AI "bar" — looked
+    // up by location.id, which IS the Place id the maps are keyed by.
+    if (
+      nightlife &&
+      !isNightlifeLocation(
+        location,
+        NIGHTLIFE_TAGS,
+        deps.userTags?.get(location.id),
+        deps.aiCategories?.[location.id],
+      )
+    )
+      continue;
     const foundCount = db.completedOpportunityIds.get(opportunity.id) ?? 0;
     if (!includeFound && foundCount > 0) continue;
     if (location.position === null) {
@@ -1068,7 +1086,7 @@ export async function executeTool(
     case 'search_locations':
       return executeSearchLocations(db, call.args);
     case 'find_nearby_opportunities':
-      return executeFindNearbyOpportunities(db, call.args);
+      return executeFindNearbyOpportunities(db, call.args, deps);
     case 'remaining_collectibles':
       return executeRemainingCollectibles(db, call.args);
     case 'personal_progress':
@@ -1157,7 +1175,7 @@ export const ASK_TOOL_DEFINITIONS: {
           nightlife: {
             type: 'boolean',
             description:
-              'When true, only nightlife venues (source #nightclub / #stripclub / #bar tags). Use for nightclub, strip club, bar, and nightlife questions.',
+              'When true, only nightlife venues: source #nightclub / #stripclub / #bar tags, the user\'s own tags saying so, or a confident AI "bar" type. Use for nightclub, strip club, bar, and nightlife questions.',
           },
         },
         required: ['anchor', 'kinds'],
