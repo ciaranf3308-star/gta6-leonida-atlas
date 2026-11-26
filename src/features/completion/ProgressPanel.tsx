@@ -16,6 +16,7 @@
 import type { CSSProperties } from 'react';
 import { useMapStore, useUiStore } from '../../stores/atlas';
 import { CompletionPanel } from './CompletionPanel';
+import { RecordList } from './RecordList';
 import type { GameDatabase } from '../../domain/game-db';
 import type { LayerProgress } from '../../app/Sidebar';
 
@@ -29,6 +30,7 @@ export function ProgressPanel({
   return (
     <div className="progress-view">
       <CompletionPanel db={db ?? null} />
+      <RecordList db={db ?? null} />
       <div className="section-label">Progress by layer</div>
       <p className="empty-state">
         Mark places as found or explored from their details. Turn a layer on, then use

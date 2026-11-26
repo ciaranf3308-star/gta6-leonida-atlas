@@ -93,6 +93,178 @@ export function collectedRecordFor(
   );
 }
 
+/** The latest still-standing `looted` record for one opportunity —
+ * the undo target for a "Looted ×N" row. Any +1 record undoes one
+ * loot (undo appends a -1 compensating record); compensating
+ * records (count < 0) are themselves undos and are never a target.
+ * When the net count is 0 — every loot already undone — there is
+ * nothing to undo, so this returns undefined even though the +1
+ * records are still in the log (they are the audit trail, and
+ * undoing one would drive the net negative). */
+export function latestLootedRecordFor(
+  db: GameDatabase,
+  opportunityId: string,
+): CompletionRecord | undefined {
+  let net = 0;
+  for (const record of db.records) {
+    if (
+      record.target.type === 'opportunity' &&
+      record.target.id === opportunityId &&
+      record.verb === 'looted'
+    ) {
+      net += record.count;
+    }
+  }
+  if (net <= 0) return undefined;
+  for (let i = db.records.length - 1; i >= 0; i -= 1) {
+    const record = db.records[i]!;
+    if (
+      record.target.type === 'opportunity' &&
+      record.target.id === opportunityId &&
+      record.verb === 'looted' &&
+      record.count > 0
+    ) {
+      return record;
+    }
+  }
+  return undefined;
+}
+
+/** Net looted count for one opportunity — the "Looted ×N" number.
+ * Positive only: a net of 0 or less means nothing stands. */
+export function netLootedCount(db: GameDatabase, opportunityId: string): number {
+  let net = 0;
+  for (const record of db.records) {
+    if (
+      record.target.type === 'opportunity' &&
+      record.target.id === opportunityId &&
+      record.verb === 'looted'
+    ) {
+      net += record.count;
+    }
+  }
+  return net;
+}
+
+/** Date + time for a record's original `at` timestamp — the
+ * timestamp is shown as recorded, never re-stamped on restore or
+ * undo (the compensating record carries its own `at`). */
+export function formatRecordDate(at: string): string {
+  const date = new Date(at);
+  if (Number.isNaN(date.getTime())) return at;
+  return `${date.toLocaleDateString(undefined, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })}, ${date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}`;
+}
+
+/** Plain-words description of one completion record — what was
+ * done, where, and (via formatRecordDate) when. Names come from
+ * the database; an id with no database row (a migrated record
+ * whose target no longer exists) shows the id itself — the record
+ * is the audit trail and is never dropped for being unresolvable. */
+export function describeCompletionRecord(
+  db: GameDatabase,
+  record: CompletionRecord,
+): { verbLabel: string; targetLabel: string; detail: string | null } {
+  if (record.verb === 'looted' && record.count < 0) {
+    const target = record.target;
+    const base =
+      target.type === 'opportunity'
+        ? describeOpportunity(db, target.id)
+        : target.type === 'location'
+          ? (db.locations.get(target.id)?.name ?? target.id)
+          : (db.items.get(target.id)?.name ?? target.id);
+    return { verbLabel: 'Undid loot', targetLabel: base, detail: null };
+  }
+  switch (record.target.type) {
+    case 'item': {
+      const item = db.items.get(record.target.id);
+      const setName = item?.setId ? (db.sets.get(item.setId)?.name ?? null) : null;
+      const hostName = item?.locationId
+        ? (db.locations.get(item.locationId)?.name ?? null)
+        : null;
+      return {
+        verbLabel: 'Collected',
+        targetLabel: item?.name ?? record.target.id,
+        detail: [setName, hostName].filter(Boolean).join(' · ') || null,
+      };
+    }
+    case 'opportunity': {
+      const opp = db.opportunities.get(record.target.id);
+      const locationName = opp
+        ? (db.locations.get(opp.locationId)?.name ?? null)
+        : null;
+      return {
+        verbLabel:
+          record.verb === 'looted'
+            ? `Looted${record.count > 1 ? ` ×${record.count}` : ''}`
+            : record.verb === 'discovered'
+              ? 'Discovered'
+              : 'Explored',
+        targetLabel: opp?.label ?? record.target.id,
+        detail: locationName,
+      };
+    }
+    case 'location': {
+      const location = db.locations.get(record.target.id);
+      return {
+        verbLabel: record.verb === 'discovered' ? 'Discovered' : 'Explored',
+        targetLabel: location?.name ?? record.target.id,
+        detail: null,
+      };
+    }
+  }
+}
+
+function describeOpportunity(db: GameDatabase, opportunityId: string): string {
+  const opp = db.opportunities.get(opportunityId);
+  if (!opp) return opportunityId;
+  const locationName = db.locations.get(opp.locationId)?.name;
+  return locationName ? `${opp.label} · ${locationName}` : opp.label;
+}
+
+/** One render row per completion record, newest first — the pure
+ * builder behind the Recent activity list, so the list's content
+ * (what / where / when / undoable) is unit-testable without
+ * driving the component. A compensating record (count < 0) is a
+ * row of its own — the undo stays visible in the log — but it is
+ * never itself undoable. */
+export interface CompletionRecordRow {
+  recordId: string;
+  verbLabel: string;
+  targetLabel: string;
+  detail: string | null;
+  /** The record's original `at`, formatted — never re-stamped. */
+  dateLabel: string;
+  canUndo: boolean;
+}
+
+export function recordListRows(db: GameDatabase): CompletionRecordRow[] {
+  return [...db.records].reverse().map((record) => {
+    const described = describeCompletionRecord(db, record);
+    // A looted +1 row offers Undo only while a loot still stands
+    // for that opportunity — once every loot is undone (net 0) the
+    // +1 rows stay as audit trail, with no Undo button.
+    const canUndo =
+      record.count > 0 &&
+      !(
+        record.target.type === 'opportunity' &&
+        record.verb === 'looted' &&
+        netLootedCount(db, record.target.id) <= 0
+      );
+    return {
+      recordId: record.id,
+      verbLabel: described.verbLabel,
+      targetLabel: described.targetLabel,
+      detail: described.detail,
+      dateLabel: formatRecordDate(record.at),
+      canUndo,
+    };
+  });
+}
+
 /** Estimated coverage (DESIGN §4.1, third number): what the
  * companion can infer from pinned positions. The pinned fraction is
  * NOT a completion fraction and is never presented as one. */
