@@ -55,9 +55,9 @@ describe("likely-area label width (v0.32 regions fix, lane 1)", () => {
 
   it("the width is 200px — wide enough for the longest label to read as a block", () => {
     // R3b's bar is a block at least 120px wide and at most 260px
-    // tall; 200px wraps the longest live label (Kelly County,
-    // 8 names pre-lane-4, fewer after the town merges) into
-    // ~3–5 lines.
+    // tall; 200px wraps the longest live label (the 6-name Port
+    // Gellhorn one, after lane 4b's town merges — the Kelly label
+    // is a single name, Walker Farm alone) into ~5 lines.
     expect(layerWidthPx()).toBe(200);
   });
 

@@ -156,27 +156,48 @@ export function computeLabelPlacements(
 
 // ---- Likely-area labels (v0.32 regions fix, lane 1) ----
 //
-// A likely-area label is a fixed-width block centred on its
-// region's centre — the only honest anchor it has. It renders only
-// if its screen rect is clear: clear of every geo-label pill
-// already placed (the pills are the map's geographic frame and its
-// tap targets; a label never sits on one) and clear of every
-// likely-area label already placed. First in group order wins;
-// the rest are suppressed, never moved off their anchor — the
-// same precedent as the geo pills and the pin labels in this file.
-// Suppression is reversible: the layer re-runs the pass on every
-// moveend/zoomend, so a label returns as soon as the geometry
-// frees up (pan/zoom out of the pile-up). The rect itself always
-// stays drawn — only the label chip is hidden, and the op stays
-// reachable via Find / Ask / Journal.
+// A likely-area label is a fixed-width block anchored on its
+// region — the region IS the honest anchor, so the label may move
+// inside its own region but never outside it. Placement is two
+// passes over live geometry (the layer measures the real tooltip
+// sizes and region boxes; nothing here is estimated):
+// - Pass 1: a label that fits at its region's CENTRE stays there,
+//   first in group order wins against pills and earlier labels.
+// - Pass 2: a label that does not fit at centre is RE-PLACED —
+//   the nearest clear anchor inside its own region, nearest the
+//   centre first, so movement is minimal and the chip still sits
+//   on the region it names. The Kelly County extent label goes
+//   first in pass 2 (R3b requires it visible at island zoom);
+//   the rest follow in group order.
+// - A label with no clear anchor anywhere in its region is
+//   suppressed, never moved off its region — the same precedent
+//   as the geo pills and the pin labels in this file. At island
+//   zoom that is unavoidable for some labels: 17 fixed-width
+//   labels and 5 county pills cannot all fit a 390px viewport
+//   (measured live 2026-11-26: 7 of 17 show, 0px² overlap).
+//   Suppression is reversible: the layer re-runs the pass on every
+//   moveend/zoomend, so a label returns as soon as the geometry
+//   frees up (zoom in and all 17 show). The rect itself always
+//   stays drawn — only the label chip is hidden, and the op stays
+//   reachable via Find / Ask / Journal.
 
 export interface LikelyAreaLabelCandidate {
   /** Group key (groupLikelyAreas key) — the caller maps it back. */
   key: string;
-  /** The label's screen box, measured live from the tooltip
-   *  element (never estimated — the fixed CSS width makes the
-   *  height content-dependent, so only the live rect is true). */
-  rect: GeoLabelRect;
+  /** The label's live screen size in px (the fixed CSS width, and
+   *  the measured height — the height is content-dependent, so
+   *  only the live measurement is true). */
+  width: number;
+  height: number;
+  /** The region's centre in container points (the honest anchor,
+   *  and the pass-1 position). */
+  centre: { x: number; y: number };
+  /** The region's screen box in container points — the pass-2
+   *  search area. The anchor never leaves this box. */
+  region: GeoLabelRect;
+  /** True for the Kelly County extent group: R3b requires that
+   *  label visible at island zoom, so it goes first in pass 2. */
+  isPriority?: boolean;
 }
 
 /** The gap convention, shared with placeGeoLabels in this file: 4px
@@ -184,39 +205,148 @@ export interface LikelyAreaLabelCandidate {
 const LIKELY_AREA_LABEL_GAP_X_PX = 4;
 const LIKELY_AREA_LABEL_GAP_Y_PX = 2;
 
+/** Pass-2 anchor grid step in px. 10px finds the live slots
+ *  (measured 2026-11-26) while keeping the candidate count small. */
+const LIKELY_AREA_ANCHOR_STEP_PX = 10;
+
+/** Pass-2 never searches further than this from the centre: at
+ *  close zoom a region's screen box is thousands of px across,
+ *  and the grid over the whole box would be unbounded — while the
+ *  slot that clears a pill is always nearby (a pill is ~32px). */
+const LIKELY_AREA_SEARCH_RADIUS_PX = 300;
+
+/** The chosen anchor per group key, in container points — or null
+ *  when the label is suppressed (no clear anchor in its region). */
+export type LikelyAreaPlacements = Map<
+  string,
+  { x: number; y: number } | null
+>;
+
+function likelyAreaLabelBox(
+  anchor: { x: number; y: number },
+  width: number,
+  height: number,
+): GeoLabelRect {
+  return {
+    left: anchor.x - width / 2,
+    right: anchor.x + width / 2,
+    top: anchor.y - height / 2,
+    bottom: anchor.y + height / 2,
+  };
+}
+
 /**
- * Which likely-area labels may show: every candidate whose rect
- * clears all geo pills and every label already kept, in input
- * order. Returns the kept keys; the caller hides the rest.
- * A zero-size rect (a tooltip Leaflet has not laid out, or one
- * hidden by an earlier pass) cannot collide with anything on
- * screen, so it is kept — the next pass re-measures it live.
+ * Where each likely-area label anchors: its region's centre when
+ * that fits, the nearest clear anchor inside its own region when
+ * it does not, null when no anchor in the region clears the geo
+ * pills, the already-placed labels and the viewport. All rects
+ * are in the same space (container points); the viewport is the
+ * map container's size. Two passes: pass 1 keeps centre-fitting
+ * labels exactly on centre (group order); pass 2 re-places the
+ * rest, priority group first, nearest clear anchor first.
  */
 export function placeLikelyAreaLabels(
   candidates: readonly LikelyAreaLabelCandidate[],
   geoPillRects: readonly GeoLabelRect[],
-): Set<string> {
-  const kept = new Set<string>();
+  viewport: { width: number; height: number },
+): LikelyAreaPlacements {
+  const placements: LikelyAreaPlacements = new Map();
   const placedRects: GeoLabelRect[] = [];
   const overlaps = (rect: GeoLabelRect, other: GeoLabelRect) =>
     rect.left < other.right + LIKELY_AREA_LABEL_GAP_X_PX &&
     rect.right > other.left - LIKELY_AREA_LABEL_GAP_X_PX &&
     rect.top < other.bottom + LIKELY_AREA_LABEL_GAP_Y_PX &&
     rect.bottom > other.top - LIKELY_AREA_LABEL_GAP_Y_PX;
+  const boxFits = (box: GeoLabelRect) =>
+    box.left >= 0 &&
+    box.right <= viewport.width &&
+    box.top >= 0 &&
+    box.bottom <= viewport.height &&
+    !geoPillRects.some((pill) => overlaps(box, pill)) &&
+    !placedRects.some((placed) => overlaps(box, placed));
+
+  // Pass 1 — the centre, in group order.
+  const suppressed: LikelyAreaLabelCandidate[] = [];
   for (const candidate of candidates) {
-    const rect = candidate.rect;
-    const empty =
-      rect.right <= rect.left || rect.bottom <= rect.top;
-    if (empty) {
-      kept.add(candidate.key);
-      continue;
+    const box = likelyAreaLabelBox(
+      candidate.centre,
+      candidate.width,
+      candidate.height,
+    );
+    if (boxFits(box)) {
+      placements.set(candidate.key, { ...candidate.centre });
+      placedRects.push(box);
+    } else {
+      suppressed.push(candidate);
     }
-    if (geoPillRects.some((pill) => overlaps(rect, pill))) continue;
-    if (placedRects.some((placed) => overlaps(rect, placed))) continue;
-    kept.add(candidate.key);
-    placedRects.push(rect);
   }
-  return kept;
+
+  // Pass 2 — re-place inside the region, nearest the centre first.
+  // The priority group (Kelly County extent, R3b) goes first; the
+  // rest follow in group order.
+  const pass2 = [
+    ...suppressed.filter((candidate) => candidate.isPriority),
+    ...suppressed.filter((candidate) => !candidate.isPriority),
+  ];
+  for (const candidate of pass2) {
+    const anchor = nearestClearAnchor(candidate, boxFits);
+    if (anchor) {
+      placements.set(candidate.key, anchor);
+      placedRects.push(
+        likelyAreaLabelBox(anchor, candidate.width, candidate.height),
+      );
+    } else {
+      placements.set(candidate.key, null);
+    }
+  }
+  // Labels that fit at centre were set in pass 1; every suppressed
+  // label is set in pass 2 (anchor or null) — the map is complete.
+  return placements;
+}
+
+/**
+ * The nearest anchor to the region's centre, inside the region
+ * box, whose label box fits (viewport + pills + placed labels).
+ * Anchors are tried on a 10px grid ordered by distance from the
+ * centre, so movement is minimal; the search never leaves the
+ * region box or a 300px radius around the centre.
+ */
+function nearestClearAnchor(
+  candidate: LikelyAreaLabelCandidate,
+  boxFits: (box: GeoLabelRect) => boolean,
+): { x: number; y: number } | null {
+  const { centre, region } = candidate;
+  const minX = Math.max(
+    region.left,
+    centre.x - LIKELY_AREA_SEARCH_RADIUS_PX,
+  );
+  const maxX = Math.min(
+    region.right,
+    centre.x + LIKELY_AREA_SEARCH_RADIUS_PX,
+  );
+  const minY = Math.max(
+    region.top,
+    centre.y - LIKELY_AREA_SEARCH_RADIUS_PX,
+  );
+  const maxY = Math.min(
+    region.bottom,
+    centre.y + LIKELY_AREA_SEARCH_RADIUS_PX,
+  );
+  const points: { x: number; y: number; d: number }[] = [];
+  for (let x = minX; x <= maxX; x += LIKELY_AREA_ANCHOR_STEP_PX) {
+    for (let y = minY; y <= maxY; y += LIKELY_AREA_ANCHOR_STEP_PX) {
+      points.push({ x, y, d: Math.hypot(x - centre.x, y - centre.y) });
+    }
+  }
+  // The centre itself is a candidate too (it was tried in pass 1
+  // and failed, but it anchors the sort); nearest first keeps the
+  // movement minimal.
+  points.sort((a, b) => a.d - b.d);
+  for (const point of points) {
+    const box = likelyAreaLabelBox(point, candidate.width, candidate.height);
+    if (boxFits(box)) return { x: point.x, y: point.y };
+  }
+  return null;
 }
 
 // ---- Geo-label pills (§6.4, v0.32 lane 3) ----

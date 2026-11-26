@@ -342,91 +342,173 @@ describe('likely-area labels vs geo pills and each other (v0.32 regions fix, lan
     top,
     bottom: top + height,
   });
-  const label = (key: string, r: GeoLabelRect): LikelyAreaLabelCandidate => ({ key, rect: r });
+  // A candidate whose region is a 400×400 box around its centre —
+  // room to move in every direction, so the tests below decide on
+  // the pill/placed geometry, not on the region's edges. Pass an
+  // explicit region to pin the search area instead.
+  const label = (
+    key: string,
+    cx: number,
+    cy: number,
+    width = 200,
+    height = 60,
+    isPriority = false,
+    region?: GeoLabelRect,
+  ): LikelyAreaLabelCandidate => ({
+    key,
+    width,
+    height,
+    centre: { x: cx, y: cy },
+    region: region ?? rect(cx - 200, cy - 200, 400, 400),
+    isPriority,
+  });
+  const viewport = { width: 1000, height: 1000 };
 
-  it('a lone label with no pills survives', () => {
-    const kept = placeLikelyAreaLabels([label('kelly', rect(100, 300, 200, 84))], []);
-    expect([...kept]).toEqual(['kelly']);
+  it('a lone label anchors exactly on its region centre', () => {
+    const placed = placeLikelyAreaLabels([label('kelly', 300, 300)], [], viewport);
+    expect(placed.get('kelly')).toEqual({ x: 300, y: 300 });
   });
 
-  it('first in group order wins when two labels overlap; the second is suppressed, never moved', () => {
-    // The live island-zoom shape (DEMOS-GANGOP Finding 1): the La
-    // Perle label sits on the Vice City label (6985px²). First
-    // placed wins; the suppressed label keeps its rect — the layer
-    // hides the chip, it never re-anchors it.
-    const kept = placeLikelyAreaLabels(
-      [
-        label('vice-city', rect(100, 300, 200, 84)),
-        label('la-perle', rect(110, 310, 200, 84)),
-      ],
+  it('a label that fits at centre stays at centre even when a later label could have taken its slot', () => {
+    // Pass 1 is group order: the first label keeps its centre
+    // outright; the second must move around it.
+    const placed = placeLikelyAreaLabels(
+      [label('first', 300, 300), label('second', 300, 330)],
       [],
+      viewport,
     );
-    expect([...kept]).toEqual(['vice-city']);
+    expect(placed.get('first')).toEqual({ x: 300, y: 300 });
+    const second = placed.get('second');
+    expect(second).not.toBeNull();
+    expect(second).not.toEqual({ x: 300, y: 330 });
   });
 
-  it('input order decides the winner, not the key', () => {
-    const kept = placeLikelyAreaLabels(
-      [
-        label('la-perle', rect(110, 310, 200, 84)),
-        label('vice-city', rect(100, 300, 200, 84)),
-      ],
-      [],
-    );
-    expect([...kept]).toEqual(['la-perle']);
-  });
-
-  it('a label under a geo pill is suppressed; a clear label survives', () => {
+  it('a label under a geo pill is re-placed inside its region, not suppressed', () => {
     // The live island-zoom shape: the Mariana County pill sits
-    // under the Manatee/M7/Palmer label (2176px²). The pill is the
-    // map's geographic frame and tap target — the label yields.
-    const kept = placeLikelyAreaLabels(
-      [
-        label('manatee', rect(100, 300, 200, 84)),
-        label('ambrosia', rect(100, 100, 200, 60)),
-      ],
-      [rect(150, 320, 118, 32)],
+    // under the Manatee/M7/Palmer label's centre (2176px²). The
+    // pill is the map's geographic frame and tap target — the
+    // label yields its centre but keeps a slot inside its region.
+    // The nearest clear anchor is one label-height below the
+    // centre: the box (100–300, 220–280) clears the pill's bottom
+    // (212) by the 2px gap, and nothing nearer does.
+    const placed = placeLikelyAreaLabels(
+      [label('manatee', 200, 200)],
+      [rect(150, 180, 118, 32)],
+      viewport,
     );
-    expect([...kept]).toEqual(['ambrosia']);
+    expect(placed.get('manatee')).toEqual({ x: 200, y: 250 });
   });
 
-  it('a label clear of the pill by the full gap survives', () => {
+  it('a label with no clear anchor anywhere in its region is suppressed (null), never moved outside', () => {
+    // The live island-zoom shape for Port Gellhorn: its small
+    // rect sits between the Lummox pill above, the Kelly pill
+    // across its middle and the Leonard pill to its right, and the
+    // viewport edge to its left — no 200px-wide slot exists inside
+    // the region at all. The label hides; the rect stays drawn.
+    const boxed: LikelyAreaLabelCandidate = {
+      key: 'port-gellhorn',
+      width: 200,
+      height: 69,
+      centre: { x: 87, y: 314 },
+      region: rect(43, 253, 88, 122),
+    };
+    const placed = placeLikelyAreaLabels(
+      [boxed],
+      [
+        rect(95, 189, 137, 32),
+        rect(41, 313, 118, 32),
+        rect(201, 297, 140, 32),
+      ],
+      { width: 390, height: 780 },
+    );
+    expect(placed.get('port-gellhorn')).toBeNull();
+  });
+
+  it('the priority label goes first in pass 2 and wins the slot over a competing label', () => {
+    // R3b: the Kelly County extent label must be visible at island
+    // zoom. Both labels' centres sit under the same pill, and
+    // their shared region offers exactly one clear slot (below the
+    // pill — above it the box would clip the pill's top edge, and
+    // the region is too short for a second slot). The priority
+    // label claims it; the other is suppressed.
+    const region = rect(100, 150, 200, 100);
+    const placed = placeLikelyAreaLabels(
+      [
+        label('other', 200, 200, 200, 60, false, region),
+        label('kelly', 200, 200, 200, 60, true, region),
+      ],
+      [rect(150, 180, 118, 32)],
+      viewport,
+    );
+    expect(placed.get('kelly')).toEqual({ x: 200, y: 250 });
+    expect(placed.get('other')).toBeNull();
+  });
+
+  it('a re-placed anchor is the nearest clear one to the centre, so movement is minimal', () => {
+    // The pill covers the centre; the nearest clear anchor is one
+    // label-height below it (the grid steps 10px): the box
+    // (100–300, 220–280) clears the pill bottom (212) by the 2px
+    // gap, and every nearer grid point still overlaps the pill.
+    const placed = placeLikelyAreaLabels(
+      [label('manatee', 200, 200, 200, 60)],
+      [rect(150, 180, 118, 32)],
+      viewport,
+    );
+    expect(placed.get('manatee')).toEqual({ x: 200, y: 250 });
+  });
+
+  it('a label clear of the pill by the full gap survives at centre', () => {
     // Same gap convention as placeGeoLabels: 4px horizontal, 2px
-    // vertical. A label whose bottom sits exactly 2px above the
-    // pill's top is clear (the check is strict).
-    const kept = placeLikelyAreaLabels(
-      [label('manatee', rect(100, 300, 200, 84))],
-      [rect(150, 386, 118, 32)],
+    // vertical. A label whose bottom (230) sits exactly 2px above
+    // the pill's top (232) is clear (the check is strict).
+    const placed = placeLikelyAreaLabels(
+      [label('manatee', 200, 200, 200, 60)],
+      [rect(150, 232, 118, 32)],
+      viewport,
     );
-    expect([...kept]).toEqual(['manatee']);
+    expect(placed.get('manatee')).toEqual({ x: 200, y: 200 });
   });
 
-  it('a label 1px inside the gap is suppressed', () => {
-    const kept = placeLikelyAreaLabels(
-      [label('manatee', rect(100, 300, 200, 84))],
-      [rect(150, 385, 118, 32)],
+  it('a label 1px inside the gap is re-placed, not kept at centre', () => {
+    // Pill top 231: the 1px gap is inside the 2px keep-out, so the
+    // centre box overlaps and the label moves up 10px to (200, 190)
+    // — the nearest grid point whose box clears the pill's top edge.
+    const placed = placeLikelyAreaLabels(
+      [label('manatee', 200, 200, 200, 60)],
+      [rect(150, 231, 118, 32)],
+      viewport,
     );
-    expect([...kept]).toEqual([]);
+    expect(placed.get('manatee')).toEqual({ x: 200, y: 190 });
   });
 
-  it('a zero-size rect cannot collide, so it is kept — the next pass re-measures it live', () => {
-    // A tooltip hidden by an earlier pass measures 0×0; keeping
-    // it is what lets a label return when the geometry frees up.
-    const kept = placeLikelyAreaLabels(
-      [label('hidden', rect(100, 300, 0, 0)), label('kelly', rect(100, 300, 200, 84))],
+  it('an anchor whose box would leave the viewport is never chosen', () => {
+    // A label centred 50px from the left edge cannot stay there
+    // (its 200px box would hang off-screen), and its short region
+    // offers no in-viewport slot clear of the full-width pill —
+    // every anchor in the region overlaps it. So it is suppressed.
+    const boxed: LikelyAreaLabelCandidate = {
+      key: 'edge',
+      width: 200,
+      height: 60,
+      centre: { x: 50, y: 400 },
+      region: rect(0, 370, 100, 60),
+    };
+    const placed = placeLikelyAreaLabels(
+      [boxed],
+      [rect(0, 380, 390, 32)],
+      { width: 390, height: 780 },
+    );
+    expect(placed.get('edge')).toBeNull();
+  });
+
+  it('a chain of non-overlapping labels all anchor on centre', () => {
+    const placed = placeLikelyAreaLabels(
+      [label('a', 200, 100), label('b', 200, 200), label('c', 200, 300)],
       [],
+      viewport,
     );
-    expect([...kept]).toEqual(['hidden', 'kelly']);
-  });
-
-  it('a chain of non-overlapping labels all survive', () => {
-    const kept = placeLikelyAreaLabels(
-      [
-        label('a', rect(0, 0, 200, 60)),
-        label('b', rect(0, 100, 200, 60)),
-        label('c', rect(0, 200, 200, 60)),
-      ],
-      [],
-    );
-    expect([...kept]).toEqual(['a', 'b', 'c']);
+    expect(placed.get('a')).toEqual({ x: 200, y: 100 });
+    expect(placed.get('b')).toEqual({ x: 200, y: 200 });
+    expect(placed.get('c')).toEqual({ x: 200, y: 300 });
   });
 });
