@@ -1,3 +1,4 @@
+/* global document */
 // Demo lane 5 follow-up — regions vs area isolation, root-caused.
 // The main probe found labels=0 under Ambrosia isolation and could not
 // tell whether the gang-op layer was switched off by area navigation or
@@ -137,7 +138,7 @@ check('I2c gang-op layer still ON with Kelly sheet open', s.checked === true, `c
 await s.close();
 
 // --- Close the Kelly sheet: does isolation survive? ---
-const closedKelly = await closeAreaSheet(page);
+await closeAreaSheet(page);
 await shot(page, 'g12-kelly-sheet-closed');
 m = await measure(page);
 console.log('Kelly sheet CLOSED:', JSON.stringify({ labels: m.labelCount, rects: m.regionRectCount, masks: m.maskCount, markers: m.markerCount, sheet: m.areaSheetOpen, pill: m.isolationPill, crumb: m.breadcrumb }));
@@ -153,7 +154,7 @@ await shot(page, 'g13-ambrosia-sheet-open');
 m = await measure(page);
 console.log('Ambrosia sheet OPEN:', JSON.stringify({ labels: m.labelCount, rects: m.regionRectCount, masks: m.maskCount, markers: m.markerCount, sheet: m.areaSheetOpen, pill: m.isolationPill }));
 check('I4 Ambrosia sheet open: regions still in the DOM', m.labelCount >= 1, `labels=${m.labelCount} rects=${m.regionRectCount}`);
-const closedAmb = await closeAreaSheet(page);
+await closeAreaSheet(page);
 await shot(page, 'g14-ambrosia-pill');
 m = await measure(page);
 console.log('Ambrosia sheet CLOSED (pill state):', JSON.stringify({ labels: m.labelCount, rects: m.regionRectCount, masks: m.maskCount, markers: m.markerCount, sheet: m.areaSheetOpen, pill: m.isolationPill, banner: m.nothingBanner }));

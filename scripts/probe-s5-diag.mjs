@@ -1,3 +1,4 @@
+/* global document */
 // Diagnostic for demo-small S5: what does the "Area" button actually open
 // on the final build, and does the Leonida crumb navigate to a county list?
 // Fresh profile `demo-s5-diag`. Port 4330.

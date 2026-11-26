@@ -1,3 +1,4 @@
+/* global document, getComputedStyle */
 // Lane 2 (v0.32 regions fix) — R8b / R8d re-probe, adapted from the demo
 // lane's scripts/demo-gangop-regions.mjs (same measure(), same steps,
 // same expectations — R8b and R8d only, nothing else).

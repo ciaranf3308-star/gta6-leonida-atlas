@@ -1,3 +1,4 @@
+/* global document, window */
 // Demo lane 5 — gang-op likely-area regions (v0.32 regions-fix, lane 5 re-run).
 // 390px, DPR 2, Playwright Chromium, fresh profile `demo-gangop` (wiped).
 // Served from `vite preview` on $PORT (default 4330; final build, ATLAS_BASE_PATH set).

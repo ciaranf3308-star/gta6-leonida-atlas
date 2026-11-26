@@ -1,7 +1,8 @@
+/* global document, getComputedStyle */
 // Pin-fade probe v2: deep-link to L1676 (centres the map), close the
 // card, turn Locations on, screenshot, and dump the marker DOM for
 // the Redshaw pin's explored styling vs neighbours.
-import { launch, shot, bodyText, dumpButtons } from './harness.mjs';
+import { launch, shot, dumpButtons } from './harness.mjs';
 const { ctx, page } = await launch('demo-d', 'D-pinfade2');
 await page.goto('http://127.0.0.1:4330/gta6-leonida-atlas/?place=L1676', { waitUntil: 'domcontentloaded' });
 await page.waitForTimeout(3000);

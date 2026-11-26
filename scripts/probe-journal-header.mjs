@@ -1,3 +1,4 @@
+/* global document */
 // Demo lane 5 — journal header reconciliation (lane 4 fix 42252b468).
 // Reads the Collections journal header live on the final build and checks
 // the numbers reconcile: "18 sets, 480 card slots in total" + "All lists

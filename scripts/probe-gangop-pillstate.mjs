@@ -1,3 +1,4 @@
+/* global document */
 // Demo lane 5 — definitive pill-state check (regions + isolation).
 // Escape dismisses the area sheet but KEEPS the isolation (pill state);
 // the X button exits isolation entirely. The earlier probes conflated

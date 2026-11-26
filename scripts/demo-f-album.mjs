@@ -1,3 +1,4 @@
+/* global document */
 // Demo F probe (v0.32 step 9, Demo F lane): Album view + screenshot-match
 // UI at 390px / DPR 2, against the production build served from vite
 // preview on port 4338 with ATLAS_BASE_PATH=/gta6-leonida-atlas/.

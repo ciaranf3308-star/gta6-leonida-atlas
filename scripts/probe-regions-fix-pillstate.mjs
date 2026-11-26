@@ -1,3 +1,4 @@
+/* global document */
 // Lane 2 (v0.32 regions fix) — pill-state re-probe, adapted from the demo
 // lane's scripts/probe-gangop-pillstate.mjs (same measure(), same steps).
 //

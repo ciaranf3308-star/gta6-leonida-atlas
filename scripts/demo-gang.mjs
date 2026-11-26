@@ -1,3 +1,4 @@
+/* global document */
 // Gang-op reachability follow-up (runs on :4330, demo-small profile
 // — layers already off from the demo-layers run):
 //  1. Find "Brooks Boatworks" — read the FULL overlay text and name
@@ -7,7 +8,7 @@
 //  3. Ask "where is Brooks Boatworks?" — is a gang-op place reachable
 //     via Ask at all?
 //  4. Map DOM — is any gang-op marker rendered as a pin?
-import { launch, shot, bodyText, clickTab, waitForText } from './harness.mjs';
+import { launch, shot, clickTab } from './harness.mjs';
 
 const results = [];
 function check(step, ok, detail) {

@@ -1,3 +1,4 @@
+/* global document */
 // F runnable sub-step: upload a real photo via "Add your photo" on a
 // place card and confirm it attaches. (The screenshot-match PROPOSAL
 // itself — match_screenshot — has zero hits in src/tests and there is

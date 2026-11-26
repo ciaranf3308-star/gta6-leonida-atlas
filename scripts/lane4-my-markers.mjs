@@ -1,3 +1,4 @@
+/* global document, localStorage */
 // Lane 4 item 1 — my-markers re-enable repro (runs on :4330).
 // Fresh profile `lane4-mymarkers` so the demo profiles are untouched.
 //  1. Open the Map filters sheet, switch every checked toggle off, verify 0.

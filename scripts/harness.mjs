@@ -1,3 +1,4 @@
+/* global document */
 // Shared Playwright harness for the v0.32 acceptance demos.
 // 390px wide, DPR 2, persistent profile per demo (so "kill + reopen"
 // is a context close + relaunch on the same userDataDir).

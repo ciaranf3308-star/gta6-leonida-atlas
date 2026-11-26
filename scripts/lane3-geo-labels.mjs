@@ -1,3 +1,4 @@
+/* global document, MouseEvent */
 // Lane 3 probe — geo-label pills vs selected pin / vs each other.
 // 390px, DPR 2, Playwright Chromium, fresh profile `lane3-geo`.
 // Served from `vite preview` on port 4340 with ATLAS_BASE_PATH set.

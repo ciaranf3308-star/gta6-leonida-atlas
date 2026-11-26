@@ -1,3 +1,4 @@
+/* global document, indexedDB */
 // Demo E — enrichment is cached, never re-requested (DESIGN-ADDENDUM §2).
 // Fresh profile -> open Starlet Motel (L304) -> tap "Research this
 // building" with NO key -> assert the honest no-key state + a queued

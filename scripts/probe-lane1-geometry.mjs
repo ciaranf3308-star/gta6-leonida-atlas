@@ -1,3 +1,4 @@
+/* global document */
 // Lane-1 probe — island-zoom geometry dump for the likely-area labels.
 // Turns the gang-op layer on and dumps every likely-area label rect +
 // every geo-pill rect (names + boxes), so the post-fix placement can be

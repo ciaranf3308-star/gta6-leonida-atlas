@@ -1,3 +1,4 @@
+/* global document, MouseEvent */
 // Step-9 small items, part 1 (runs on :4330 unless noted):
 //  F-persistence re-check (demo-f-album profile, :4338): the album
 //    still shows Vicki collected after the screenshot sheet closed.
@@ -7,7 +8,7 @@
 //  D3 personal-progress question refused honestly without a key.
 //  Hero breadcrumb + "Search for an area" clickable with the area
 //    sheet open (elementFromPoint).
-import { launch, shot, bodyText, clickTab, closeDialog, waitForText, dumpButtons } from './harness.mjs';
+import { launch, shot, bodyText, clickTab, closeDialog, waitForText } from './harness.mjs';
 
 const SEED =
   '/home/hatch/workspace/goals/gta-6-leonida-map-spoiler-free-pwa/hidden_files/v032-demos/seed-v3-backup.json';

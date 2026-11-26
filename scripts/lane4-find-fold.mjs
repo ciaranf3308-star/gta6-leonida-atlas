@@ -1,3 +1,4 @@
+/* global document, window */
 // Lane 4 item 3 — Find results below the fold (runs on :4331,
 // the lane's own isolated build). Fresh profile `lane4-findfold`.
 //  Search "Brooks Boatworks" in Find and check the result rows are

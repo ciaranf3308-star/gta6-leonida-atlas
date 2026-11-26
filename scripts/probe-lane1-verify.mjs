@@ -1,3 +1,4 @@
+/* global document, getComputedStyle */
 // Lane-1 verification — likely-area label width + placement
 // (v0.32 regions fix, Finding 1: R3b / R7a / R7b).
 // 390px, DPR 2, Playwright Chromium, fresh profile `lane1-verify`

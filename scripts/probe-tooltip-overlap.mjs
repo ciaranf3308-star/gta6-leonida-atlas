@@ -1,3 +1,4 @@
+/* global document */
 // Demo lane 5 — selected-pin tooltip overlap (step-9 (5) fix, re-checked).
 // Fresh profile (showLabels defaults true). Opens Starlet Motel (L304)
 // and measures the .atlas-place-label tooltip rect against the selected

@@ -1,3 +1,4 @@
+/* global document, getComputedStyle */
 // Pin-fade probe (Demo D follow-up): on the demo-d profile (L1676
 // explored), close the place card, turn the Locations layer on, and
 // screenshot the map at Redshaw to judge whether the explored pin

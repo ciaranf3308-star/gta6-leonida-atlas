@@ -1,4 +1,4 @@
-import { launch, bodyText, clickTab } from './harness.mjs';
+import { launch, clickTab } from './harness.mjs';
 const { ctx, page } = await launch('demo-g', 'G-probe');
 await clickTab(page, 'Ask');
 await page.waitForTimeout(1500);

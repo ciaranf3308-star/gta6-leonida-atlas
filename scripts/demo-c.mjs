@@ -1,3 +1,4 @@
+/* global indexedDB */
 // Demo C — vehicle loot (DESIGN §9, v0.32 step-9 Demo C lane).
 // Production build on :4336 (ATLAS_BASE_PATH=/gta6-leonida-atlas/).
 // A: imported Brooks Boatworks — card shows gang-op + vehicle-loot
@@ -11,7 +12,7 @@ import { createRequire } from 'node:module';
 const require = createRequire('/home/hatch/workspace/gta6-leonida-atlas/package.json');
 const { chromium } = require('playwright');
 import { readFileSync } from 'node:fs';
-import { shot, bodyText, clickTab, closeDialog, waitForText, dumpButtons } from './harness.mjs';
+import { shot, bodyText, clickTab, closeDialog, waitForText } from './harness.mjs';
 
 const PORT = 4336;
 const BASE = `http://127.0.0.1:${PORT}/gta6-leonida-atlas/`;
@@ -139,7 +140,6 @@ await shot(page, 'c13-progress-after');
 
 // Attach the safe-code note — no key anywhere in this flow.
 await openPlace(page, 'gang-op:brooks-boatworks');
-const noteRow = page.locator('li.completion-action', { hasText: 'Kolts & Associates' }).first();
 await page.getByRole('button', { name: 'Add a note', exact: true }).first().click();
 await page.waitForTimeout(700);
 const noteInput = page.locator('li.completion-note input[type="text"]').first();

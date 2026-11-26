@@ -167,7 +167,6 @@ check(
   lootedRecs.length === 3 && netCount === 1,
   `${lootedRecs.length} records, net ${netCount}`,
 );
-const firstAt = lootedRecs.find((r) => (r.count ?? 1) > 0)?.at ?? null;
 await ctx.close();
 
 ({ ctx, page } = await launch('demo-b-wipe', 'B-wipe'));

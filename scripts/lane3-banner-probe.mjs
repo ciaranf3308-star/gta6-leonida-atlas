@@ -1,3 +1,4 @@
+/* global document, window */
 // Lane 3 — "NOTHING SHOWING HERE" banner vs gang-op regions (v0.32 Finding 3).
 // 390px, DPR 2, Playwright Chromium, fresh profile `demo-gangop-lane3` (wiped).
 // Served from `vite preview` (final build, ATLAS_BASE_PATH set) on

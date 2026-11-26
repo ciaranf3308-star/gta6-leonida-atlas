@@ -1,3 +1,4 @@
+/* global document */
 // Step-9 small items, part 2 (runs on :4330):
 //  S6 selected pin label clear of the pin face/ring — the step-9
 //    (5) fix is about the .atlas-place-label tooltip. NOTE: the seed
@@ -11,7 +12,7 @@
 //    searchable via Find?
 //  S8 Bare-name Ask regression with layers off: "Delight dancers",
 //    "Delights", "Jack of Hearts", "flamingos".
-import { launch, shot, bodyText, clickTab, waitForText, dumpButtons } from './harness.mjs';
+import { launch, shot, bodyText, clickTab, waitForText } from './harness.mjs';
 
 const results = [];
 function check(step, ok, detail) {

@@ -1,3 +1,4 @@
+/* global document, MouseEvent */
 // Diagnostic for demo-small S5 (round 2): full flow with state dumps.
 // Fresh profile `demo-s5-diag2`. Port 4330.
 import { createRequire } from 'node:module';

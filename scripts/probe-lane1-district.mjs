@@ -1,3 +1,4 @@
+/* global document, getComputedStyle */
 // Lane-1 district-zoom check — suppression must be reversible:
 // zooming in from island zoom frees labels (they return as soon as
 // the geometry has room). Island + 2 zoom-ins, centred on the

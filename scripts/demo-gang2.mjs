@@ -1,9 +1,10 @@
+/* global document */
 // Gang-op reachability, round 2 — fresh profile (default layers):
 //  1. Find "Brooks Boatworks" — dump every result row in the overlay.
 //  2. Find "Tyson Brooks" (control — a catalogue person card).
 //  3. Ask "where is Brooks Boatworks?" — match ONLY the answer text
 //     after the question echo (the echo itself contains the name).
-import { launch, shot, clickTab, waitForText } from './harness.mjs';
+import { launch, shot, clickTab } from './harness.mjs';
 
 const results = [];
 function check(step, ok, detail) {
