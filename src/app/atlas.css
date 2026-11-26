@@ -2556,6 +2556,23 @@ h3 {
 .completion-action .button {
   flex-shrink: 0;
 }
+/* v0.32 step-9: a looted row carries TWO buttons (Mark as looted +
+ * Undo) plus the count badge. In a single-line flex row the text
+ * column (min-width: 0) absorbs the whole squeeze, so at 390px the
+ * label crushed and the "Mark as looted" button wrapped to three
+ * lines ("Mark/as/looted") with the badge clipped. The row now
+ * wraps, and the text keeps a 140px floor — narrow enough to keep
+ * the badge on line 1 at 320px, wide enough that the two buttons
+ * (whose natural widths total ~200px) no longer fit beside it and
+ * drop to line 2 at full width, where the label, the badge and
+ * both buttons all read. At tablet widths the single line still
+ * fits and nothing changes. */
+.completion-action.is-looted {
+  flex-wrap: wrap;
+}
+.completion-action.is-looted > span {
+  flex-basis: 140px;
+}
 .completion-action.is-collect label {
   display: flex;
   align-items: center;
