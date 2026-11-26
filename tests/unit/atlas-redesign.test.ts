@@ -117,12 +117,12 @@ describe('v0.12.0 mobile redesign', () => {
       '.map-hero',
       '.map-search-pill',
       '.place-sheet',
-      '.county-card',
       '.find-filters',
-      '.index-reminder',
       '.place-hero-icon',
     ])
       expect(css).toContain(selector);
+    expect(css).not.toContain('.county-card');
+    expect(css).not.toContain('.index-reminder');
     expect(css).not.toContain('.filter-bar');
     expect(css).not.toContain('.filter-chip');
     expect(css).not.toContain('Navigation-first rebuild');
