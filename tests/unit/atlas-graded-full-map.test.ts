@@ -148,33 +148,50 @@ describe('Collectable card sets', () => {
   });
 
   it('pins only cards whose host building is verified, never by guess', () => {
-    expect(COLLECTABLE_CARD_PLACES).toHaveLength(20);
+    expect(COLLECTABLE_CARD_PLACES).toHaveLength(37);
     for (const card of COLLECTABLE_CARD_PLACES) {
       expect(card.position).not.toBeNull();
       expect(card.evidence).toBe('approximate');
       expect(card.source.url).toMatch(/^https:\/\//);
     }
     expect(COLLECTABLE_CARD_PLACES.map((c) => c.id).sort()).toEqual([
+      'card:alexander-avain-navy-blue',
       'card:anthony-poke-ii',
       'card:braelynn-pink',
       'card:brianna-blue-purple',
       'card:bryson-powers',
+      'card:carlos-larios-bronze',
       'card:chrissie-deep-red',
+      'card:chrissy-deangelo',
+      'card:diagnosis-orange',
+      'card:drake-gold',
       'card:flamer-red',
+      'card:fornicator-light-blue',
+      'card:gouwan-marcus',
+      'card:jacob-schneeman',
       'card:jason',
+      'card:julia-bronze',
       'card:kandi',
       'card:kyle-lewicky',
       'card:lexi-campbell',
       'card:luke-x',
+      'card:mateo-caballero-gold',
       'card:meghan-bronze',
       'card:perla',
       'card:pricilla-pace-gold',
       'card:reggie-pierce',
+      'card:rider-butler-silver',
       'card:right-wing-red',
+      'card:right-wings-truck-blue',
+      'card:right-wings-truck-red',
+      'card:sapphire-silver',
+      'card:they-red',
       'card:tusi-taufua',
+      'card:tusi-taufua-dusty-pink',
       'card:ulysses-whitlock',
       'card:vicki',
       'card:victor-maravilla',
+      'card:wokester-blue',
     ]);
   });
 });

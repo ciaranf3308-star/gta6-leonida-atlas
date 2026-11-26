@@ -97,7 +97,7 @@ describe("real counts — no 5k, ever", () => {
 });
 
 describe("Capri gym hunting — honest, from the real data", () => {
-  it("finds 0 gym tags in the snapshot outside Ajax Gym, and 229 Capri records", () => {
+  it("finds 0 gym tags in the snapshot outside Ajax Gym, and 230 Capri records", () => {
     const places = catalogueFromSnapshot(snapshot);
     // GTADB records only — the curated gyms carry a 'gym' tag by
     // construction, so they are not part of this claim.
@@ -107,11 +107,11 @@ describe("Capri gym hunting — honest, from the real data", () => {
     const gymTagged = gtadb.filter((p) => p.tags.some((t) => /^#?(gym|fitness|workout)$/.test(t)));
     expect(gymTagged.map((p) => p.id)).toEqual(["L1869"]);
     const capri = places.filter((p) => p.title.includes("Capri") || p.region.includes("Capri"));
-    // 229, not 227: the Smooth Sand meditation sits on a sandbar off
+    // 230, not 227: the Smooth Sand meditation sits on a sandbar off
     // Capri (region "Capri, Mariana County") — the one Loot Map place
-    // in Capri — plus the two v0.31.5 Capri cards (Brianna Blue purple,
-    // Pricilla Pace gold), whose host regions name Capri.
-    expect(capri.length).toBe(229);
+    // in Capri — plus the three Capri cards (Brianna Blue purple,
+    // Pricilla Pace gold, Gouwan Marcus), whose host regions name Capri.
+    expect(capri.length).toBe(230);
     expect(capri.filter((p) => p.tags.includes("enterable")).length).toBe(12);
     expect(capri.filter((p) => p.tags.includes("residential")).length).toBe(3);
     expect(capri.filter((p) => p.tags.some((t) => /^#?(gym|fitness|workout)$/.test(t)))).toHaveLength(0);

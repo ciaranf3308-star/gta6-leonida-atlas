@@ -1,21 +1,31 @@
 import type { Place } from '../domain/types';
+import { GENERATED_CARD_PLACES } from './card-checklist-pins.generated';
 
 /**
  * Collectible trading cards — all 18 sets, 480 cards in total (PowerPyx's
  * launch-day list, via GTA6Info). Completing 3 sets unlocks Don't Touch My
  * Deck; 15 sets are required for the 100% checklist.
  *
- * Honest state of the data, 26 Nov 2026: 20 cards have a published
+ * Honest state of the data, 26 Nov 2026: 37 cards have a published
  * location precise enough to pin (plus 3 Loot Map dancer cards in
- * loot-map.ts, so 23 cards in the catalogue). A card is only pinned
+ * loot-map.ts, so 40 cards in the catalogue). A card is only pinned
  * here when the guide names a host building that exists in the GTADB
  * catalogue, and the pin sits on that host building's verified GTADB
  * position with the exact spot described in the pin — the pin is the
  * building, not the shelf. A venue pin (mine tunnel, airfield parts
  * room, raceway sign, railyard control building) sits on the venue's
- * GTADB record and says so in the description. The other 460 cards
+ * GTADB record and says so in the description. The other 440 cards
  * have no verified position in any source checked and are NOT placed
  * by guess. Drop your own marker when you find one.
+ *
+ * The 17 newest pins come from lorenzone.fr's written directions
+ * (480 slots, 490 pickups), hand-matched to GTADB host buildings by
+ * scripts/build-card-checklist.mjs — see
+ * src/data/card-checklist-pins.generated.ts. The full 480-slot
+ * checklist — every slot trackable whether pinned or not — lives in
+ * src/data/card-checklist.generated.ts, built over a six.mics.dev
+ * identity backbone (596 game-text tiers, 230 people). No printed
+ * card text (© Rockstar) or artwork (no licence) is bundled.
  *
  * Sources: gtadb.net's Collectible Cards guide (148 named leads,
  * updated 22 Nov 2026) and GTA6Info's Collectible Cards page (Push
@@ -145,7 +155,7 @@ export const COLLECTABLE_CARD_PLACES: Place[] = [
   ),
   card(
     'card:kyle-lewicky',
-    'Kyle Lewicky',
+    'Kyle Lewicki (teal)',
     'vice-city-narcos',
     'Vice City Narcos',
     'On a bench in the rear corridor of Dynamix Fitness, Bayside, Vice City. Set per gtadb.net; GTA6Info lists this card’s set as unclear.',
@@ -320,4 +330,7 @@ export const COLLECTABLE_CARD_PLACES: Place[] = [
     'https://gta6info.com/wiki/Collectible_Cards',
     'GTA6Info · Collectible Cards',
   ),
+  // 26 Nov 2026: 17 more cards from lorenzone.fr's written directions,
+  // hand-matched to GTADB host buildings (see the generated file).
+  ...GENERATED_CARD_PLACES,
 ];
