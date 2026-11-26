@@ -60,6 +60,57 @@ export const JOURNAL_FILTERS: { id: JournalFilter; label: string }[] = [
   { id: 'unpositioned', label: 'Unpositioned' },
 ];
 
+/**
+ * The journal's row accounting (v0.32 gang-op follow-up): the header
+ * used to say "18 sets, 480 cards in total" while the filter row said
+ * "All · 614" — both true, neither explained the other. The 614 rows
+ * are the 480 checklist slots + 117 extra game-text tiers (62 filed
+ * under their set, 55 with no set) + 17 other collectibles with no
+ * set (10 meditations, 5 magazines, 1 watch, 1 WAiNK scan). Pure, so
+ * tests can pin the breakdown and the header can never drift from
+ * the filter counts again: slots + extras + other === all.
+ */
+export interface JournalCounts {
+  /** Checklist rows in the journal (the "All" filter count). */
+  all: number;
+  found: number;
+  remaining: number;
+  unpositioned: number;
+  /** In-game checklist slots — the "480 cards". */
+  slots: number;
+  /** Extra game-text tiers, never checklist slots. */
+  extras: number;
+  /** Other collectibles with no set (meditations, magazines…). */
+  other: number;
+}
+
+export function journalCounts(db: GameDatabase | null): JournalCounts {
+  const zero: JournalCounts = {
+    all: 0,
+    found: 0,
+    remaining: 0,
+    unpositioned: 0,
+    slots: 0,
+    extras: 0,
+    other: 0,
+  };
+  if (!db) return zero;
+  const items = [...db.items.values()];
+  return {
+    all: items.length,
+    found: items.filter((item) => db.completedItemIds.has(item.id)).length,
+    remaining: items.filter((item) => !db.completedItemIds.has(item.id)).length,
+    unpositioned: items.filter((item) => item.placement !== 'pinned').length,
+    slots: items.filter((item) => item.checklistSlot).length,
+    extras: items.filter(
+      (item) => !item.checklistSlot && item.kind === 'trading-card',
+    ).length,
+    other: items.filter(
+      (item) => !item.checklistSlot && item.kind !== 'trading-card',
+    ).length,
+  };
+}
+
 /** The hint for one item: null until its own row's tap reveals it.
  * Pure, so tests can pin the gating without driving the component. */
 export function hintForItem(
@@ -218,16 +269,7 @@ export function Journal({
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState('');
 
-  const counts = useMemo(() => {
-    if (!db) return { all: 0, found: 0, remaining: 0, unpositioned: 0 };
-    const items = [...db.items.values()];
-    return {
-      all: items.length,
-      found: items.filter((item) => db.completedItemIds.has(item.id)).length,
-      remaining: items.filter((item) => !db.completedItemIds.has(item.id)).length,
-      unpositioned: items.filter((item) => item.placement !== 'pinned').length,
-    };
-  }, [db]);
+  const counts = useMemo(() => journalCounts(db), [db]);
 
   async function toggle(item: CollectibleItem) {
     if (!db || busyId) return;
@@ -286,6 +328,10 @@ export function Journal({
     underwater: 'Underwater discoveries',
     watch: 'Watches',
     earbuds: 'Earbuds',
+    // The 55 set-less extra game-text tiers land here (kind
+    // 'trading-card', setId null) — name them what they are, not the
+    // raw kind id, so the section reads with the header accounting.
+    'trading-card': 'Extra game-text tiers',
     other: 'Other collectibles',
   };
 
@@ -293,9 +339,13 @@ export function Journal({
     <section className="journal" aria-label="Collections journal">
       <h3>Trading cards</h3>
       <p className="panel-intro">
-        18 sets, 480 cards in total — no set is hidden for being unmapped. A card with no
-        verified spot still lists here; its hint stays hidden until you tap “Show where to
-        look” on that card.
+        {sets.length} sets, {counts.slots} card slots in total — no set is hidden for
+        being unmapped. A card with no verified spot still lists here; its hint stays
+        hidden until you tap “Show where to look” on that card.
+      </p>
+      <p className="panel-intro">
+        All lists {counts.all} rows: the {counts.slots} slots, {counts.extras} extra
+        game-text tiers, and {counts.other} other collectibles.
       </p>
       <div className="journal-filters" role="group" aria-label="Filter journal items">
         {JOURNAL_FILTERS.map((option) => (
