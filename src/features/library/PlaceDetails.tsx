@@ -12,6 +12,7 @@ import {
   attachCompletionNote,
   loadGameDatabase,
   recordCompletion,
+  undoCompletion,
 } from '../completion/record';
 import { latestLootedRecordFor } from '../completion/place-ids';
 import { useCompletionLogStore } from '../completion/log-store';
@@ -472,6 +473,33 @@ export default function PlaceDetails({
       setCompletionError(result.error ?? 'Could not save that — try again.');
     }
   }
+  /** Undo one loot (v0.32 step-9, Demo B step 3): appends the -1
+   * compensating record for the latest still-standing looted
+   * record, so "Looted ×2" goes back to "Looted ×1" — the loot and
+   * its undo both stay in the log, and the pin, the card and
+   * Progress move in the same write. The button only renders while
+   * a loot stands (latestLootedRecordFor is undefined at net 0),
+   * so it can never drive the count negative. */
+  async function undoAction(
+    action: Extract<LocationCardAction, { kind: 'record' }>,
+  ) {
+    if (completionBusy || !activeDb) return;
+    const record = latestLootedRecordFor(activeDb, action.target.id);
+    if (!record) {
+      setCompletionError('Nothing to undo here — this place has not been looted.');
+      return;
+    }
+    setCompletionBusy(`${action.key}:undo`);
+    setCompletionError('');
+    const result = await undoCompletion(record.id);
+    setCompletionBusy(null);
+    if (result.ok && result.db) {
+      setCompletionDb(result.db);
+      useCompletionLogStore.getState().applyDb(result.db);
+    } else {
+      setCompletionError(result.error ?? 'Could not undo that — try again.');
+    }
+  }
   const [noteEditingKey, setNoteEditingKey] = useState<string | null>(null);
   const [noteDraft, setNoteDraft] = useState('');
   const [lootNoteBusy, setLootNoteBusy] = useState<string | null>(null);
@@ -787,9 +815,11 @@ export default function PlaceDetails({
                   );
                 }
                 const busy = completionBusy === action.key;
+                const undoBusy = completionBusy === `${action.key}:undo`;
                 const isLooted = action.verb === 'looted';
                 // The note target: the latest still-standing looted
-                // record for this opportunity. The suggested note is the opportunity's
+                // record for this opportunity (the same record Undo
+                // targets). The suggested note is the opportunity's
                 // own safe code, when it has one.
                 const latestLooted =
                   isLooted && action.count > 0 && activeDb
@@ -825,6 +855,17 @@ export default function PlaceDetails({
                       >
                         {busy ? 'Saving…' : action.label}
                       </button>
+                      {isLooted && action.count > 0 && latestLooted && (
+                        <button
+                          type="button"
+                          className="button"
+                          disabled={completionBusy !== null || !ready}
+                          onClick={() => void undoAction(action)}
+                          aria-label={`Undo one looted ${action.detail}`}
+                        >
+                          {undoBusy ? 'Undoing…' : 'Undo'}
+                        </button>
+                      )}
                     </li>
                     {latestLooted && (
                       <li className="completion-note">
