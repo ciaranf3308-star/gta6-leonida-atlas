@@ -112,8 +112,15 @@ export interface PersonalMarker {
    * break into. Ask Nylah treats these as breakable-home answers; most
    * breakable homes have no tag in the public data at all, so the user's
    * own marks are the only way they get on the map.
+   * "vehicle-loot" = a safe / garage / bunker the user found holding a
+   * vehicle or a safe code (Demo C jot path): a gang-op site the guides
+   * have not published, a safe code from the aggregator lists, a
+   * standout vehicle in a garage. The jot is the data acquisition for
+   * vehicle loot — most such spots have no published position at all.
+   * The marker's description carries what is inside (and the code);
+   * the looted record's note carries the code actually used.
    */
-  kind?: 'workout' | 'breakable';
+  kind?: 'workout' | 'breakable' | 'vehicle-loot';
   /** Optional marker colour (hex from the editor palette). Defaults to the layer colour. */
   color?: string;
   createdAt: string;

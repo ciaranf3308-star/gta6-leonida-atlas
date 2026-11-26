@@ -59,7 +59,7 @@ export const useMapStore = create<{
   editorMode: 'none' | 'create' | 'move';
   draftPosition: Position | null;
   /** New-marker preset from the map overlay ("+ Workout spot"). */
-  markerKindPreset: 'workout' | 'breakable' | null;
+  markerKindPreset: 'workout' | 'breakable' | 'vehicle-loot' | null;
   /** Ask Nylah highlights — ids the last answer pointed at. Never a layer. */
   highlightIds: string[];
   /** The map centre, from the map's own viewport reports — the Find list

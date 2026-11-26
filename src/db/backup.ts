@@ -189,7 +189,15 @@ export function parsePersonalMarker(
   // accepted only 'workout', so a v3 backup carrying a breakable
   // marker could not be imported at all, and exportBackup would
   // throw for such a user. Both kinds now parse.
-  if (kind !== undefined && kind !== 'workout' && kind !== 'breakable')
+  // v0.32 step-9 Demo C: 'vehicle-loot' is a legal marker kind
+  // (the player-jotted vehicle-loot spot) — same rule, same reason:
+  // a backup carrying one must import, and export must not throw.
+  if (
+    kind !== undefined &&
+    kind !== 'workout' &&
+    kind !== 'breakable' &&
+    kind !== 'vehicle-loot'
+  )
     invalid(`${path}.kind`, 'is unsupported');
   return {
     id: parseId(item.id, `${path}.id`, true),

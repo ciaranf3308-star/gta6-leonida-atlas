@@ -34,11 +34,13 @@ export default function MarkerEditor({
   // / breakable) is what distinguishes it, not a category picker.
   const [icon, setIcon] = useState<PersonalMarker['icon']>(marker?.icon ?? 'pin');
   const presetKind = useMapStore((s) => s.markerKindPreset);
-  const [kind, setKind] = useState<'general' | 'workout' | 'breakable'>(() => {
+  const [kind, setKind] = useState<'general' | 'workout' | 'breakable' | 'vehicle-loot'>(() => {
     if (marker?.kind === 'workout') return 'workout';
     if (marker?.kind === 'breakable') return 'breakable';
+    if (marker?.kind === 'vehicle-loot') return 'vehicle-loot';
     if (presetKind === 'workout') return 'workout';
     if (presetKind === 'breakable') return 'breakable';
+    if (presetKind === 'vehicle-loot') return 'vehicle-loot';
     return 'general';
   });
   const [color, setColor] = useState<string>(marker?.color ?? MARKER_COLORS[0]);
@@ -76,6 +78,7 @@ export default function MarkerEditor({
       color,
       ...(kind === 'workout' ? { kind: 'workout' as const } : {}),
       ...(kind === 'breakable' ? { kind: 'breakable' as const } : {}),
+      ...(kind === 'vehicle-loot' ? { kind: 'vehicle-loot' as const } : {}),
       position: coords,
       createdAt: marker?.createdAt ?? now,
       updatedAt: now,
@@ -152,12 +155,17 @@ export default function MarkerEditor({
         <select
           id="marker-kind"
           value={kind}
-          onChange={(e) => setKind(e.target.value as 'general' | 'workout' | 'breakable')}
+          onChange={(e) =>
+            setKind(e.target.value as 'general' | 'workout' | 'breakable' | 'vehicle-loot')
+          }
         >
           <option value="general">General marker</option>
           <option value="workout">Workout equipment — gear in a house / garage</option>
           <option value="breakable">
             Breakable home — house / apartment / trailer I can enter
+          </option>
+          <option value="vehicle-loot">
+            Vehicle loot — safe / garage / bunker with a vehicle or code
           </option>
         </select>
         <p className="help-text">
@@ -174,6 +182,15 @@ export default function MarkerEditor({
             you ask about houses you can break into nearby.
           </p>
         )}
+        {kind === 'vehicle-loot' && (
+          <p className="help-text">
+            Vehicle loot is how the safes, garages and bunkers holding a vehicle or a
+            safe code get on the map: most of them have no published position at all.
+            Say what is inside in the description — the vehicle, the safe code — and
+            after you mark it looted you can attach the code you used as a note on
+            the record, so it survives a restart and a backup.
+          </p>
+        )}
         <label htmlFor="marker-description">Description</label>
         <textarea
           id="marker-description"
@@ -185,7 +202,9 @@ export default function MarkerEditor({
               ? 'What is inside? e.g. safe upstairs, jewellery, special car in the garage'
               : kind === 'workout'
                 ? 'What equipment is here? e.g. bench in the garage'
-                : 'Notes about this place'
+                : kind === 'vehicle-loot'
+                  ? 'What is inside? e.g. safe code 6823, standout car in the garage'
+                  : 'Notes about this place'
           }
           onChange={(e) => setDescription(e.target.value)}
         />

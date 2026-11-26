@@ -363,6 +363,13 @@ export function markerToPlace(marker: PersonalMarker): Place {
       // the user found the house himself, so it is real, whatever the
       // public data says (most breakable homes have no tag at all).
       ...(marker.kind === 'breakable' ? ['breakable', 'house'] : []),
+      // A vehicle-loot marker is a vehicle-loot answer for Ask Nylah
+      // (Demo C jot path) — the user found the safe / garage /
+      // bunker himself, so it is real, whatever the public data says
+      // (most such spots have no published position at all). The
+      // 'vehicle-loot' tag derives the opportunity, which is
+      // repeatable, so it can be marked looted with a note (the code).
+      ...(marker.kind === 'vehicle-loot' ? ['vehicle-loot'] : []),
       ...(marker.color ? [`color:${marker.color}`] : []),
     ],
     region: 'My markers',
