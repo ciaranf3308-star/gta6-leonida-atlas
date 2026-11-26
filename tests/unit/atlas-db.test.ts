@@ -271,7 +271,7 @@ describe('real IndexedDB schema upgrade', () => {
     legacy.close();
     await db.open();
     const saved = await db.load();
-    expect(db.verno).toBe(4);
+    expect(db.verno).toBe(5);
     expect(saved.visited).toEqual([]);
     expect(saved.markers[0]).toMatchObject({
       id: 'custom:old',
