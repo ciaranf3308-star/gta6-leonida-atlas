@@ -9,6 +9,12 @@
 // Served from dist/ on port 4343 like the other walks. The OpenAI
 // call is blocked: no key is set, so the local fallback is what the
 // probe asserts — the verdict text plus the local cards.
+//
+// v0.32 gang-op follow-up (lane 2): (8) "where is Brooks
+// Boatworks?" — the area-known answer (op, gang, area, likely area,
+// no verified position, safe code 6823), and (9) "show me the gang
+// operations" — the kind question. Both must never answer "Nothing
+// in the map data" and never say "turn a layer on".
 /* global document, window */
 import { chromium } from 'playwright';
 import http from 'node:http';
@@ -90,14 +96,16 @@ if ((await page.locator('.place-sheet').count()) > 0) {
 }
 
 async function ask(question) {
-  const before = await page.locator('.ask-cards').count();
+  const before = await page.locator('.ask-message.is-assistant').count();
   await page.getByPlaceholder('Ask about the map').fill(question);
   await page.getByRole('button', { name: 'Send' }).click();
-  // Wait for a NEW answer to mount: the old wait (count >= 1) was
+  // Wait for a NEW answer to mount: the old wait (cards count) was
   // already satisfied from the first question on, so the third ask
   // read the second answer before its own had rendered (v0.31.5).
+  // Assistant messages are counted, not cards: an empty answer
+  // mounts no cards, so a cards wait would time out on it.
   await page.waitForFunction(
-    (count) => document.querySelectorAll('.ask-cards').length > count,
+    (count) => document.querySelectorAll('.ask-message.is-assistant').length > count,
     before,
     { timeout: 20000 },
   );
@@ -107,7 +115,11 @@ async function ask(question) {
 const lastAnswer = async () => {
   const cards = await page.locator('.ask-cards').last().innerText();
   const panel = await page.locator('.ask-panel').innerText();
-  return { cards, panel };
+  // The last assistant message's own text (the verdict), with or
+  // without cards — the cards-only read above would return the
+  // previous answer's cards when this answer has none.
+  const answer = await page.locator('.ask-message.is-assistant').last().innerText();
+  return { cards, panel, answer };
 };
 
 await nav('Ask').click();
@@ -273,6 +285,86 @@ await ask('flamingos');
     cards.slice(0, 400),
   );
   await shot('g-bare-flamingos');
+}
+
+// (8)–(9) The gang-op follow-up (v0.32, lane 2): "where is Brooks
+// Boatworks?" was "Nothing in the map data for that. I won't guess
+// — try turning a layer on" — a layer that did not exist (step 9,
+// "THE GANG-OP LAYER QUESTION"). The area-known answer names the
+// op, its gang, its area, its likely area, that it has no verified
+// position, and its safe code — never a proximity verdict, never
+// "Nothing in the map data", never "turn a layer on".
+
+// (8) The bare Brooks question.
+await ask('where is Brooks Boatworks?');
+{
+  const { cards, panel, answer } = await lastAnswer();
+  check('Brooks answer names the op', answer.includes('Brooks Boatworks'), answer.slice(0, 300));
+  check(
+    'Brooks answer names the gang',
+    answer.includes('Kolts & Associates'),
+    answer.slice(0, 300),
+  );
+  check(
+    'Brooks answer names the area',
+    answer.includes('Port Gellhorn, Kelly County'),
+    answer.slice(0, 300),
+  );
+  check(
+    'Brooks answer names the likely area',
+    answer.includes('north of the Pay'),
+    answer.slice(0, 300),
+  );
+  check(
+    'Brooks answer says no verified position',
+    answer.toLowerCase().includes('no verified position'),
+    answer.slice(0, 300),
+  );
+  check('Brooks answer gives the safe code', answer.includes('6823'), answer.slice(0, 300));
+  check(
+    'Brooks answer is not "Nothing in the map data"',
+    !panel.includes('Nothing in the map data'),
+    panel.slice(0, 300),
+  );
+  check(
+    'Brooks answer never claims a distance',
+    !answer.toLowerCase().includes('map units away'),
+    answer.slice(0, 300),
+  );
+  // Cards once the gang-op layer exists; before it, the honest
+  // area-only advice names the op instead (emptyAdvice).
+  check(
+    'Brooks answer shows the op (card once the gang-op layer lands)',
+    cards.includes('Brooks Boatworks') || panel.includes('Find lists it by name'),
+    cards.slice(0, 200),
+  );
+  await shot('h-brooks-boatworks');
+}
+
+// (9) The gang-op kind question, asked as a follow-up after Brooks
+// (it inherits Brooks as its anchor for distances only — the answer
+// is the whole list, not a Brooks summary).
+await ask('show me the gang operations');
+{
+  const { cards, panel } = await lastAnswer();
+  check(
+    'gang-op kind ask is not "Nothing in the map data"',
+    !panel.includes('Nothing in the map data'),
+    panel.slice(0, 300),
+  );
+  check(
+    'gang-op kind ask never says "turn a layer on"',
+    !panel.toLowerCase().includes('turn a layer on'),
+    panel.slice(0, 300),
+  );
+  // With the layer: the 37 ops as cards (Brooks is 6th, inside the
+  // 10 shown); before it: the area-only advice naming one by name.
+  check(
+    'gang-op kind ask shows the ops (or the area-only advice)',
+    cards.includes('Brooks Boatworks') || panel.includes('Ask for one by name'),
+    cards.slice(0, 200),
+  );
+  await shot('i-gang-operations');
 }
 
 const openAiBlocked = failedRequests.some((url) => url.includes('api.openai.com'));
