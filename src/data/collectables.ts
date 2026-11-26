@@ -94,6 +94,28 @@ function card(
 }
 
 /**
+ * Parse the GTADB host id from a card pin's host string
+ * ("Starlet Motel, Kelly County (GTADB L304)" → "L304").
+ *
+ * A card whose host cannot be parsed is a BUILD-TIME ERROR, never a
+ * silent drop (DESIGN §3.2): `buildGameDatabase` throws rather than
+ * dropping the card. One genuine exception exists — Kyle Lewicki
+ * (teal), whose host is a GTA6 GPS pin ("Dynamix Fitness, Vice City
+ * (GTA6 GPS approximate pin)"), not a GTADB record. That slot resolves
+ * by host name to `gym:dynamix` in `buildGameDatabase`; this parser
+ * still throws for it, and the caller handles the fallback.
+ */
+export function parseCardHostId(place: Place): string {
+  const match = place.region.match(/GTADB (L\d+)/);
+  if (!match?.[1]) {
+    throw new Error(
+      `Card pin ${place.id} has no GTADB host id in its host string: "${place.region}".`,
+    );
+  }
+  return match[1];
+}
+
+/**
  * The only cards with a host building in GTADB (Starlet Motel L304,
  * Gellhorn Drive-In Theatre L3658) or at a verified gym position
  * (Dynamix Fitness, GTA6 GPS). Locations per GTA6Info's Collectible Cards
