@@ -52,6 +52,12 @@ export interface UserScreenshot {
   kind: 'card-front' | 'collection-screen';
   /** The set the screenshot was attached to, when known. */
   setId?: string | null;
+  /** The checklist item this screenshot is the photo OF, once a
+   * card-front match is confirmed (or the player attached it to a
+   * card directly). Only then may the album show it as that card's
+   * face — a collection-screen photo never carries an itemId, and an
+   * unconfirmed screenshot never becomes card art. */
+  itemId?: string | null;
   /** Local blob id. The blob itself is never sent anywhere except the
    *  single match call under the player's key. */
   blobId: string;
