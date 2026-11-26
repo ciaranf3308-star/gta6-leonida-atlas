@@ -23,7 +23,9 @@ export const LEONIDA_ATLAS_RELEASES: readonly LeonidaAtlasRelease[] = [
       "Honest note: this release puts the pins + data in. The album UI that shows all 480 slots — front/back, rarity, collected/sold, with the uncollected concealed — is v0.32. Until then the 440 area-known slots live in the data and in Ask answers, not on the map as pins.",
       "Ask — \"cards near Capri\" now answers with a real card in Capri: Pricilla Pace (gold), Leonida Brewing Company, Capri — about 500 map units away. Before this release the nearest card to Capri was Jason at Delights, ~3,400 away. The Delights Dancers set question still returns 4 cards, not 5: \"Delights\" is also an area word, so the Loot Map Harley drops out of the set ask. That needs the v0.32 structured Ask, not another patch here.",
     ],
-    verification: ["[LEAD-VERIFICATION]"],
+    verification: [
+      "Lead integration (2026-11-26): tsc --noEmit clean; eslint 0 errors (2 pre-existing warnings, in check-v023-app.mjs and check-v0314-ask-cards.mjs); full unit suite 925/925 over 95 files (1 new chip test: the Collectibles chip's layer list includes loot-collectibles alongside the cards:* layers); one-command production build (ATLAS_BASE_PATH=/gta6-leonida-atlas/, bundle assets/index-CrPcIqiJ.js, SW cache atlas-b40404d5-e8b575d6da4e, generated worker verified in the same command, offline core 41 files, 31,527 graded tiles); app walk 43/43 PASS; Ask cards probe 13/13 PASS (probe repaired for the new data — the set ask now asserts the 4 cards:* pins, Jason/Vicki/Perla/Kandi; the Loot Map Harley gap is recorded, it needs the v0.32 structured Ask; the generic collectibles ask is now asked first in a fresh conversation and asserts breadth across sets, because a follow-up inherits the earlier question's area by design and the 10-card cap is filled by cards:*); loot probe 32/32; geometry probe 16/16; spoiler probe 21/21; reveal probe 4/4; fix probe 10/10; basemap walk OK (aborted 1 / error tiles 1 / ocean 0 — first run flaked on the known error-tile paint timing, clean on re-run); island view with Collectibles on: 16 pins, was 3.",
+    ],
   },
   {
     version: "v0.31.4",
