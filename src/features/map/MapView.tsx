@@ -34,6 +34,8 @@ import { markerColor, markerIcon } from './marker-icon';
 import {
   computeLabelPlacements,
   labelOffsetForPin,
+  placeGeoLabels,
+  type GeoLabelCandidate,
   type LabelCandidate,
 } from './label-placement';
 import { addIsolationLayers } from './isolation-layer';
@@ -780,6 +782,17 @@ export default function MapView(props: MapViewProps) {
   // cities/towns at district zoom, neighbourhoods/districts at
   // street zoom. Own layer group, re-rendered on pan/zoom — never
   // part of the pin clamp or the marker budget.
+  //
+  // v0.32 lane 3: a pill renders only if its screen rect is clear —
+  // clear of every ringed pin (the selected pin and Ask-highlight
+  // pins) and clear of every pill already placed (placeGeoLabels).
+  // Two areas can share (nearly) one centroid — at Starlet Motel
+  // area:gellhorn and area:starlet-motel--kelly-county sit 38
+  // map-units apart, so both pills rendered on top of each other
+  // and under the selected pin's face — and a county pill at island
+  // zoom sat behind ringed highlight diamonds. Suppressed pills
+  // come back as soon as the pin is deselected / the highlights are
+  // cleared; nothing is moved off its centroid.
   useEffect(() => {
     if (!map || !props.areas) return;
     const group = L.layerGroup().addTo(map);
@@ -792,12 +805,36 @@ export default function MapView(props: MapViewProps) {
         south: bounds.getSouth(),
         north: bounds.getNorth(),
       };
-      for (const label of geoLabelsForView(
+      // Ringed pins, as container points: the selected place plus
+      // every Ask highlight (read through callbacks so a highlight
+      // set after this effect ran is still honoured on the next
+      // moveend/zoomend render).
+      const current = callbacks.current;
+      const byId = new Map(current.places.map((place) => [place.id, place]));
+      const ringedIds = new Set<string>();
+      if (current.selectedId) ringedIds.add(current.selectedId);
+      for (const id of current.highlightIds ?? []) ringedIds.add(id);
+      const ringedPoints: { x: number; y: number }[] = [];
+      for (const id of ringedIds) {
+        const place = byId.get(id);
+        if (!place || !place.position) continue;
+        const point = map.latLngToContainerPoint(
+          toMapCoordinate(place.position),
+        );
+        ringedPoints.push({ x: point.x, y: point.y });
+      }
+      const candidates: GeoLabelCandidate[] = geoLabelsForView(
         props.areas!,
         map.getZoom(),
         viewport,
         props.selectedAreaId ?? null,
-      )) {
+      ).map((label) => {
+        const point = map.latLngToContainerPoint(
+          toMapCoordinate(label.position),
+        );
+        return { ...label, point: { x: point.x, y: point.y } };
+      });
+      for (const label of placeGeoLabels(candidates, ringedPoints)) {
         const marker = L.marker(toMapCoordinate(label.position), {
           icon: L.divIcon({
             className: 'atlas-geo-label-wrap',
@@ -823,7 +860,7 @@ export default function MapView(props: MapViewProps) {
       map.off('moveend zoomend', render);
       group.remove();
     };
-  }, [map, props.areas, props.selectedAreaId]);
+  }, [map, props.areas, props.selectedAreaId, props.selectedId, props.highlightIds]);
 
   useEffect(() => {
     if (props.editorMode === 'none') {

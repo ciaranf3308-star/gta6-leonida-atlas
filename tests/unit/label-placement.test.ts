@@ -6,8 +6,13 @@
 import { describe, expect, it } from 'vitest';
 import {
   computeLabelPlacements,
+  geoLabelRectFor,
+  geoLabelWidthFor,
+  GEO_LABEL_HEIGHT_PX,
   labelOffsetForPin,
   labelWidthFor,
+  placeGeoLabels,
+  type GeoLabelCandidate,
   type LabelCandidate,
 } from '../../src/features/map/label-placement';
 import type { ChromeGeometry } from '../../src/features/map/chrome-geometry';
@@ -199,5 +204,130 @@ describe('ringed labels shrink to fit instead of vanishing (v0.32 step-9)', () =
       narrow,
     );
     expect(placed.has(0)).toBe(false);
+  });
+});
+
+describe('geo-label pills vs ringed pins and each other (v0.32 lane 3)', () => {
+  const geo = (
+    areaId: string,
+    name: string,
+    x: number,
+    y: number,
+  ): GeoLabelCandidate => ({
+    areaId,
+    name,
+    position: { x: 0, y: 0 },
+    point: { x, y },
+  });
+
+  it('the width estimator covers every pill measured live at 390px DPR 2', () => {
+    // Live widths, lane-3 probe 2026-11-26: Gellhorn 92, Starlet
+    // Motel 124, Kelly County 118, Leonard County 140, Vice-Dale
+    // County 149, Port Gellhorn International Raceway 297; height 31.5.
+    const measured: [string, number][] = [
+      ['Gellhorn', 92],
+      ['Starlet Motel', 124],
+      ['Kelly County', 118],
+      ['Leonard County', 140],
+      ['Vice-Dale County', 149],
+      ['Port Gellhorn International Raceway', 297],
+    ];
+    for (const [name, width] of measured) {
+      expect(geoLabelWidthFor(name)).toBeGreaterThanOrEqual(width);
+    }
+    expect(GEO_LABEL_HEIGHT_PX).toBeGreaterThanOrEqual(31.5);
+  });
+
+  it('a lone pill with no ringed pin survives, centred on its anchor', () => {
+    const placed = placeGeoLabels(
+      [geo('area:port-gellhorn', 'Port Gellhorn', 200, 200)],
+      [],
+    );
+    expect(placed.map((label) => label.areaId)).toEqual(['area:port-gellhorn']);
+    expect(geoLabelRectFor({ x: 200, y: 200 }, 'Port Gellhorn')).toEqual({
+      left: 200 - geoLabelWidthFor('Port Gellhorn') / 2,
+      right: 200 + geoLabelWidthFor('Port Gellhorn') / 2,
+      top: 200 - GEO_LABEL_HEIGHT_PX / 2,
+      bottom: 200 + GEO_LABEL_HEIGHT_PX / 2,
+    });
+  });
+
+  it('the Starlet pair collapses to one pill when nothing is selected', () => {
+    // The two centroids project ~5px apart at district zoom, so
+    // the pills sit on top of each other (measured 2622px² live).
+    // First in geoLabelsForView order (alphabetical) wins.
+    const placed = placeGeoLabels(
+      [
+        geo('area:gellhorn', 'Gellhorn', 195, 200),
+        geo('area:starlet-motel--kelly-county', 'Starlet Motel', 200, 200),
+      ],
+      [],
+    );
+    expect(placed.map((label) => label.areaId)).toEqual(['area:gellhorn']);
+  });
+
+  it('a pill centred on a ringed pin is suppressed; a clear pill survives', () => {
+    // Ringed keep-out is a 72px box (32px ring outer + 4px margin
+    // each way); "Gellhorn" is 96px wide, so centred at x 280 its
+    // rect (232–328) still touches the pin box (164–236).
+    const placed = placeGeoLabels(
+      [
+        geo('area:gellhorn', 'Gellhorn', 200, 200),
+        geo('area:starlet-motel--kelly-county', 'Starlet Motel', 280, 200),
+        geo(
+          'area:port-gellhorn-international-raceway',
+          'Port Gellhorn International Raceway',
+          200,
+          100,
+        ),
+      ],
+      [{ x: 200, y: 200 }],
+    );
+    expect(placed.map((label) => label.areaId)).toEqual([
+      'area:port-gellhorn-international-raceway',
+    ]);
+  });
+
+  it('a pill clear of the pin by the full keep-out survives', () => {
+    // Centred at x 300, the 96px "Gellhorn" rect (252–348) clears
+    // the pin box (164–236) entirely.
+    const placed = placeGeoLabels(
+      [geo('area:gellhorn', 'Gellhorn', 300, 200)],
+      [{ x: 200, y: 200 }],
+    );
+    expect(placed).toHaveLength(1);
+  });
+
+  it('the Starlet view with the pin selected keeps only the distant pill', () => {
+    // Live shape: Gellhorn + Starlet Motel at the pin, Port
+    // Gellhorn International Raceway far away — after the fix the
+    // view shows exactly that one pill, and the pin face is clear.
+    const placed = placeGeoLabels(
+      [
+        geo('area:gellhorn', 'Gellhorn', 195, 200),
+        geo('area:starlet-motel--kelly-county', 'Starlet Motel', 200, 200),
+        geo(
+          'area:port-gellhorn-international-raceway',
+          'Port Gellhorn International Raceway',
+          200,
+          100,
+        ),
+      ],
+      [{ x: 200, y: 200 }],
+    );
+    expect(placed.map((label) => label.areaId)).toEqual([
+      'area:port-gellhorn-international-raceway',
+    ]);
+  });
+
+  it('a county pill behind a ringed highlight pin is suppressed', () => {
+    // Island-zoom shape (demo-g g11): the Kelly County pill sits
+    // under a ringed diamond highlight pin — the highlight point
+    // suppresses it exactly like a selected pin does.
+    const placed = placeGeoLabels(
+      [geo('county:kelly', 'Kelly County', 200, 200)],
+      [{ x: 210, y: 205 }],
+    );
+    expect(placed).toHaveLength(0);
   });
 });

@@ -153,3 +153,122 @@ export function computeLabelPlacements(
   }
   return placed;
 }
+
+// ---- Geo-label pills (§6.4, v0.32 lane 3) ----
+//
+// One rule: a geo pill renders only if its screen rect is clear —
+// clear of every ringed pin's face+ring box (the selected pin and
+// Ask-highlight pins) and clear of every pill already placed. First
+// in geoLabelsForView order (alphabetical by area name) wins; the
+// rest are suppressed, never moved.
+//
+// Why this rule, and why the candidates lost:
+// - Suppress-vs-selected-pin alone leaves pill/pill overlap when
+//   nothing is selected, and misses the second instance (a county
+//   pill behind ringed Ask-highlight diamonds at island zoom).
+// - Hide-only-the-selected-place's-own-area pill leaves the sibling
+//   pill standing: at Starlet Motel the "Gellhorn" pill is a different
+//   area from the selected place, and it still overlapped the pin
+//   face by 992px² (DEMOS-STEP9 Gap 2).
+// - Stagger/stack the pills that share an anchor: stacking keeps
+//   them centred on the pin face, so the pin still punches through;
+//   moving a pill off its anchor invents a position for an area whose
+//   only honest anchor is its centroid (member-bbox centre).
+// Suppression is also the existing precedent in this file: a pin
+// label that would land on an earlier label is skipped, not moved.
+//
+// The two pills at Starlet Motel share (nearly) one anchor because
+// their areas' centroids are 38 map-units apart: area:gellhorn
+// (-5354.67, 3461.86) and area:starlet-motel--kelly-county
+// (-5316.82, 3471.64). The same shape recurs wherever two areas
+// nearly coincide (duplicate-name areas: Port Gellhorn, Millport).
+
+export interface GeoLabelCandidate {
+  areaId: string;
+  name: string;
+  /** Map coordinates of the area centroid (the marker anchor). */
+  position: { x: number; y: number };
+  /** Container point of the centroid (the pill's screen centre). */
+  point: { x: number; y: number };
+}
+
+/**
+ * Estimated pill width in px. Measured live 2026-11-26 at 390px
+ * DPR 2: Gellhorn 92px / 8 chars, Starlet Motel 124 / 13, Kelly
+ * County 118 / 12, Leonard County 140 / 14, Vice-Dale County 149 /
+ * 15 — 7.7–8.7px per char over the 24px horizontal padding (5px
+ * 12px in map.css, 13px condensed caps + 2px letter-spacing), so
+ * 9px/char + 24px covers every measured pill. Over-estimating is
+ * the safe direction: a pill whose estimate touches a pin is
+ * suppressed, never drawn under one.
+ */
+export function geoLabelWidthFor(name: string): number {
+  return name.length * 9 + 24;
+}
+
+/** Pill height in px — measured 31.5px live (padding + 13px caps). */
+export const GEO_LABEL_HEIGHT_PX = 32;
+
+export interface GeoLabelRect {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+}
+
+/** The pill's screen box: centred on its anchor, estimated width. */
+export function geoLabelRectFor(
+  anchor: { x: number; y: number },
+  name: string,
+): GeoLabelRect {
+  const halfWidth = geoLabelWidthFor(name) / 2;
+  const halfHeight = GEO_LABEL_HEIGHT_PX / 2;
+  return {
+    left: anchor.x - halfWidth,
+    right: anchor.x + halfWidth,
+    top: anchor.y - halfHeight,
+    bottom: anchor.y + halfHeight,
+  };
+}
+
+/**
+ * Half-size of a ringed pin's keep-out box: the pin face is 32px
+ * and a ringed pin's outer edge sits 32px from its centre
+ * (labelOffsetForPin), plus a 4px margin — the same clearance the
+ * place-label tooltip uses, so the two label systems agree about
+ * where a ringed pin ends.
+ */
+export const RINGED_PIN_KEEPOUT_HALF_PX = 36;
+
+export function placeGeoLabels(
+  candidates: readonly GeoLabelCandidate[],
+  /** Container points of the ringed pins (selected + highlighted). */
+  ringedPinPoints: readonly { x: number; y: number }[],
+): GeoLabelCandidate[] {
+  const placed: GeoLabelCandidate[] = [];
+  const placedRects: GeoLabelRect[] = [];
+  for (const candidate of candidates) {
+    const rect = geoLabelRectFor(candidate.point, candidate.name);
+    const underRingedPin = ringedPinPoints.some(
+      (pin) =>
+        rect.left < pin.x + RINGED_PIN_KEEPOUT_HALF_PX &&
+        rect.right > pin.x - RINGED_PIN_KEEPOUT_HALF_PX &&
+        rect.top < pin.y + RINGED_PIN_KEEPOUT_HALF_PX &&
+        rect.bottom > pin.y - RINGED_PIN_KEEPOUT_HALF_PX,
+    );
+    if (underRingedPin) continue;
+    // Same gap convention as computeLabelPlacements above: 4px
+    // horizontal, 2px vertical between neighbouring pills.
+    const overlapsPlaced = placedRects.some(
+      (other) =>
+        rect.left < other.right + 4 &&
+        rect.right > other.left - 4 &&
+        rect.top < other.bottom + 2 &&
+        rect.bottom > other.top - 2,
+    );
+    if (overlapsPlaced) continue;
+    placed.push(candidate);
+    placedRects.push(rect);
+  }
+  return placed;
+}
