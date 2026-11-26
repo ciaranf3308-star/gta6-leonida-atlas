@@ -61,6 +61,13 @@ export interface Enrichment {
   /** Cost guard: the call's token usage, recorded for the Settings
    *  research-usage readout. */
   usage?: { promptTokens: number; completionTokens: number };
+  /** How many paid research calls have been made for this building.
+   *  The counter lives on the cached row so the card can show it, and
+   *  it only ever increases on a real model call: a cache hit serves
+   *  the row without touching it, and a re-research reads the old row
+   *  and stores count + 1. Absent (rows written before the counter
+   *  existed) reads as 0 — never invented. */
+  researchCalls?: number;
 }
 
 export interface EnrichmentField {

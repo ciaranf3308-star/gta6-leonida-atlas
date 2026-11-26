@@ -917,6 +917,16 @@ export function parseEnrichment(input: unknown, path = 'enrichment'): Enrichment
         ? null
         : parseText(item.question, `${path}.question`, 500),
     ...(usage ? { usage } : {}),
+    ...(item.researchCalls === undefined
+      ? {}
+      : {
+          researchCalls: parseCount(
+            item.researchCalls,
+            `${path}.researchCalls`,
+            0,
+            1_000_000,
+          ),
+        }),
   };
 }
 
