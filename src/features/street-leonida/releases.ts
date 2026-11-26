@@ -11,6 +11,22 @@ export interface LeonidaAtlasRelease {
 /** Retained public history starts at v0.5.0; the newest release stays first. */
 export const LEONIDA_ATLAS_RELEASES: readonly LeonidaAtlasRelease[] = [
   {
+    version: "v0.32.1",
+    date: "2026-11-26",
+    title: "'Show everything' clears the filter — the one dead button from v0.32.0 is gone",
+    summary:
+      "The one known defect from v0.32.0 is fixed and proven fixed by the exact probe that caught it: with a narrow filter active ('Saved only' with nothing saved), 'Show everything' turned layers on but left the filter, so the banner stayed up and the button read as dead. It now clears the narrow filter too, so the whole island comes back. The label-placement ideas the regions lane measured (chrome-preferring placement, narrower labels, leader lines) were all measured live and none was a net win, so none shipped — the Port Gellhorn 6-op label still needs a zoom-in.",
+    status: "public",
+    highlights: [
+      "Finding 4 fixed (reported in the v0.32.0 demos): with a narrow filter active, 'Show everything' (turnOnLayers) turned layers on but left the filter, so the 'NOTHING SHOWING HERE' banner stayed up and the button read as dead. It now runs the same full reset 'Clear filters' performs (clearFiltersAndIsolation) after turning layers on — the banner probe's L3-4b went from FAIL (banner=true, markers=1, labels=0, rects=0) to PASS (banner=false, markers=19, labels=17, rects=17), with 7 new unit tests and the kill-switch still 3/3. The layer half is a pure helper in empty-state.ts; My markers is never switched on by it.",
+      "Measured, not shipped: the follow-up ideas for the two unreadable region labels were live-tested and all failed to be a net win, so none changed the app. Chrome-preferring placement: island identical 7/17, district 10→9/17 (Hog Stars clears but Weed Grow is geometrically impossible in-region at district). Narrower labels (180px): the simulation predicted island 9/17 but the live test gave 6/17 and Farm Fix blew up to 8,808px² occluded — reverted line-for-line. Leader lines: island 11/17 and district 12/17, but chrome totals explode (36,390/25,938px²) and the recovered Port Gellhorn label is itself unreadable behind chrome. The Port Gellhorn 6-op label stays hidden in every shipped-rule variant; the placement tweak that prefers chrome-clear anchors without making chrome a hard keep-out is still open for a future lane.",
+      "The v0.32 demo probe scripts are back in the repo: all 41 scripts were restored from hidden_files into scripts/ (they were never committed), and the lint debt that surfaced (156 errors — browser globals inside page.evaluate plus dead imports/vars) is fixed with per-file global comments on 27 scripts and 12 dead imports/vars removed. Lint is back to 0 errors, 2 pre-existing warnings.",
+    ],
+    verification: [
+      "Acceptance demos re-run on the final build (2026-11-26, Chromium 390px DPR 2): banner probe 8/8 including L3-4b (Finding 4 fixed), regions 24/24, pill-state 7/7, lane-2 re-runs 7/7 + 6/6, visible labels 9/9 (island 7/17, district 10/17, 0px², reversible), Demo C 16/16, Ask probe 40/40 (Brooks 9 checks, gang-op kind, bare-name regressions incl. VYB live), small items 10/10, geo labels 11/11, my-markers 3/3, find-fold 8/8, kill-switch 3/3; tsc --noEmit clean; eslint 0 errors (2 pre-existing warnings); full unit suite 1370/1370 over 126 files (+7 from the Finding 4 fix); one-command production build (ATLAS_BASE_PATH=/gta6-leonida-atlas/, bundle assets/index-UPHdBlPD.js, SW cache atlas-b40404d5-810996c65923, generated worker verified in the same command). Grade 9/10 (sandbox). CI is still red on the old browser spec (it asserts the forced onboarding v0.32 removed by design) — the user shipped v0.32.0 with CI red, and this release changes nothing in that picture. One new cosmetic observation, not a finding: a selected pin's tooltip can clip at the left viewport edge.",
+    ],
+  },
+  {
     version: "v0.32.0",
     date: "2026-11-26",
     title: "The companion rebuild — one database for map, journal, progress and Ask",
