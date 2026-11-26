@@ -60,7 +60,7 @@ describe('Atlas layer visibility', () => {
     const robberies = layersWithCategoryEnabled(DEFAULT_LAYERS, 'robberies');
     expect(
       robberies.filter((l) => l.visible).map((l) => l.id).sort(),
-    ).toEqual(['breakable', 'loot-heists', 'lootable', 'my-markers']);
+    ).toEqual(['breakable', 'gang-op', 'loot-heists', 'lootable', 'my-markers']);
     // 'all' and kinds with no layers change nothing; the input is untouched.
     expect(layersWithCategoryEnabled(DEFAULT_LAYERS, 'all')).toEqual(DEFAULT_LAYERS);
     expect(layersWithCategoryEnabled(DEFAULT_LAYERS, 'story')).toEqual(DEFAULT_LAYERS);

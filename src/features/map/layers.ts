@@ -1,5 +1,10 @@
 import type { Category, LayerDefinition, Place } from '../../domain/types';
 import { COLLECTABLE_CARD_PLACES, COLLECTABLE_SETS } from '../../data/collectables';
+import {
+  GANG_OPERATIONS,
+  GANG_OP_LICENSE,
+  GANG_OP_SOURCE,
+} from '../../data/gang-operations';
 import { visiblePlaces } from '../spoiler/visibility';
 
 /**
@@ -46,6 +51,26 @@ for (const card of COLLECTABLE_CARD_PLACES) {
   const setId = card.layerId.slice('cards:'.length);
   CARD_PIN_COUNTS.set(setId, (CARD_PIN_COUNTS.get(setId) ?? 0) + 1);
 }
+
+/**
+ * Gang-op counts, computed from the import — never hardcoded. 39
+ * operations from the in-game tracker; the hosted ones ride on an
+ * existing building (Sunrise RV Park → L265, Parlor Apartments →
+ * breakable:parlor-apartments) and the rest are area-known only.
+ * The 16 / 18 / 3 likely-area split in the description below is
+ * MEASURED by measureGangOpBounds (src/features/map/likely-area.ts)
+ * over the derived areas and asserted in
+ * tests/unit/gang-op-likely-area.test.ts — update this copy if the
+ * measurement moves (e.g. a re-sync gains an area positioned
+ * members, or a host-match lands).
+ */
+const GANG_OP_TOTAL_COUNT = GANG_OPERATIONS.length;
+const GANG_OP_HOSTED = GANG_OPERATIONS.filter(
+  (op) => op.hostLocationId !== undefined,
+);
+const GANG_OP_HOSTED_COUNT = GANG_OP_HOSTED.length;
+const GANG_OP_AREA_KNOWN_COUNT = GANG_OP_TOTAL_COUNT - GANG_OP_HOSTED_COUNT;
+const GANG_OP_HOSTED_NAMES = GANG_OP_HOSTED.map((op) => op.name).join(' and ');
 
 export const DEFAULT_LAYERS: LayerDefinition[] = [
   {
@@ -184,6 +209,33 @@ export const DEFAULT_LAYERS: LayerDefinition[] = [
     source: 'GTA 6 Loot Map (MIT) · community-sourced, unverified',
     style: { color: '#ffb020', radius: 7 },
     icon: 'banknote',
+    interactive: true,
+  },
+  {
+    // order 89: the robbery layers cluster at 75–90 — Breakable
+    // homes 75, Bank jobs & vaults 88, Lootable buildings 90. Gang
+    // operations sits between Bank jobs and Lootable, beside the
+    // other robbery layers: below Lootable (the broadest robbery
+    // layer, 52 shops) and above Bank jobs (29 jobs). The map draws
+    // likely-area REGIONS for this layer, never pins — see
+    // src/features/map/likely-area.ts.
+    id: 'gang-op',
+    name: 'Gang operations',
+    description:
+      `${GANG_OP_TOTAL_COUNT} illegal operations from the in-game Gangs tracker. ` +
+      `${GANG_OP_HOSTED_COUNT} ride on an existing building (${GANG_OP_HOSTED_NAMES}) and show there; ` +
+      `the other ${GANG_OP_AREA_KNOWN_COUNT} are known by area only — no verified position exists for any of them, ` +
+      `so the map shows each one's likely area, a dashed region over the area the guides name, never a pin. ` +
+      `16 draw their own area's extent, 18 draw a county extent instead — a whole-county region for a single ` +
+      `building, labelled as the county extent, because its named area has no extent of its own — and 3 have no ` +
+      `extent to draw and are listed by area only. Licence: ${GANG_OP_LICENSE}.`,
+    category: 'activity',
+    mapIndex: 'robberies',
+    visible: false,
+    order: 89,
+    source: GANG_OP_SOURCE.title,
+    style: { color: '#ff8f8f', radius: 7 },
+    icon: 'users',
     interactive: true,
   },
   {
