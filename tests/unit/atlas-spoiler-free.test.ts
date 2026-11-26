@@ -173,8 +173,8 @@ describe("Gyms and Workout equipment layers", () => {
 
   it("merges the gyms into the catalogue alongside the community records", () => {
     const places = catalogueFromSnapshot(snapshot);
-    expect(places).toHaveLength(4488);
-    expect(places.filter((p) => p.position === null)).toHaveLength(102);
+    expect(places).toHaveLength(4525);
+    expect(places.filter((p) => p.position === null)).toHaveLength(139);
     expect(places.filter((p) => p.layerId === "gyms")).toHaveLength(8);
     expect(places.filter((p) => p.layerId === "equipment")).toHaveLength(3);
     expect(places.filter((p) => p.layerId === "interiors")).toHaveLength(83);
@@ -196,7 +196,7 @@ describe("Gyms and Workout equipment layers", () => {
     ).toHaveLength(37);
     expect(places.filter((p) => p.layerId === "loot-heists")).toHaveLength(29);
     expect(places.filter((p) => p.layerId === "loot-collectibles")).toHaveLength(20);
-    expect(new Set(places.map((p) => p.id)).size).toBe(4488);
+    expect(new Set(places.map((p) => p.id)).size).toBe(4525);
   });
 });
 
@@ -249,7 +249,10 @@ describe("Map Index categories (v0.21.0) — the game's own filters, not the dat
     expect(counts.get('collectibles')).toBe(57);
     expect(counts.get('exploration')).toBe(737);
     expect(counts.get('food-drink')).toBe(30);
-    expect(counts.get('robberies')).toBe(123);
+    // 123 + 37 gang operations (v0.32 Demo C import — all 37 area-known
+    // places file under Robberies; the two host-matched sites did not
+    // change category).
+    expect(counts.get('robberies')).toBe(160);
     expect(counts.get('unverified')).toBe(3415);
     expect(counts.get('vehicles')).toBe(107);
     // Style was 1 (Au Courant alone) until v0.31.3, when six named

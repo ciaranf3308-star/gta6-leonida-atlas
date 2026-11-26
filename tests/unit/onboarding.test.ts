@@ -39,9 +39,9 @@ describe('onboarding audit — the places really are mapped', () => {
   const places = catalogueFromSnapshot(snapshot);
   const counts = new Map(layerCounts(places, DEFAULT_LAYERS).map((c) => [c.layerId, c]));
 
-  it('has 4,488 places in the catalogue', () => {
-    expect(places.length).toBe(4488);
-    expect(totalMappedPlaces(places)).toBe(4488);
+  it('has 4,525 places in the catalogue', () => {
+    expect(places.length).toBe(4525);
+    expect(totalMappedPlaces(places)).toBe(4525);
   });
 
   it('matches the counts the UI claims per layer', () => {
