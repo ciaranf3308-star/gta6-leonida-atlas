@@ -237,7 +237,7 @@ describe('v3 → v4 completion migration (DESIGN §5, headline)', () => {
     const fixture = v3Fixture();
     const storage = talliesStorage();
     await seedLegacyV4(fixture);
-    expect(db.verno).toBe(6); // schema v6 (step 7: card-matcher tables)
+    expect(db.verno).toBe(7); // schema v7 (Demo F: screenshotData table)
     // The upgrade only adds empty tables — nothing is migrated yet.
     expect(await db.completionRecords.count()).toBe(0);
     expect(await db.reconciliation.count()).toBe(0);
