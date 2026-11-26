@@ -44,9 +44,9 @@ import { CARD_CHECKLIST_ITEMS, type CardChecklistItem } from '../data/card-check
 import { COLLECTABLE_SETS, parseCardHostId } from '../data/collectables';
 import { COMPLETION_THRESHOLDS, completionThresholdById, overallCompletion } from '../data/completion';
 import { markerToPlace } from '../data/catalogue';
-import { areaIdForRegion, buildRegionNameIndex, deriveAreaNodes, type AreaNode } from './geography';
+import { areaIdForRegion, buildRegionNameIndex, deriveAreaNodes, subtreeAreaIds, type AreaNode } from './geography';
 import { opportunitiesForLocation } from './opportunities';
-import type { ArtworkRef } from './album';
+import type { ArtworkRef, PersonalMatch } from './album';
 import { EMPTY_USER_DATA, isUnnamedPlace, type Place, type UserData } from './types';
 
 /** Game units, never lat/lng. World ±16384 m, origin (-16384, 16384). */
@@ -211,6 +211,11 @@ export interface CollectibleItem {
    *  this is the HOST location's area; for area-known items it is
    *  derived from `areaLead`. May dangle until step 4. */
   areaId: string | null;
+  /** The checklist slot's conflict note, if any — the guide area and
+   *  the host area disagree, or the host is disputed. Shown on the
+   *  match review screen and the pin's sheet, never hidden, never
+   *  deleted by a confirmation (CARD-MATCHER-DESIGN M1). */
+  conflict: string | null;
   evidence: Evidence[];
   /** Checklist identity (addendum §1.1). 480 slots are true; the 117
    *  game-text variants that are not slots are false and never count
@@ -348,6 +353,15 @@ export interface GameDatabase {
   areas: ReadonlyMap<string, AreaNode>; // §6
   records: readonly CompletionRecord[]; // the log, newest last
   reconciliation: readonly ReconciliationEntry[];
+  /** Player-confirmed card matches that applied (CARD-MATCHER-DESIGN
+   *  §2.3) — the slot is pinned to its host. */
+  matches: readonly PersonalMatch[];
+  /** Confirmed matches that did NOT apply: the slot is gone, the host
+   *  record was deleted in a re-sync, or the host area no longer
+   *  agrees with the guide area (M3). The match is preserved as
+   *  history, the slot drops to area-known and re-enters the matcher
+   *  queue — a stale coordinate is never silently kept. */
+  staleMatches: readonly StaleMatch[];
   /** Derived indexes, rebuilt on every write (cheap: ≤ ~5,000 rows). */
   completedItemIds: ReadonlySet<string>;
   completedOpportunityIds: ReadonlyMap<string, number>; // id → looted count
@@ -362,6 +376,15 @@ export interface GameDatabase {
   missionsEnabled: boolean;
 }
 
+/** A confirmed match that did not apply (CARD-MATCHER-DESIGN M3). */
+export interface StaleMatch {
+  match: PersonalMatch;
+  reason: 'slot-missing' | 'host-missing' | 'area-disagreement';
+  /** Plain words for the Collections screen, e.g. "was pinned to
+   *  L1234, host moved/removed in rev 2e9e194". */
+  detail: string;
+}
+
 export interface BuildGameDatabaseInput {
   places: readonly Place[];
   /** Defaults to the generated 480-slot checklist (597 items). Pass a
@@ -373,6 +396,12 @@ export interface BuildGameDatabaseInput {
   records?: readonly CompletionRecord[];
   /** Manual tallies. Defaults to []. */
   reconciliation?: readonly ReconciliationEntry[];
+  /** Player-confirmed card matches (CARD-MATCHER-DESIGN §2.3).
+   *  Applied after the checklist ingest: a match pins its slot to
+   *  its host when the host exists and the areas agree; otherwise
+   *  the match lands in `staleMatches` and the slot stays
+   *  area-known. Defaults to []. */
+  matches?: readonly PersonalMatch[];
 }
 
 /** The six.mics.dev identity citation, carried as evidence on every
@@ -584,6 +613,7 @@ function checklistSlotToItem(
     placement: slot.placement,
     spotDescription: slot.spotDescription || null,
     areaLead,
+    conflict: slot.conflict,
     // Pinned items sit at their host: the host's area is the area.
     // Area-known items carry the area their lead names.
     areaId: hostAreaId ?? (areaLead ? areaIdForRegion(areaLead, regionNameIndex) : null),
@@ -616,6 +646,7 @@ function lootPlaceToItem(
     placement: place.position ? 'pinned' : 'area-known',
     spotDescription: null,
     areaLead: place.region.trim() || null,
+    conflict: null,
     areaId: areaIdForRegion(place.region, regionNameIndex),
     evidence: [evidenceFromPlace(place)],
     checklistSlot: false,
@@ -632,6 +663,7 @@ export function buildGameDatabase(input: BuildGameDatabaseInput): GameDatabase {
   const user = input.user ?? EMPTY_USER_DATA;
   const records = input.records ?? [];
   const reconciliation = input.reconciliation ?? [];
+  const matches = input.matches ?? [];
 
   const placesById = new Map<string, Place>();
   for (const place of places) {
@@ -686,6 +718,15 @@ export function buildGameDatabase(input: BuildGameDatabaseInput): GameDatabase {
   for (const slot of checklistItems) {
     if (slot.placement === 'pinned' && slot.hostId) {
       corroboratedLocationIds.add(slot.hostId);
+    }
+  }
+  // Player-confirmed matches corroborate their hosts the same way —
+  // a match is a second source for the place's existence (the area
+  // check runs later, at apply time; a host whose area disagrees
+  // still exists, it just does not pin the slot).
+  for (const match of matches) {
+    if (checklistById.has(match.slotId) && placesById.has(match.hostId)) {
+      corroboratedLocationIds.add(match.hostId);
     }
   }
 
@@ -773,6 +814,60 @@ export function buildGameDatabase(input: BuildGameDatabaseInput): GameDatabase {
   // --- Areas (§6, step 1: nodes + membership only) ---
   const areas = deriveAreaNodes(regionPlaces, [...locations.values()]);
 
+  // --- Player-confirmed card matches (CARD-MATCHER-DESIGN §2.3 + M3) ---
+  // A match pins its slot to its host when the host exists and the
+  // areas agree (host area is the guide area or one of its
+  // descendants). Otherwise the match is preserved as a stale match,
+  // the slot stays area-known and re-enters the matcher queue — a
+  // stale coordinate is never silently kept. A jot (hostId is the
+  // player's own marker) always applies: the player stood there.
+  const appliedMatches: PersonalMatch[] = [];
+  const staleMatches: StaleMatch[] = [];
+  for (const match of matches) {
+    const item = items.get(match.slotId);
+    if (!item) {
+      staleMatches.push({
+        match,
+        reason: 'slot-missing',
+        detail: `Slot ${match.slotId} is no longer in the checklist — the match is kept as history only.`,
+      });
+      continue;
+    }
+    const host = locations.get(match.hostId);
+    if (!host) {
+      staleMatches.push({
+        match,
+        reason: 'host-missing',
+        detail: `Was pinned to ${match.hostId}, host moved/removed in the current catalogue.`,
+      });
+      continue;
+    }
+    const isJot = match.hostId.startsWith('custom:');
+    const guideAreaId = item.areaId;
+    const agrees =
+      isJot ||
+      guideAreaId === null ||
+      (host.areaId !== null &&
+        (guideAreaId === host.areaId || subtreeAreaIds(areas, guideAreaId).has(host.areaId)));
+    if (!agrees) {
+      const guideArea = guideAreaId ? (areas.get(guideAreaId)?.name ?? guideAreaId) : 'unknown';
+      const hostArea = host.areaId ? (areas.get(host.areaId)?.name ?? host.areaId) : 'unknown';
+      staleMatches.push({
+        match,
+        reason: 'area-disagreement',
+        detail: `Was pinned to ${match.hostId} — guide says ${guideArea}, host is in ${hostArea}.`,
+      });
+      continue;
+    }
+    items.set(match.slotId, {
+      ...item,
+      locationId: host.id,
+      placement: 'pinned',
+      areaId: host.areaId ?? item.areaId,
+    });
+    appliedMatches.push(match);
+  }
+
   // --- Indexes over the completion log ---
   const completedItemIds = new Set<string>();
   const completedOpportunityIds = new Map<string, number>();
@@ -824,6 +919,8 @@ export function buildGameDatabase(input: BuildGameDatabaseInput): GameDatabase {
     areas,
     records,
     reconciliation,
+    matches: appliedMatches,
+    staleMatches,
     completedItemIds,
     completedOpportunityIds,
     discoveredLocationIds,
@@ -1115,7 +1212,14 @@ export function locationCard(db: GameDatabase, locationId: string): LocationCard
  * matches its children. A single `areaId` is the exact-match form
  * and keeps working unchanged; when both are given, `areaIds` wins.
  */
-export function remainingItems(
+/**
+ * Items matching a set / kind / area filter — WITHOUT the completion
+ * filter. `remainingItems` is this minus the collected ones; the Ask
+ * tools need the unfiltered list too (total + found counts for
+ * `remaining_collectibles`). The set-wins-over-area rule lives here,
+ * once, so the two can never drift apart.
+ */
+export function matchingItems(
   db: GameDatabase,
   opts: { setId?: string; kind?: ItemKind; areaId?: string; areaIds?: Iterable<string> } = {},
 ): CollectibleItem[] {
@@ -1123,13 +1227,9 @@ export function remainingItems(
   if (opts.setId) {
     const set = db.sets.get(opts.setId);
     if (!set) throw new Error(`Unknown collectible set: ${opts.setId}.`);
-    candidates = set.itemIds
-      .map((itemId) => db.items.get(itemId)!)
-      .filter((item) => !db.completedItemIds.has(item.id));
+    candidates = set.itemIds.map((itemId) => db.items.get(itemId)!);
   } else {
-    candidates = [...db.items.values()].filter(
-      (item) => !db.completedItemIds.has(item.id),
-    );
+    candidates = [...db.items.values()];
   }
   if (opts.kind) candidates = candidates.filter((item) => item.kind === opts.kind);
   if (opts.areaId || opts.areaIds) {
@@ -1150,4 +1250,11 @@ export function remainingItems(
     });
   }
   return candidates;
+}
+
+export function remainingItems(
+  db: GameDatabase,
+  opts: { setId?: string; kind?: ItemKind; areaId?: string; areaIds?: Iterable<string> } = {},
+): CollectibleItem[] {
+  return matchingItems(db, opts).filter((item) => !db.completedItemIds.has(item.id));
 }

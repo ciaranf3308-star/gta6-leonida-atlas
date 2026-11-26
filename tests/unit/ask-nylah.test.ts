@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { LayerDefinition, Place } from '../../src/domain/types';
 import { DEFAULT_LAYERS } from '../../src/features/map/layers';
 import {
+  cardSetForQuestion,
   isNightlifePlace,
   nightlifeTagsForQuestion,
   retrieveForAsk,
@@ -99,6 +100,38 @@ const FIXTURES: Place[] = [
     position: { x: -6360, y: 3590 },
     region: 'Port Gellhorn',
     tags: ['collectible', 'loot-map', 'trading-card', 'delights-dancers'],
+  }),
+  // A Jack of Hearts card — the bare-name regression needs a second
+  // set in the fixtures, so "Jack of Hearts" (no "Dancers", no word
+  // "card") has something to return.
+  place({
+    id: 'card:jada-gold',
+    title: 'Jada Watts (gold) — Jack of Hearts Dancers',
+    layerId: 'cards:jack-of-hearts-dancers',
+    position: { x: -5256, y: 3079 },
+    region: 'Kelly County',
+    tags: ['collectible', 'card'],
+  }),
+  // A Vice City Flamingos card — "flamingos" (bare set name) must
+  // return the set's cards, not the animal flamingos.
+  place({
+    id: 'card:ulysses',
+    title: 'Ulysses Whitlock (silver) — Vice City Flamingos',
+    layerId: 'cards:vice-city-flamingos',
+    position: { x: -758, y: -1258 },
+    region: 'Tequesta, Vice City',
+    tags: ['collectible', 'card'],
+  }),
+  // A Nine1Nine Dancers card — NINE1NINE is both the nightclub and
+  // the set, so the bare name is genuinely ambiguous; the Delights
+  // ruling (bare set name → the set's cards) generalises to it.
+  place({
+    id: 'card:nine-talia',
+    title: 'Talia — Nine1Nine Dancers',
+    layerId: 'cards:nine1nine-dancers',
+    position: { x: -700, y: 450 },
+    region: 'Downtown, Vice City',
+    tags: ['collectible', 'card'],
   }),
   // A meditation in Capri, same bucket as the dancer card — a card
   // question must never answer with it.
@@ -324,13 +357,20 @@ describe('Ask Nylah — the spoiler rule', () => {
     // Capri". Before the fix this answered with the Smooth Sand
     // meditation — the only eligible place with "Capri" in its region —
     // and the summary called it "the nearest card".
+    //
+    // SET WINS OVER AREA (v0.32 step 7, DESIGN §7.2 normative): the
+    // area is a SORT here, never a filter — so BOTH set cards answer,
+    // nearest first from the Capri centroid, even though Harley is
+    // pinned in Port Gellhorn and Vicki's region is Capri. The old
+    // expectation (Vicki only) encoded the area-filter flaw: the
+    // filter dropped Harley, and the fix is the point of this lane.
     const result = retrieveForAsk({
       question: 'I need any cards for delight dancers near Capri',
       places: FIXTURES,
       layers: layers(),
       filters: { hideFound: false, remainingOnly: false, countyId: null },
     });
-    expect(result.records.map((p) => p.id)).toEqual(['card:vicki']);
+    expect(result.records.map((p) => p.id)).toEqual(['card:vicki', 'loot:harley-card']);
     expect(result.records.map((p) => p.id)).not.toContain('loot:meditation-capri');
     // The noun is "card", never "place", and the verdict is honest
     // about the distance: the set's cards are not near Capri.
@@ -347,6 +387,118 @@ describe('Ask Nylah — the spoiler rule', () => {
     });
     expect(result.records.map((p) => p.id)).toEqual(['card:vicki', 'loot:harley-card']);
     expect(result.records.map((p) => p.id)).not.toContain('loot:meditation-capri');
+  });
+
+  it('a set question in Port Gellhorn keeps the whole set — set wins over the area filter', () => {
+    // "Delights Dancers in Port Gellhorn": the old area filter kept
+    // only Harley (region Port Gellhorn) and dropped Vicki — the
+    // mirror image of the Capri flaw. Set narrowing beats the area
+    // filter in both directions: the area sorts (Harley first, at
+    // the Port Gellhorn centroid), it never drops a set item.
+    const result = retrieveForAsk({
+      question: 'Delights Dancers in Port Gellhorn',
+      places: FIXTURES,
+      layers: layers(),
+      filters: { hideFound: false, remainingOnly: false, countyId: null },
+    });
+    expect(result.records.map((p) => p.id)).toEqual(['loot:harley-card', 'card:vicki']);
+    expect(result.areaMismatch).toBe(false);
+  });
+});
+
+describe('Ask Nylah — bare names bring their layer into scope (v0.32 step 7)', () => {
+  // The live bug (screenshot 2026-11-26 05:13 GMT): "Delight dancers"
+  // into Ask with every layer off → "Nothing in the map data for
+  // that." The layer gate only fired on the word "card", and set
+  // narrowing could only FILTER the eligible layers, never ADD one.
+  // The rule now: naming a thing by name alone brings its layer into
+  // scope — the answer never depends on the user also saying the
+  // category keyword.
+  const ask = (question: string) =>
+    retrieveForAsk({
+      question,
+      places: FIXTURES,
+      layers: layers(),
+      filters: { hideFound: false, remainingOnly: false, countyId: null },
+    });
+
+  it('"Delight dancers" (singular, bare) returns the set’s cards', () => {
+    expect(cardSetForQuestion('Delight dancers')?.id).toBe('delights-dancers');
+    const result = ask('Delight dancers');
+    expect(result.requestedLayerIds).toContain('cards:delights-dancers');
+    expect(result.requestedLayerIds).toContain('loot-collectibles');
+    expect(result.records.map((p) => p.id)).toEqual(['card:vicki', 'loot:harley-card']);
+  });
+
+  it('"Delights" (bare set name, one word) returns the set’s cards', () => {
+    expect(cardSetForQuestion('Delights')?.id).toBe('delights-dancers');
+    const result = ask('Delights');
+    expect(result.requestedLayerIds).toContain('cards:delights-dancers');
+    expect(result.records.map((p) => p.id)).toEqual(['card:vicki', 'loot:harley-card']);
+    expect(result.records.map((p) => p.id)).not.toContain('loot:meditation-capri');
+  });
+
+  it('"Jack of Hearts" (bare set name) returns the set’s cards', () => {
+    expect(cardSetForQuestion('Jack of Hearts')?.id).toBe('jack-of-hearts-dancers');
+    const result = ask('Jack of Hearts');
+    expect(result.requestedLayerIds).toContain('cards:jack-of-hearts-dancers');
+    expect(result.records.map((p) => p.id)).toEqual(['card:jada-gold']);
+  });
+
+  it('"flamingos" (bare set name) returns the set’s cards', () => {
+    expect(cardSetForQuestion('flamingos')?.id).toBe('vice-city-flamingos');
+    expect(cardSetForQuestion('flamingo')?.id).toBe('vice-city-flamingos');
+    const result = ask('flamingos');
+    expect(result.requestedLayerIds).toContain('cards:vice-city-flamingos');
+    expect(result.records.map((p) => p.id)).toEqual(['card:ulysses']);
+  });
+
+  it('"Delights Dancers card set" (the long form) still returns the set’s cards', () => {
+    const result = ask('Delights Dancers card set');
+    expect(result.records.map((p) => p.id)).toEqual(['card:vicki', 'loot:harley-card']);
+  });
+
+  it('a bare name that names no set stays the whole pool — never a guessed set', () => {
+    // "dancers" alone is three sets; "jack" alone is a verb as much
+    // as a name; "club" alone is nightlife. None of them picks a set.
+    expect(cardSetForQuestion('dancers')).toBeNull();
+    expect(cardSetForQuestion('jack')).toBeNull();
+    expect(cardSetForQuestion('Any clubs open tonight?')).toBeNull();
+    // …and the nightlife question still asks for Food & Drink only.
+    expect(layersRequestedByQuestion('Any clubs open tonight?', layers())).toEqual([
+      'shops-food',
+    ]);
+    // Two sets named at once is ambiguous, not a coin flip.
+    expect(cardSetForQuestion('flamingos and narcos')).toBeNull();
+  });
+
+  it('a bare place name brings its layer into scope', () => {
+    // "Starlet Motel" with every layer off: the place answers, not
+    // "Nothing in the map data". Same class as the bare set name.
+    const motel = ask('Starlet Motel');
+    expect(motel.requestedLayerIds).toContain('interiors');
+    expect(motel.records.map((p) => p.id)).toContain('L2001');
+    // …but a question that already names a kind keeps its own scope:
+    // "shops near Starlet Motel" is a shops question, and the motel
+    // is the measuring point, not a second kind to answer from.
+    const shops = ask('shops near Starlet Motel');
+    expect(shops.requestedLayerIds).not.toContain('interiors');
+  });
+
+  it('a name that is BOTH a place and a set answers with the set — unless a kind is named', () => {
+    // NINE1NINE is the nightclub AND the Nine1Nine Dancers set. The
+    // bare name follows the "Delights" ruling: the set's cards.
+    // (Design conflict, ruled by the Delights precedent — see the
+    // set-narrowing comment in retrieval.ts. The club is one kind
+    // word away: "NINE1NINE nightclub".)
+    const bare = ask('NINE1NINE');
+    expect(bare.requestedLayerIds).toContain('cards:nine1nine-dancers');
+    expect(bare.records.map((p) => p.id)).toEqual(['card:nine-talia']);
+    // With the kind named, the kind wins and the set is not a filter.
+    const club = ask('NINE1NINE nightclub');
+    expect(club.requestedLayerIds).toContain('shops-food');
+    expect(club.records.map((p) => p.id)).toEqual(['L190', 'L556']);
+    expect(club.records.map((p) => p.id)).not.toContain('card:nine-talia');
   });
 
   it('a generic cards question takes trading cards only — a generic collectibles question takes the whole bucket', () => {

@@ -45,6 +45,9 @@ export interface BackupExportResult {
   reconciliation: number;
   /** v4: sold cards in the file (the album's sold state). */
   personalItemState: number;
+  /** v4 (step 7): confirmed card matches in the file — the shipped
+   *  data that rebuilds the pins on a new device. */
+  cardMatches: number;
 }
 
 function parseLastBackup(raw: string | null): LastBackup | null {
@@ -163,6 +166,7 @@ export async function downloadAtlasBackup(
     completionRecords: backup.completionRecords.length,
     reconciliation: backup.reconciliation.length,
     personalItemState: backup.personalItemState.length,
+    cardMatches: backup.cardMatches.length,
   };
   if (typeof document !== "undefined") {
     const blob = new Blob([JSON.stringify(backup)], {

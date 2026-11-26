@@ -33,6 +33,7 @@ import {
   switchLocalWorkspace,
 } from '../../src/stores/atlas';
 import { backupFileName } from '../../src/features/backup/atlas-backup';
+import { attemptFingerprint } from '../../src/features/ask/card-matcher';
 
 const snapshot = JSON.parse(
   readFileSync(
@@ -620,6 +621,49 @@ describe('backup v4 — round-trip: export → wipe → import preserves the log
       requestedAt: time,
       status: 'queued',
     });
+    // Step 7: a confirmed match (the silver Dominic → L3442, D1),
+    // its attempt fingerprint, and one M4 rejection — all three ride
+    // in the file, unlike the screenshot/research rows above.
+    const silverSlot = 'card-checklist:vice-city-manatees:dominic-brizzolato:silver';
+    const silverFingerprint = attemptFingerprint(silverSlot, ['L3442']);
+    await db.saveCardMatch({
+      slotId: silverSlot,
+      hostId: 'L3442',
+      confidence: 0.95,
+      reasoning: "Only Nehrling River in the named area matches the direction's host name.",
+      citations: [
+        {
+          sourceTitle: 'lorenzone.fr · GTA 6 Trading Cards checklist',
+          sourceUrl:
+            'https://lorenzone.fr/blogs/news/gta-6-collectible-card-checklist-images-locations',
+          catalogueRecordId: 'L3442',
+          snapshotRev: '2e9e194b497d7a1a7da4f2288c1065dc0b913e80',
+        },
+      ],
+      proposedBy: 'deterministic',
+      confirmedBy: 'player',
+      confirmedAt: time,
+      evidenceKind: 'approximate',
+    });
+    await db.saveMatcherAttempts([
+      {
+        id: `${silverSlot}::${silverFingerprint}`,
+        slotId: silverSlot,
+        fingerprint: silverFingerprint,
+        at: time,
+        result: 'proposed',
+        proposedHostId: 'L3442',
+        confidence: 0.95,
+        reasoning: "Only Nehrling River in the named area matches the direction's host name.",
+        proposedBy: 'deterministic',
+      },
+    ]);
+    await db.saveMatcherRejection({
+      id: 'card-checklist:delights-dancers:vicki:standard::L629',
+      slotId: 'card-checklist:delights-dancers:vicki:standard',
+      hostId: 'L629',
+      rejectedAt: time,
+    });
 
     // --- Export: the same assembly exportWorkspaceBackup performs.
     const exportedV3 = await db.exportBackup();
@@ -634,12 +678,19 @@ describe('backup v4 — round-trip: export → wipe → import preserves the log
       enrichments: await db.enrichments.toArray(),
       corrections: await db.corrections.toArray(),
       personalItemState: await db.loadPersonalItemStates(),
+      cardMatches: await db.loadCardMatches(),
+      matcherAttempts: await db.loadMatcherAttempts(),
+      matcherRejections: await db.loadMatcherRejections(),
     });
     expect(exported.version).toBe(4);
     expect(exported.visited).toHaveLength(13);
     expect(exported.completionRecords).toHaveLength(17); // 16 migrated + 1 screenshot
     expect(exported.reconciliation).toHaveLength(4);
     expect(exported.personalItemState).toHaveLength(1);
+    expect(exported.cardMatches).toHaveLength(1);
+    expect(exported.cardMatches[0]?.hostId).toBe('L3442');
+    expect(exported.matcherAttempts).toHaveLength(1);
+    expect(exported.matcherRejections).toHaveLength(1);
     // Ruling 1: the file carries neither section, even though the
     // source database has rows in both tables.
     expect(exported).not.toHaveProperty('userScreenshots');
@@ -655,6 +706,11 @@ describe('backup v4 — round-trip: export → wipe → import preserves the log
     const sourceSold = [...(await db.loadPersonalItemStates())].sort(byItem);
     const sourceEnrichments = [...(await db.enrichments.toArray())].sort(byId);
     const sourceCorrections = [...(await db.corrections.toArray())].sort(byId);
+    const sourceMatches = [...(await db.loadCardMatches())].sort((a, b) =>
+      a.slotId < b.slotId ? -1 : 1,
+    );
+    const sourceAttempts = [...(await db.loadMatcherAttempts())].sort(byId);
+    const sourceRejections = [...(await db.loadMatcherRejections())].sort(byId);
     const sourceVisited = (await db.load()).visited;
     const sourceMarkers = [...(await db.load()).markers].sort(byMarkerId);
 
@@ -676,6 +732,13 @@ describe('backup v4 — round-trip: export → wipe → import preserves the log
       expect([...(await db2.loadPersonalItemStates())].sort(byItem)).toEqual(sourceSold);
       expect([...(await db2.enrichments.toArray())].sort(byId)).toEqual(sourceEnrichments);
       expect([...(await db2.corrections.toArray())].sort(byId)).toEqual(sourceCorrections);
+      // Step 7: the confirmed match, its attempt and the rejection
+      // restore deep-equal — the pins rebuild from them.
+      expect([...(await db2.loadCardMatches())].sort((a, b) => (a.slotId < b.slotId ? -1 : 1))).toEqual(
+        sourceMatches,
+      );
+      expect([...(await db2.loadMatcherAttempts())].sort(byId)).toEqual(sourceAttempts);
+      expect([...(await db2.loadMatcherRejections())].sort(byId)).toEqual(sourceRejections);
       // --- Ruling 1: the screenshot and research rows stayed behind
       // on the source device — the restored database has none.
       expect(await db2.userScreenshots.toArray()).toEqual([]);
@@ -714,6 +777,9 @@ describe('backup v4 — round-trip: export → wipe → import preserves the log
       });
       expect((await db2.loadCompletion()).records).toHaveLength(17);
       expect((await db2.loadCompletion()).reconciliation).toHaveLength(4);
+      expect(await db2.loadCardMatches()).toHaveLength(1);
+      expect(await db2.loadMatcherAttempts()).toHaveLength(1);
+      expect(await db2.loadMatcherRejections()).toHaveLength(1);
     } finally {
       await db2.delete().catch(() => undefined);
       await aiDb2.delete().catch(() => undefined);
@@ -734,6 +800,9 @@ describe('backup v4 — store export assembles v4 (filename unchanged)', () => {
       expect(backup.enrichments).toEqual([]);
       expect(backup.corrections).toEqual([]);
       expect(backup.personalItemState).toEqual([]);
+      expect(backup.cardMatches).toEqual([]);
+      expect(backup.matcherAttempts).toEqual([]);
+      expect(backup.matcherRejections).toEqual([]);
       // Step-3 follow-up ruling 1: v4 gains exactly enrichments,
       // corrections, personalItemState — the file has no screenshot
       // or research sections at all.
@@ -933,5 +1002,130 @@ describe('backup v4 — follow-up ruling 2: drop-and-count on import', () => {
     ).droppedCompletionRecords;
     expect(entries?.[0]?.count).toBe(2);
     expect(entries?.[0]?.reasons).toHaveLength(2);
+  });
+});
+
+describe('backup v4 — step 7: card matcher sections', () => {
+  function v4Base(): Record<string, unknown> {
+    return {
+      ...v3Fixture(),
+      version: 4,
+      completionRecords: [],
+      reconciliation: [],
+      enrichments: [],
+      corrections: [],
+      personalItemState: [],
+      cardMatches: [],
+      matcherAttempts: [],
+      matcherRejections: [],
+    };
+  }
+
+  const oneMatch = (overrides: Record<string, unknown> = {}): Record<string, unknown> => ({
+    slotId: 'card-checklist:vice-city-manatees:dominic-brizzolato:silver',
+    hostId: 'L3442',
+    confidence: 0.95,
+    reasoning: "Only Nehrling River in the named area matches the direction's host name.",
+    citations: [
+      {
+        sourceTitle: 'lorenzone.fr · GTA 6 Trading Cards checklist',
+        sourceUrl:
+          'https://lorenzone.fr/blogs/news/gta-6-collectible-card-checklist-images-locations',
+        catalogueRecordId: 'L3442',
+        snapshotRev: '2e9e194b497d7a1a7da4f2288c1065dc0b913e80',
+      },
+    ],
+    proposedBy: 'deterministic',
+    confirmedBy: 'player',
+    confirmedAt: time,
+    evidenceKind: 'approximate',
+    ...overrides,
+  });
+
+  it('parses a confirmed match and a jot (personal evidence, empty sourceUrl)', () => {
+    const input = v4Base();
+    input.cardMatches = [
+      oneMatch(),
+      oneMatch({
+        slotId: 'card-checklist:delights-dancers:vicki:standard',
+        hostId: 'custom:jot-1',
+        confidence: 1,
+        reasoning: 'Marked by you in-game.',
+        citations: [
+          {
+            sourceTitle: 'Player jot — marked in-game',
+            sourceUrl: '',
+            catalogueRecordId: 'custom:jot-1',
+            snapshotRev: '2e9e194b497d7a1a7da4f2288c1065dc0b913e80',
+          },
+        ],
+        proposedBy: 'player',
+        evidenceKind: 'personal',
+      }),
+    ];
+    const parsed = parseBackupV4(input);
+    expect(parsed.cardMatches).toHaveLength(2);
+    expect(parsed.cardMatches[1]?.evidenceKind).toBe('personal');
+    expect(parsed.cardMatches[1]?.citations[0]?.sourceUrl).toBe('');
+  });
+
+  it('rejects a match claiming verified evidence — a confirmation is never verified', () => {
+    const input = v4Base();
+    input.cardMatches = [oneMatch({ evidenceKind: 'verified' })];
+    expect(() => parseBackupV4(input)).toThrow(/evidenceKind/i);
+  });
+
+  it('rejects a match with confidence outside 0–1 or an unknown proposer', () => {
+    const badConfidence = v4Base();
+    badConfidence.cardMatches = [oneMatch({ confidence: 1.5 })];
+    expect(() => parseBackupV4(badConfidence)).toThrow(/confidence/i);
+    const badProposer = v4Base();
+    badProposer.cardMatches = [oneMatch({ proposedBy: 'ai' })];
+    expect(() => parseBackupV4(badProposer)).toThrow(/proposedBy/i);
+  });
+
+  it('rejects duplicate slotIds fail-fast — one confirmed match per slot', () => {
+    const input = v4Base();
+    input.cardMatches = [oneMatch(), oneMatch({ hostId: 'L1006' })];
+    expect(() => parseBackupV4(input)).toThrow(/cardMatches/i);
+  });
+
+  it('rejects an attempt with an unknown result and defaults missing matcher sections to []', () => {
+    const badResult = v4Base();
+    badResult.matcherAttempts = [
+      {
+        id: 'slot:x::fp',
+        slotId: 'slot:x',
+        fingerprint: 'fp',
+        at: time,
+        result: 'guessed',
+      },
+    ];
+    expect(() => parseBackupV4(badResult)).toThrow(/result/i);
+    const old = v4Base();
+    delete old.cardMatches;
+    delete old.matcherAttempts;
+    delete old.matcherRejections;
+    const parsed = parseBackupV4(old);
+    expect(parsed.cardMatches).toEqual([]);
+    expect(parsed.matcherAttempts).toEqual([]);
+    expect(parsed.matcherRejections).toEqual([]);
+  });
+
+  it('round-trips a rejection through the repository', async () => {
+    const repo = new AtlasDatabase(`backup-v4-step7-test-${crypto.randomUUID()}`);
+    try {
+      await repo.saveMatcherRejection({
+        id: 'slot:x::L1',
+        slotId: 'slot:x',
+        hostId: 'L1',
+        rejectedAt: time,
+      });
+      expect(await repo.loadMatcherRejections()).toHaveLength(1);
+      expect(await repo.loadCardMatches()).toEqual([]);
+      expect(await repo.loadMatcherAttempts()).toEqual([]);
+    } finally {
+      await repo.delete();
+    }
   });
 });

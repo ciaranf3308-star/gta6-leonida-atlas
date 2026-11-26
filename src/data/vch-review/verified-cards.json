@@ -1,0 +1,159 @@
+[
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "Jada Watts",
+  "variant": "gold",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "gold"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-jada-watts-gold",
+  "placement": "pinned",
+  "host": {
+   "gtadbId": "L513",
+   "hostName": "Radio Mast",
+   "hostArea": "Kelly County",
+   "position": {
+    "x": -5256.030489562096,
+    "y": 3079.374528907457
+   }
+  },
+  "hostMatchNote": "pin 1.8 units from L513 'Radio Mast, Kelly County', next building 306.2 units away",
+  "spotDescription": "CR 62, antenna — Gellhorn",
+  "areaLead": "Gellhorn",
+  "pickups": [
+   {
+    "area": "Gellhorn",
+    "text": "· CR 62 · antenna GTA Six Map lists another area: Lollipop Ridge.",
+    "host": "L513",
+    "note": "GTA Six Map lists another area: Lollipop Ridge (third-party note, not used for placement). [VCH pin supports this pickup]"
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Lollipop Ridge (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "vchReview": {
+   "sourcePinId": "collectible-card-029",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-029",
+   "filePickPinId": "collectible-card-029",
+   "filePickRejected": false,
+   "gameX": -5257.6,
+   "gameY": 3078.4,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "confirmed",
+   "reviewReason": "host evidenced (H4 coincidence: pin 1.8 units from L513 'Radio Mast, Kelly County', next building 306.2 units away)",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "nine1nine-dancers",
+  "setName": "Nine1Nine Dancers",
+  "person": "Lavinia",
+  "variant": "Deep Red",
+  "variantAlias": "dark red",
+  "rarity": {
+   "tier": "standard",
+   "colour": "deep red"
+  },
+  "lorenzoneRowId": "nine1nine-dancers-lavinia-dark-red",
+  "placement": "pinned",
+  "host": {
+   "gtadbId": "L535",
+   "hostName": "Refinery?",
+   "hostArea": "Port Gellhorn",
+   "position": {
+    "x": -7516.820999999999,
+    "y": 5226.6230000000005
+   }
+  },
+  "hostMatchNote": "description/direction names 'Refinery?' (L535), 168.6 units from pin",
+  "spotDescription": "Xero Draper Refinery Engineering Maintenance, desk — Draper Island",
+  "areaLead": "Draper Island",
+  "pickups": [
+   {
+    "area": "Draper Island",
+    "text": "· Xero Draper Refinery Engineering Maintenance · desk Area cross-checked",
+    "host": "L535",
+    "note": "Area cross-checked. [VCH pin supports this pickup]"
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "vchReview": {
+   "sourcePinId": "collectible-card-015",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-015",
+   "filePickPinId": "collectible-card-015",
+   "filePickRejected": false,
+   "gameX": -7516.8,
+   "gameY": 5395.2,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": "Port Gellhorn",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "confirmed",
+   "reviewReason": "host evidenced (H1/H3 named-spot: description/direction names 'Refinery?' (L535), 168.6 units from pin)",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "ed-comics-universe",
+  "setName": "Ed Comics Universe",
+  "person": "Ratface",
+  "variant": "silver",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "silver"
+  },
+  "lorenzoneRowId": "ed-comics-universe-ratface-silver",
+  "placement": "pinned",
+  "host": {
+   "gtadbId": "L360",
+   "hostName": "Sara's Unisex Salon",
+   "hostArea": "Hamlet",
+   "position": {
+    "x": -2554.002,
+    "y": -3414.5
+   }
+  },
+  "hostMatchNote": "description/direction names 'Sara's Unisex Salon' (L360), 21.2 units from pin",
+  "spotDescription": "Roof on Cicada Ave, Hamlet.",
+  "areaLead": "Hamlet",
+  "pickups": [
+   {
+    "area": "Hamlet",
+    "text": "· Cicada Ave · roof",
+    "host": "L360",
+    "note": " [VCH pin supports this pickup]"
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "vchReview": {
+   "sourcePinId": "card-ed-comics-003",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-ed-comics-003",
+   "filePickPinId": "card-ed-comics-003",
+   "filePickRejected": false,
+   "gameX": -2563.2,
+   "gameY": -3433.6,
+   "confidenceTier": "community report",
+   "fbritoArea": "Hamlet",
+   "fbritoDescription": "Next to the chair, on the roof in between Sara's Unisex Salon and Layin' Ink",
+   "fbritoScreenshot": false,
+   "reviewStatus": "confirmed",
+   "reviewReason": "host evidenced (H1/H3 named-spot: description/direction names 'Sara's Unisex Salon' (L360), 21.2 units from pin)",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ }
+]

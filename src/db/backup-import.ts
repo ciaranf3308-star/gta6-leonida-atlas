@@ -58,7 +58,8 @@ import {
  *     migration converts the local key, then the file's entries
  *     overwrite them by category id).
  * 3c. The v4 sections (completion log, reconciliation, enrichments,
- *     corrections, sold state) land in one transaction, merged by id
+ *     corrections, sold state, card matches, matcher attempts and
+ *     rejections) land in one transaction, merged by id
  *     — import wins on a same-id conflict, local rows not in the file
  *     are never deleted. Re-importing the same file is a no-op
  *     (identical rows, put semantics), and a migration record the
@@ -162,7 +163,11 @@ export function recordDroppedCompletionRecords(
   }
 }
 
-/** Write the v4-only sections into the repository, merged by id. */
+/** Write the v4-only sections into the repository, merged by id.
+ * Step 7 adds the card matcher sections (cardMatches,
+ * matcherAttempts, matcherRejections) — a confirmed match is shipped
+ * data, so it must survive a backup/restore, and the attempt
+ * fingerprints must too, or a restored device re-pays for every slot. */
 export async function importBackupV4Sections(
   repository: AtlasDatabase,
   backup: BackupV4,
@@ -175,6 +180,9 @@ export async function importBackupV4Sections(
       repository.enrichments,
       repository.corrections,
       repository.personalItemState,
+      repository.cardMatches,
+      repository.matcherAttempts,
+      repository.matcherRejections,
     ],
     async () => {
       await repository.completionRecords.bulkPut(backup.completionRecords);
@@ -182,6 +190,9 @@ export async function importBackupV4Sections(
       await repository.enrichments.bulkPut(backup.enrichments);
       await repository.corrections.bulkPut(backup.corrections);
       await repository.personalItemState.bulkPut(backup.personalItemState);
+      await repository.cardMatches.bulkPut(backup.cardMatches);
+      await repository.matcherAttempts.bulkPut(backup.matcherAttempts);
+      await repository.matcherRejections.bulkPut(backup.matcherRejections);
     },
   );
 }

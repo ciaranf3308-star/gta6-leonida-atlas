@@ -21,9 +21,15 @@
  *   official art, and no fake card faces ever). An uncollected card
  *   shows name + a generic silhouette only; a collected card shows
  *   the collected treatment (gold border + ✓ + found date + the spot
- *   it was found — the host's name, never a scraped face). No
- *   fbrito/external links are wired here — that is step 7's matcher
- *   lane; the row structure carries no link slot yet.
+ *   it was found — the host's name, never a scraped face).
+ * - Step 7: an unfound, unpositioned card's row carries two more
+ *   location helps, BOTH behind the same "Show where to look" tap
+ *   (the tap is the consent for that row's location help, same as
+ *   the hint): the Vice City Hispano community lead (vch-links —
+ *   LINK-ONLY, labelled as an external community report, never our
+ *   verified pin; rejected cards show the reason, no link) and the
+ *   Find-this-card web-search button (a proposal with sources, never
+ *   a placed pin; the player confirms it in the matcher review list).
  * - The 116 non-slot game-text variants (addendum §1.1) list under
  *   "Also in the game files" per set — never counted toward the set,
  *   never counted in Progress.
@@ -42,6 +48,8 @@ import {
 import { collectedRecordFor } from './place-ids';
 import { recordCompletion, undoCompletion } from './record';
 import { useCompletionLogStore } from './log-store';
+import { FindCardButton } from '../ask/FindCardButton';
+import { vchLeadForSlot, vchLeadLabel } from '../ask/vch-links';
 
 export type JournalFilter = 'all' | 'found' | 'remaining' | 'unpositioned';
 
@@ -113,6 +121,9 @@ function JournalRow({
   const hostName = item.locationId
     ? (db.locations.get(item.locationId)?.name ?? null)
     : null;
+  // Step 7: the community lead for this slot, if the Vice City
+  // Hispano review covered it. Link-only, never a pin.
+  const vchLead = !found && item.checklistSlot ? vchLeadForSlot(item.id) : null;
   return (
     <li className={`journal-row ${found ? 'is-found' : ''}`}>
       <span className="journal-silhouette" aria-hidden="true">
@@ -167,6 +178,20 @@ function JournalRow({
               >
                 Show on map
               </button>
+            )}
+            {vchLead && (
+              <span className="journal-vch-lead">
+                {vchLead.status !== 'rejected' ? (
+                  <a href={vchLead.sourcePinUrl} target="_blank" rel="noreferrer">
+                    {vchLeadLabel(vchLead)}
+                  </a>
+                ) : (
+                  <span>{vchLeadLabel(vchLead)}</span>
+                )}
+              </span>
+            )}
+            {item.placement !== 'pinned' && (
+              <FindCardButton item={item} db={db} />
             )}
           </span>
         )}

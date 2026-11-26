@@ -41,6 +41,7 @@ import {
   useWorkspaceStore,
 } from '../stores/atlas';
 import { useCompletionLogStore } from '../features/completion/log-store';
+import { useMatchStore } from '../features/ask/match-store';
 import {
   completedPlaceIds,
   exploredPlaceIds,
@@ -79,6 +80,11 @@ export default function App() {
   const completionRecords = useCompletionLogStore((s) => s.records);
   const completionReconciliation = useCompletionLogStore((s) => s.reconciliation);
   const completionError = useCompletionLogStore((s) => s.error);
+  /** Step 7: confirmed card matches — the GameDatabase below pins
+   *  matched slots to their hosts, so a one-tap confirmation in
+   *  Collections appears on the map without a reload. */
+  const cardMatches = useMatchStore((s) => s.matches);
+  const pendingJotSlotId = useMatchStore((s) => s.pendingJotSlotId);
   const placeTags = useUserStore((s) => s.placeTags);
   const favorites = useUserStore((s) => s.favorites);
   const notes = useUserStore((s) => s.notes);
@@ -146,11 +152,12 @@ export default function App() {
         user: useUserStore.getState(),
         records: completionRecords,
         reconciliation: completionReconciliation,
+        matches: cardMatches,
       });
     } catch {
       return null;
     }
-  }, [status, allPlaces, completionRecords, completionReconciliation]);
+  }, [status, allPlaces, completionRecords, completionReconciliation, cardMatches]);
   const areas = gameDb?.areas ?? null;
   const selectedAreaId = useSearchSplitStore((s) => s.selectedAreaId);
   const areaPageOpen = useSearchSplitStore((s) => s.areaPageOpen);
@@ -462,6 +469,32 @@ export default function App() {
     useUiStore.getState().setEditorOpen(true);
     if (window.innerWidth < 1000) useUiStore.getState().setNavTab('map');
   }, []);
+  /** The jot flow (step 7): "Mark it yourself" in the matcher panel
+   *  (or the jot offer on an Ask confirm) arms a slot; the next
+   *  marker the player saves becomes that card's host, evidence
+   *  'personal'. The arm is visible in the panel until the marker
+   *  lands or the player cancels — a stale arm never silently links
+   *  an unrelated marker, because the panel says plainly that the
+   *  next marker saved is the card's spot. */
+  const prevMarkersRef = useRef(markers);
+  useEffect(() => {
+    const prev = prevMarkersRef.current;
+    prevMarkersRef.current = markers;
+    if (!pendingJotSlotId || !gameDb) return;
+    const added = markers.filter(
+      (marker) => !prev.some((entry) => entry.id === marker.id),
+    );
+    if (added.length === 0) return;
+    const slot = gameDb.items.get(pendingJotSlotId);
+    if (!slot) return;
+    const marker = added[added.length - 1]!;
+    void useMatchStore
+      .getState()
+      .recordJotMatch(slot, marker)
+      .then(() => {
+        useMatchStore.getState().clearPendingJot();
+      });
+  }, [markers, pendingJotSlotId, gameDb]);
   useEffect(() => {
     useAiIndexStore.getState().load();
     useMapStore.getState().setLayers([...atlasRegistry.layers.values()]);
@@ -482,6 +515,10 @@ export default function App() {
      * second launch is a no-op; a failure is stored in the log
      * store and surfaced as a banner with a retry below. */
     void useCompletionLogStore.getState().load();
+    // Step 7: confirmed matches, attempts and rejections load with
+    // the log — the matcher review list and the pinned slots are
+    // live from the first render.
+    void useMatchStore.getState().load();
     cataloguePromise ??= Promise.all(
       [...atlasRegistry.sources.values()].map((source) => source.load()),
     ).then((batches) => batches.flat());
@@ -536,6 +573,7 @@ export default function App() {
       if (matches && usePersistenceStore.getState().status !== 'saving') {
         void hydrateUserData();
         void useCompletionLogStore.getState().refresh();
+        void useMatchStore.getState().refresh();
         void useAiIndexStore.getState().reloadFromDatabase();
       }
     });
@@ -842,6 +880,7 @@ export default function App() {
           open={askOpen}
           onClose={closeAsk}
           onMarkWorkout={markWorkoutAt}
+          db={gameDb}
         />
         {status === 'error' && (
           <div className="map-notice inline-error" role="alert">

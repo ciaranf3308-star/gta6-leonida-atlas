@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronRight, KeyRound, Send, Sparkles, X } from 'lucide-react';
 import type { Filters, LayerDefinition, Place } from '../../domain/types';
-import { useMapStore } from '../../stores/atlas';
+import type { GameDatabase } from '../../domain/game-db';
+import { atlasRepository } from '../../db/repository';
+import { useMapStore, useUiStore } from '../../stores/atlas';
+import { useCompletionLogStore } from '../completion/log-store';
+import { recordCompletion, recordSale } from '../completion/record';
 import { retrieveForAsk } from './retrieval';
 import {
   askOpenAi,
@@ -10,6 +14,9 @@ import {
   sanitizeAiNote,
   setAskApiKey,
 } from './openai';
+import { askWithTools, type AskProposal } from './intent';
+import { FindCardButton } from './FindCardButton';
+import { useMatchStore } from './match-store';
 import { buildAskCard, buildAskCards, askAnchorLabel, shortVerdict, type AskCard } from './cards';
 import type { AiCategoryRecord } from '../categorise/categories';
 import {
@@ -40,6 +47,10 @@ export interface AskPanelProps {
   onClose: () => void;
   /** One tap on a house-to-check: start a workout-spot marker there. */
   onMarkWorkout: (place: Place) => void;
+  /** The gameplay database (step 7): the tools-first path runs
+   *  against it when a key is saved. Without it Ask stays on the
+   *  keyword finder, as before. */
+  db?: GameDatabase | null;
 }
 
 /**
@@ -88,6 +99,11 @@ interface AskMessage {
   /** The systemic rule for a breakable question, one line under the
    * verdict (from retrieval ruleNote). */
   ruleNote?: string | null;
+  /** Confirm cards (step 7, tools-first answers only): proposals from
+   *  update_completion / record_sale. Never writes — the player
+   *  confirms, one tap, through the same step-2 recordCompletion /
+   *  recordSale path, source 'ask'. */
+  proposals?: AskProposal[];
 }
 
 const SUGGESTED_PROMPTS = [
@@ -103,6 +119,13 @@ export default function AskPanel(props: AskPanelProps) {
   const [busyNote, setBusyNote] = useState<string | null>(null);
   const [keyInput, setKeyInput] = useState('');
   const [hasKey, setHasKey] = useState(() => getAskApiKey().length > 0);
+  /** Confirm cards handled this session (by proposal key) — a
+   *  confirmed card flips to "Confirmed ✓" and never re-writes. */
+  const [handledProposals, setHandledProposals] = useState<ReadonlySet<string>>(new Set());
+  const [proposalBusy, setProposalBusy] = useState<string | null>(null);
+  const [proposalError, setProposalError] = useState('');
+  /** Unpositioned finds whose jot was armed after confirming. */
+  const [jotArmed, setJotArmed] = useState<ReadonlySet<string>>(new Set());
   const messagesRef = useRef<HTMLDivElement>(null);
   /** Monotonic submit id — a stale answer never lands after a newer one. */
   const requestRef = useRef(0);
@@ -132,6 +155,62 @@ export default function AskPanel(props: AskPanelProps) {
     abortRef.current = null;
     setBusy(false);
     setBusyNote(null);
+  }
+
+  function proposalKey(proposal: AskProposal): string {
+    return proposal.kind === 'completion'
+      ? `completion:${proposal.targetType}:${proposal.targetId}`
+      : `sale:${proposal.itemId}`;
+  }
+
+  /** One tap on a confirm card: the proposal becomes a real write
+   *  through the same step-2 path the journal uses, source 'ask'.
+   *  A proposal never writes on its own — this tap is the write. */
+  async function confirmProposal(proposal: AskProposal) {
+    const key = proposalKey(proposal);
+    if (proposalBusy || handledProposals.has(key)) return;
+    setProposalBusy(key);
+    setProposalError('');
+    if (proposal.kind === 'completion') {
+      const result = await recordCompletion({
+        target: { type: proposal.targetType, id: proposal.targetId },
+        verb: proposal.verb,
+        count: proposal.count,
+        source: 'ask',
+        note: proposal.note,
+      });
+      if (result.ok && result.db) {
+        useCompletionLogStore.getState().applyDb(result.db);
+        setHandledProposals((prev) => new Set([...prev, key]));
+      } else {
+        setProposalError(result.error ?? 'Could not save that — try again.');
+      }
+    } else {
+      const result = await recordSale({ itemId: proposal.itemId, price: proposal.price });
+      if (result.ok) {
+        await useCompletionLogStore.getState().refresh();
+        setHandledProposals((prev) => new Set([...prev, key]));
+      } else {
+        setProposalError(result.error ?? 'Could not save that sale — try again.');
+      }
+    }
+    setProposalBusy(null);
+  }
+
+  /** The jot follow-up (§7.2): after confirming an unpositioned
+   *  find, the player marks where it was found. Arms the slot and
+   *  opens the marker editor on the map — the next marker saved
+   *  becomes the pin for it. */
+  function offerJot(proposal: Extract<AskProposal, { kind: 'completion' }>) {
+    if (proposal.targetType !== 'item') return;
+    useMatchStore.getState().armJot(proposal.targetId);
+    setJotArmed((prev) => new Set([...prev, proposal.targetId]));
+    props.onClose();
+    props.onClearHighlights();
+    useUiStore.getState().setNavTab('map');
+    useMapStore.getState().setMarkerKindPreset(null);
+    useMapStore.getState().setEditor('create');
+    useUiStore.getState().setEditorOpen(true);
   }
   // The latest answer must be in view — scrolled to its TOP, so the
   // verdict and the first cards show, not the tail of the list. (The
@@ -200,6 +279,28 @@ export default function AskPanel(props: AskPanelProps) {
     props.onSelect(placeId);
   }
 
+  /** The checklist item behind a card answer, if the card is an
+   *  unpositioned, unfound card — the Find-this-card button's input. */
+  function itemForCard(placeId: string) {
+    const db = props.db ?? null;
+    if (!db) return null;
+    const candidates = [
+      [...db.items.values()].find((item) => item.locationId === placeId),
+      db.items.get(placeId),
+    ];
+    for (const item of candidates) {
+      if (
+        item &&
+        item.checklistSlot &&
+        item.placement !== 'pinned' &&
+        !db.completedItemIds.has(item.id)
+      ) {
+        return item;
+      }
+    }
+    return null;
+  }
+
   function appendAssistant(message: Omit<AskMessage, 'role'>, requestId: number) {
     if (requestId !== requestRef.current) return;
     setMessages((prev) => [...prev, { ...message, role: 'assistant' }]);
@@ -250,6 +351,66 @@ export default function AskPanel(props: AskPanelProps) {
       // same fresh read, or the "add your key" prompts stay up after
       // a keyed question runs.
       setHasKey(apiKey.length > 0);
+      const db = props.db ?? null;
+      // Step 7, tools-first (DESIGN §7.2/§7.3): with a key and the
+      // database, the structured tools answer first — the router maps
+      // the question to tool calls, the tools answer from the live
+      // database, the narration is sanitized. A 'no_tool' or 'error'
+      // result falls through to the keyword finder below, so the
+      // local answer still stands when the tools cannot map the
+      // question.
+      if (db && apiKey) {
+        const toolsResult = await (async () => {
+          const controller = new AbortController();
+          abortRef.current = controller;
+          try {
+            return await askWithTools({
+              question,
+              db,
+              apiKey,
+              model: getAskModel(),
+              signal: controller.signal,
+              researchDeps: {
+                queueResearch: async (request) => {
+                  try {
+                    await atlasRepository.researchRequests.put(request);
+                    return true;
+                  } catch {
+                    return false;
+                  }
+                },
+              },
+            });
+          } finally {
+            if (abortRef.current === controller) abortRef.current = null;
+          }
+        })();
+        if (toolsResult.kind === 'tools') {
+          const revealPlaces = toolsResult.revealIds
+            .map((id) => placeById.get(id))
+            .filter((place): place is Place => place !== undefined);
+          const toolCards = revealPlaces.map((place) =>
+            buildAskCard(place, null, props.aiCategories, props.userTags),
+          );
+          showOnMap(revealPlaces);
+          if (toolsResult.focus?.bounds) {
+            useMapStore.getState().setBoundsFocus(toolsResult.focus.bounds);
+          } else if (toolsResult.focus?.locationId) {
+            openCard(toolsResult.focus.locationId);
+          }
+          appendAssistant(
+            {
+              text: toolsResult.narration,
+              cards: toolCards,
+              totalInScope: revealPlaces.length,
+              anchorLabel,
+              proposals: toolsResult.proposals,
+            },
+            requestId,
+          );
+          return;
+        }
+      }
       if (result.records.length === 0) {
         const scope = result.requestedLayerNames.length
           ? ` for ${result.requestedLayerNames.join(', ')}`
@@ -464,6 +625,7 @@ export default function AskPanel(props: AskPanelProps) {
                 {message.cards.map((card) => {
                   const place = placeById.get(card.placeId);
                   if (!place) return null;
+                  const item = itemForCard(card.placeId);
                   return (
                   <li key={card.placeId}>
                     <button
@@ -508,6 +670,7 @@ export default function AskPanel(props: AskPanelProps) {
                       </span>
                       <ChevronRight size={16} />
                     </button>
+                    {item && props.db ? <FindCardButton item={item} db={props.db} /> : null}
                   </li>
                   );
                 })}
@@ -522,6 +685,61 @@ export default function AskPanel(props: AskPanelProps) {
                   highlighted on the map.
                 </p>
               )}
+            {message.role === 'assistant' && message.proposals && message.proposals.length > 0 && (
+              <ul className="ask-proposals">
+                {message.proposals.map((proposal) => {
+                  const key = proposalKey(proposal);
+                  const handled = handledProposals.has(key);
+                  const isCompletion = proposal.kind === 'completion';
+                  return (
+                    <li key={key} className="ask-proposal">
+                      <span>{proposal.confirmLabel}</span>
+                      {handled ? (
+                        <span role="status">Confirmed ✓</span>
+                      ) : (
+                        <button
+                          type="button"
+                          className="button"
+                          disabled={proposalBusy === key}
+                          onClick={() => void confirmProposal(proposal)}
+                        >
+                          Confirm
+                        </button>
+                      )}
+                      {handled && isCompletion && proposal.jotOffer && proposal.targetType === 'item' && !jotArmed.has(proposal.targetId) && (
+                        <span className="ask-jot-offer">
+                          <span>{proposal.jotOffer}</span>
+                          <button
+                            type="button"
+                            className="text-button"
+                            onClick={() => offerJot(proposal)}
+                          >
+                            Mark where you found it
+                          </button>
+                        </span>
+                      )}
+                      {handled && isCompletion && proposal.jotOffer && proposal.targetType === 'item' && jotArmed.has(proposal.targetId) && (
+                        <span role="status">
+                          Marker armed — tap the map to place it, and it becomes this card’s pin.
+                        </span>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            {message.role === 'assistant' && proposalError && (
+              <p className="completion-error" role="alert">
+                {proposalError}{' '}
+                <button
+                  type="button"
+                  className="completion-error-dismiss"
+                  onClick={() => setProposalError('')}
+                >
+                  Dismiss
+                </button>
+              </p>
+            )}
             {message.houses && message.houses.placeIds.length > 0 && (
               <div className="ask-houses">
                 <strong>

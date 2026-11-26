@@ -8,8 +8,6 @@
  * `completedItemIds` + `PersonalItemState` — never a second database.
  */
 
-import type { EvidenceKind } from './game-db';
-
 /**
  * Artwork reference for one face of a card (addendum §3.1). Null until
  * a licensed source exists or the player supplies their own photo.
@@ -113,11 +111,14 @@ export interface PersonalMatch {
     catalogueRecordId: string;
     snapshotRev: string;
   }[];
-  proposedBy: 'deterministic' | 'llm' | 'developer';
+  proposedBy: 'deterministic' | 'llm' | 'developer' | 'player';
   confirmedBy: 'player';
   /** ISO UTC. */
   confirmedAt: string;
-  /** The evidence kind the confirmed pin carries. Always
-   *  'approximate' — never 'verified' (§2.3). */
-  evidenceKind: Extract<EvidenceKind, 'approximate'>;
+  /** The evidence kind the confirmed pin carries. 'approximate' for a
+   *  matcher confirmation — the guide is approximate and the player
+   *  confirmed the HOST, not the exact shelf. 'personal' for a jot:
+   *  the player marked the spot himself in-game (CARD-MATCHER-DESIGN
+   *  §3), the strongest non-verified evidence. Never 'verified'. */
+  evidenceKind: 'approximate' | 'personal';
 }

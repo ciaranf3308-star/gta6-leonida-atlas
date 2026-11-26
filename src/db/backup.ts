@@ -22,7 +22,11 @@ import {
 } from '../features/categorise/categories';
 import type { CompletionRecord, ReconciliationEntry } from '../domain/game-db';
 import type { Correction, Enrichment, EnrichmentFieldKind } from '../domain/enrichment';
-import type { PersonalItemState } from '../domain/album';
+import type { PersonalItemState, PersonalMatch } from '../domain/album';
+import type {
+  MatcherAttempt,
+  MatcherRejection,
+} from '../features/ask/card-matcher';
 import {
   EMPTY_INDEX_JOB,
   RESOLVER_VERSION,
@@ -554,6 +558,29 @@ function parseBackupData(
     (item) => item.itemId,
     'personalItemState',
   );
+  const cardMatches = unique(
+    list(data.cardMatches === undefined ? [] : data.cardMatches, 'cardMatches').map((item, index) =>
+      parsePersonalMatch(item, `cardMatches[${index}]`),
+    ),
+    (item) => item.slotId,
+    'cardMatches',
+  );
+  const matcherAttempts = unique(
+    list(
+      data.matcherAttempts === undefined ? [] : data.matcherAttempts,
+      'matcherAttempts',
+    ).map((item, index) => parseMatcherAttempt(item, `matcherAttempts[${index}]`)),
+    (item) => item.id,
+    'matcherAttempts',
+  );
+  const matcherRejections = unique(
+    list(
+      data.matcherRejections === undefined ? [] : data.matcherRejections,
+      'matcherRejections',
+    ).map((item, index) => parseMatcherRejection(item, `matcherRejections[${index}]`)),
+    (item) => item.id,
+    'matcherRejections',
+  );
   // No userScreenshots / researchRequests sections: they are not in
   // v4 (see the note at the top of the v4 section). A file carrying
   // them is ignored here — unknown keys, never read.
@@ -567,6 +594,9 @@ function parseBackupData(
     enrichments,
     corrections,
     personalItemState,
+    cardMatches,
+    matcherAttempts,
+    matcherRejections,
   };
   // Count only whitelisted data: the 10 MiB cap applies to the whole
   // v4 file, new sections included.
@@ -615,7 +645,11 @@ export function parseBackup(input: unknown): Backup {
  * A v4 file is a strict superset of v3: every v3 section, plus the
  * completion log, reconciliation, and exactly three addendum tables
  * — `enrichments`, `corrections`, `personalItemState` (addendum line
- * 725). Screenshots and research requests are NOT in the backup:
+ * 725) — plus, since step 7, the card matcher sections
+ * `cardMatches`, `matcherAttempts`, `matcherRejections`
+ * (CARD-MATCHER-DESIGN §2.3 + M4: a confirmed match is shipped data,
+ * so it must survive a backup/restore; the attempt fingerprints must
+ * too, or a restored device re-pays for every slot). Screenshots and research requests are NOT in the backup:
  * screenshots are device-local blobs (addendum line 518: "device-local
  * only, never in a backup"; the JSON is capped at 10 MiB — stated
  * plainly in Settings and in the export dialog, not hidden), and
@@ -638,6 +672,13 @@ export type BackupV4 = Omit<Backup, 'version'> & {
   enrichments: Enrichment[];
   corrections: Correction[];
   personalItemState: PersonalItemState[];
+  /** Player-confirmed card matches (step 7) — one row per slot. */
+  cardMatches: PersonalMatch[];
+  /** Matcher attempts (step 7) — the fingerprint rule survives a
+   *  restore, so a restored device never re-pays for the same inputs. */
+  matcherAttempts: MatcherAttempt[];
+  /** Rejected (slot, host) pairs (step 7, M4) — never re-proposed. */
+  matcherRejections: MatcherRejection[];
 };
 
 /** The completion sources a v4 file may carry (DESIGN §11 says only
@@ -920,6 +961,108 @@ export function parsePersonalItemState(
     itemId: parseId(item.itemId, `${path}.itemId`),
     soldAt,
     ...(soldPrice === undefined ? {} : { soldPrice }),
+  };
+}
+
+/** A player-confirmed card match (step 7, CARD-MATCHER-DESIGN §2.3).
+ * Whitelisted like every other backup entry. evidenceKind is never
+ * 'verified' — a matcher confirmation carries 'approximate', a jot
+ * 'personal'; a file claiming 'verified' fails validation. */
+export function parsePersonalMatch(input: unknown, path = 'cardMatches'): PersonalMatch {
+  const item = record(input, path);
+  const confidence = item.confidence;
+  if (typeof confidence !== 'number' || !Number.isFinite(confidence) || confidence < 0 || confidence > 1)
+    invalid(`${path}.confidence`, 'must be a number between 0 and 1');
+  const proposedBy = item.proposedBy;
+  if (
+    proposedBy !== 'deterministic' &&
+    proposedBy !== 'llm' &&
+    proposedBy !== 'developer' &&
+    proposedBy !== 'player'
+  )
+    invalid(`${path}.proposedBy`, 'must be deterministic, llm, developer or player');
+  if (item.confirmedBy !== 'player')
+    invalid(`${path}.confirmedBy`, 'must be player');
+  const evidenceKind = item.evidenceKind;
+  if (evidenceKind !== 'approximate' && evidenceKind !== 'personal')
+    invalid(`${path}.evidenceKind`, 'must be approximate or personal, never verified');
+  const citations = list(item.citations, `${path}.citations`).map((entry, index) => {
+    const citation = record(entry, `${path}.citations[${index}]`);
+    return {
+      sourceTitle: parseText(citation.sourceTitle, `${path}.citations[${index}].sourceTitle`, 500, true),
+      // Empty for jots — the player is the source, there is no page.
+      sourceUrl: parseText(citation.sourceUrl, `${path}.citations[${index}].sourceUrl`, 2000),
+      catalogueRecordId: parseId(
+        citation.catalogueRecordId,
+        `${path}.citations[${index}].catalogueRecordId`,
+      ),
+      snapshotRev: parseText(citation.snapshotRev, `${path}.citations[${index}].snapshotRev`, 100),
+    };
+  });
+  return {
+    slotId: parseId(item.slotId, `${path}.slotId`),
+    hostId: parseId(item.hostId, `${path}.hostId`),
+    confidence,
+    reasoning: parseText(item.reasoning, `${path}.reasoning`, 1000),
+    citations,
+    proposedBy,
+    confirmedBy: 'player',
+    confirmedAt: timestamp(item.confirmedAt, `${path}.confirmedAt`),
+    evidenceKind,
+  };
+}
+
+/** One matcher attempt (step 7) — the fingerprint rule in stored
+ * form. An unknown `result` or `proposedBy` fails validation. */
+export function parseMatcherAttempt(input: unknown, path = 'matcherAttempts'): MatcherAttempt {
+  const item = record(input, path);
+  const result = item.result;
+  if (result !== 'proposed' && result !== 'not-sure' && result !== 'none' && result !== 'error')
+    invalid(`${path}.result`, 'must be proposed, not-sure, none or error');
+  const proposedBy = item.proposedBy;
+  if (
+    proposedBy !== undefined &&
+    proposedBy !== 'deterministic' &&
+    proposedBy !== 'llm'
+  )
+    invalid(`${path}.proposedBy`, 'must be deterministic or llm');
+  const confidence = item.confidence;
+  if (
+    confidence !== undefined &&
+    (typeof confidence !== 'number' || !Number.isFinite(confidence) || confidence < 0 || confidence > 1)
+  )
+    invalid(`${path}.confidence`, 'must be a number between 0 and 1');
+  return {
+    id: parseId(item.id, `${path}.id`),
+    slotId: parseId(item.slotId, `${path}.slotId`),
+    fingerprint: parseText(item.fingerprint, `${path}.fingerprint`, 200),
+    at: timestamp(item.at, `${path}.at`),
+    result,
+    ...(item.proposedHostId === undefined
+      ? {}
+      : { proposedHostId: parseId(item.proposedHostId, `${path}.proposedHostId`) }),
+    ...(confidence === undefined ? {} : { confidence }),
+    ...(item.reasoning === undefined
+      ? {}
+      : { reasoning: parseText(item.reasoning, `${path}.reasoning`, 1000) }),
+    ...(proposedBy === undefined ? {} : { proposedBy }),
+    ...(item.error === undefined
+      ? {}
+      : { error: parseText(item.error, `${path}.error`, 1000) }),
+  };
+}
+
+/** One rejected (slot, host) pair (step 7, M4). */
+export function parseMatcherRejection(
+  input: unknown,
+  path = 'matcherRejections',
+): MatcherRejection {
+  const item = record(input, path);
+  return {
+    id: parseId(item.id, `${path}.id`),
+    slotId: parseId(item.slotId, `${path}.slotId`),
+    hostId: parseId(item.hostId, `${path}.hostId`),
+    rejectedAt: timestamp(item.rejectedAt, `${path}.rejectedAt`),
   };
 }
 

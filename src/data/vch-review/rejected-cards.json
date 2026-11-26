@@ -1,0 +1,449 @@
+[
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "Jada Watts",
+  "variant": "silver",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "silver"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-jada-watts-silver",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — fishing garden gnome on the south coast",
+  "spotDescription": "South coast, fishing garden gnome — Bobcat Key",
+  "areaLead": "Bobcat Key",
+  "pickups": [
+   {
+    "area": "Bobcat Key",
+    "text": "· South coast · fishing garden gnome GTA Six Map lists another area: Watson Bay.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Watson Bay (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Watson Bay (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "vchReview": {
+   "sourcePinId": "collectible-card-079",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-079",
+   "filePickPinId": "collectible-card-079",
+   "filePickRejected": false,
+   "gameX": -5552.0,
+   "gameY": -3068.8,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": "Watson Bay",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "rejected-area-conflict",
+   "reviewReason": "no GTADB region/name within 1500u matches areaLead 'Bobcat Key' (nearest named: [('L3376', '?, Watson Bay', 204.6), ('L3377', '?, Watson Bay', 251.8), ('L3598', '?, Watson Bay', 348.4)])",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "MonaLi$a",
+  "variant": "bronze",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "bronze"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-monalisa-bronze",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — men's restroom on a southern hiking trail",
+  "spotDescription": "Southern hiking trail, men’s restroom — Southern Kelly County",
+  "areaLead": "Southern Kelly County",
+  "pickups": [
+   {
+    "area": "Southern Kelly County",
+    "text": "· Southern hiking trail · men’s restroom GTA Six Map lists another area: Buckskin.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Buckskin (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Buckskin (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "vchReview": {
+   "sourcePinId": "collectible-card-057",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-057",
+   "filePickPinId": "collectible-card-057",
+   "filePickRejected": false,
+   "gameX": -5372.8,
+   "gameY": 252.8,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": true,
+   "reviewStatus": "rejected-area-conflict",
+   "reviewReason": "OVERRIDE (manual, area-evidence audit): the pin's only area evidence was the county fallback ('kelly-county' within 1500u). Nearest GTADB records to the pin (-5372.8, 252.8) are L2976 'River, Leonida' (442u) and L521/L2246 '?, Mariana County' (546u/597u); the nearest Kelly County record (L2784 Interchange) is 643u away. The direction says Southern Kelly County and GTA Six Map says Buckskin — the pin supports neither. Area conflict.",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "MonaLi$a",
+  "variant": "gold",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "gold"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-monalisa-gold",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — chair on Abismo Key; the GTADB pickup/map note does not name a host building",
+  "spotDescription": "At the foot of the striped folding chair near the inflatable dinghy, Abismo Key",
+  "areaLead": "Abismo Key",
+  "pickups": [
+   {
+    "area": "Abismo Key",
+    "text": "· Abismo Key · chair GTA Six Map lists another area: Leonida Keys. Look at the foot of the striped folding chair near the inflatable dinghy. This capture’s collection menu identifies the gold variant. Pickup, map and card front on GTADB",
+    "host": null,
+    "note": "GTA Six Map lists another area: Leonida Keys (third-party note, not used for placement). Look at the foot of the striped folding chair near the inflatable dinghy. This capture's collection menu identifies the gold variant. Pickup, map and card front on GTADB."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Leonida Keys (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "vchReview": {
+   "sourcePinId": "collectible-card-087",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-087",
+   "filePickPinId": "collectible-card-087",
+   "filePickRejected": false,
+   "gameX": -3606.4,
+   "gameY": -7926.4,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": true,
+   "reviewStatus": "rejected-area-conflict",
+   "reviewReason": "no GTADB region/name within 1500u matches areaLead 'Abismo Key' (nearest named: [('L1461', '\"Vake Island\", Mariana County', 1.8)])",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "MonaLi$a",
+  "variant": "silver",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "silver"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-monalisa-silver",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — freighter wreck on the north shore; no GTADB freighter/wreck record",
+  "spotDescription": "Southeastern island, north shore freighter wreck — Featherstone Islands",
+  "areaLead": "Featherstone Islands",
+  "pickups": [
+   {
+    "area": "Featherstone Islands",
+    "text": "· Southeastern island · north shore freighter wreck GTA Six Map lists another area: Alligator Point.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Alligator Point (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Alligator Point (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "vchReview": {
+   "sourcePinId": "collectible-card-003",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-003",
+   "filePickPinId": "collectible-card-003",
+   "filePickRejected": false,
+   "gameX": -5235.2,
+   "gameY": 8144.0,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "ambiguous-area-unverifiable",
+   "reviewReason": "areaLead 'Featherstone Islands' has no GTADB equivalent — cannot verify",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "Zaria “RI RI” Luckett",
+  "variant": "gold",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "gold"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-zaria-ri-ri-luckett-gold",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — chair on sand on the southern peninsula",
+  "spotDescription": "Southern peninsula, chair on sand — Little Hardin Island",
+  "areaLead": "Little Hardin Island",
+  "pickups": [
+   {
+    "area": "Little Hardin Island",
+    "text": "· Southern peninsula · chair on sand GTA Six Map lists another area: Peanut Island.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Peanut Island (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Peanut Island (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "vchReview": {
+   "sourcePinId": "collectible-card-014",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-014",
+   "filePickPinId": "collectible-card-014",
+   "filePickRejected": false,
+   "gameX": 246.4,
+   "gameY": 5654.4,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "rejected-area-conflict",
+   "reviewReason": "no GTADB region/name within 1500u matches areaLead 'Little Hardin Island' (nearest named: [('L920', '?, Leonard County', 349.1), ('L445', 'Presidential Bunker, Leonard County', 375.4), ('L3749', 'Sharktooth Island, Leonard County', 375.7)])",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "delights-dancers",
+  "setName": "Delights Dancers",
+  "person": "Amber",
+  "variant": "standard",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard"
+  },
+  "lorenzoneRowId": "delights-dancers-amber-standard",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — first pickup is the tower at Agricore mine, Southern Leonard County (no GTADB record for Agricore mine); second is a yellow booth near guard posts on Draper Island, guard-post building unidentified",
+  "spotDescription": "Agricore mine tower",
+  "areaLead": "Southern Leonard County",
+  "pickups": [
+   {
+    "area": "Southern Leonard County",
+    "text": "· Agricore mine · tower",
+    "host": null,
+    "note": ""
+   },
+   {
+    "area": "Draper Island",
+    "text": "· Southern island road · yellow booth near guard posts Area cross-checked GTA Six Map lists another area: Belville.",
+    "host": null,
+    "note": "Area cross-checked. GTA Six Map lists another area: Belville (not used)."
+   }
+  ],
+  "conflict": "Second pickup: GTA Six Map lists Belville instead of Draper Island (not used).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "vchReview": {
+   "sourcePinId": "collectible-card-036",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-036",
+   "filePickPinId": "collectible-card-036",
+   "filePickRejected": false,
+   "gameX": -1856,
+   "gameY": 1564.8,
+   "confidenceTier": "community report",
+   "fbritoArea": "Vice City",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "ambiguous-duplicate",
+   "reviewReason": "arbitration failed: 0 pin(s) agree on area, no unique winner; pins: [('card-delights-008', 'Key Lento', False, []), ('collectible-card-036', 'Vice City', True, [])]",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "delights-dancers",
+  "setName": "Delights Dancers",
+  "person": "Nevaeh",
+  "variant": "standard",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard"
+  },
+  "lorenzoneRowId": "delights-dancers-nevaeh-standard",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — workbench in a damaged barn in the hills, Bonanza; barn unnamed",
+  "spotDescription": "Hills damaged barn workbench",
+  "areaLead": "Bonanza",
+  "pickups": [
+   {
+    "area": "Bonanza",
+    "text": "· Hills · damaged barn workbench Area cross-checked GTA Six Map lists another area: Redhill.",
+    "host": null,
+    "note": "Area cross-checked. GTA Six Map lists another area: Redhill (not used)."
+   }
+  ],
+  "conflict": "GTA Six Map lists Redhill instead of Bonanza (not used).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "vchReview": {
+   "sourcePinId": "collectible-card-001",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-001",
+   "filePickPinId": "collectible-card-001",
+   "filePickRejected": false,
+   "gameX": -3894.4,
+   "gameY": 8339.2,
+   "confidenceTier": "community report",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": true,
+   "reviewStatus": "ambiguous-duplicate",
+   "reviewReason": "arbitration failed: 0 pin(s) agree on area, no unique winner; pins: [('card-delights-014', None, False, []), ('collectible-card-001', None, False, [])]",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "Brianna Blue",
+  "variant": "Deep Red",
+  "variantAlias": "dark red",
+  "rarity": {
+   "tier": "standard",
+   "colour": "deep red"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-brianna-blue-dark-red",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — shed shelf on a northwestern island; no GTADB record for the shed",
+  "spotDescription": "Northwestern island, shed shelf — Pelican Valley",
+  "areaLead": "Pelican Valley",
+  "pickups": [
+   {
+    "area": "Pelican Valley",
+    "text": "· Northwestern island · shed shelf Area cross-checked GTA Six Map lists another area: Grassrivers.",
+    "host": null,
+    "note": "Area cross-checked. GTA Six Map lists another area: Grassrivers (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Grassrivers (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "vchReview": {
+   "sourcePinId": "collectible-card-081",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-081",
+   "filePickPinId": "collectible-card-081",
+   "filePickRejected": false,
+   "gameX": -4108.8,
+   "gameY": -3779.2,
+   "confidenceTier": "community report",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": true,
+   "reviewStatus": "ambiguous-area-unverifiable",
+   "reviewReason": "areaLead 'Pelican Valley' has no GTADB equivalent — cannot verify",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "nine1nine-dancers",
+  "setName": "Nine1Nine Dancers",
+  "person": "Jesenia",
+  "variant": "bronze",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "bronze"
+  },
+  "lorenzoneRowId": "nine1nine-dancers-jesenia-bronze",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — lounge chair on SR-120",
+  "spotDescription": "SR-120, lounge chair — Balsero",
+  "areaLead": "Balsero",
+  "pickups": [
+   {
+    "area": "Balsero",
+    "text": "· SR-120 · lounge chair GTA Six Map lists another area: Belville.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Belville (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Belville (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "vchReview": {
+   "sourcePinId": "collectible-card-037",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-037",
+   "filePickPinId": "collectible-card-037",
+   "filePickRejected": false,
+   "gameX": -1488.0,
+   "gameY": 1516.8,
+   "confidenceTier": "community report",
+   "fbritoArea": "Vice City",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "rejected-area-conflict",
+   "reviewReason": "no GTADB region/name within 1500u matches areaLead 'Balsero' (nearest named: [('L2728', '?, La Perle', 315.8), ('L416', '?, La Perle, Vice City', 318.7), ('L2740', 'Lake, Leonard County', 321.3)])",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "nine1nine-dancers",
+  "setName": "Nine1Nine Dancers",
+  "person": "Louise",
+  "variant": "silver",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "silver"
+  },
+  "lorenzoneRowId": "nine1nine-dancers-louise-silver",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — rest area restroom southeast of Lake Leonida; no GTADB rest area record",
+  "spotDescription": "Southeast of Lake Leonida, rest area restroom — Belville",
+  "areaLead": "Belville",
+  "pickups": [
+   {
+    "area": "Belville",
+    "text": "· Southeast of Lake Leonida · rest area restroom GTA Six Map lists another area: Lake Leonida.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Lake Leonida (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Lake Leonida (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "vchReview": {
+   "sourcePinId": "collectible-card-019",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-019",
+   "filePickPinId": "collectible-card-019",
+   "filePickRejected": false,
+   "gameX": -1571.2,
+   "gameY": 4332.8,
+   "confidenceTier": "community report",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "rejected-area-conflict",
+   "reviewReason": "no GTADB region/name within 1500u matches areaLead 'Belville' (nearest named: [('L1549', '?, Leonard County', 395.3), ('L2644', 'Train Bridge, Leonard County', 462.3), ('L2031', 'Broadcast Tower, Leonard County', 531.2)])",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ }
+]

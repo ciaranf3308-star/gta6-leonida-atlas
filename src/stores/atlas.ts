@@ -323,11 +323,19 @@ export async function exportWorkspaceBackup(workspaceId: string | null) {
   // NOT in the file — the images stay on this device (addendum line
   // 518) — and neither are research requests (addendum line 725: v4
   // gains exactly enrichments, corrections, personalItemState).
+  // Step 7 adds the card matcher sections (cardMatches,
+  // matcherAttempts, matcherRejections) for the same reason the
+  // completion log rides along: a confirmed match is shipped data.
   const { records, reconciliation } = await atlasRepository.loadCompletion();
   const personalItemState = await atlasRepository.loadPersonalItemStates();
   const [enrichments, corrections] = await Promise.all([
     atlasRepository.enrichments.toArray(),
     atlasRepository.corrections.toArray(),
+  ]);
+  const [cardMatches, matcherAttempts, matcherRejections] = await Promise.all([
+    atlasRepository.loadCardMatches(),
+    atlasRepository.loadMatcherAttempts(),
+    atlasRepository.loadMatcherRejections(),
   ]);
   assertWorkspace(workspaceId, expectedGeneration);
   return parseBackupV4({
@@ -340,6 +348,9 @@ export async function exportWorkspaceBackup(workspaceId: string | null) {
     enrichments,
     corrections,
     personalItemState,
+    cardMatches,
+    matcherAttempts,
+    matcherRejections,
   });
 }
 

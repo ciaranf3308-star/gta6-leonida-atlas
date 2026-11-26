@@ -15,9 +15,12 @@ import {
  * places from the local map, it just cannot write an AI answer.
  */
 
+import { DEFAULT_ASK_MODEL } from './model';
+
+export { DEFAULT_ASK_MODEL } from './model';
+
 export const ASK_API_KEY_STORAGE_KEY = 'leonida-ask-api-key';
 export const ASK_MODEL_STORAGE_KEY = 'leonida-ask-model';
-export const DEFAULT_ASK_MODEL = 'gpt-4o-mini';
 /** An Ask answer that takes longer than this is a failure, not a wait —
  * the local map results below it are the fallback, not a spinner. */
 export const ASK_TIMEOUT_MS = 30_000;
@@ -156,7 +159,9 @@ export interface AskOpenAiInput {
  * deterministic verdict + cards alone. Never a guessed name, never a
  * cross-layer extra.
  */
-const CROSS_LAYER_KEYWORDS: Readonly<Record<string, readonly string[]>> = {
+/** Shared with the tools intent layer (intent.ts): the spoiler rule's
+ *  keyword map. One source — the two sanitizers must never drift. */
+export const CROSS_LAYER_KEYWORDS: Readonly<Record<string, readonly string[]>> = {
   gyms: ['gym', 'gyms', 'fitness', 'workout', 'weights', 'bench', 'exercise'],
   equipment: ['equipment', 'workout', 'weights', 'bench', 'kettlebell', 'dumbbell'],
   lootable: ['loot', 'lootable', 'rob', 'robbery', 'robberies', 'burglar', 'burglary', 'steal', 'hold up'],

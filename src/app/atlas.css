@@ -1700,6 +1700,136 @@ h3 {
   padding: 0;
   min-height: 32px;
 }
+/* Step 7: the community lead on a journal row — a link to an external
+ * community report, labelled as such, never our verified pin. */
+.journal-vch-lead {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.journal-vch-lead a {
+  color: var(--orange);
+}
+/* Step 7: Find this card — the web-search button and its result. The
+ * cost copy rides with the button, before the tap. */
+.find-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.find-card-button {
+  padding: 0;
+  min-height: 32px;
+}
+.find-card-cost,
+.find-card-note {
+  color: var(--muted);
+}
+.find-card-proposal {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--text);
+}
+.find-card-proposal a {
+  color: var(--orange);
+}
+/* Step 7: the matcher panel at the Collections checklist header. */
+.matcher-panel {
+  padding: 14px;
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  background: var(--surface);
+  margin-bottom: 12px;
+}
+.matcher-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 8px 0;
+}
+.matcher-pending {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.5;
+  border-left: 3px solid var(--orange);
+  padding-left: 8px;
+}
+.matcher-review {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.matcher-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border-soft);
+}
+.matcher-row-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.5;
+}
+.matcher-row-main small {
+  color: var(--muted);
+}
+.matcher-direction {
+  font-style: italic;
+}
+.matcher-conflict {
+  color: var(--coral);
+}
+.matcher-stale {
+  color: var(--coral);
+}
+.matcher-row-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+/* Step 7: Ask confirm cards — proposals from the tools, never writes
+ * until the player taps Confirm. */
+.ask-proposals {
+  list-style: none;
+  margin: 8px 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.ask-proposal {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  background: var(--surface);
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.5;
+}
+.ask-proposal .button {
+  align-self: flex-start;
+}
+.ask-jot-offer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
 .journal-extras {
   margin-top: 8px;
 }

@@ -211,7 +211,7 @@ afterEach(async () => {
   await aiDb.delete().catch(() => undefined);
 });
 
-/** Seed a real v4 database (legacy Dexie), then open it as v5. */
+/** Seed a real v4 database (legacy Dexie), then open it as v6. */
 async function seedLegacyV4(fixture: Backup): Promise<void> {
   const legacy = new Dexie(dbName);
   legacy.version(4).stores(schemaV4);
@@ -237,7 +237,7 @@ describe('v3 → v4 completion migration (DESIGN §5, headline)', () => {
     const fixture = v3Fixture();
     const storage = talliesStorage();
     await seedLegacyV4(fixture);
-    expect(db.verno).toBe(5);
+    expect(db.verno).toBe(6); // schema v6 (step 7: card-matcher tables)
     // The upgrade only adds empty tables — nothing is migrated yet.
     expect(await db.completionRecords.count()).toBe(0);
     expect(await db.reconciliation.count()).toBe(0);

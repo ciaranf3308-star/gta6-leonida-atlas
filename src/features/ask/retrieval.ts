@@ -213,7 +213,61 @@ const NIGHTLIFE_TAG_WORDS: Record<string, readonly string[]> = {
  * Dancers card set" returned all 25 collectibles — five cards from
  * five different sets plus every meditation, magazine and watch —
  * because nothing ever narrowed by set (reported 2026-11-26).
+ *
+ * BARE NAMES (v0.32 step 7 — the live bug, screenshot 2026-11-26
+ * 05:13 GMT: "Delight dancers" → "Nothing in the map data for
+ * that"): a set named BY NAME ALONE must match, even without the
+ * word "card" and even as a single word. The full-name rule above
+ * needs every set word, so it misses "Delights" (one word),
+ * "Jack of Hearts" (missing "Dancers") and "flamingos" (the last
+ * word of "Vice City Flamingos" only). The second rule below matches
+ * on SIGNATURE words — a stemmed set-name word that belongs to
+ * exactly one set, is at least 4 letters, and is not a generic word
+ * that means something else in this app ('club' is nightlife, not
+ * the Club De Fútbol set; 'next'/'top'/'right'/'wing'/'hero' are
+ * plain English). A single signature word matches only when it is
+ * at least 5 letters ('delight', 'flamingo'); a 4-letter one ('jack')
+ * needs a second signature word from the same set ('heart'), so a
+ * bare "jack" never answers as a card set. Signature words from two
+ * different sets never match — the question is ambiguous, and the
+ * answer stays the whole pool rather than guessing a set.
  */
+const SET_SIGNATURE_EXCLUDED = new Set([
+  'club', // bare "club" is nightlife, never the Club De Fútbol set
+  'next',
+  'top',
+  'right',
+  'wing',
+  'hero', // plain English — "Right Wing" needs its full name
+  'dancer', // in three set names; "dancers" alone names no set
+]);
+
+function setSignatureWords(): ReadonlyMap<string, CollectableSet> {
+  const stem = (word: string): string => (word.endsWith('s') ? word.slice(0, -1) : word);
+  const counts = new Map<string, number>();
+  const owner = new Map<string, CollectableSet>();
+  for (const set of COLLECTABLE_SETS) {
+    const words = new Set(normalizeAsk(set.name).split(' ').map(stem));
+    for (const word of words) {
+      counts.set(word, (counts.get(word) ?? 0) + 1);
+      owner.set(word, set);
+    }
+  }
+  const signature = new Map<string, CollectableSet>();
+  for (const [word, count] of counts) {
+    if (
+      count === 1 &&
+      word.length >= 4 &&
+      !SET_SIGNATURE_EXCLUDED.has(word)
+    ) {
+      signature.set(word, owner.get(word)!);
+    }
+  }
+  return signature;
+}
+
+const SET_SIGNATURES = setSignatureWords();
+
 export function cardSetForQuestion(question: string): CollectableSet | null {
   const stem = (word: string): string => (word.endsWith('s') ? word.slice(0, -1) : word);
   const questionWords = new Set(normalizeAsk(question).split(' ').map(stem));
@@ -226,7 +280,15 @@ export function cardSetForQuestion(question: string): CollectableSet | null {
       bestLength = setWords.length;
     }
   }
-  return best;
+  if (best) return best;
+  // Bare-name rule (see the doc comment above): signature words only.
+  const found = [...questionWords].filter((word) => SET_SIGNATURES.has(word));
+  if (found.length === 0) return null;
+  const sets = new Set(found.map((word) => SET_SIGNATURES.get(word)!));
+  if (sets.size !== 1) return null;
+  const only = [...sets][0]!;
+  if (found.length >= 2 || found[0]!.length >= 5) return only;
+  return null;
 }
 
 /** A question that asks for cards specifically — not a generic
@@ -329,8 +391,12 @@ export function layersRequestedByQuestion(
     'hold up', 'holdup', 'steal', 'break in', 'break-in', 'hit tonight',
     'houses i can hit', 'can i rob', 'can be robbed', 'held up',
   ];
+  // 'shops' (plural) names the category, same as 'shop' (v0.32 step 7
+  // — the bare-name audit: the whole-word match missed the plural).
+  // 'stores' is deliberately NOT here: "stores I can hit tonight" is
+  // a robbery question and routes to lootable only (pinned by test).
   const shopWords = [
-    'shop', 'store', 'clothes', 'clothing', 'guns', 'ammo', 'food', 'gas',
+    'shop', 'shops', 'store', 'clothes', 'clothing', 'guns', 'ammo', 'food', 'gas',
     'supermarket', 'pharmacy', 'tattoo', 'tattoos', 'hair', 'shoes',
     'electronics', 'vendor', 'restaurant',
   ];
@@ -407,6 +473,18 @@ export function layersRequestedByQuestion(
     // collectibles too — a "collectibles" question asks for both.
     has('loot-collectibles');
   }
+  // A NAMED set brings its own layer into scope — the word "card" is
+  // not required (v0.32 step 7, the live bug: "Delight dancers" with
+  // every layer off answered "Nothing in the map data for that",
+  // because the layer gate above only fires on the word "card" and
+  // set narrowing can only FILTER the eligible layers, never ADD
+  // one). Naming the set is the ask; its cards:* layer plus the Loot
+  // Map dancer cards tagged with the set id join the scope.
+  const namedSet = cardSetForQuestion(question);
+  if (namedSet) {
+    has(`cards:${namedSet.id}`);
+    has('loot-collectibles');
+  }
   // Meditation and magazine questions ask for the Loot Map collectibles
   // only — never the trading-card sets.
   if (['meditation', 'meditations', 'magazine', 'magazines'].some((p) => hasPhrase(q, p))) {
@@ -454,6 +532,32 @@ export function anchorForQuestion(question: string, places: readonly Place[]): P
     if (base.length >= 4 && q.includes(base) && base.length > bestLength) {
       best = place;
       bestLength = base.length;
+    }
+    // The SHORT name — the title before its ", Area" suffix ("NINE1NINE"
+    // from "NINE1NINE, Downtown, Vice City"). A bare place name is a
+    // question too ("Starlet Motel", "NINE1NINE"): without this the
+    // anchor only ever matched when the question repeated the area
+    // suffix as well, so a place asked for by name alone had no
+    // anchor, no distances, and — with every layer off — no answer
+    // at all (v0.32 step 7, the bare-name class). The short name is
+    // only ever the title's first segment, never a single word, so a
+    // common word in the question cannot anchor by accident.
+    const short = normalizeAsk(
+      (place.title.split(' — ')[0] ?? place.title).split(',')[0] ?? '',
+    );
+    if (
+      short.length >= 4 &&
+      short.length > bestLength &&
+      q.includes(short) &&
+      // The short name must be the whole question (or the question's
+      // head) — a question that merely MENTIONS the place in passing
+      // ("shops near Starlet Motel") anchors on it for distances, but
+      // the bare-place layer rule below only fires when no layer was
+      // asked for at all, so the mention never widens the answer.
+      short !== base
+    ) {
+      best = place;
+      bestLength = short.length;
     }
   }
   return best;
@@ -626,7 +730,22 @@ export function tagMatchesLayer(place: Place, layerId: string): boolean {
 
 export function retrieveForAsk(input: AskRetrievalInput): AskRetrievalResult {
   const { question, places, layers } = input;
-  const requestedLayerIds = layersRequestedByQuestion(question, layers);
+  let requestedLayerIds = layersRequestedByQuestion(question, layers);
+  // A bare PLACE name brings its layer into scope (the same bare-name
+  // class as the set fix above): "Starlet Motel" or "NINE1NINE" with
+  // every layer off must answer with that place, not "Nothing in the
+  // map data for that". Only when the question asked for NO layer at
+  // all — a question that already names a kind ("shops near Starlet
+  // Motel") keeps its own scope, and the named place is a measuring
+  // point there, not a second kind to answer from. Only the CURRENT
+  // question's anchor counts: a follow-up inherits the earlier
+  // question's PLACE for distances, never its layer.
+  if (requestedLayerIds.length === 0) {
+    const named = anchorForQuestion(question, places);
+    if (named && layers.some((layer) => layer.id === named.layerId)) {
+      requestedLayerIds = [named.layerId];
+    }
+  }
   // Scope: when the question asks for specific layers, ONLY those layers
   // (plus My markers) are in scope — a visible-but-unasked layer must never
   // hijack the answer (e.g. a gym question must not return an interior just
@@ -707,8 +826,30 @@ export function retrieveForAsk(input: AskRetrievalInput): AskRetrievalResult {
   // its cards:* layer plus the Loot Map dancer cards tagged with the
   // set id. "Help me find the Delights Dancers card set" is two cards
   // (Vicki + Harley), not all 25 collectibles.
+  //
+  // The narrowing does NOT apply when the question also asks for a
+  // different kind. A set name can double as a place name — NINE1NINE
+  // is a nightclub AND a dancer set — and "NINE1NINE nightclub" is a
+  // nightclub question, not a card question: the kind scope wins and
+  // the set is not used as a filter. A bare "NINE1NINE" (or "Delights")
+  // names nothing else, so the set reading wins — the task's ruling
+  // on "Delights" generalises. Same for the other collectibles in the
+  // loot bucket: "meditations near NINE1NINE" is a meditation
+  // question, not the Nine1Nine set.
   const askedSet = cardSetForQuestion(question);
-  if (askedSet) {
+  const asksOtherKind =
+    requestedLayerIds.some(
+      (id) => !id.startsWith('cards:') && id !== 'loot-collectibles',
+    ) ||
+    ['meditation', 'meditations', 'magazine', 'magazines', 'watch', 'watches'].some((p) =>
+      hasPhrase(normalizeAsk(question), p),
+    );
+  /** The set is the question's subject (see the narrowing comment
+   *  below). The area/county sort-not-filter rule keys off this, not
+   *  off the bare set match — a nightclub question that happens to
+   *  name a set must keep its area filter. */
+  const setNarrows = askedSet !== null && !asksOtherKind;
+  if (setNarrows) {
     eligible = eligible.filter(
       (place) => place.layerId === `cards:${askedSet.id}` || place.tags.includes(askedSet.id),
     );
@@ -754,9 +895,32 @@ export function retrieveForAsk(input: AskRetrievalInput): AskRetrievalResult {
   let anchorPosition: { x: number; y: number } | null = anchor?.position ?? null;
   let scoped = eligible;
   let areaMismatch = false;
+  // SET WINS OVER AREA (DESIGN §7.2, normative): when a card set is
+  // named, the area word is a SORT, never a filter. The old area
+  // filter dropped the loot Harley from a Delights set answer because
+  // "Delights" is also an area word (Jason's host region starts with
+  // "Delights") and Harley's region is Port Gellhorn — set narrowing
+  // lost to an area filter because both were string matching over the
+  // same flat record. Every set item stays, positioned or not,
+  // nearest first from the area's centroid; the verdict says honestly
+  // when none of them is near the named area.
+  if (setNarrows && areaWord) {
+    areaLabel = areaWord;
+    const areaAnchor = areaAnchorForWord(areaWord, places);
+    anchor = areaAnchor.place ?? anchor;
+    anchorPosition = areaAnchor.position ?? anchorPosition;
+    scoped = anchorPosition ? [...eligible].sort(byDistanceFrom(anchorPosition)) : [...eligible];
+    const nearest = scoped.find((p) => p.position);
+    if (
+      nearest &&
+      anchorPosition &&
+      distance(nearest.position!, anchorPosition) > NEAR_DISTANCE_UNITS
+    )
+      areaMismatch = true;
+  }
   // 1. A named area that actually holds matching places: answer from that
   // area only, nearest first. (Mount Kalaga gyms: only the gym in that area.)
-  if (areaWord) {
+  if (scoped === eligible && areaWord) {
     const inArea = eligible.filter((p) =>
       normalizeAsk(`${p.title} ${p.region}`).includes(areaWord),
     );
@@ -788,18 +952,33 @@ export function retrieveForAsk(input: AskRetrievalInput): AskRetrievalResult {
     areaMismatch = true;
   }
   // 4. County, then direction, as before — but a county fallback is also
-  // nearest-first, measured from the county centre.
+  // nearest-first, measured from the county centre. A named set beats
+  // the county filter the same way it beats the area filter (§7.2):
+  // the county is a sort from its centre, never a filter that drops
+  // set items pinned elsewhere (or with no position at all).
   if (scoped === eligible && county) {
     areaLabel = county.name;
-    scoped = eligible.filter((p) => countyForPlace(p) === county.id);
-    if (scoped.length === 0) {
-      areaMismatch = true;
+    if (setNarrows) {
       const centre = {
         x: (county.bounds.west + county.bounds.east) / 2,
         y: (county.bounds.south + county.bounds.north) / 2,
       };
       anchorPosition = centre;
       scoped = [...eligible].sort(byDistanceFrom(centre));
+      const nearest = scoped.find((p) => p.position);
+      if (nearest && distance(nearest.position!, centre) > NEAR_DISTANCE_UNITS)
+        areaMismatch = true;
+    } else {
+      scoped = eligible.filter((p) => countyForPlace(p) === county.id);
+      if (scoped.length === 0) {
+        areaMismatch = true;
+        const centre = {
+          x: (county.bounds.west + county.bounds.east) / 2,
+          y: (county.bounds.south + county.bounds.north) / 2,
+        };
+        anchorPosition = centre;
+        scoped = [...eligible].sort(byDistanceFrom(centre));
+      }
     }
   } else if (scoped === eligible && direction) {
     areaLabel = direction;

@@ -125,7 +125,7 @@ describe('collectable cards — v0.31.5 written-guides import + lorenzone.fr hos
     }
   });
 
-  it('a Delights Dancers set question over the real catalogue returns the pinned cards:* cards — and flags the loot Harley gap', () => {
+  it('a Delights Dancers set question over the real catalogue returns the pinned cards:* cards — and the loot Harley card (step-7 set-wins fix)', () => {
     const places = catalogueFromSnapshot(snapshot);
     const result = retrieveForAsk({
       question: 'help me find the Delights Dancers card set',
@@ -133,17 +133,15 @@ describe('collectable cards — v0.31.5 written-guides import + lorenzone.fr hos
       layers: layers(),
       filters: { hideFound: false, remainingOnly: false, countyId: null },
     });
-    // KNOWN INTERACTION (26 Nov 2026, for the lead): "Delights" is now
-    // also an area word — Jason's host region starts with "Delights" —
-    // so the area filter keeps only cards whose title/region mentions
-    // it, and the Loot Map Harley ("Harley dancer card", region "Port
-    // Gellhorn") drops out. The set question returns the four cards:*
-    // pins, nearest-first from the Delights venue, never a meditation.
-    // A retrieval fix (set narrowing over the area filter) or a
-    // loot-Harley region naming Delights would restore all five; this
-    // lane does not touch Ask retrieval or the loot data.
+    // FIXED 26 Nov 2026 (step 7, DESIGN §7.2 set-wins rule): "Delights"
+    // is also an area word — Jason's host region starts with "Delights"
+    // — but set narrowing now beats the area filter, so the Loot Map
+    // Harley ("Harley dancer card", region "Port Gellhorn") is no longer
+    // dropped. The set question returns all five, nearest-first from the
+    // Delights venue, never a meditation.
     expect(result.records.map((p) => p.id)).toEqual([
       'card:jason',
+      'loot:guide-harley-card',
       'card:vicki',
       'card:perla',
       'card:kandi',

@@ -22,9 +22,14 @@ import {
 import type { Correction, Enrichment } from '../domain/enrichment';
 import type {
   PersonalItemState,
+  PersonalMatch,
   ResearchRequest,
   UserScreenshot,
 } from '../domain/album';
+import type {
+  MatcherAttempt,
+  MatcherRejection,
+} from '../features/ask/card-matcher';
 import {
   BACKUP_LIMITS,
   BackupValidationError,
@@ -120,6 +125,17 @@ const schemaV5 = {
   researchRequests: 'id, targetId, status, requestedAt',
 };
 
+/** v6 (v0.32 step 7) adds the card matcher's write tables
+ * (CARD-MATCHER-DESIGN §2.3 + M4): confirmed matches, attempt
+ * fingerprints (the cost rule — a slot is never re-run for unchanged
+ * inputs), and rejections. New tables only; existing data untouched. */
+const schemaV6 = {
+  ...schemaV5,
+  cardMatches: 'slotId, hostId, confirmedAt',
+  matcherAttempts: 'id, slotId, fingerprint, at',
+  matcherRejections: 'id, slotId, hostId',
+};
+
 /** A photo the user added himself — his own in-game screenshot, stored
  * on this device only (downscaled to ≤1024px JPEG before saving, so
  * one photo stays small). Never AI-generated, never scraped, never in
@@ -194,6 +210,14 @@ export class AtlasDatabase extends Dexie {
   declare userScreenshots: Table<UserScreenshot, string>;
   /** Research-when-missing queue (addendum §5.3) — empty until step 7. */
   declare researchRequests: Table<ResearchRequest, string>;
+  /** Player-confirmed card matches (CARD-MATCHER-DESIGN §2.3) — one
+   * row per slot; a confirmed match pins the slot to its host. */
+  declare cardMatches: Table<PersonalMatch, string>;
+  /** Matcher attempts, keyed `${slotId}::${fingerprint}` — the
+   * fingerprint rule lives here (never re-pay for unchanged inputs). */
+  declare matcherAttempts: Table<MatcherAttempt, string>;
+  /** Rejected (slot, host) pairs (M4) — never re-proposed. */
+  declare matcherRejections: Table<MatcherRejection, string>;
 
   constructor(name = 'leonida-atlas') {
     super(name);
@@ -209,6 +233,8 @@ export class AtlasDatabase extends Dexie {
     // no catalogue — the snapshot is fetched at runtime — so it cannot
     // classify a visited row (card vs lootable vs plain location).
     this.version(5).stores(schemaV5);
+    // v6 adds the card matcher tables only; existing data is untouched.
+    this.version(6).stores(schemaV6);
   }
 
   private async snapshot(): Promise<UserData> {
@@ -281,6 +307,38 @@ export class AtlasDatabase extends Dexie {
 
   async getPersonalItemState(itemId: string): Promise<PersonalItemState | undefined> {
     return this.personalItemState.get(itemId);
+  }
+
+  /** Player-confirmed card matches (CARD-MATCHER-DESIGN §2.3) — one
+   * row per slot, keyed by slotId. */
+  async loadCardMatches(): Promise<PersonalMatch[]> {
+    return this.cardMatches.toArray();
+  }
+
+  async saveCardMatch(match: PersonalMatch): Promise<void> {
+    await this.cardMatches.put(match);
+  }
+
+  async deleteCardMatch(slotId: string): Promise<void> {
+    await this.cardMatches.delete(slotId);
+  }
+
+  /** Matcher attempts, keyed `${slotId}::${fingerprint}`. */
+  async loadMatcherAttempts(): Promise<MatcherAttempt[]> {
+    return this.matcherAttempts.toArray();
+  }
+
+  async saveMatcherAttempts(attempts: readonly MatcherAttempt[]): Promise<void> {
+    if (attempts.length > 0) await this.matcherAttempts.bulkPut([...attempts]);
+  }
+
+  /** Rejected (slot, host) pairs (M4), keyed `${slotId}::${hostId}`. */
+  async loadMatcherRejections(): Promise<MatcherRejection[]> {
+    return this.matcherRejections.toArray();
+  }
+
+  async saveMatcherRejection(rejection: MatcherRejection): Promise<void> {
+    await this.matcherRejections.put(rejection);
   }
 
   private async requirePlace(id: string): Promise<void> {

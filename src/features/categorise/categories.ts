@@ -1,7 +1,7 @@
 import type { Place } from "../../domain/types";
 import { countyForPlace } from "../../data/counties";
 import { displayTagsFor } from "../../domain/tags";
-import { DEFAULT_ASK_MODEL } from "../ask/openai";
+import { DEFAULT_ASK_MODEL } from "../ask/model";
 
 /**
  * AI categorisation of the unnamed "?" places — the index job.

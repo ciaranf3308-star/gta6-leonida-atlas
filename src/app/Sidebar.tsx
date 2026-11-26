@@ -30,6 +30,7 @@ import {
 import { SavedPlaces } from '../features/library/SavedPlaces';
 import { ProgressPanel } from '../features/completion/ProgressPanel';
 import { Journal } from '../features/completion/Journal';
+import { MatcherPanel } from '../features/ask/MatcherPanel';
 import { completedPlaceIds } from '../features/completion/place-ids';
 import { Status } from './Status';
 import { setAccountEntryTarget } from '../capabilities/extension-host';
@@ -715,6 +716,7 @@ export function CollectionsPanel({
   return (
     <div className="sidebar-content">
       <SavedPlaces foundIds={db ? completedPlaceIds(db) : new Set<string>()} />
+      <MatcherPanel db={db ?? null} />
       <Journal db={db ?? null} onSelectPlace={onSelect} />
       <AddToMapSection />
     </div>

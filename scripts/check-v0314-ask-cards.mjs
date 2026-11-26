@@ -80,9 +80,14 @@ if ((await skipOnboarding.count()) > 0) {
   await skipOnboarding.first().click();
   await page.waitForTimeout(800);
 }
-await page.waitForSelector('.place-sheet', { timeout: 10000 });
-await page.getByRole('button', { name: /Close place details/i }).click();
-await page.waitForTimeout(800);
+// First launch (v0.32, repaired 26 Nov 2026): no place is
+// auto-selected, so there is no place sheet to close — the map opens
+// clean with everything off. If a sheet is ever open, close it;
+// otherwise go straight to Ask.
+if ((await page.locator('.place-sheet').count()) > 0) {
+  await page.getByRole('button', { name: /Close place details/i }).click();
+  await page.waitForTimeout(800);
+}
 
 async function ask(question) {
   const before = await page.locator('.ask-cards').count();
@@ -158,13 +163,13 @@ await ask('I need any cards for delight dancers near Capri');
   await shot('a-cards-near-capri');
 }
 
-// (3) Naming the set narrows to the set only — four cards, not all 25
-// collectibles and not other sets' cards. The four are the cards:*
-// pins (Jason, Vicki, Perla, Kandi). KNOWN GAP, not fixed here —
-// needs the v0.32 structured Ask: the Loot Map Harley does NOT show.
-// "Delights" became an area word via Jason's host region (Delights,
-// Port Gellhorn), so the area filter drops Harley (region Port
-// Gellhorn). The set answer is 4 cards, not 5.
+// (3) Naming the set narrows to the set only — five cards, not all 25
+// collectibles and not other sets' cards. The five are the cards:*
+// pins (Jason, Vicki, Perla, Kandi) plus the Loot Map Harley. FIXED
+// 26 Nov 2026 (step 7, DESIGN §7.2 set-wins rule): "Delights" became
+// an area word via Jason's host region (Delights, Port Gellhorn), so
+// the old area filter dropped Harley (region Port Gellhorn). Set
+// narrowing now beats the area filter, so the set answer is 5 cards.
 await ask('help me find the Delights Dancers card set');
 {
   const { cards } = await lastAnswer();
@@ -172,6 +177,7 @@ await ask('help me find the Delights Dancers card set');
   check('set ask shows Jason', cards.includes('Jason'), cards.slice(0, 200));
   check('set ask shows Perla', cards.includes('Perla'), cards.slice(0, 200));
   check('set ask shows Kandi', cards.includes('Kandi'), cards.slice(0, 200));
+  check('set ask shows Harley dancer card', cards.includes('Harley'), cards.slice(0, 200));
   check(
     'set ask shows no other set’s cards',
     !cards.includes('Victor Maravilla') &&
@@ -188,6 +194,85 @@ await ask('help me find the Delights Dancers card set');
     cards.slice(0, 400),
   );
   await shot('b-delights-dancers-set');
+}
+
+// (4)–(7) The bare-name regression (step 7): the user typed "Delight
+// dancers" into Ask on v0.31.5 and got "Nothing in the map data for
+// that." Naming a set BY NAME — no "card" word, no "card set" — must
+// bring that set's layer into scope. These run after the set question
+// above, and each still proves the rule: layer scope is per-question
+// (a follow-up inherits the earlier question's place for distances
+// only, never its layer). The fresh-conversation forms are pinned in
+// unit tests (tests/unit/ask-nylah.test.ts, "bare names").
+
+// (4) His exact typed form: singular, bare, no "card".
+await ask('Delight dancers');
+{
+  const { cards } = await lastAnswer();
+  check('bare "Delight dancers" shows Jason', cards.includes('Jason'), cards.slice(0, 200));
+  check('bare "Delight dancers" shows Vicki', cards.includes('Vicki'), cards.slice(0, 200));
+  check('bare "Delight dancers" shows Harley', cards.includes('Harley'), cards.slice(0, 200));
+  check(
+    'bare "Delight dancers" shows no meditation',
+    !cards.toLowerCase().includes('meditation'),
+    cards.slice(0, 200),
+  );
+  await shot('d-bare-delight-dancers');
+}
+
+// (5) Bare one-word set name.
+await ask('Delights');
+{
+  const { cards } = await lastAnswer();
+  check('bare "Delights" shows Jason', cards.includes('Jason'), cards.slice(0, 200));
+  check('bare "Delights" shows Vicki', cards.includes('Vicki'), cards.slice(0, 200));
+  check('bare "Delights" shows Harley', cards.includes('Harley'), cards.slice(0, 200));
+  check(
+    'bare "Delights" shows no other set’s cards',
+    !cards.includes('Lexi Campbell') && !cards.includes('Ulysses Whitlock'),
+    cards.slice(0, 400),
+  );
+  await shot('e-bare-delights');
+}
+
+// (6) Bare set name, another set — the cards:* places of the set.
+await ask('Jack of Hearts');
+{
+  const { cards } = await lastAnswer();
+  check(
+    'bare "Jack of Hearts" shows the set',
+    cards.includes('Jack of Hearts Dancers'),
+    cards.slice(0, 400),
+  );
+  check('bare "Jack of Hearts" shows Lexi Campbell', cards.includes('Lexi Campbell'), cards.slice(0, 200));
+  check(
+    'bare "Jack of Hearts" shows no Delights cards',
+    !cards.includes('Vicki') && !cards.includes('Jason'),
+    cards.slice(0, 400),
+  );
+  await shot('f-bare-jack-of-hearts');
+}
+
+// (7) Bare set name, lowercase plural.
+await ask('flamingos');
+{
+  const { cards } = await lastAnswer();
+  check(
+    'bare "flamingos" shows the set',
+    cards.includes('Vice City Flamingos'),
+    cards.slice(0, 400),
+  );
+  check(
+    'bare "flamingos" shows Ulysses Whitlock',
+    cards.includes('Ulysses Whitlock'),
+    cards.slice(0, 200),
+  );
+  check(
+    'bare "flamingos" shows no Delights cards',
+    !cards.includes('Vicki') && !cards.includes('Jason'),
+    cards.slice(0, 400),
+  );
+  await shot('g-bare-flamingos');
 }
 
 const openAiBlocked = failedRequests.some((url) => url.includes('api.openai.com'));

@@ -1,0 +1,5105 @@
+[
+ {
+  "setId": "backyard-wrestling",
+  "setName": "Backyard Wrestling",
+  "person": "Blood Smith",
+  "variant": "standard",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard"
+  },
+  "lorenzoneRowId": "backyard-wrestling-blood-smith-standard",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — red tarp at a southern treehouse, Manifest Canyon; treehouse unnamed",
+  "spotDescription": "Southern treehouse red tarp",
+  "areaLead": "Manifest Canyon",
+  "pickups": [
+   {
+    "area": "Manifest Canyon",
+    "text": "· Southern treehouse · red tarp",
+    "host": null,
+    "note": ""
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -5471.0,
+   "y": 4841.0
+  },
+  "vchReview": {
+   "sourcePinId": "card-backyard-wrestling-018",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-backyard-wrestling-018",
+   "filePickPinId": "card-backyard-wrestling-018",
+   "filePickRejected": false,
+   "gameX": -5471.0,
+   "gameY": 4841.0,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": null,
+   "fbritoDescription": "Inside the treehouse covered with a red tarp, on the ground next to a pile of magazines.",
+   "fbritoScreenshot": true,
+   "reviewStatus": "dup-arbitrated-file-pick-wins",
+   "reviewReason": "file pick wins arbitration on area; keywords vs our direction: ['red', 'tarp', 'treehouse']; losers (wrong area): [('card-backyard-wrestling-011', None, 'On the top level of the roof of the Badger building.')]",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "Brianna Blue",
+  "variant": "pink",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard",
+   "colour": "pink"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-brianna-blue-pink",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — chair on Rockledge Rd; no GTADB record",
+  "spotDescription": "Rockledge Rd, chair — Moreau",
+  "areaLead": "Moreau",
+  "pickups": [
+   {
+    "area": "Moreau",
+    "text": "· Rockledge Rd · chair GTA Six Map lists another area: Redhill.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Redhill (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Redhill (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -3548.8,
+   "y": 8150.4
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-002",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-002",
+   "filePickPinId": "collectible-card-002",
+   "filePickRejected": false,
+   "gameX": -3548.8,
+   "gameY": 8150.4,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "Christel",
+  "variant": "pink",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard",
+   "colour": "pink"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-christel-pink",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — restrooms on NW 15th Ave",
+  "spotDescription": "NW 15th Ave, restrooms — Salton",
+  "areaLead": "Salton",
+  "pickups": [
+   {
+    "area": "Salton",
+    "text": "· NW 15th Ave · restrooms GTA Six Map lists another area: Little Cuba.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Little Cuba (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Little Cuba (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -1964.8,
+   "y": 176.0
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-058",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-058",
+   "filePickPinId": "collectible-card-058",
+   "filePickRejected": false,
+   "gameX": -1964.8,
+   "gameY": 176.0,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": "Vice City",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "Christel",
+  "variant": "purple",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard",
+   "colour": "purple"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-christel-purple",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — chair on Shorefront Ave",
+  "spotDescription": "Shorefront Ave, chair — Ocean Beach",
+  "areaLead": "Ocean Beach",
+  "pickups": [
+   {
+    "area": "Ocean Beach",
+    "text": "· Shorefront Ave · chair Area cross-checked",
+    "host": null,
+    "note": "Area cross-checked."
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": 1635.2,
+   "y": 320
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-056",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-056",
+   "filePickPinId": "collectible-card-056",
+   "filePickRejected": false,
+   "gameX": 1635.2,
+   "gameY": 320,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": "Vice Beach",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "Jada Watts",
+  "variant": "bronze",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "bronze"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-jada-watts-bronze",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — table on Pennwort St",
+  "spotDescription": "Pennwort St, table — Port Gellhorn",
+  "areaLead": "Port Gellhorn",
+  "pickups": [
+   {
+    "area": "Port Gellhorn",
+    "text": "· Pennwort St · table Area cross-checked",
+    "host": null,
+    "note": "Area cross-checked."
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -6918.4,
+   "y": 3772.8
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-022",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-022",
+   "filePickPinId": "collectible-card-022",
+   "filePickRejected": false,
+   "gameX": -6918.4,
+   "gameY": 3772.8,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": "Port Gellhorn",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "Jemila",
+  "variant": "Deep Red",
+  "variantAlias": "dark red",
+  "rarity": {
+   "tier": "standard",
+   "colour": "deep red"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-jemila-dark-red",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — balcony on NW 10th Ave",
+  "spotDescription": "NW 10th Ave, balcony — Rockridge",
+  "areaLead": "Rockridge",
+  "pickups": [
+   {
+    "area": "Rockridge",
+    "text": "· NW 10th Ave · balcony GTA Six Map lists another area: Little Cuba.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Little Cuba (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Little Cuba (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -1264.0,
+   "y": 1049.6
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-047",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-047",
+   "filePickPinId": "collectible-card-047",
+   "filePickRejected": false,
+   "gameX": -1264.0,
+   "gameY": 1049.6,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": "Vice City",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "Jemila",
+  "variant": "pink",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard",
+   "colour": "pink"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-jemila-pink",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — roof on SW 5th Ave",
+  "spotDescription": "SW 5th Ave, roof — Peacock Bay",
+  "areaLead": "Peacock Bay",
+  "pickups": [
+   {
+    "area": "Peacock Bay",
+    "text": "· SW 5th Ave · roof Area cross-checked",
+    "host": null,
+    "note": "Area cross-checked."
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -1417.6,
+   "y": -2035.2
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-075",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-075",
+   "filePickPinId": "collectible-card-075",
+   "filePickRejected": false,
+   "gameX": -1417.6,
+   "gameY": -2035.2,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": "Vice City",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "Jemila",
+  "variant": "purple",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard",
+   "colour": "purple"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-jemila-purple",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "named host Fairbanks Pharmacy has no GTADB record (no 'Fairbanks' record at all; the snapshot's pharmacies are Ocean Beach and Millport)",
+  "spotDescription": "Fairbanks pharmacy, back stairs",
+  "areaLead": "Fairbanks Pharmacy",
+  "pickups": [
+   {
+    "area": "Fairbanks Pharmacy",
+    "text": "· Fairbanks pharmacy · back stairs GTA Six Map lists another area: Vice Beach.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Vice Beach (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Vice Beach (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": 1856,
+   "y": 988.8
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-048",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-048",
+   "filePickPinId": "collectible-card-048",
+   "filePickRejected": false,
+   "gameX": 1856,
+   "gameY": 988.8,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": "Vice Beach",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "Kadisha",
+  "variant": "Deep Red",
+  "variantAlias": "dark red",
+  "rarity": {
+   "tier": "standard",
+   "colour": "deep red"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-kadisha-dark-red",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no host — card is south of Breakwater quarry ('south of X' does not count as a host); no GTADB quarry record, and the only 'Breakwater' record (L1892) is in Capri, not Northern Mariana County",
+  "spotDescription": "South of Breakwater quarry, railcar — Northern Mariana County",
+  "areaLead": "Northern Mariana County",
+  "pickups": [
+   {
+    "area": "Northern Mariana County",
+    "text": "· South of Breakwater quarry · railcar GTA Six Map lists another area: Goliath.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Goliath (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Goliath (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -4096,
+   "y": -1683.2
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-072",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-072",
+   "filePickPinId": "collectible-card-072",
+   "filePickRejected": false,
+   "gameX": -4096,
+   "gameY": -1683.2,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "Kadisha",
+  "variant": "pink",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard",
+   "colour": "pink"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-kadisha-pink",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — mattress on SW 19th St",
+  "spotDescription": "SW 19th St, mattress — VCIA",
+  "areaLead": "VCIA",
+  "pickups": [
+   {
+    "area": "VCIA",
+    "text": "· SW 19th St · mattress Area cross-checked GTA Six Map lists another area: Little Cuba.",
+    "host": null,
+    "note": "Area cross-checked. GTA Six Map lists another area: Little Cuba (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Little Cuba (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -1491.2,
+   "y": -640
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-067",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-067",
+   "filePickPinId": "collectible-card-067",
+   "filePickRejected": false,
+   "gameX": -1491.2,
+   "gameY": -640,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": "Vice City",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "Kadisha",
+  "variant": "purple",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard",
+   "colour": "purple"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-kadisha-purple",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — 'garage' of an unnamed house on Butternut Rd",
+  "spotDescription": "Butternut Rd, garage — Gellhorn",
+  "areaLead": "Gellhorn",
+  "pickups": [
+   {
+    "area": "Gellhorn",
+    "text": "· Butternut Rd · garage GTA Six Map lists another area: Lollipop Ridge.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Lollipop Ridge (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Lollipop Ridge (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -5651.2,
+   "y": 3299.2
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-028",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-028",
+   "filePickPinId": "collectible-card-028",
+   "filePickRejected": false,
+   "gameX": -5651.2,
+   "gameY": 3299.2,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": "Port Gellhorn",
+   "fbritoDescription": null,
+   "fbritoScreenshot": true,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "Kelly",
+  "variant": "Deep Red",
+  "variantAlias": "dark red",
+  "rarity": {
+   "tier": "standard",
+   "colour": "deep red"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-kelly-dark-red",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — trailer dresser on Gellhorn Ave",
+  "spotDescription": "Gellhorn Ave, trailer dresser — Port Gellhorn",
+  "areaLead": "Port Gellhorn",
+  "pickups": [
+   {
+    "area": "Port Gellhorn",
+    "text": "· Gellhorn Ave · trailer dresser Area cross-checked",
+    "host": null,
+    "note": "Area cross-checked."
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -6428.8,
+   "y": 4384
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-018",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-018",
+   "filePickPinId": "collectible-card-018",
+   "filePickRejected": false,
+   "gameX": -6428.8,
+   "gameY": 4384,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": "Port Gellhorn",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "Kelly",
+  "variant": "pink",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard",
+   "colour": "pink"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-kelly-pink",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — restrooms on Caledonia Blvd",
+  "spotDescription": "Caledonia Blvd, restrooms — Belville",
+  "areaLead": "Belville",
+  "pickups": [
+   {
+    "area": "Belville",
+    "text": "· Caledonia Blvd · restrooms Area cross-checked",
+    "host": null,
+    "note": "Area cross-checked."
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -1414.4,
+   "y": 2524.8
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-031",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-031",
+   "filePickPinId": "collectible-card-031",
+   "filePickRejected": false,
+   "gameX": -1414.4,
+   "gameY": 2524.8,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "Kelly",
+  "variant": "purple",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard",
+   "colour": "purple"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-kelly-purple",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — chair on I-97",
+  "spotDescription": "I-97, chair — Tequesta",
+  "areaLead": "Tequesta",
+  "pickups": [
+   {
+    "area": "Tequesta",
+    "text": "· I-97 · chair Area cross-checked GTA Six Map lists another area: Tequesta Retreat.",
+    "host": null,
+    "note": "Area cross-checked. GTA Six Map lists another area: Tequesta Retreat (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Tequesta Retreat (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -1168.0,
+   "y": -956.8
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-069",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-069",
+   "filePickPinId": "collectible-card-069",
+   "filePickRejected": false,
+   "gameX": -1168.0,
+   "gameY": -956.8,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": "Vice City",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "Lexi Campbell",
+  "variant": "bronze",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "bronze"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-lexi-campbell-bronze",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — 'bunker' at the Mount Kalaga park boundary is generic; the snapshot's only bunker (Presidential Bunker L445, Leonard County) is not named by the direction",
+  "spotDescription": "Mount Kalaga park boundary, bunker mattress — Northern Leonard County",
+  "areaLead": "Northern Leonard County",
+  "pickups": [
+   {
+    "area": "Northern Leonard County",
+    "text": "· Mount Kalaga park boundary · bunker mattress GTA Six Map lists another area: Fairyland Forest.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Fairyland Forest (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Fairyland Forest (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -2153.6,
+   "y": 6144
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-012",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-012",
+   "filePickPinId": "collectible-card-012",
+   "filePickRejected": false,
+   "gameX": -2153.6,
+   "gameY": 6144,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "Lexi Campbell",
+  "variant": "silver",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "silver"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-lexi-campbell-silver",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — desk on Cargo Rd",
+  "spotDescription": "Cargo Rd, desk — Buckskin Swamp",
+  "areaLead": "Buckskin Swamp",
+  "pickups": [
+   {
+    "area": "Buckskin Swamp",
+    "text": "· Cargo Rd · desk GTA Six Map lists another area: Buckskin.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Buckskin (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Buckskin (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -3334.4,
+   "y": 860.8
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-049",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-049",
+   "filePickPinId": "collectible-card-049",
+   "filePickRejected": false,
+   "gameX": -3334.4,
+   "gameY": 860.8,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "Malena",
+  "variant": "Deep Red",
+  "variantAlias": "dark red",
+  "rarity": {
+   "tier": "standard",
+   "colour": "deep red"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-malena-dark-red",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — workbench on Prosperity St",
+  "spotDescription": "Prosperity St, workbench — Belville",
+  "areaLead": "Belville",
+  "pickups": [
+   {
+    "area": "Belville",
+    "text": "· Prosperity St · workbench Area cross-checked",
+    "host": null,
+    "note": "Area cross-checked."
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -1577.6,
+   "y": 2950.4
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-030",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-030",
+   "filePickPinId": "collectible-card-030",
+   "filePickRejected": false,
+   "gameX": -1577.6,
+   "gameY": 2950.4,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "Malena",
+  "variant": "pink",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard",
+   "colour": "pink"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-malena-pink",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — fire lookout in the northeastern mountains; no GTADB fire lookout record",
+  "spotDescription": "Northeastern mountains, fire lookout — Mount Kalaga National Park",
+  "areaLead": "Mount Kalaga National Park",
+  "pickups": [
+   {
+    "area": "Mount Kalaga National Park",
+    "text": "· Northeastern mountains · fire lookout GTA Six Map lists another area: Fairyland Forest.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Fairyland Forest (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Fairyland Forest (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -3049.6,
+   "y": 7104
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-007",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-007",
+   "filePickPinId": "collectible-card-007",
+   "filePickRejected": false,
+   "gameX": -3049.6,
+   "gameY": 7104,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "Malena",
+  "variant": "purple",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard",
+   "colour": "purple"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-malena-purple",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — stairs on Hickory Rd",
+  "spotDescription": "Hickory Rd, stairs — Emerald Springs",
+  "areaLead": "Emerald Springs",
+  "pickups": [
+   {
+    "area": "Emerald Springs",
+    "text": "· Hickory Rd · stairs Area cross-checked",
+    "host": null,
+    "note": "Area cross-checked."
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -3168,
+   "y": 1804.8
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-033",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-033",
+   "filePickPinId": "collectible-card-033",
+   "filePickRejected": false,
+   "gameX": -3168,
+   "gameY": 1804.8,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "Pricilla Pace",
+  "variant": "bronze",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "bronze"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-pricilla-pace-bronze",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — 'house' on Sassafrass Rd is unnamed",
+  "spotDescription": "Sassafrass Rd, house — Mount Kalaga National Park",
+  "areaLead": "Mount Kalaga National Park",
+  "pickups": [
+   {
+    "area": "Mount Kalaga National Park",
+    "text": "· Sassafrass Rd · house GTA Six Map lists another area: Fairyland Forest.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Fairyland Forest (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Fairyland Forest (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -2800.0,
+   "y": 7472.0
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-005",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-005",
+   "filePickPinId": "collectible-card-005",
+   "filePickRejected": false,
+   "gameX": -2800.0,
+   "gameY": 7472.0,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "Pricilla Pace",
+  "variant": "silver",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "silver"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-pricilla-pace-silver",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — book exchange on the north beach; the GTADB pickup/map note does not name a host building",
+  "spotDescription": "Open crate beside the barrels and steps on the north beach, middle island, Permit Keys",
+  "areaLead": "Permit Keys",
+  "pickups": [
+   {
+    "area": "Permit Keys",
+    "text": "· Middle island · north beach book exchange GTA Six Map lists another area: Leonida Keys. On the beach, the pickup photo shows an open crate beside the barrels and steps. Pickup, map and card front on GTADB",
+    "host": null,
+    "note": "GTA Six Map lists another area: Leonida Keys (third-party note, not used for placement). On the beach, the pickup photo shows an open crate beside the barrels and steps. Pickup, map and card front on GTADB."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Leonida Keys (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -5900.8,
+   "y": -6163.2
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-086",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-086",
+   "filePickPinId": "collectible-card-086",
+   "filePickRejected": false,
+   "gameX": -5900.8,
+   "gameY": -6163.2,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": true,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "Vanessa",
+  "variant": "bronze",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "bronze"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-vanessa-bronze",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — outhouse at a northern farm",
+  "spotDescription": "Northern farm, outhouse — Northern Leonard County",
+  "areaLead": "Northern Leonard County",
+  "pickups": [
+   {
+    "area": "Northern Leonard County",
+    "text": "· Northern farm · outhouse GTA Six Map lists another area: Fairyland Forest.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Fairyland Forest (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Fairyland Forest (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -2304,
+   "y": 5984
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-013",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-013",
+   "filePickPinId": "collectible-card-013",
+   "filePickRejected": false,
+   "gameX": -2304,
+   "gameY": 5984,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "Vanessa",
+  "variant": "gold",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "gold"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-vanessa-gold",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "NOT PINNED — area conflict: lorenzone says Bayside (Velo Fino Dr), but the only Uncle Jack's Liquor in the snapshot (L313) is in Port Gellhorn",
+  "spotDescription": "Velo Fino Dr, safe — Bayside",
+  "areaLead": "Bayside",
+  "pickups": [
+   {
+    "area": "Bayside",
+    "text": "· Velo Fino Dr · safe GTA Six Map lists another area: Bohemia.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Bohemia (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "lorenzone says Bayside (Velo Fino Dr), but the only Uncle Jack's Liquor in the GTADB snapshot (L313) is in Port Gellhorn — area disagreement, not pinned; GTA Six Map lists Bohemia (not used).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -393.6,
+   "y": 1270.4
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-042",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-042",
+   "filePickPinId": "collectible-card-042",
+   "filePickRejected": false,
+   "gameX": -393.6,
+   "gameY": 1270.4,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": "Vice City",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "Vanessa",
+  "variant": "silver",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "silver"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-vanessa-silver",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — roof on SW 8th Ave",
+  "spotDescription": "SW 8th Ave, roof — Salton",
+  "areaLead": "Salton",
+  "pickups": [
+   {
+    "area": "Salton",
+    "text": "· SW 8th Ave · roof GTA Six Map lists another area: Peacock Bay.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Peacock Bay (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Peacock Bay (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -1360.0,
+   "y": -1164.8
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-070",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-070",
+   "filePickPinId": "collectible-card-070",
+   "filePickRejected": false,
+   "gameX": -1360.0,
+   "gameY": -1164.8,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": "Vice City",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "Zaria “RI RI” Luckett",
+  "variant": "bronze",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "bronze"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-zaria-ri-ri-luckett-bronze",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — billboard on SR-25 with no host building named ('billboard above X' would count; here there is no X)",
+  "spotDescription": "SR-25, billboard — Balsero",
+  "areaLead": "Balsero",
+  "pickups": [
+   {
+    "area": "Balsero",
+    "text": "· SR-25 · billboard GTA Six Map lists another area: Little Cuba.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Little Cuba (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Little Cuba (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -2009.6,
+   "y": 806.4
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-050",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-050",
+   "filePickPinId": "collectible-card-050",
+   "filePickRejected": false,
+   "gameX": -2009.6,
+   "gameY": 806.4,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": "Vice City",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "Zaria “RI RI” Luckett",
+  "variant": "silver",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "silver"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-zaria-ri-ri-luckett-silver",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — abandoned yellow railcar; no GTADB railcar record",
+  "spotDescription": "South, abandoned yellow railcar — Port Gellhorn",
+  "areaLead": "Port Gellhorn",
+  "pickups": [
+   {
+    "area": "Port Gellhorn",
+    "text": "· South · abandoned yellow railcar Area cross-checked",
+    "host": null,
+    "note": "Area cross-checked."
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -6576.0,
+   "y": 3497.6
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-025",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-025",
+   "filePickPinId": "collectible-card-025",
+   "filePickRejected": false,
+   "gameX": -6576.0,
+   "gameY": 3497.6,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": "Port Gellhorn",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "liberty-city-swingers",
+  "setName": "Liberty City Swingers",
+  "person": "Lalo Velasco",
+  "variant": "gold",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "gold"
+  },
+  "lorenzoneRowId": "liberty-city-swingers-lalo-velasco-gold",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction - 'garage' on Ravella Dr, the house is unnamed",
+  "spotDescription": "Garage on Ravella Dr, Capri.",
+  "areaLead": "Capri",
+  "pickups": [
+   {
+    "area": "Capri",
+    "text": "· Ravella Dr · garage Area cross-checked",
+    "host": null,
+    "note": "Area cross-checked"
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -6819.0,
+   "y": -267.0
+  },
+  "vchReview": {
+   "sourcePinId": "card-liberty-city-swingers-014",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-liberty-city-swingers-014",
+   "filePickPinId": "card-liberty-city-swingers-014",
+   "filePickRejected": false,
+   "gameX": -6819.0,
+   "gameY": -267.0,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": true,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "los-santos-corkers",
+  "setName": "Los Santos Corkers",
+  "person": "Franklin Turner",
+  "variant": "gold",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "gold"
+  },
+  "lorenzoneRowId": "los-santos-corkers-franklin-turner-gold",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — street + spot only",
+  "spotDescription": "Coconut Cove Ct stairs",
+  "areaLead": "Capri",
+  "pickups": [
+   {
+    "area": "Capri",
+    "text": "· Coconut Cove Ct · stairs",
+    "host": null,
+    "note": ""
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -7358.0,
+   "y": 296.0
+  },
+  "vchReview": {
+   "sourcePinId": "card-los-santos-corkers-015",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-los-santos-corkers-015",
+   "filePickPinId": "card-los-santos-corkers-015",
+   "filePickRejected": false,
+   "gameX": -7358.0,
+   "gameY": 296.0,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": null,
+   "fbritoDescription": "Upstairs, on the table under the flower painting.",
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "los-santos-panic",
+  "setName": "Los Santos Panic",
+  "person": "Santiago Lopez",
+  "variant": "standard",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard"
+  },
+  "lorenzoneRowId": "los-santos-panic-santiago-lopez-standard",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — unnamed house",
+  "spotDescription": "Table beside the ammunition box in the bedroom of the mobile home, Peach Palm Dr, Key Lento",
+  "areaLead": "Key Lento",
+  "pickups": [
+   {
+    "area": "Key Lento",
+    "text": "· Peach Palm Dr · table Inside the mobile home, look beside the ammunition box in the bedroom. Mic Fury’s approach at 0:46 In the bedroom, look at the table between the bed and the window. Pickup, map and card front on GTADB",
+    "host": null,
+    "note": "Mic Fury's approach at 0:46; bedroom table between the bed and the window"
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -2396.8,
+   "y": -5593.6
+  },
+  "vchReview": {
+   "sourcePinId": "card-los-santos-panic-001",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-los-santos-panic-001",
+   "filePickPinId": "card-los-santos-panic-001",
+   "filePickRejected": false,
+   "gameX": -2396.8,
+   "gameY": -5593.6,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": "Key Lento",
+   "fbritoDescription": "In a trailer house on the bedroom nightstand",
+   "fbritoScreenshot": true,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "nine1nine-dancers",
+  "setName": "Nine1Nine Dancers",
+  "person": "Braelynn",
+  "variant": "Deep Red",
+  "variantAlias": "dark red",
+  "rarity": {
+   "tier": "standard",
+   "colour": "deep red"
+  },
+  "lorenzoneRowId": "nine1nine-dancers-braelynn-dark-red",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "named host Abandoned Observatory (L833) has no coordinates in the GTADB snapshot, so it cannot be pinned",
+  "spotDescription": "Dirt road, observatory top floor — Northern Kelly County",
+  "areaLead": "Northern Kelly County",
+  "pickups": [
+   {
+    "area": "Northern Kelly County",
+    "text": "· Dirt road · observatory top floor GTA Six Map lists another area: Mount Kalaga.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Mount Kalaga (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Mount Kalaga (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -4425.6,
+   "y": 5360.0
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-016",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-016",
+   "filePickPinId": "collectible-card-016",
+   "filePickRejected": false,
+   "gameX": -4425.6,
+   "gameY": 5360.0,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "nine1nine-dancers",
+  "setName": "Nine1Nine Dancers",
+  "person": "Chrissie",
+  "variant": "pink",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard",
+   "colour": "pink"
+  },
+  "lorenzoneRowId": "nine1nine-dancers-chrissie-pink",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — red trailer armchair on Baywood Rd",
+  "spotDescription": "Baywood Rd, red trailer armchair — Port Gellhorn",
+  "areaLead": "Port Gellhorn",
+  "pickups": [
+   {
+    "area": "Port Gellhorn",
+    "text": "· Baywood Rd · red trailer armchair Area cross-checked",
+    "host": null,
+    "note": "Area cross-checked."
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -6496,
+   "y": 3868.8
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-021",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-021",
+   "filePickPinId": "collectible-card-021",
+   "filePickRejected": false,
+   "gameX": -6496,
+   "gameY": 3868.8,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": "Port Gellhorn",
+   "fbritoDescription": null,
+   "fbritoScreenshot": true,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "nine1nine-dancers",
+  "setName": "Nine1Nine Dancers",
+  "person": "Clarissa",
+  "variant": "silver",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "silver"
+  },
+  "lorenzoneRowId": "nine1nine-dancers-clarissa-silver",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — 'garage' of an unnamed yellow villa",
+  "spotDescription": "Northwestern peninsula, yellow villa garage — Capri",
+  "areaLead": "Capri",
+  "pickups": [
+   {
+    "area": "Capri",
+    "text": "· Northwestern peninsula · yellow villa garage Area cross-checked",
+    "host": null,
+    "note": "Area cross-checked."
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -7344.0,
+   "y": 691.2
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-051",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-051",
+   "filePickPinId": "collectible-card-051",
+   "filePickRejected": false,
+   "gameX": -7344.0,
+   "gameY": 691.2,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": "Capri",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "nine1nine-dancers",
+  "setName": "Nine1Nine Dancers",
+  "person": "Georgia",
+  "variant": "purple",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard",
+   "colour": "purple"
+  },
+  "lorenzoneRowId": "nine1nine-dancers-georgia-purple",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "named host Steven Strachan Construction has no GTADB record; the spot is in the storage area behind the main building, which would not count as a host even if recorded",
+  "spotDescription": "Boxes in the storage area behind the main building of Steven Strachan Construction, Sunbelt Highway, Key Lento",
+  "areaLead": "Key Lento",
+  "pickups": [
+   {
+    "area": "Key Lento",
+    "text": "· Find Steven Strachan Construction on Sunbelt Highway. Look at the boxes in the storage area behind the main building. Area cross-checked",
+    "host": null,
+    "note": "Area cross-checked."
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -2480.0,
+   "y": -6016
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-084",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-084",
+   "filePickPinId": "collectible-card-084",
+   "filePickRejected": false,
+   "gameX": -2480.0,
+   "gameY": -6016,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": "Key Lento",
+   "fbritoDescription": null,
+   "fbritoScreenshot": true,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "the-legends-of-ratface",
+  "setName": "The Legends of Ratface",
+  "person": "Silver Age Betrayal",
+  "variant": "purple",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard",
+   "colour": "purple"
+  },
+  "lorenzoneRowId": "the-legends-of-ratface-silver-age-betrayal-purple",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction - unnamed house on Buckeye Rd",
+  "spotDescription": "House on Buckeye Rd, Watson Bay",
+  "areaLead": "Watson Bay - Buckeye Rd",
+  "pickups": [
+   {
+    "area": "Watson Bay",
+    "text": "· Buckeye Rd · house",
+    "host": null,
+    "note": ""
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -4487.0,
+   "y": -3038.0
+  },
+  "vchReview": {
+   "sourcePinId": "card-legends-of-ratface-012",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-legends-of-ratface-012",
+   "filePickPinId": "card-legends-of-ratface-012",
+   "filePickRejected": false,
+   "gameX": -4487.0,
+   "gameY": -3038.0,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": null,
+   "fbritoDescription": "In the garage.",
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "vice-city-club-de-futbol",
+  "setName": "Vice City Club De Fútbol",
+  "person": "Ian Harris",
+  "variant": "gold",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "gold"
+  },
+  "lorenzoneRowId": "vice-city-club-de-futbol-ian-harris-gold",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction - 'garage' on Delamore Dr; Leaf Links Golf Club is not named in the direction",
+  "spotDescription": "Garage on Delamore Dr, Leaf Links.",
+  "areaLead": "Leaf Links",
+  "pickups": [
+   {
+    "area": "Leaf Links",
+    "text": "· Delamore Dr · garage",
+    "host": null,
+    "note": ""
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": 173.0,
+   "y": 2425.0
+  },
+  "vchReview": {
+   "sourcePinId": "card-vice-city-club-de-futbol-012",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-vice-city-club-de-futbol-012",
+   "filePickPinId": "card-vice-city-club-de-futbol-012",
+   "filePickRejected": false,
+   "gameX": 173.0,
+   "gameY": 2425.0,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": null,
+   "fbritoDescription": "In the garage.",
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "vice-city-club-de-futbol",
+  "setName": "Vice City Club De Fútbol",
+  "person": "Leon Correo",
+  "variant": "gold",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "gold"
+  },
+  "lorenzoneRowId": "vice-city-club-de-futbol-leon-correo-gold",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction - 'villa TV stand' on Ravella Dr, the villa is unnamed",
+  "spotDescription": "TV stand in a villa on Ravella Dr, Capri.",
+  "areaLead": "Capri",
+  "pickups": [
+   {
+    "area": "Capri",
+    "text": "· Ravella Dr · villa TV stand",
+    "host": null,
+    "note": ""
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -6650.0,
+   "y": -252.0
+  },
+  "vchReview": {
+   "sourcePinId": "card-vice-city-club-de-futbol-015",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-vice-city-club-de-futbol-015",
+   "filePickPinId": "card-vice-city-club-de-futbol-015",
+   "filePickRejected": false,
+   "gameX": -6650.0,
+   "gameY": -252.0,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": true,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "vice-city-manatees",
+  "setName": "Vice City Manatees",
+  "person": "Anthony Ross",
+  "variant": "Dusty Pink",
+  "variantAlias": "dusty rose",
+  "rarity": {
+   "tier": "standard",
+   "colour": "dusty pink"
+  },
+  "lorenzoneRowId": "vice-city-manatees-anthony-ross-dusty-rose",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — 'garage' of an unnamed house on Neptune Cir, Vespucci Island",
+  "spotDescription": "Garage of a house on Neptune Cir, Vespucci Island.",
+  "areaLead": "Vespucci Island",
+  "pickups": [
+   {
+    "area": "Vespucci Island",
+    "text": "· Neptune Cir · garage",
+    "host": null,
+    "note": null
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": 512,
+   "y": 1155.0
+  },
+  "vchReview": {
+   "sourcePinId": "card-vice-city-manatees-015",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-vice-city-manatees-015",
+   "filePickPinId": "card-vice-city-manatees-015",
+   "filePickRejected": false,
+   "gameX": 512,
+   "gameY": 1155.0,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": null,
+   "fbritoDescription": "In the garage, behind the cars.",
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "vice-city-narcos",
+  "setName": "Vice City Narcos",
+  "person": "Leroy Rook",
+  "variant": "gold",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "gold"
+  },
+  "lorenzoneRowId": "vice-city-narcos-leroy-rook-gold",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — 'safe' on Harmony Dr, Belville",
+  "spotDescription": "Safe on Harmony Dr, Belville.",
+  "areaLead": "Belville",
+  "pickups": [
+   {
+    "area": "Belville",
+    "text": "· Harmony Dr · safe",
+    "host": null,
+    "note": null
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -1193.0,
+   "y": 2635.0
+  },
+  "vchReview": {
+   "sourcePinId": "card-vice-city-narcos-012",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-vice-city-narcos-012",
+   "filePickPinId": "card-vice-city-narcos-012",
+   "filePickRejected": false,
+   "gameX": -1193.0,
+   "gameY": 2635.0,
+   "confidenceTier": "cross-checked",
+   "fbritoArea": null,
+   "fbritoDescription": "In the safe in the bedroom of the house.",
+   "fbritoScreenshot": true,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "americas-next-top-hooker",
+  "setName": "America's Next Top Hooker",
+  "person": "Drake",
+  "variant": "bronze",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "bronze"
+  },
+  "lorenzoneRowId": "americas-next-top-hooker-drake-bronze",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — restrooms on Moonstone Hwy, Manifest Canyon; restrooms unnamed",
+  "spotDescription": "Moonstone Hwy restrooms",
+  "areaLead": "Manifest Canyon",
+  "pickups": [
+   {
+    "area": "Manifest Canyon",
+    "text": "· Moonstone Hwy · restrooms",
+    "host": null,
+    "note": ""
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -4748.8,
+   "y": 5465.6
+  },
+  "vchReview": {
+   "sourcePinId": "card-americas-next-top-hooker-007",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-americas-next-top-hooker-007",
+   "filePickPinId": "card-americas-next-top-hooker-007",
+   "filePickRejected": false,
+   "gameX": -4748.8,
+   "gameY": 5465.6,
+   "confidenceTier": "community report",
+   "fbritoArea": null,
+   "fbritoDescription": "In the bathroom.",
+   "fbritoScreenshot": true,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "americas-next-top-hooker",
+  "setName": "America's Next Top Hooker",
+  "person": "Kalisha",
+  "variant": "bronze",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "bronze"
+  },
+  "lorenzoneRowId": "americas-next-top-hooker-kalisha-bronze",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — woodland campsite on Forest Mill Rd, Mount Kalaga National Park; campsite unnamed",
+  "spotDescription": "Forest Mill Rd woodland campsite",
+  "areaLead": "Mount Kalaga National Park",
+  "pickups": [
+   {
+    "area": "Mount Kalaga National Park",
+    "text": "· Forest Mill Rd · woodland campsite",
+    "host": null,
+    "note": ""
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -2668.8,
+   "y": 6553.6
+  },
+  "vchReview": {
+   "sourcePinId": "card-americas-next-top-hooker-008",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-americas-next-top-hooker-008",
+   "filePickPinId": "card-americas-next-top-hooker-008",
+   "filePickRejected": false,
+   "gameX": -2668.8,
+   "gameY": 6553.6,
+   "confidenceTier": "community report",
+   "fbritoArea": null,
+   "fbritoDescription": "On a sleeping bag at a camp in the woods of Mount Kalaga National Park.",
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "americas-next-top-hooker",
+  "setName": "America's Next Top Hooker",
+  "person": "Kalvyn",
+  "variant": "standard",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard"
+  },
+  "lorenzoneRowId": "americas-next-top-hooker-kalvyn-standard",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — first pickup is the roof of Big House Storage Inc, Crosstown (no GTADB record); second is west of Roval Jewelry ('west of' does not count as host, and no Roval Jewelry GTADB record exists); third is the roof of an unnamed building on Atlantic Ave, Ocean Beach",
+  "spotDescription": "Big House Storage Inc roof",
+  "areaLead": "Crosstown",
+  "pickups": [
+   {
+    "area": "Crosstown",
+    "text": "· Big House Storage Inc · roof",
+    "host": null,
+    "note": ""
+   },
+   {
+    "area": "Decor District",
+    "text": "· West of Roval Jewelry · yellow box",
+    "host": null,
+    "note": ""
+   },
+   {
+    "area": "Ocean Beach",
+    "text": "· Atlantic Ave · roof",
+    "host": null,
+    "note": ""
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": 1747.2,
+   "y": -44.8
+  },
+  "vchReview": {
+   "sourcePinId": "card-americas-next-top-hooker-009",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-americas-next-top-hooker-009",
+   "filePickPinId": "card-americas-next-top-hooker-009",
+   "filePickRejected": false,
+   "gameX": 1747.2,
+   "gameY": -44.8,
+   "confidenceTier": "community report",
+   "fbritoArea": "Vice Beach",
+   "fbritoDescription": "On the lower central roof of the Harmony Plaza building in Vice Beach.",
+   "fbritoScreenshot": false,
+   "reviewStatus": "dup-arbitrated-file-pick-wins",
+   "reviewReason": "file pick wins arbitration on area; keywords vs our direction: []; losers (wrong area): [('card-americas-next-top-hooker-004', 'Key Lento', 'R&D tower yellow box naar sniper rifle')]",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "americas-next-top-hooker",
+  "setName": "America's Next Top Hooker",
+  "person": "Sapphire",
+  "variant": "gold",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "gold"
+  },
+  "lorenzoneRowId": "americas-next-top-hooker-sapphire-gold",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — stone tower on the central road, Grassrivers; tower unnamed",
+  "spotDescription": "Central road stone tower",
+  "areaLead": "Grassrivers",
+  "pickups": [
+   {
+    "area": "Grassrivers",
+    "text": "· Central road · stone tower",
+    "host": null,
+    "note": ""
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -5111.0,
+   "y": -2434.0
+  },
+  "vchReview": {
+   "sourcePinId": "card-americas-next-top-hooker-023",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-americas-next-top-hooker-023",
+   "filePickPinId": "card-americas-next-top-hooker-023",
+   "filePickRejected": false,
+   "gameX": -5111.0,
+   "gameY": -2434.0,
+   "confidenceTier": "unrated",
+   "fbritoArea": null,
+   "fbritoDescription": "On top of the tower: stand on a vehicle to reach the broken ladder.",
+   "fbritoScreenshot": true,
+   "reviewStatus": "proposed-unrated",
+   "reviewReason": "no evidenced host; tier unrated — needs a second source",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "backyard-wrestling",
+  "setName": "Backyard Wrestling",
+  "person": "Axel Hughes",
+  "variant": "standard",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard"
+  },
+  "lorenzoneRowId": "backyard-wrestling-axel-hughes-standard",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — backyard sofa at a western green-and-white trailer, Ambrosia; trailer unnamed",
+  "spotDescription": "Western green-and-white trailer backyard sofa",
+  "areaLead": "Ambrosia",
+  "pickups": [
+   {
+    "area": "Ambrosia",
+    "text": "· Western green-and-white trailer · backyard sofa",
+    "host": null,
+    "note": ""
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -3073.0,
+   "y": 4021.0
+  },
+  "vchReview": {
+   "sourcePinId": "card-backyard-wrestling-017",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-backyard-wrestling-017",
+   "filePickPinId": "card-backyard-wrestling-017",
+   "filePickRejected": false,
+   "gameX": -3073.0,
+   "gameY": 4021.0,
+   "confidenceTier": "unrated",
+   "fbritoArea": null,
+   "fbritoDescription": "On the sofa outside the trailer.",
+   "fbritoScreenshot": true,
+   "reviewStatus": "dup-arbitrated-file-pick-wins",
+   "reviewReason": "file pick wins arbitration on area; keywords vs our direction: ['sofa', 'trailer']; losers (wrong area): [('card-backyard-wrestling-002', 'Port Gellhorn', None)]",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "backyard-wrestling",
+  "setName": "Backyard Wrestling",
+  "person": "Cherry O' Glade",
+  "variant": "standard",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard"
+  },
+  "lorenzoneRowId": "backyard-wrestling-cherry-oglade-standard",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "named host Breakwater quarry has no GTADB record under that name; the only 'Breakwater' record (L1892) is in Capri, not Northern Mariana County (see conflict)",
+  "spotDescription": "Breakwater quarry southern railcar",
+  "areaLead": "Northern Mariana County",
+  "pickups": [
+   {
+    "area": "Northern Mariana County",
+    "text": "· Breakwater quarry · southern railcar",
+    "host": null,
+    "note": ""
+   }
+  ],
+  "conflict": "Direction names Breakwater quarry, Northern Mariana County; the only GTADB 'Breakwater' record (L1892) is in Capri — area disagreement, not pinned.",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -3926.0,
+   "y": -2106.0
+  },
+  "vchReview": {
+   "sourcePinId": "card-backyard-wrestling-019",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-backyard-wrestling-019",
+   "filePickPinId": "card-backyard-wrestling-019",
+   "filePickRejected": false,
+   "gameX": -3926.0,
+   "gameY": -2106.0,
+   "confidenceTier": "unrated",
+   "fbritoArea": null,
+   "fbritoDescription": "Inside the abandoned railway car on the tracks.",
+   "fbritoScreenshot": true,
+   "reviewStatus": "proposed-unrated",
+   "reviewReason": "no evidenced host; tier unrated — needs a second source",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "backyard-wrestling",
+  "setName": "Backyard Wrestling",
+  "person": "Katie K",
+  "variant": "standard",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard"
+  },
+  "lorenzoneRowId": "backyard-wrestling-katie-k-standard",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "named host Harper Simmons Legal Services has no GTADB record",
+  "spotDescription": "Harper Simmons Legal Services roof",
+  "areaLead": "Rockridge",
+  "pickups": [
+   {
+    "area": "Rockridge",
+    "text": "· Harper Simmons Legal Services · roof",
+    "host": null,
+    "note": ""
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -1490.0,
+   "y": 880.0
+  },
+  "vchReview": {
+   "sourcePinId": "card-backyard-wrestling-021",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-backyard-wrestling-021",
+   "filePickPinId": "card-backyard-wrestling-021",
+   "filePickRejected": false,
+   "gameX": -1490.0,
+   "gameY": 880.0,
+   "confidenceTier": "unrated",
+   "fbritoArea": null,
+   "fbritoDescription": "On the corner of the roof ledge above the entrance of Harper Simmons Legal Services in Rockridge.",
+   "fbritoScreenshot": false,
+   "reviewStatus": "dup-arbitrated-file-pick-wins",
+   "reviewReason": "file pick wins arbitration on area; keywords vs our direction: ['harper', 'legal', 'services', 'simmons']; losers (wrong area): [('card-backyard-wrestling-006', 'Port Gellhorn', 'In a yellow box on the left as you enter.'), ('card-backyard-wrestling-009', 'Port Gellhorn', 'In a yellow box inside the garage.'), ('card-backyard-wrestling-010', None, 'Behind the purple house, inside a yellow box.'), ('card-backyard-wrestling-015', None, 'On the roof.')]",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "delights-dancers",
+  "setName": "Delights Dancers",
+  "person": "Chip",
+  "variant": "standard",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard"
+  },
+  "lorenzoneRowId": "delights-dancers-chip-standard",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — restrooms in an unnamed building on Kingston Rd, Watson Bay",
+  "spotDescription": "Kingston Rd restrooms",
+  "areaLead": "Watson Bay",
+  "pickups": [
+   {
+    "area": "Watson Bay",
+    "text": "· Kingston Rd · restrooms Area cross-checked",
+    "host": null,
+    "note": "Area cross-checked."
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -4928,
+   "y": -2995.2
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-078",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-078",
+   "filePickPinId": "collectible-card-078",
+   "filePickRejected": false,
+   "gameX": -4928,
+   "gameY": -2995.2,
+   "confidenceTier": "community report",
+   "fbritoArea": "Watson Bay",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "delights-dancers",
+  "setName": "Delights Dancers",
+  "person": "Cleo",
+  "variant": "standard",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard"
+  },
+  "lorenzoneRowId": "delights-dancers-cleo-standard",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — battery at the south end of Kalaga Reservoir; the reservoir (L2489) is a geographic feature, not a listed venue, and the card is at its south end rather than at a host building",
+  "spotDescription": "South end of reservoir battery",
+  "areaLead": "Kalaga Reservoir",
+  "pickups": [
+   {
+    "area": "Kalaga Reservoir",
+    "text": "· South end of reservoir · battery GTA Six Map lists another area: Fairyland Forest.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Fairyland Forest (not used)."
+   }
+  ],
+  "conflict": "GTA Six Map lists Fairyland Forest instead of Kalaga Reservoir (not used).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -2880,
+   "y": 6550.4
+  },
+  "vchReview": {
+   "sourcePinId": "hidden-package-010",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=hidden-package-010",
+   "filePickPinId": "hidden-package-010",
+   "filePickRejected": false,
+   "gameX": -2880,
+   "gameY": 6550.4,
+   "confidenceTier": "community report",
+   "fbritoArea": null,
+   "fbritoDescription": "Found in a small warehouse besides a river in rural Leonida",
+   "fbritoScreenshot": true,
+   "reviewStatus": "dup-arbitrated-file-pick-wins",
+   "reviewReason": "file pick wins arbitration on area; keywords vs our direction: []; losers (wrong area): [('card-delights-006', 'Port Gellhorn', None), ('card-delights-017', None, 'On a shelf in the garage of the 4th house.')]",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "delights-dancers",
+  "setName": "Delights Dancers",
+  "person": "Crystal",
+  "variant": "standard",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard"
+  },
+  "lorenzoneRowId": "delights-dancers-crystal-standard",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — chair in an unnamed building on East Royale St, Downtown",
+  "spotDescription": "East Royale St chair",
+  "areaLead": "Downtown",
+  "pickups": [
+   {
+    "area": "Downtown",
+    "text": "· East Royale St · chair GTA Six Map lists another area: Shoreline.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Shoreline (not used)."
+   }
+  ],
+  "conflict": "GTA Six Map lists Shoreline instead of Downtown (not used).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -476.8,
+   "y": -163.2
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-060",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-060",
+   "filePickPinId": "collectible-card-060",
+   "filePickRejected": false,
+   "gameX": -476.8,
+   "gameY": -163.2,
+   "confidenceTier": "community report",
+   "fbritoArea": "Vice City",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "dup-arbitrated-file-pick-wins",
+   "reviewReason": "file pick wins arbitration on area; keywords vs our direction: []; losers (wrong area): [('card-americas-next-top-hooker-022', None, 'In the bathroom next to toilet')]",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "delights-dancers",
+  "setName": "Delights Dancers",
+  "person": "Cyrus",
+  "variant": "standard",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard"
+  },
+  "lorenzoneRowId": "delights-dancers-cyrus-standard",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "named host Park Apartments has no GTADB record",
+  "spotDescription": "Park Apartments refrigerator",
+  "areaLead": "VCIA",
+  "pickups": [
+   {
+    "area": "VCIA",
+    "text": "· Park Apartments · refrigerator GTA Six Map lists another area: Little Cuba.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Little Cuba (not used)."
+   }
+  ],
+  "conflict": "GTA Six Map lists Little Cuba instead of VCIA (not used).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -1638.4,
+   "y": -582.4
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-065",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-065",
+   "filePickPinId": "collectible-card-065",
+   "filePickRejected": false,
+   "gameX": -1638.4,
+   "gameY": -582.4,
+   "confidenceTier": "community report",
+   "fbritoArea": "Vice City",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "delights-dancers",
+  "setName": "Delights Dancers",
+  "person": "Daisy",
+  "variant": "standard",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard"
+  },
+  "lorenzoneRowId": "delights-dancers-daisy-standard",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "named host 'Northern Xero station' has no GTADB record in La Perle (Xero stations exist in Ambrosia, Crosstown, Rockridge, Capri and Waning Sands only)",
+  "spotDescription": "Northern Xero station kitchenette noticeboard",
+  "areaLead": "La Perle",
+  "pickups": [
+   {
+    "area": "La Perle",
+    "text": "· Northern Xero station · kitchenette noticeboard GTA Six Map lists another area: Bohemia.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Bohemia (not used)."
+   }
+  ],
+  "conflict": "GTA Six Map lists Bohemia instead of La Perle (not used).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -608,
+   "y": 1916.8
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-032",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-032",
+   "filePickPinId": "collectible-card-032",
+   "filePickRejected": false,
+   "gameX": -608,
+   "gameY": 1916.8,
+   "confidenceTier": "community report",
+   "fbritoArea": "Vice City",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "dup-arbitrated-file-pick-wins",
+   "reviewReason": "file pick wins arbitration on area; keywords vs our direction: []; losers (wrong area): [('card-delights-018', None, 'Kick the dolphin mailbox to get the card.')]",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "delights-dancers",
+  "setName": "Delights Dancers",
+  "person": "Lance",
+  "variant": "standard",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard"
+  },
+  "lorenzoneRowId": "delights-dancers-lance-standard",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — lifeguard station desk on the south coast, Vice Beach; station unnamed",
+  "spotDescription": "South coast lifeguard station desk",
+  "areaLead": "Vice Beach",
+  "pickups": [
+   {
+    "area": "Vice Beach",
+    "text": "· South coast · lifeguard station desk GTA Six Map lists another area: Dalton Island.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Dalton Island (not used)."
+   }
+  ],
+  "conflict": "GTA Six Map lists Dalton Island instead of Vice Beach (not used).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": 2188.8,
+   "y": -499.2
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-064",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-064",
+   "filePickPinId": "collectible-card-064",
+   "filePickRejected": false,
+   "gameX": 2188.8,
+   "gameY": -499.2,
+   "confidenceTier": "community report",
+   "fbritoArea": "Vice Beach",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "delights-dancers",
+  "setName": "Delights Dancers",
+  "person": "Lucky",
+  "variant": "standard",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard"
+  },
+  "lorenzoneRowId": "delights-dancers-lucky-standard",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — bedroom in an unnamed house on Caldonia Blvd, La Perle",
+  "spotDescription": "Caldonia Blvd bedroom",
+  "areaLead": "La Perle",
+  "pickups": [
+   {
+    "area": "La Perle",
+    "text": "· Caldonia Blvd · bedroom GTA Six Map lists another area: Bohemia.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Bohemia (not used)."
+   }
+  ],
+  "conflict": "GTA Six Map lists Bohemia instead of La Perle (not used).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -729.6,
+   "y": 1574.4
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-035",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-035",
+   "filePickPinId": "collectible-card-035",
+   "filePickRejected": false,
+   "gameX": -729.6,
+   "gameY": 1574.4,
+   "confidenceTier": "community report",
+   "fbritoArea": "Vice City",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "dup-arbitrated-file-pick-wins",
+   "reviewReason": "file pick wins arbitration on area; keywords vs our direction: []; losers (wrong area): [('card-delights-019', None, None)]",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "delights-dancers",
+  "setName": "Delights Dancers",
+  "person": "Mario",
+  "variant": "standard",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard"
+  },
+  "lorenzoneRowId": "delights-dancers-mario-standard",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "named host Vice-Dale County Water and Sewage has no GTADB record",
+  "spotDescription": "Vice-Dale County Water and Sewage roof",
+  "areaLead": "VCIA",
+  "pickups": [
+   {
+    "area": "VCIA",
+    "text": "· Vice-Dale County Water and Sewage · roof GTA Six Map lists another area: Peacock Bay.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Peacock Bay (not used)."
+   }
+  ],
+  "conflict": "GTA Six Map lists Peacock Bay instead of VCIA (not used).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -2153.6,
+   "y": -1875.2
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-074",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-074",
+   "filePickPinId": "collectible-card-074",
+   "filePickRejected": false,
+   "gameX": -2153.6,
+   "gameY": -1875.2,
+   "confidenceTier": "community report",
+   "fbritoArea": "Vice City",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "dup-arbitrated-file-pick-wins",
+   "reviewReason": "file pick wins arbitration on area; keywords vs our direction: []; losers (wrong area): [('card-delights-012', None, 'In the phone box.'), ('card-delights-016', None, 'Upstairs, outdoors.')]",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "delights-dancers",
+  "setName": "Delights Dancers",
+  "person": "Nicole",
+  "variant": "standard",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard"
+  },
+  "lorenzoneRowId": "delights-dancers-nicole-standard",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — table in an unnamed building on Formosa Ave, Hamlet",
+  "spotDescription": "Formosa Ave table",
+  "areaLead": "Hamlet",
+  "pickups": [
+   {
+    "area": "Hamlet",
+    "text": "· Formosa Ave · table Area cross-checked",
+    "host": null,
+    "note": "Area cross-checked."
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -2684.8,
+   "y": -3177.6
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-080",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-080",
+   "filePickPinId": "collectible-card-080",
+   "filePickRejected": false,
+   "gameX": -2684.8,
+   "gameY": -3177.6,
+   "confidenceTier": "community report",
+   "fbritoArea": "Hamlet",
+   "fbritoDescription": null,
+   "fbritoScreenshot": true,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "delights-dancers",
+  "setName": "Delights Dancers",
+  "person": "Tracy",
+  "variant": "standard",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard"
+  },
+  "lorenzoneRowId": "delights-dancers-tracy-standard",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — upstairs storeroom at the water department on Westbrook Drive, Salton; the water department has no GTADB record and the Westbrook Dr records are unnamed '?'",
+  "spotDescription": "Upstairs storeroom at the water department on Westbrook Drive, Salton (outside ladder at the riverside building)",
+  "areaLead": "Salton",
+  "pickups": [
+   {
+    "area": "Salton",
+    "text": "· At the water department on Westbrook Drive, take the outside ladder at the riverside building and look in the upstairs storeroom. Area cross-checked GTA Six Map lists another area: Little Cuba.",
+    "host": null,
+    "note": "Area cross-checked. GTA Six Map lists another area: Little Cuba (not used)."
+   }
+  ],
+  "conflict": "GTA Six Map lists Little Cuba instead of Salton (not used).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -1235.2,
+   "y": -412.8
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-063",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-063",
+   "filePickPinId": "collectible-card-063",
+   "filePickRejected": false,
+   "gameX": -1235.2,
+   "gameY": -412.8,
+   "confidenceTier": "community report",
+   "fbritoArea": "Vice City",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "dup-arbitrated-file-pick-wins",
+   "reviewReason": "file pick wins arbitration on area; keywords vs our direction: []; losers (wrong area): [('card-delights-015', None, None)]",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "ed-comics-universe",
+  "setName": "Ed Comics Universe",
+  "person": "Capsule",
+  "variant": "Light Blue",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard",
+   "colour": "light blue"
+  },
+  "lorenzoneRowId": "ed-comics-universe-capsule-light-blue",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction - 'chessboard' on SW 4th Ave is a street spot, not a building",
+  "spotDescription": "Chessboard on SW 4th Ave, Tequesta.",
+  "areaLead": "Tequesta",
+  "pickups": [
+   {
+    "area": "Tequesta",
+    "text": "· SW 4th Ave · chessboard",
+    "host": null,
+    "note": ""
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -1114.0,
+   "y": -992
+  },
+  "vchReview": {
+   "sourcePinId": "card-ed-comics-016",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-ed-comics-016",
+   "filePickPinId": "card-ed-comics-016",
+   "filePickRejected": false,
+   "gameX": -1114.0,
+   "gameY": -992,
+   "confidenceTier": "unrated",
+   "fbritoArea": null,
+   "fbritoDescription": "On the chess table between the buildings.",
+   "fbritoScreenshot": true,
+   "reviewStatus": "proposed-unrated",
+   "reviewReason": "no evidenced host; tier unrated — needs a second source",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "ed-comics-universe",
+  "setName": "Ed Comics Universe",
+  "person": "Ratface",
+  "variant": "bronze",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "bronze"
+  },
+  "lorenzoneRowId": "ed-comics-universe-ratface-bronze",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction - 'warehouse' on NW 8th Ave, warehouse unnamed",
+  "spotDescription": "Warehouse on NW 8th Ave, La Perle. Area cross-checked.",
+  "areaLead": "La Perle",
+  "pickups": [
+   {
+    "area": "La Perle",
+    "text": "· NW 8th Ave · warehouse Area cross-checked",
+    "host": null,
+    "note": "Area cross-checked"
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -1157.0,
+   "y": 1240.0
+  },
+  "vchReview": {
+   "sourcePinId": "card-ed-comics-012",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-ed-comics-012",
+   "filePickPinId": "card-ed-comics-012",
+   "filePickRejected": false,
+   "gameX": -1157.0,
+   "gameY": 1240.0,
+   "confidenceTier": "unrated",
+   "fbritoArea": null,
+   "fbritoDescription": "Inside the abandoned shed, on the left near the wall.",
+   "fbritoScreenshot": true,
+   "reviewStatus": "proposed-unrated",
+   "reviewReason": "no evidenced host; tier unrated — needs a second source",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "jack-of-hearts-dancers",
+  "setName": "Jack of Hearts Dancers",
+  "person": "Christel",
+  "variant": "Deep Red",
+  "variantAlias": "dark red",
+  "rarity": {
+   "tier": "standard",
+   "colour": "deep red"
+  },
+  "lorenzoneRowId": "jack-of-hearts-dancers-christel-dark-red",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — roof on NW 9th Ave",
+  "spotDescription": "NW 9th Ave, roof — La Perle",
+  "areaLead": "La Perle",
+  "pickups": [
+   {
+    "area": "La Perle",
+    "text": "· NW 9th Ave · roof Area cross-checked GTA Six Map lists another area: Bohemia.",
+    "host": null,
+    "note": "Area cross-checked. GTA Six Map lists another area: Bohemia (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Bohemia (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -832,
+   "y": 1401.6
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-040",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-040",
+   "filePickPinId": "collectible-card-040",
+   "filePickRejected": false,
+   "gameX": -832,
+   "gameY": 1401.6,
+   "confidenceTier": "community report",
+   "fbritoArea": "Vice City",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "liberty-city-penetrators",
+  "setName": "Liberty City Penetrators",
+  "person": "Lev Volkov",
+  "variant": "gold",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "gold"
+  },
+  "lorenzoneRowId": "liberty-city-penetrators-lev-volkov-gold",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction - 'basketball court' on Delamore Dr; Leaf Links Golf Club is not named in the direction",
+  "spotDescription": "Basketball court on Delamore Dr, Leaf Links.",
+  "areaLead": "Leaf Links",
+  "pickups": [
+   {
+    "area": "Leaf Links",
+    "text": "· Delamore Dr · basketball court",
+    "host": null,
+    "note": ""
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": 875.0,
+   "y": 2396.0
+  },
+  "vchReview": {
+   "sourcePinId": "card-liberty-city-penetrators-017",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-liberty-city-penetrators-017",
+   "filePickPinId": "card-liberty-city-penetrators-017",
+   "filePickRejected": false,
+   "gameX": 875.0,
+   "gameY": 2396.0,
+   "confidenceTier": "unrated",
+   "fbritoArea": null,
+   "fbritoDescription": "On the basketball court near the chair: the piece of paper on the floor.",
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed-unrated",
+   "reviewReason": "no evidenced host; tier unrated — needs a second source",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "liberty-city-penetrators",
+  "setName": "Liberty City Penetrators",
+  "person": "Remy Herbert",
+  "variant": "silver",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "silver"
+  },
+  "lorenzoneRowId": "liberty-city-penetrators-remy-herbert-silver",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction - 'table' on NW 3rd Ave is a street spot, not a building",
+  "spotDescription": "Table on NW 3rd Ave, Little Cuba.",
+  "areaLead": "Little Cuba",
+  "pickups": [
+   {
+    "area": "Little Cuba",
+    "text": "· NW 3rd Ave · table Area cross-checked",
+    "host": null,
+    "note": "Area cross-checked"
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -1145.0,
+   "y": 219.0
+  },
+  "vchReview": {
+   "sourcePinId": "card-liberty-city-penetrators-019",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-liberty-city-penetrators-019",
+   "filePickPinId": "card-liberty-city-penetrators-019",
+   "filePickRejected": false,
+   "gameX": -1145.0,
+   "gameY": 219.0,
+   "confidenceTier": "unrated",
+   "fbritoArea": null,
+   "fbritoDescription": "On the second floor of the motel, on the dresser in the back room.",
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed-unrated",
+   "reviewReason": "no evidenced host; tier unrated — needs a second source",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "liberty-city-penetrators",
+  "setName": "Liberty City Penetrators",
+  "person": "Taylor Blanc",
+  "variant": "standard",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard"
+  },
+  "lorenzoneRowId": "liberty-city-penetrators-taylor-blanc-standard",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "proposed host L1589 Gas Station 6.1u from the winning pin; the winning pin's description names the gas station office. Tier-blocked (unrated) — a second source would confirm it.",
+  "spotDescription": "Desk on SW 3rd Ave, Southside.",
+  "areaLead": "Southside",
+  "pickups": [
+   {
+    "area": "Southside",
+    "text": "· SW 3rd Ave · desk",
+    "host": null,
+    "note": ""
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -1674.0,
+   "y": -2182.0
+  },
+  "proposedHost": {
+   "gtadbId": "L1589",
+   "hostName": "Gas Station",
+   "hostArea": "Southside, Vice City",
+   "position": {
+    "x": -1673.3259999999996,
+    "y": -2188.083
+   },
+   "distanceFromPin": 6.1
+  },
+  "vchReview": {
+   "sourcePinId": "card-liberty-city-penetrators-008",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-liberty-city-penetrators-008",
+   "filePickPinId": "card-liberty-city-penetrators-006",
+   "filePickRejected": true,
+   "gameX": -1674.0,
+   "gameY": -2182.0,
+   "confidenceTier": "unrated",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "dup-arbitrated-other-pin-wins",
+   "reviewReason": "a DIFFERENT pin wins arbitration on area: card-liberty-city-penetrators-008; keywords vs our direction: []; file pick card-liberty-city-penetrators-006 is REJECTED (wrong area); losers: [('card-liberty-city-penetrators-006', None, 'In a yellow case behind the car in the garage. The garage code is on signs inside the house next to '), ('card-liberty-city-penetrators-007', None, 'In a case.')]",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate",
+   "winnerConfidenceRaw": "sin_nivel"
+  }
+ },
+ {
+  "setId": "liberty-city-wrath",
+  "setName": "Liberty City Wrath",
+  "person": "Robbie Stine",
+  "variant": "silver",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "silver"
+  },
+  "lorenzoneRowId": "liberty-city-wrath-robbie-stine-silver",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — street + spot only",
+  "spotDescription": "Forest Mill Rd desk",
+  "areaLead": "Mount Kalaga National Park",
+  "pickups": [
+   {
+    "area": "Mount Kalaga National Park",
+    "text": "· Forest Mill Rd · desk Area cross-checked",
+    "host": null,
+    "note": "Area cross-checked"
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -4045.0,
+   "y": 6908.0
+  },
+  "vchReview": {
+   "sourcePinId": "card-liberty-city-wrath-014",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-liberty-city-wrath-014",
+   "filePickPinId": "card-liberty-city-wrath-014",
+   "filePickRejected": false,
+   "gameX": -4045.0,
+   "gameY": 6908.0,
+   "confidenceTier": "unrated",
+   "fbritoArea": null,
+   "fbritoDescription": "Up the ladder and in an office",
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed-unrated",
+   "reviewReason": "no evidenced host; tier unrated — needs a second source",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "liberty-city-wrath",
+  "setName": "Liberty City Wrath",
+  "person": "Thien Trinh",
+  "variant": "silver",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "silver"
+  },
+  "lorenzoneRowId": "liberty-city-wrath-thien-trinh-silver",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — unnamed house",
+  "spotDescription": "US-183 blue farmhouse porch",
+  "areaLead": "Gellhorn",
+  "pickups": [
+   {
+    "area": "Gellhorn",
+    "text": "· US-183 · blue farmhouse porch",
+    "host": null,
+    "note": ""
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -4979.2,
+   "y": 2425.6
+  },
+  "vchReview": {
+   "sourcePinId": "card-liberty-city-wrath-005",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-liberty-city-wrath-005",
+   "filePickPinId": "card-liberty-city-wrath-005",
+   "filePickRejected": false,
+   "gameX": -4979.2,
+   "gameY": 2425.6,
+   "confidenceTier": "community report",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": true,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "los-santos-corkers",
+  "setName": "Los Santos Corkers",
+  "person": "Carlos Larios",
+  "variant": "gold",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "gold"
+  },
+  "lorenzoneRowId": "los-santos-corkers-carlos-larios-gold",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — street + spot only",
+  "spotDescription": "NW 9th St lounge chair",
+  "areaLead": "Rockridge",
+  "pickups": [
+   {
+    "area": "Rockridge",
+    "text": "· NW 9th St · lounge chair",
+    "host": null,
+    "note": ""
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -1018.0,
+   "y": 791.0
+  },
+  "vchReview": {
+   "sourcePinId": "card-los-santos-corkers-005",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-los-santos-corkers-005",
+   "filePickPinId": "card-los-santos-corkers-005",
+   "filePickRejected": false,
+   "gameX": -1018.0,
+   "gameY": 791.0,
+   "confidenceTier": "community report",
+   "fbritoArea": "Vice City",
+   "fbritoDescription": "On the roof of the building, next to a chair.",
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "los-santos-panic",
+  "setName": "Los Santos Panic",
+  "person": "Jakob Markic",
+  "variant": "yellow",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard",
+   "colour": "yellow"
+  },
+  "lorenzoneRowId": "los-santos-panic-jakob-markic-yellow",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — unnamed house",
+  "spotDescription": "East of Lake Tallaloko gray house basketball hoop",
+  "areaLead": "Eastern Lummox County",
+  "pickups": [
+   {
+    "area": "Eastern Lummox County",
+    "text": "· East of Lake Tallaloko · gray house basketball hoop",
+    "host": null,
+    "note": ""
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -1122.0,
+   "y": 7112.0
+  },
+  "vchReview": {
+   "sourcePinId": "card-los-santos-panic-015",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-los-santos-panic-015",
+   "filePickPinId": "card-los-santos-panic-015",
+   "filePickRejected": false,
+   "gameX": -1122.0,
+   "gameY": 7112.0,
+   "confidenceTier": "unrated",
+   "fbritoArea": null,
+   "fbritoDescription": "At the base of the basketball hoop. Watch out for the Rottweiler!",
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed-unrated",
+   "reviewReason": "no evidenced host; tier unrated — needs a second source",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "los-santos-panic",
+  "setName": "Los Santos Panic",
+  "person": "Nikkander Orlov",
+  "variant": "purple",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard",
+   "colour": "purple"
+  },
+  "lorenzoneRowId": "los-santos-panic-nikkander-orlov-purple",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — 'garage' of an unnamed house",
+  "spotDescription": "Mamey Cir garage",
+  "areaLead": "Waning Sands",
+  "pickups": [
+   {
+    "area": "Waning Sands",
+    "text": "· Mamey Cir · garage",
+    "host": null,
+    "note": ""
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -28.0,
+   "y": 3622.0
+  },
+  "vchReview": {
+   "sourcePinId": "card-los-santos-panic-016",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-los-santos-panic-016",
+   "filePickPinId": "card-los-santos-panic-016",
+   "filePickRejected": false,
+   "gameX": -28.0,
+   "gameY": 3622.0,
+   "confidenceTier": "unrated",
+   "fbritoArea": null,
+   "fbritoDescription": "At the back of the garage, by the workbench.",
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed-unrated",
+   "reviewReason": "no evidenced host; tier unrated — needs a second source",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "los-santos-panic",
+  "setName": "Los Santos Panic",
+  "person": "Nikkander Orlov",
+  "variant": "silver",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "silver"
+  },
+  "lorenzoneRowId": "los-santos-panic-nikkander-orlov-silver",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — street + spot only",
+  "spotDescription": "Seabell Ave shelf",
+  "areaLead": "Watson Bay",
+  "pickups": [
+   {
+    "area": "Watson Bay",
+    "text": "· Seabell Ave · shelf Area cross-checked",
+    "host": null,
+    "note": "Area cross-checked"
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -3907.2,
+   "y": -3040
+  },
+  "vchReview": {
+   "sourcePinId": "card-los-santos-panic-002",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-los-santos-panic-002",
+   "filePickPinId": "card-los-santos-panic-002",
+   "filePickRejected": false,
+   "gameX": -3907.2,
+   "gameY": -3040,
+   "confidenceTier": "community report",
+   "fbritoArea": null,
+   "fbritoDescription": "On a shelf in the back of the garage",
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "los-santos-panic",
+  "setName": "Los Santos Panic",
+  "person": "Quinton Allen",
+  "variant": "silver",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "silver"
+  },
+  "lorenzoneRowId": "los-santos-panic-quinton-allen-silver",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — street + spot only",
+  "spotDescription": "US-35 safe",
+  "areaLead": "Ambrosia",
+  "pickups": [
+   {
+    "area": "Ambrosia",
+    "text": "· US-35 · safe",
+    "host": null,
+    "note": ""
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -2806.0,
+   "y": 4513.0
+  },
+  "vchReview": {
+   "sourcePinId": "card-los-santos-panic-013",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-los-santos-panic-013",
+   "filePickPinId": "card-los-santos-panic-013",
+   "filePickRejected": false,
+   "gameX": -2806.0,
+   "gameY": 4513.0,
+   "confidenceTier": "unrated",
+   "fbritoArea": null,
+   "fbritoDescription": "At the motel: hold L3 and R3 to pick up the signal, go inside and enter the code the man in the bathroom gives you (4242) into the safe.",
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed-unrated",
+   "reviewReason": "no evidenced host; tier unrated — needs a second source",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "nine1nine-dancers",
+  "setName": "Nine1Nine Dancers",
+  "person": "Braelynn",
+  "variant": "purple",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard",
+   "colour": "purple"
+  },
+  "lorenzoneRowId": "nine1nine-dancers-braelynn-purple",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — mattress on Bear Hollow Dr",
+  "spotDescription": "Bear Hollow Dr, mattress  Joseph. — Millport",
+  "areaLead": "Millport",
+  "pickups": [
+   {
+    "area": "Millport",
+    "text": "· Bear Hollow Dr · mattress GTA Six Map lists another area: St. Joseph.",
+    "host": null,
+    "note": "GTA Six Map lists another area: St (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: St (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -1340.8,
+   "y": 6528
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-008",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-008",
+   "filePickPinId": "collectible-card-008",
+   "filePickRejected": false,
+   "gameX": -1340.8,
+   "gameY": 6528,
+   "confidenceTier": "community report",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "nine1nine-dancers",
+  "setName": "Nine1Nine Dancers",
+  "person": "Chrissie",
+  "variant": "purple",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard",
+   "colour": "purple"
+  },
+  "lorenzoneRowId": "nine1nine-dancers-chrissie-purple",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — cave campsite on the rail line",
+  "spotDescription": "Rail line, cave campsite — Manifest Canyon",
+  "areaLead": "Manifest Canyon",
+  "pickups": [
+   {
+    "area": "Manifest Canyon",
+    "text": "· Rail line · cave campsite GTA Six Map lists another area: Bridge Ridge.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Bridge Ridge (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Bridge Ridge (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -5200.0,
+   "y": 5299.2
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-017",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-017",
+   "filePickPinId": "collectible-card-017",
+   "filePickRejected": false,
+   "gameX": -5200.0,
+   "gameY": 5299.2,
+   "confidenceTier": "community report",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "nine1nine-dancers",
+  "setName": "Nine1Nine Dancers",
+  "person": "Clarissa",
+  "variant": "bronze",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "bronze"
+  },
+  "lorenzoneRowId": "nine1nine-dancers-clarissa-bronze",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — chair on NW 3rd Ave",
+  "spotDescription": "NW 3rd Ave, chair — Little Cuba",
+  "areaLead": "Little Cuba",
+  "pickups": [
+   {
+    "area": "Little Cuba",
+    "text": "· NW 3rd Ave · chair Area cross-checked",
+    "host": null,
+    "note": "Area cross-checked."
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -1123.2,
+   "y": -211.2
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-062",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-062",
+   "filePickPinId": "collectible-card-062",
+   "filePickRejected": false,
+   "gameX": -1123.2,
+   "gameY": -211.2,
+   "confidenceTier": "community report",
+   "fbritoArea": "Vice City",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "nine1nine-dancers",
+  "setName": "Nine1Nine Dancers",
+  "person": "Clarissa",
+  "variant": "gold",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "gold"
+  },
+  "lorenzoneRowId": "nine1nine-dancers-clarissa-gold",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "named host Leonida Industrial Services has no GTADB record",
+  "spotDescription": "Leonida Industrial Services, lounge chair — Northern Mariana County",
+  "areaLead": "Northern Mariana County",
+  "pickups": [
+   {
+    "area": "Northern Mariana County",
+    "text": "· Leonida Industrial Services · lounge chair GTA Six Map lists another area: Goliath.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Goliath (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Goliath (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -4761.6,
+   "y": -1420.8
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-071",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-071",
+   "filePickPinId": "collectible-card-071",
+   "filePickRejected": false,
+   "gameX": -4761.6,
+   "gameY": -1420.8,
+   "confidenceTier": "community report",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "nine1nine-dancers",
+  "setName": "Nine1Nine Dancers",
+  "person": "Georgia",
+  "variant": "Deep Red",
+  "variantAlias": "dark red",
+  "rarity": {
+   "tier": "standard",
+   "colour": "deep red"
+  },
+  "lorenzoneRowId": "nine1nine-dancers-georgia-dark-red",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — lounge chair on Forest Mill Rd",
+  "spotDescription": "Forest Mill Rd, lounge chair  Joseph. — Millport",
+  "areaLead": "Millport",
+  "pickups": [
+   {
+    "area": "Millport",
+    "text": "· Forest Mill Rd · lounge chair GTA Six Map lists another area: St. Joseph.",
+    "host": null,
+    "note": "GTA Six Map lists another area: St (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: St (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -928,
+   "y": 6336
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-011",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-011",
+   "filePickPinId": "collectible-card-011",
+   "filePickRejected": false,
+   "gameX": -928,
+   "gameY": 6336,
+   "confidenceTier": "community report",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "nine1nine-dancers",
+  "setName": "Nine1Nine Dancers",
+  "person": "Georgia",
+  "variant": "pink",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard",
+   "colour": "pink"
+  },
+  "lorenzoneRowId": "nine1nine-dancers-georgia-pink",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — mattress on NW 11th St",
+  "spotDescription": "NW 11th St, mattress — La Perle",
+  "areaLead": "La Perle",
+  "pickups": [
+   {
+    "area": "La Perle",
+    "text": "· NW 11th St · mattress GTA Six Map lists another area: Little Cuba.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Little Cuba (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Little Cuba (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -1158.4,
+   "y": 1315.2
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-041",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-041",
+   "filePickPinId": "collectible-card-041",
+   "filePickRejected": false,
+   "gameX": -1158.4,
+   "gameY": 1315.2,
+   "confidenceTier": "community report",
+   "fbritoArea": "Vice City",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "nine1nine-dancers",
+  "setName": "Nine1Nine Dancers",
+  "person": "Jesenia",
+  "variant": "gold",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "gold"
+  },
+  "lorenzoneRowId": "nine1nine-dancers-jesenia-gold",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — 'villa' on the northwestern coast is unnamed",
+  "spotDescription": "Northwestern coast, villa TV stand — Vespucci Island",
+  "areaLead": "Vespucci Island",
+  "pickups": [
+   {
+    "area": "Vespucci Island",
+    "text": "· Northwestern coast · villa TV stand GTA Six Map lists another area: Rialto Islands.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Rialto Islands (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Rialto Islands (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": 435.2,
+   "y": 1417.6
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-039",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-039",
+   "filePickPinId": "collectible-card-039",
+   "filePickRejected": false,
+   "gameX": 435.2,
+   "gameY": 1417.6,
+   "confidenceTier": "community report",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "nine1nine-dancers",
+  "setName": "Nine1Nine Dancers",
+  "person": "Jesenia",
+  "variant": "silver",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "silver"
+  },
+  "lorenzoneRowId": "nine1nine-dancers-jesenia-silver",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — parasol on a sandbar off the north coast; the GTADB pickup/map note does not name a host building",
+  "spotDescription": "Red circular table surrounded by short log stools on the beach, sandbar off the north coast, Permit Keys",
+  "areaLead": "Permit Keys",
+  "pickups": [
+   {
+    "area": "Permit Keys",
+    "text": "· Sandbar off north coast · parasol GTA Six Map lists another area: Leonida Keys. On the beach, look for the red circular table surrounded by short log stools. Pickup, map and card front on GTADB",
+    "host": null,
+    "note": "GTA Six Map lists another area: Leonida Keys (third-party note, not used for placement). On the beach, look for the red circular table surrounded by short log stools. Pickup, map and card front on GTADB."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Leonida Keys (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -5536,
+   "y": -5977.6
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-083",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-083",
+   "filePickPinId": "collectible-card-083",
+   "filePickRejected": false,
+   "gameX": -5536,
+   "gameY": -5977.6,
+   "confidenceTier": "community report",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": true,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "nine1nine-dancers",
+  "setName": "Nine1Nine Dancers",
+  "person": "Julia",
+  "variant": "gold",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "gold"
+  },
+  "lorenzoneRowId": "nine1nine-dancers-julia-gold",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — roof on Huevo St",
+  "spotDescription": "Huevo St, roof — Ocean Beach",
+  "areaLead": "Ocean Beach",
+  "pickups": [
+   {
+    "area": "Ocean Beach",
+    "text": "· Huevo St · roof Area cross-checked",
+    "host": null,
+    "note": "Area cross-checked."
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": 1558.4,
+   "y": 537.6
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-053",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-053",
+   "filePickPinId": "collectible-card-053",
+   "filePickRejected": false,
+   "gameX": 1558.4,
+   "gameY": 537.6,
+   "confidenceTier": "community report",
+   "fbritoArea": "Vice Beach",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "nine1nine-dancers",
+  "setName": "Nine1Nine Dancers",
+  "person": "Julia",
+  "variant": "silver",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "silver"
+  },
+  "lorenzoneRowId": "nine1nine-dancers-julia-silver",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — roof on SW 5th Ave",
+  "spotDescription": "SW 5th Ave, roof — Peacock Bay",
+  "areaLead": "Peacock Bay",
+  "pickups": [
+   {
+    "area": "Peacock Bay",
+    "text": "· SW 5th Ave · roof Area cross-checked",
+    "host": null,
+    "note": "Area cross-checked."
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -1260.8,
+   "y": -1686.4
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-073",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-073",
+   "filePickPinId": "collectible-card-073",
+   "filePickRejected": false,
+   "gameX": -1260.8,
+   "gameY": -1686.4,
+   "confidenceTier": "community report",
+   "fbritoArea": "Vice City",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "nine1nine-dancers",
+  "setName": "Nine1Nine Dancers",
+  "person": "Lavinia",
+  "variant": "pink",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard",
+   "colour": "pink"
+  },
+  "lorenzoneRowId": "nine1nine-dancers-lavinia-pink",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — barrel on Chestnut Dr",
+  "spotDescription": "Chestnut Dr, barrel  Joseph. — Millport",
+  "areaLead": "Millport",
+  "pickups": [
+   {
+    "area": "Millport",
+    "text": "· Chestnut Dr · barrel GTA Six Map lists another area: St. Joseph.",
+    "host": null,
+    "note": "GTA Six Map lists another area: St (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: St (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -1120,
+   "y": 6428.8
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-010",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-010",
+   "filePickPinId": "collectible-card-010",
+   "filePickRejected": false,
+   "gameX": -1120,
+   "gameY": 6428.8,
+   "confidenceTier": "community report",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "nine1nine-dancers",
+  "setName": "Nine1Nine Dancers",
+  "person": "Lavinia",
+  "variant": "purple",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard",
+   "colour": "purple"
+  },
+  "lorenzoneRowId": "nine1nine-dancers-lavinia-purple",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — wrecked red railcar on the southern river; no GTADB railcar record",
+  "spotDescription": "Southern river, wrecked red railcar — Moreau",
+  "areaLead": "Moreau",
+  "pickups": [
+   {
+    "area": "Moreau",
+    "text": "· Southern river · wrecked red railcar GTA Six Map lists another area: Redhill.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Redhill (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Redhill (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -3801.6,
+   "y": 7452.8
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-006",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-006",
+   "filePickPinId": "collectible-card-006",
+   "filePickRejected": false,
+   "gameX": -3801.6,
+   "gameY": 7452.8,
+   "confidenceTier": "community report",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "nine1nine-dancers",
+  "setName": "Nine1Nine Dancers",
+  "person": "Lenora",
+  "variant": "Deep Red",
+  "variantAlias": "dark red",
+  "rarity": {
+   "tier": "standard",
+   "colour": "deep red"
+  },
+  "lorenzoneRowId": "nine1nine-dancers-lenora-dark-red",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — sofa on Bayside Dr",
+  "spotDescription": "Bayside Dr, sofa — Tequesta Retreat",
+  "areaLead": "Tequesta Retreat",
+  "pickups": [
+   {
+    "area": "Tequesta Retreat",
+    "text": "· Bayside Dr · sofa Area cross-checked",
+    "host": null,
+    "note": "Area cross-checked."
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -284.8,
+   "y": -1049.6
+  },
+  "vchReview": {
+   "sourcePinId": "hidden-package-006",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=hidden-package-006",
+   "filePickPinId": "hidden-package-006",
+   "filePickRejected": false,
+   "gameX": -284.8,
+   "gameY": -1049.6,
+   "confidenceTier": "community report",
+   "fbritoArea": "Vice City",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "nine1nine-dancers",
+  "setName": "Nine1Nine Dancers",
+  "person": "Lenora",
+  "variant": "pink",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard",
+   "colour": "pink"
+  },
+  "lorenzoneRowId": "nine1nine-dancers-lenora-pink",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — table on Rialto Cswy",
+  "spotDescription": "Rialto Cswy, table — Rockridge",
+  "areaLead": "Rockridge",
+  "pickups": [
+   {
+    "area": "Rockridge",
+    "text": "· Rialto Cswy · table GTA Six Map lists another area: Little Cuba.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Little Cuba (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Little Cuba (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -992,
+   "y": 1056
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-046",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-046",
+   "filePickPinId": "collectible-card-046",
+   "filePickRejected": false,
+   "gameX": -992,
+   "gameY": 1056,
+   "confidenceTier": "community report",
+   "fbritoArea": "Vice City",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "nine1nine-dancers",
+  "setName": "Nine1Nine Dancers",
+  "person": "Lenora",
+  "variant": "purple",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard",
+   "colour": "purple"
+  },
+  "lorenzoneRowId": "nine1nine-dancers-lenora-purple",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — stairs on SW 4th Ave",
+  "spotDescription": "SW 4th Ave, stairs — Tequesta",
+  "areaLead": "Tequesta",
+  "pickups": [
+   {
+    "area": "Tequesta",
+    "text": "· SW 4th Ave · stairs GTA Six Map lists another area: Little Cuba.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Little Cuba (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Little Cuba (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -1020.8,
+   "y": -809.6
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-068",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-068",
+   "filePickPinId": "collectible-card-068",
+   "filePickRejected": false,
+   "gameX": -1020.8,
+   "gameY": -809.6,
+   "confidenceTier": "community report",
+   "fbritoArea": "Vice City",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "nine1nine-dancers",
+  "setName": "Nine1Nine Dancers",
+  "person": "Louise",
+  "variant": "bronze",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "bronze"
+  },
+  "lorenzoneRowId": "nine1nine-dancers-louise-bronze",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — roof on Westbrook Dr",
+  "spotDescription": "Westbrook Dr, roof — Salton",
+  "areaLead": "Salton",
+  "pickups": [
+   {
+    "area": "Salton",
+    "text": "· Westbrook Dr · roof GTA Six Map lists another area: Little Cuba.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Little Cuba (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Little Cuba (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -1139.2,
+   "y": -633.6
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-066",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-066",
+   "filePickPinId": "collectible-card-066",
+   "filePickRejected": false,
+   "gameX": -1139.2,
+   "gameY": -633.6,
+   "confidenceTier": "community report",
+   "fbritoArea": "Vice City",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "nine1nine-dancers",
+  "setName": "Nine1Nine Dancers",
+  "person": "Louise",
+  "variant": "gold",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "gold"
+  },
+  "lorenzoneRowId": "nine1nine-dancers-louise-gold",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — 'tower' on NW 15th Ave is unnamed; the snapshot's towers are not identified by this direction",
+  "spotDescription": "NW 15th Ave, tower — Balsero",
+  "areaLead": "Balsero",
+  "pickups": [
+   {
+    "area": "Balsero",
+    "text": "· NW 15th Ave · tower GTA Six Map lists another area: Little Cuba.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Little Cuba (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Little Cuba (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -2409.6,
+   "y": 425.6
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-055",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-055",
+   "filePickPinId": "collectible-card-055",
+   "filePickRejected": false,
+   "gameX": -2409.6,
+   "gameY": 425.6,
+   "confidenceTier": "community report",
+   "fbritoArea": "Vice City",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "nine1nine-dancers",
+  "setName": "Nine1Nine Dancers",
+  "person": "Meghan",
+  "variant": "gold",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "gold"
+  },
+  "lorenzoneRowId": "nine1nine-dancers-meghan-gold",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — 'tower' on US-183 is unnamed",
+  "spotDescription": "US-183, tower",
+  "areaLead": "US-183",
+  "pickups": [
+   {
+    "area": "US-183",
+    "text": "· US-183 · tower GTA Six Map lists another area: Buckskin.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Buckskin (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Buckskin (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -5292.8,
+   "y": 1177.6
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-044",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-044",
+   "filePickPinId": "collectible-card-044",
+   "filePickRejected": false,
+   "gameX": -5292.8,
+   "gameY": 1177.6,
+   "confidenceTier": "community report",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": true,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "nine1nine-dancers",
+  "setName": "Nine1Nine Dancers",
+  "person": "Meghan",
+  "variant": "silver",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "silver"
+  },
+  "lorenzoneRowId": "nine1nine-dancers-meghan-silver",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — garden gnome near a mattress on the southern seawall",
+  "spotDescription": "Southern seawall, garden gnome near mattress — Waning Sands",
+  "areaLead": "Waning Sands",
+  "pickups": [
+   {
+    "area": "Waning Sands",
+    "text": "· Southern seawall · garden gnome near mattress GTA Six Map lists another area: Osborn Reef.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Osborn Reef (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Osborn Reef (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": 1004.8,
+   "y": 3408.0
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-027",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-027",
+   "filePickPinId": "collectible-card-027",
+   "filePickRejected": false,
+   "gameX": 1004.8,
+   "gameY": 3408.0,
+   "confidenceTier": "community report",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "nine1nine-dancers",
+  "setName": "Nine1Nine Dancers",
+  "person": "Serena",
+  "variant": "bronze",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "bronze"
+  },
+  "lorenzoneRowId": "nine1nine-dancers-serena-bronze",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — sofa on Forest Mill Rd",
+  "spotDescription": "Forest Mill Rd, sofa — Mount Kalaga National Park",
+  "areaLead": "Mount Kalaga National Park",
+  "pickups": [
+   {
+    "area": "Mount Kalaga National Park",
+    "text": "· Forest Mill Rd · sofa GTA Six Map lists another area: Fairyland Forest.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Fairyland Forest (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Fairyland Forest (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -2435.2,
+   "y": 6467.2
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-009",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-009",
+   "filePickPinId": "collectible-card-009",
+   "filePickRejected": false,
+   "gameX": -2435.2,
+   "gameY": 6467.2,
+   "confidenceTier": "community report",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "nine1nine-dancers",
+  "setName": "Nine1Nine Dancers",
+  "person": "Serena",
+  "variant": "gold",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "gold"
+  },
+  "lorenzoneRowId": "nine1nine-dancers-serena-gold",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — 'garage' of an unnamed house on Palladia Ln",
+  "spotDescription": "Palladia Ln, garage — Peacock Estates",
+  "areaLead": "Peacock Estates",
+  "pickups": [
+   {
+    "area": "Peacock Estates",
+    "text": "· Palladia Ln · garage Area cross-checked GTA Six Map lists another area: Peacock Bay.",
+    "host": null,
+    "note": "Area cross-checked. GTA Six Map lists another area: Peacock Bay (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Peacock Bay (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -1091.2,
+   "y": -2777.6
+  },
+  "vchReview": {
+   "sourcePinId": "collectible-card-077",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=collectible-card-077",
+   "filePickPinId": "collectible-card-077",
+   "filePickRejected": false,
+   "gameX": -1091.2,
+   "gameY": -2777.6,
+   "confidenceTier": "community report",
+   "fbritoArea": "Vice City",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "nine1nine-dancers",
+  "setName": "Nine1Nine Dancers",
+  "person": "Serena",
+  "variant": "silver",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "silver"
+  },
+  "lorenzoneRowId": "nine1nine-dancers-serena-silver",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — brown armchair on the beach southwest of Grayson",
+  "spotDescription": "Beach southwest of Grayson, brown armchair",
+  "areaLead": "Grayson",
+  "pickups": [
+   {
+    "area": "Grayson",
+    "text": "· Beach southwest of Grayson · brown armchair GTA Six Map lists another area: Redhill.",
+    "host": null,
+    "note": "GTA Six Map lists another area: Redhill (third-party note, not used for placement)."
+   }
+  ],
+  "conflict": "GTA Six Map lists another area: Redhill (third-party note, not used for placement).",
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -5891.2,
+   "y": 6572.8
+  },
+  "vchReview": {
+   "sourcePinId": "hidden-package-005",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=hidden-package-005",
+   "filePickPinId": "hidden-package-005",
+   "filePickRejected": false,
+   "gameX": -5891.2,
+   "gameY": 6572.8,
+   "confidenceTier": "community report",
+   "fbritoArea": null,
+   "fbritoDescription": "Located on the La-Z-Boy chair",
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "the-legends-of-ratface",
+  "setName": "The Legends of Ratface",
+  "person": "Captain Kreuks",
+  "variant": "blue",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard",
+   "colour": "blue"
+  },
+  "lorenzoneRowId": "the-legends-of-ratface-captain-krueks-blue",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction - 'parking area' on Del Rio Blvd is generic, no GTADB record",
+  "spotDescription": "Parking area on Del Rio Blvd, La Perle",
+  "areaLead": "La Perle - Del Rio Blvd",
+  "pickups": [
+   {
+    "area": "La Perle",
+    "text": "· Del Rio Blvd · parking area Also recorded by PowerPyx as Captain Kreuks.",
+    "host": null,
+    "note": "Also recorded by PowerPyx as Captain Kreuks."
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -1065.0,
+   "y": 1550.0
+  },
+  "vchReview": {
+   "sourcePinId": "card-legends-of-ratface-009",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-legends-of-ratface-009",
+   "filePickPinId": "card-legends-of-ratface-009",
+   "filePickRejected": false,
+   "gameX": -1065.0,
+   "gameY": 1550.0,
+   "confidenceTier": "unrated",
+   "fbritoArea": null,
+   "fbritoDescription": "On the rooftop of the multistorey building, on the wall in the north-east corner (a radio is playing music there).",
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed-unrated",
+   "reviewReason": "no evidenced host; tier unrated — needs a second source",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "the-legends-of-ratface",
+  "setName": "The Legends of Ratface",
+  "person": "Wokester",
+  "variant": "purple",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard",
+   "colour": "purple"
+  },
+  "lorenzoneRowId": "the-legends-of-ratface-wokester-purple",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction - shelf in an unnamed building on Del Rio Blvd",
+  "spotDescription": "Shelf on Del Rio Blvd, La Perle",
+  "areaLead": "La Perle - Del Rio Blvd",
+  "pickups": [
+   {
+    "area": "La Perle",
+    "text": "· Del Rio Blvd · shelf",
+    "host": null,
+    "note": ""
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -827.0,
+   "y": 1711.0
+  },
+  "vchReview": {
+   "sourcePinId": "card-legends-of-ratface-019",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-legends-of-ratface-019",
+   "filePickPinId": "card-legends-of-ratface-019",
+   "filePickRejected": false,
+   "gameX": -827.0,
+   "gameY": 1711.0,
+   "confidenceTier": "unrated",
+   "fbritoArea": null,
+   "fbritoDescription": "Inside the garage (open it), on the middle storage shelf.",
+   "fbritoScreenshot": true,
+   "reviewStatus": "proposed-unrated",
+   "reviewReason": "no evidenced host; tier unrated — needs a second source",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "vice-city-club-de-futbol",
+  "setName": "Vice City Club De Fútbol",
+  "person": "Anne Florence",
+  "variant": "teal",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard",
+   "colour": "teal"
+  },
+  "lorenzoneRowId": "vice-city-club-de-futbol-anne-florence-teal",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "named host Zenith gym has no GTADB record (no 'Zenith' match at all)",
+  "spotDescription": "Women's locker room in Zenith gym, Downtown.",
+  "areaLead": "Downtown",
+  "pickups": [
+   {
+    "area": "Downtown",
+    "text": "· Zenith gym · women’s locker room",
+    "host": null,
+    "note": ""
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -830.0,
+   "y": -565.0
+  },
+  "vchReview": {
+   "sourcePinId": "card-vice-city-club-de-futbol-011",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-vice-city-club-de-futbol-011",
+   "filePickPinId": "card-vice-city-club-de-futbol-011",
+   "filePickRejected": false,
+   "gameX": -830.0,
+   "gameY": -565.0,
+   "confidenceTier": "unrated",
+   "fbritoArea": null,
+   "fbritoDescription": "On the bench in the Zenith gym changing room.",
+   "fbritoScreenshot": true,
+   "reviewStatus": "proposed-unrated",
+   "reviewReason": "no evidenced host; tier unrated — needs a second source",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "vice-city-club-de-futbol",
+  "setName": "Vice City Club De Fútbol",
+  "person": "Renata Vasquez",
+  "variant": "Dusty Pink",
+  "variantAlias": "dusty rose",
+  "rarity": {
+   "tier": "standard",
+   "colour": "dusty pink"
+  },
+  "lorenzoneRowId": "vice-city-club-de-futbol-renata-vasquez-dusty-rose",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction - 'roof' on NE 19th St is a street spot, the building is unnamed",
+  "spotDescription": "Roof on NE 19th St, Decor District.",
+  "areaLead": "Decor District",
+  "pickups": [
+   {
+    "area": "Decor District",
+    "text": "· NE 19th St · roof",
+    "host": null,
+    "note": ""
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -277.0,
+   "y": 2269.0
+  },
+  "vchReview": {
+   "sourcePinId": "card-vice-city-club-de-futbol-007",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-vice-city-club-de-futbol-007",
+   "filePickPinId": "card-vice-city-club-de-futbol-007",
+   "filePickRejected": false,
+   "gameX": -277.0,
+   "gameY": 2269.0,
+   "confidenceTier": "unrated",
+   "fbritoArea": null,
+   "fbritoDescription": "On the roof, next to a football net and ball.",
+   "fbritoScreenshot": true,
+   "reviewStatus": "proposed-unrated",
+   "reviewReason": "no evidenced host; tier unrated — needs a second source",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "vice-city-flamingos",
+  "setName": "Vice City Flamingos",
+  "person": "Bill Norton",
+  "variant": "standard",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard"
+  },
+  "lorenzoneRowId": "vice-city-flamingos-bill-norton-standard",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — 'balcony' on SW 3rd Ave, Southside",
+  "spotDescription": "Balcony on SW 3rd Ave, Southside.",
+  "areaLead": "Southside",
+  "pickups": [
+   {
+    "area": "Southside",
+    "text": "· SW 3rd Ave · balcony",
+    "host": null,
+    "note": null
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -1963.0,
+   "y": -2060.0
+  },
+  "vchReview": {
+   "sourcePinId": "card-vice-city-flamingos-027",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-vice-city-flamingos-027",
+   "filePickPinId": "card-vice-city-flamingos-001",
+   "filePickRejected": true,
+   "gameX": -1963.0,
+   "gameY": -2060.0,
+   "confidenceTier": "unrated",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "dup-arbitrated-other-pin-wins",
+   "reviewReason": "a DIFFERENT pin wins arbitration on area: card-vice-city-flamingos-027; keywords vs our direction: ['balcony']; file pick card-vice-city-flamingos-001 is REJECTED (wrong area); losers: [('card-vice-city-flamingos-001', 'Hamlet', None), ('card-vice-city-flamingos-014', None, 'On the roof, in the yellow box.')]",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate",
+   "winnerConfidenceRaw": "sin_nivel"
+  }
+ },
+ {
+  "setId": "vice-city-flamingos",
+  "setName": "Vice City Flamingos",
+  "person": "Elias Delgado",
+  "variant": "pink",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard",
+   "colour": "pink"
+  },
+  "lorenzoneRowId": "vice-city-flamingos-elias-delgado-pink",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — 'sofa' on Spirea Ln, Ocean Beach",
+  "spotDescription": "Sofa on Spirea Ln, Ocean Beach.",
+  "areaLead": "Ocean Beach",
+  "pickups": [
+   {
+    "area": "Ocean Beach",
+    "text": "· Spirea Ln · sofa",
+    "host": null,
+    "note": null
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": 1467.0,
+   "y": 604.0
+  },
+  "vchReview": {
+   "sourcePinId": "card-vice-city-flamingos-026",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-vice-city-flamingos-026",
+   "filePickPinId": "card-vice-city-flamingos-026",
+   "filePickRejected": false,
+   "gameX": 1467.0,
+   "gameY": 604.0,
+   "confidenceTier": "unrated",
+   "fbritoArea": null,
+   "fbritoDescription": "On the ground next to a couch under an awning, on the side of a yellow condo building at the back of the complex.",
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed-unrated",
+   "reviewReason": "no evidenced host; tier unrated — needs a second source",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "vice-city-flamingos",
+  "setName": "Vice City Flamingos",
+  "person": "Elias Delgado",
+  "variant": "silver",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "silver"
+  },
+  "lorenzoneRowId": "vice-city-flamingos-elias-delgado-silver",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — 'garage' of an unnamed house on Beaumont Ave, Watson Bay",
+  "spotDescription": "Garage of a house on Beaumont Ave, Watson Bay.",
+  "areaLead": "Watson Bay",
+  "pickups": [
+   {
+    "area": "Watson Bay",
+    "text": "· Beaumont Ave · garage",
+    "host": null,
+    "note": null
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -5027.2,
+   "y": -3036.8
+  },
+  "vchReview": {
+   "sourcePinId": "card-vice-city-flamingos-007",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-vice-city-flamingos-007",
+   "filePickPinId": "card-vice-city-flamingos-007",
+   "filePickRejected": false,
+   "gameX": -5027.2,
+   "gameY": -3036.8,
+   "confidenceTier": "community report",
+   "fbritoArea": "Watson Bay",
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "vice-city-flamingos",
+  "setName": "Vice City Flamingos",
+  "person": "Harold Toye",
+  "variant": "silver",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "silver"
+  },
+  "lorenzoneRowId": "vice-city-flamingos-harold-toye-silver",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — 'house' on SR-45, Grayson (unnamed)",
+  "spotDescription": "House on SR-45, Grayson.",
+  "areaLead": "Grayson",
+  "pickups": [
+   {
+    "area": "Grayson",
+    "text": "· SR-45 · house",
+    "host": null,
+    "note": null
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -5656.0,
+   "y": 6752
+  },
+  "vchReview": {
+   "sourcePinId": "card-vice-city-flamingos-010",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-vice-city-flamingos-010",
+   "filePickPinId": "card-vice-city-flamingos-010",
+   "filePickRejected": false,
+   "gameX": -5656.0,
+   "gameY": 6752,
+   "confidenceTier": "unrated",
+   "fbritoArea": null,
+   "fbritoDescription": "In front of the house, close to the radio.",
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed-unrated",
+   "reviewReason": "no evidenced host; tier unrated — needs a second source",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "vice-city-flamingos",
+  "setName": "Vice City Flamingos",
+  "person": "Julian Cruz",
+  "variant": "bronze",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "bronze"
+  },
+  "lorenzoneRowId": "vice-city-flamingos-julian-cruz-bronze",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — 'bookshelf' on Gellhorn Ave, Port Gellhorn",
+  "spotDescription": "Bookshelf on Gellhorn Ave, Port Gellhorn.",
+  "areaLead": "Port Gellhorn",
+  "pickups": [
+   {
+    "area": "Port Gellhorn",
+    "text": "· Gellhorn Ave · bookshelf",
+    "host": null,
+    "note": null
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -6857.6,
+   "y": 3878.4
+  },
+  "vchReview": {
+   "sourcePinId": "card-vice-city-flamingos-004",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-vice-city-flamingos-004",
+   "filePickPinId": "card-vice-city-flamingos-004",
+   "filePickRejected": false,
+   "gameX": -6857.6,
+   "gameY": 3878.4,
+   "confidenceTier": "community report",
+   "fbritoArea": "Port Gellhorn",
+   "fbritoDescription": null,
+   "fbritoScreenshot": true,
+   "reviewStatus": "proposed",
+   "reviewReason": "identity + area agree; no evidenced host — pin stays a proposed position",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "vice-city-flamingos",
+  "setName": "Vice City Flamingos",
+  "person": "Julian Cruz",
+  "variant": "silver",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "silver"
+  },
+  "lorenzoneRowId": "vice-city-flamingos-julian-cruz-silver",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — 'shop' on Sweetbay Rd, Watson Bay (unnamed)",
+  "spotDescription": "Shop on Sweetbay Rd, Watson Bay.",
+  "areaLead": "Watson Bay",
+  "pickups": [
+   {
+    "area": "Watson Bay",
+    "text": "· Sweetbay Rd · shop",
+    "host": null,
+    "note": null
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -4857.0,
+   "y": -3426.0
+  },
+  "vchReview": {
+   "sourcePinId": "card-vice-city-flamingos-029",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-vice-city-flamingos-029",
+   "filePickPinId": "card-vice-city-flamingos-029",
+   "filePickRejected": false,
+   "gameX": -4857.0,
+   "gameY": -3426.0,
+   "confidenceTier": "unrated",
+   "fbritoArea": null,
+   "fbritoDescription": "On the top-level left balcony of an apartment at the back of the large building full of stores.",
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed-unrated",
+   "reviewReason": "no evidenced host; tier unrated — needs a second source",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "vice-city-flamingos",
+  "setName": "Vice City Flamingos",
+  "person": "Mateo Caballero",
+  "variant": "bronze",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "bronze"
+  },
+  "lorenzoneRowId": "vice-city-flamingos-mateo-caballero-bronze",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "named venue Dino Golf Challenge has no GTADB record; Frogswater appears in no snapshot address",
+  "spotDescription": "Batting cage at Dino Golf Challenge, Frogswater.",
+  "areaLead": "Frogswater",
+  "pickups": [
+   {
+    "area": "Frogswater",
+    "text": "· Dino Golf Challenge · batting cage",
+    "host": null,
+    "note": null
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -4454.0,
+   "y": 3904
+  },
+  "vchReview": {
+   "sourcePinId": "card-vice-city-flamingos-013",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-vice-city-flamingos-013",
+   "filePickPinId": "card-vice-city-flamingos-013",
+   "filePickRejected": false,
+   "gameX": -4454.0,
+   "gameY": 3904,
+   "confidenceTier": "unrated",
+   "fbritoArea": null,
+   "fbritoDescription": "Right next to the baseball bat.",
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed-unrated",
+   "reviewReason": "no evidenced host; tier unrated — needs a second source",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "vice-city-flamingos",
+  "setName": "Vice City Flamingos",
+  "person": "Ulysses Whitlock",
+  "variant": "bronze",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "bronze"
+  },
+  "lorenzoneRowId": "vice-city-flamingos-ulysses-whitlock-bronze",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no single named host — noticeboard between Nola and Oscar's Seafood on Beacon Cir, and neither Nola nor Oscar's Seafood has a GTADB record",
+  "spotDescription": "Noticeboard between Nola and Oscar's Seafood, Beacon Cir, Capri.",
+  "areaLead": "Capri",
+  "pickups": [
+   {
+    "area": "Capri",
+    "text": "· Beacon Cir · noticeboard between Nola and Oscar’s Seafood",
+    "host": null,
+    "note": null
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -6893.0,
+   "y": 289.0
+  },
+  "vchReview": {
+   "sourcePinId": "card-vice-city-flamingos-011",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-vice-city-flamingos-011",
+   "filePickPinId": "card-vice-city-flamingos-011",
+   "filePickRejected": false,
+   "gameX": -6893.0,
+   "gameY": 289.0,
+   "confidenceTier": "unrated",
+   "fbritoArea": null,
+   "fbritoDescription": null,
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed-unrated",
+   "reviewReason": "no evidenced host; tier unrated — needs a second source",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "vice-city-flamingos",
+  "setName": "Vice City Flamingos",
+  "person": "Ulysses Whitlock",
+  "variant": "gold",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "gold"
+  },
+  "lorenzoneRowId": "vice-city-flamingos-ulysses-whitlock-gold",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "two same-area candidate records, cannot pick one — GTADB L932 Allied Crystal Stadium and L1338 'Baseball Field?' are both in Ambrosia and neither is named 'Crystal baseball field'",
+  "spotDescription": "Radio antenna at the Crystal baseball field, Ambrosia.",
+  "areaLead": "Ambrosia",
+  "pickups": [
+   {
+    "area": "Ambrosia",
+    "text": "· Crystal baseball field · radio antenna",
+    "host": null,
+    "note": null
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -3261.0,
+   "y": 4190.0
+  },
+  "vchReview": {
+   "sourcePinId": "card-vice-city-flamingos-019",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-vice-city-flamingos-019",
+   "filePickPinId": "card-vice-city-flamingos-019",
+   "filePickRejected": false,
+   "gameX": -3261.0,
+   "gameY": 4190.0,
+   "confidenceTier": "unrated",
+   "fbritoArea": null,
+   "fbritoDescription": "At the top of the radio tower.",
+   "fbritoScreenshot": false,
+   "reviewStatus": "proposed-unrated",
+   "reviewReason": "host evidenced (H1/H3 named-spot: description/direction names 'Baseball Field?' (L1338), 71.1 units from pin) but tier unrated — needs a second source",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "vice-city-manatees",
+  "setName": "Vice City Manatees",
+  "person": "Georgie Macklerath",
+  "variant": "gold",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "gold"
+  },
+  "lorenzoneRowId": "vice-city-manatees-georgie-macklerath-gold",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — 'garage' of an unnamed light blue house west of town, Ambrosia",
+  "spotDescription": "Garage of the light blue house west of town, Ambrosia.",
+  "areaLead": "Ambrosia",
+  "pickups": [
+   {
+    "area": "Ambrosia",
+    "text": "· Light blue house west of town · garage",
+    "host": null,
+    "note": null
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -3180.0,
+   "y": 3748.0
+  },
+  "vchReview": {
+   "sourcePinId": "card-vice-city-manatees-008",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-vice-city-manatees-008",
+   "filePickPinId": "card-vice-city-manatees-008",
+   "filePickRejected": false,
+   "gameX": -3180.0,
+   "gameY": 3748.0,
+   "confidenceTier": "unrated",
+   "fbritoArea": null,
+   "fbritoDescription": "In the garage, by the wall.",
+   "fbritoScreenshot": true,
+   "reviewStatus": "proposed-unrated",
+   "reviewReason": "no evidenced host; tier unrated — needs a second source",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ },
+ {
+  "setId": "vice-city-narcos",
+  "setName": "Vice City Narcos",
+  "person": "Beck R. Heffer",
+  "variant": "orange",
+  "variantAlias": null,
+  "rarity": {
+   "tier": "standard",
+   "colour": "orange"
+  },
+  "lorenzoneRowId": "vice-city-narcos-beck-r-heffer-orange",
+  "placement": "area-known",
+  "host": null,
+  "hostMatchNote": "no named host building in direction — 'desk' on I-404, Port Gellhorn",
+  "spotDescription": "Desk on I-404, Port Gellhorn.",
+  "areaLead": "Port Gellhorn",
+  "pickups": [
+   {
+    "area": "Port Gellhorn",
+    "text": "· I-404 · desk",
+    "host": null,
+    "note": null
+   }
+  ],
+  "conflict": null,
+  "existingPinKept": false,
+  "catalogueId": null,
+  "existingPin": null,
+  "proposedPosition": {
+   "x": -6236.0,
+   "y": 3492.0
+  },
+  "vchReview": {
+   "sourcePinId": "card-vice-city-narcos-017",
+   "sourcePinUrl": "https://fbritoferreira.github.io/gta6/?id=card-vice-city-narcos-017",
+   "filePickPinId": "card-vice-city-narcos-017",
+   "filePickRejected": false,
+   "gameX": -6236.0,
+   "gameY": 3492.0,
+   "confidenceTier": "unrated",
+   "fbritoArea": null,
+   "fbritoDescription": "In the staff area, behind an alarm-secured door, on a notice board.",
+   "fbritoScreenshot": true,
+   "reviewStatus": "proposed-unrated",
+   "reviewReason": "no evidenced host; tier unrated — needs a second source",
+   "licenceStatus": "NOT CLEARED — correctness-confirmed only; do not bundle until upstream provenance is confirmed",
+   "evidence": "approximate"
+  }
+ }
+]
