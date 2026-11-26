@@ -1,5 +1,6 @@
 import type { Place } from './types';
 import { GUIDE_BREAKABLE_LOOT } from '../data/breakable-homes';
+import { gangOpLootText } from '../data/gang-operations';
 import { isEnterablePlace } from './tags';
 
 /**
@@ -28,6 +29,7 @@ export interface LootInfo {
 /** Places that get a loot row: robbery targets and enterable shops. */
 export function hasLootRow(place: Pick<Place, 'layerId' | 'tags'>): boolean {
   if (place.layerId === 'lootable' || place.layerId === 'breakable') return true;
+  if (place.layerId === 'gang-op') return true;
   if (place.layerId.startsWith('shops-')) return true;
   if (place.layerId === 'interiors' && isEnterablePlace(place)) return true;
   if (place.layerId === 'community' && isEnterablePlace(place)) return true;
@@ -36,6 +38,17 @@ export function hasLootRow(place: Pick<Place, 'layerId' | 'tags'>): boolean {
 
 export function lootFor(place: Place): LootInfo | null {
   if (!hasLootRow(place)) return null;
+  if (place.layerId === 'gang-op') {
+    const gangLoot = gangOpLootText(place.id);
+    if (gangLoot) {
+      return { status: 'verified', text: gangLoot.text, source: gangLoot.source };
+    }
+    return {
+      status: 'unknown',
+      text: 'Loot unknown — no guide has published this operation’s Key Valuables yet. Check it in game and add your own note.',
+      source: null,
+    };
+  }
   if (place.layerId === 'lootable') {
     return {
       status: 'robable',

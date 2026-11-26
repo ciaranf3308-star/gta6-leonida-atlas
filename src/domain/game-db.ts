@@ -1001,8 +1001,10 @@ interface CategoryDerivation {
 function categoryDerivation(categoryId: string): CategoryDerivation | null {
   switch (categoryId) {
     case 'gang-ops':
-      // 39 records to import (§8.1) — none exist yet.
-      return { opportunityKind: 'gang-op', importComplete: false };
+      // 39 records imported (§8.1, src/data/gang-operations.ts) — a
+      // derived 0 is a real 0, and a reconciliation entry is
+      // superseded even with no records yet.
+      return { opportunityKind: 'gang-op', importComplete: true };
     case 'bank-jobs':
       // The 29 loot heist pins are imported; a derived 0 is a real 0.
       return { opportunityKind: 'bank-job', importComplete: true };

@@ -19,6 +19,10 @@ import {
   SHOP_TAGS,
   shopMapIndex,
 } from '../data/catalogue';
+import {
+  gangOpLootForLocation,
+  gangOpRecordForLocation,
+} from '../data/gang-operations';
 import type { GameLocation, Opportunity, OpportunityKind } from './game-db';
 
 function makeOpportunity(
@@ -145,14 +149,20 @@ export function bankJobOpportunity(location: GameLocation): Opportunity | null {
 }
 
 /**
- * One of the 39 gang operations (DESIGN §4.2). No gang-op records are
- * imported yet (§8.1) — this fires on the 'gang-op' tag so the import
- * lands with no code change.
+ * One of the 39 gang operations (DESIGN §4.2, §8.1 import). Fires on
+ * the 'gang-op' tag — the import's places carry it, and the two
+ * host-matched sites (Sunrise RV Park L265, Parlor Apartments)
+ * carry it on their existing rows. The detail is the gang name;
+ * the loot (safe code + Key Valuables) rides on the opportunity
+ * from the gang-op record — never as a standalone pin (§3.1).
  */
 export function gangOpportunity(location: GameLocation): Opportunity | null {
   if (!hasTag(location, 'gang-op')) return null;
+  const record = gangOpRecordForLocation(location.id);
+  const loot = gangOpLootForLocation(location.id);
   return makeOpportunity(location, 'gang-op', 'Gang operation', {
-    detail: 'Illegal operation',
+    detail: record ? record.gang : 'Illegal operation',
+    ...(loot ? { loot } : {}),
     repeatable: true,
   });
 }
@@ -271,13 +281,28 @@ export function activityOpportunity(location: GameLocation): Opportunity | null 
 /**
  * A safe / garage / bunker holding a vehicle or code. Vehicle loot
  * lives on the host opportunity, never as a standalone pin (DESIGN
- * §3.1) — the gang-op import (§8.1) carries it. No vehicle-loot
- * records exist yet; this fires on the 'vehicle-loot' tag so the
- * import lands with no code change.
+ * §3.1) — the gang-op import (§8.1) carries it: a gang-op site with
+ * a standout vehicle or a safe code fires this alongside its gang-op
+ * opportunity, with the same loot. A player-jotted vehicle-loot
+ * marker fires it too (its loot is the player's own description /
+ * note — no code is ever invented for it). Repeatable: gang-op
+ * sites restock and a safe can be opened again, so 'looted' is a
+ * legal verb here — without this, recordCompletion would reject
+ * every vehicle-loot mark.
  */
 export function vehicleLootOpportunity(location: GameLocation): Opportunity | null {
   if (!hasTag(location, 'vehicle-loot')) return null;
-  return makeOpportunity(location, 'vehicle-loot', 'Vehicle loot');
+  const loot = gangOpLootForLocation(location.id);
+  const detail = loot?.code
+    ? `Safe code ${loot.code}`
+    : loot
+      ? `Standout vehicle: ${gangOpRecordForLocation(location.id)?.loot.vehicles.join(', ') ?? ''}`
+      : 'Vehicle or safe the player marked';
+  return makeOpportunity(location, 'vehicle-loot', 'Vehicle loot', {
+    detail,
+    ...(loot ? { loot } : {}),
+    repeatable: true,
+  });
 }
 
 /** Easter egg. Fires on the 'easter-egg' tag; none exist yet. */

@@ -99,7 +99,7 @@ export const BREAKABLE_HOME_PLACES: Place[] = [
     'Parlor Apartments',
     'Rockridge, Vice City',
     'A robbery opportunity named in the robbery guides — enter the building, apartment with a shotgun, safe full of cash, drugs.',
-    ['apartment'],
+    ['apartment', 'gang-op'],
   ),
   breakableExample(
     'breakable:bayside-apartment',

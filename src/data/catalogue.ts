@@ -2,6 +2,7 @@ import type { Category, PersonalMarker, Place } from '../domain/types';
 import { COLLECTABLE_CARD_PLACES } from './collectables';
 import { LOOT_MAP_PLACES } from './loot-map';
 import { BREAKABLE_HOME_PLACES } from './breakable-homes';
+import { GANG_OP_GTADB_HOSTS, GANG_OP_PLACES, gangOpHasVehicleLoot } from './gang-operations';
 import { EQUIPMENT_PLACES, GYM_PLACES } from './gyms';
 import { getLocalStreetPlaces } from '../features/street-leonida/page-data';
 import {
@@ -112,6 +113,9 @@ function categoryFor(tags: readonly string[], layerId: string): Category {
   // Robbery targets first: lootable shops and breakable homes are
   // Robberies whatever else they are.
   if (layerId === 'lootable' || layerId === 'breakable') return 'robberies';
+  // Gang operations (§8.1 import): illegal operations are Robberies
+  // in the game's Map Index, whatever their GTADB tags say.
+  if (layerId === 'gang-op') return 'robberies';
   if (layerId === 'uncertain') return 'unverified';
   if (layerId.startsWith('cards:')) return 'collectibles';
   if (layerId === 'gyms' || layerId === 'equipment') return 'activities';
@@ -222,6 +226,14 @@ function landmarkToPlace(landmark: GtadbLandmark): Place {
       landmark.realWorldAddress
         ? `Real-world reference (analogue only): ${landmark.realWorldAddress}`
         : '',
+      // §8.1 gang-op host-match: Sunrise RV Park is GTADB L265, so
+      // the gang-op opportunity derives on the real place instead of
+      // a second area-known row. The 'vehicle-loot' tag rides along
+      // exactly when the site holds a vehicle or a safe code
+      // (gangOpHasVehicleLoot) — L265's code 6769 qualifies it.
+      GANG_OP_GTADB_HOSTS.has(landmark.id)
+        ? 'Gang operation — one of the 39 illegal operations (see the gang-op record for its Key Valuables).'
+        : '',
     ]
       .filter(Boolean)
       .join(' '),
@@ -230,7 +242,12 @@ function landmarkToPlace(landmark: GtadbLandmark): Place {
       ? { x: landmark.inGameCoordinates[0], y: landmark.inGameCoordinates[1] }
       : null,
     layerId,
-    tags: [...landmark.tags],
+    tags: [
+      ...landmark.tags,
+      ...(GANG_OP_GTADB_HOSTS.has(landmark.id)
+        ? ['gang-op', ...(gangOpHasVehicleLoot(landmark.id) ? ['vehicle-loot'] : [])]
+        : []),
+    ],
     region: landmark.inGameAddress.split(',').slice(1).join(',').trim(),
     source: {
       title: `GTADB / Map GTA · revision ${GTADB_REVISION.slice(0, 7)}`,
@@ -297,6 +314,7 @@ export function catalogueFromSnapshot(input: unknown): Place[] {
     ...GYM_PLACES,
     ...EQUIPMENT_PLACES,
     ...BREAKABLE_HOME_PLACES,
+    ...GANG_OP_PLACES,
     ...COLLECTABLE_CARD_PLACES,
     ...LOOT_MAP_PLACES,
   ];

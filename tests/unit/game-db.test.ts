@@ -47,13 +47,13 @@ function findItem(db: GameDatabase, name: string, variant = 'standard') {
 }
 
 describe('game-db — §3.2 derivation from the real catalogue (26 Nov 2026)', () => {
-  it('derives the database at the measured counts: 4,443 locations, 925 opportunities, 614 items, 18 sets, 126 areas', () => {
+  it('derives the database at the measured counts: 4,480 locations, 980 opportunities, 614 items, 18 sets, 133 areas', () => {
     const db = buildFullDb();
-    expect(db.locations.size).toBe(4443);
-    expect(db.opportunities.size).toBe(925);
+    expect(db.locations.size).toBe(4480);
+    expect(db.opportunities.size).toBe(980);
     expect(db.items.size).toBe(614);
     expect(db.sets.size).toBe(18);
-    expect(db.areas.size).toBe(126);
+    expect(db.areas.size).toBe(133);
     expect(db.missionsEnabled).toBe(false);
     const byKind = new Map<string, number>();
     for (const opp of db.opportunities.values()) {
@@ -68,9 +68,9 @@ describe('game-db — §3.2 derivation from the real catalogue (26 Nov 2026)', (
     expect(byKind.get('workout-equipment')).toBe(3);
     expect(byKind.get('activity')).toBe(4);
     expect(byKind.get('discovery')).toBe(73);
-    expect(byKind.get('gang-op') ?? 0).toBe(0);
+    expect(byKind.get('gang-op') ?? 0).toBe(39);
     expect(byKind.get('mission') ?? 0).toBe(0);
-    expect(byKind.get('vehicle-loot') ?? 0).toBe(0);
+    expect(byKind.get('vehicle-loot') ?? 0).toBe(16);
     expect(byKind.get('easter-egg') ?? 0).toBe(0);
   });
 
@@ -289,7 +289,14 @@ describe('game-db — §3.2 derivation from the real catalogue (26 Nov 2026)', (
       .get('breakable:parlor-apartments')!
       .map((opp) => opp.kind)
       .sort();
-    expect(kinds).toEqual(['break-in', 'interior']);
+    // Parlor Apartments is ALSO gang-op #21 (San4San) — the §8.1
+    // import host-matches it instead of duplicating the building.
+    expect(kinds).toEqual(['break-in', 'gang-op', 'interior']);
+    const gangOp = db.opportunitiesByLocation
+      .get('breakable:parlor-apartments')!
+      .find((opp) => opp.kind === 'gang-op')!;
+    expect(gangOp.detail).toBe('San4San');
+    expect(gangOp.repeatable).toBe(true);
     const breakIn = db.opportunitiesByLocation
       .get('breakable:parlor-apartments')!
       .find((opp) => opp.kind === 'break-in')!;
@@ -368,7 +375,7 @@ describe('game-db — §3.2 derivation from the real catalogue (26 Nov 2026)', (
     for (const id of db.locations.keys()) {
       expect(id.startsWith('region:')).toBe(false);
     }
-    expect(db.areas.size).toBe(126);
+    expect(db.areas.size).toBe(133);
     const portGellhorn = db.areas.get('area:port-gellhorn')!;
     expect(portGellhorn.name).toBe('Port Gellhorn');
     expect(portGellhorn.level).toBe('town');
