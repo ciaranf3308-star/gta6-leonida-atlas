@@ -1,3 +1,4 @@
+/* global document, getComputedStyle */
 // Lane 5 (v0.32 regions-fix) — VISIBLE-LABEL COUNT + CHROME OCCLUSION.
 // NEW in this lane; judges lane 1's label suppression and measures the
 // open chrome-occlusion finding. No app code is touched.

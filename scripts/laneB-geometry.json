@@ -1,0 +1,799 @@
+{
+  "island": {
+    "container": {
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 707
+    },
+    "labels": [
+      {
+        "text": "Manatee Motel · Industrial Weed Grow · likely area — Mariana County extent (estimate)",
+        "rect": {
+          "x": 70,
+          "y": 628,
+          "w": 200,
+          "h": 54.53
+        },
+        "visible": true,
+        "width": 200,
+        "height": 54.53
+      },
+      {
+        "text": "Kingpin Bowling · June Warehouse · La Cascara Motel · Brooks Boatworks · Stash House · Backroom Weed Front · likely area",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "visible": false,
+        "width": 200,
+        "height": 69
+      },
+      {
+        "text": "M7 Compound · likely area",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "visible": false,
+        "width": 200,
+        "height": 25
+      },
+      {
+        "text": "Weed Grow · Carter Mining Boathouse · likely area — Lummox County extent (estimate)",
+        "rect": {
+          "x": 71,
+          "y": 125,
+          "w": 200,
+          "h": 54.53
+        },
+        "visible": true,
+        "width": 200,
+        "height": 54.53
+      },
+      {
+        "text": "Palmer Fishing Warehouse · Watson Bay Safehouse · Mill Station Radar Base · likely area",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "visible": false,
+        "width": 200,
+        "height": 55
+      },
+      {
+        "text": "Farm Fix Meth Lab · Biker Hideout · likely area — Leonard County extent (estimate)",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "visible": false,
+        "width": 200,
+        "height": 55
+      },
+      {
+        "text": "Hog Stars Garage · Irons Building Supply · likely area",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "visible": false,
+        "width": 200,
+        "height": 40
+      },
+      {
+        "text": "Sound4Sond Studio · likely area",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "visible": false,
+        "width": 200,
+        "height": 25
+      },
+      {
+        "text": "La Perle Trap House · Illegal Sneaker Trade · likely area",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "visible": false,
+        "width": 200,
+        "height": 40
+      },
+      {
+        "text": "JanJak's Garage · Leonida Carrier Warehouse · Cigar Import Front · Ocean Beach Lab · likely area",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "visible": false,
+        "width": 200,
+        "height": 55
+      },
+      {
+        "text": "Southside Trap House · Kamar Devon Community Center · likely area",
+        "rect": {
+          "x": 144,
+          "y": 477,
+          "w": 200,
+          "h": 39.69
+        },
+        "visible": true,
+        "width": 200,
+        "height": 39.69
+      },
+      {
+        "text": "Saber Shipping Yard · Casa Guardia · likely area",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "visible": false,
+        "width": 200,
+        "height": 40
+      },
+      {
+        "text": "Saber Shipping Facility · likely area",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "visible": false,
+        "width": 200,
+        "height": 25
+      },
+      {
+        "text": "Exotic Animals Front · likely area",
+        "rect": {
+          "x": 119,
+          "y": 600,
+          "w": 200,
+          "h": 24.84
+        },
+        "visible": true,
+        "width": 200,
+        "height": 24.84
+      },
+      {
+        "text": "Slator Towing Inc · likely area",
+        "rect": {
+          "x": 147,
+          "y": 443,
+          "w": 200,
+          "h": 24.84
+        },
+        "visible": true,
+        "width": 200,
+        "height": 24.84
+      },
+      {
+        "text": "Gas Station Meth Front · likely area",
+        "rect": {
+          "x": 77,
+          "y": 354,
+          "w": 200,
+          "h": 24.84
+        },
+        "visible": true,
+        "width": 200,
+        "height": 24.84
+      },
+      {
+        "text": "Walker Farm · likely area — Kelly County extent (estimate)",
+        "rect": {
+          "x": 7,
+          "y": 246,
+          "w": 200,
+          "h": 39.69
+        },
+        "visible": true,
+        "width": 200,
+        "height": 39.69
+      }
+    ],
+    "regions": [
+      {
+        "left": 40,
+        "right": 303,
+        "top": 426,
+        "bottom": 680
+      },
+      {
+        "left": 43,
+        "right": 131,
+        "top": 253,
+        "bottom": 375
+      },
+      {
+        "left": 191,
+        "right": 237,
+        "top": 508,
+        "bottom": 558
+      },
+      {
+        "left": 41,
+        "right": 297,
+        "top": 153,
+        "bottom": 269
+      },
+      {
+        "left": 109,
+        "right": 179,
+        "top": 502,
+        "bottom": 556
+      },
+      {
+        "left": 216,
+        "right": 339,
+        "top": 239,
+        "bottom": 400
+      },
+      {
+        "left": 158,
+        "right": 246,
+        "top": 264,
+        "bottom": 359
+      },
+      {
+        "left": 279,
+        "right": 304,
+        "top": 365,
+        "bottom": 387
+      },
+      {
+        "left": 251,
+        "right": 287,
+        "top": 370,
+        "bottom": 403
+      },
+      {
+        "left": 155,
+        "right": 385,
+        "top": 310,
+        "bottom": 542
+      },
+      {
+        "left": 228,
+        "right": 260,
+        "top": 475,
+        "bottom": 519
+      },
+      {
+        "left": 250,
+        "right": 274,
+        "top": 412,
+        "bottom": 448
+      },
+      {
+        "left": 214,
+        "right": 259,
+        "top": 397,
+        "bottom": 429
+      },
+      {
+        "left": 188,
+        "right": 250,
+        "top": 573,
+        "bottom": 653
+      },
+      {
+        "left": 217,
+        "right": 287,
+        "top": 386,
+        "bottom": 486
+      },
+      {
+        "left": 152,
+        "right": 202,
+        "top": 340,
+        "bottom": 393
+      },
+      {
+        "left": 7,
+        "right": 206,
+        "top": 256,
+        "bottom": 413
+      }
+    ],
+    "pills": [
+      {
+        "name": "Kelly County",
+        "rect": {
+          "left": 41,
+          "right": 159,
+          "top": 313.25,
+          "bottom": 344.75
+        }
+      },
+      {
+        "name": "Leonard County",
+        "rect": {
+          "left": 201,
+          "right": 341,
+          "top": 297.25,
+          "bottom": 328.75
+        }
+      },
+      {
+        "name": "Lummox County",
+        "rect": {
+          "left": 94.5,
+          "right": 231.5,
+          "top": 189.25,
+          "bottom": 220.75
+        }
+      },
+      {
+        "name": "Mariana County",
+        "rect": {
+          "left": 95,
+          "right": 235,
+          "top": 531.25,
+          "bottom": 562.75
+        }
+      },
+      {
+        "name": "Vice-Dale County",
+        "rect": {
+          "left": 200.5,
+          "right": 349.5,
+          "top": 401.25,
+          "bottom": 432.75
+        }
+      }
+    ],
+    "chrome": [
+      {
+        "name": "hero",
+        "rect": {
+          "left": 0,
+          "right": 390,
+          "top": 0,
+          "bottom": 242
+        }
+      },
+      {
+        "name": "edge-stack",
+        "rect": {
+          "left": 330,
+          "right": 378,
+          "top": 240,
+          "bottom": 346
+        }
+      },
+      {
+        "name": "zoom-controls",
+        "rect": {
+          "left": 328,
+          "right": 378,
+          "top": 532,
+          "bottom": 631
+        }
+      },
+      {
+        "name": "bottom-nav",
+        "rect": {
+          "left": 0,
+          "right": 390,
+          "top": 707,
+          "bottom": 780
+        }
+      }
+    ]
+  },
+  "district": {
+    "container": {
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 707
+    },
+    "labels": [
+      {
+        "text": "Manatee Motel · Industrial Weed Grow · likely area — Mariana County extent (estimate)",
+        "rect": {
+          "x": 44,
+          "y": 650,
+          "w": 200,
+          "h": 54.53
+        },
+        "visible": true,
+        "width": 200,
+        "height": 54.53
+      },
+      {
+        "text": "Kingpin Bowling · June Warehouse · La Cascara Motel · Brooks Boatworks · Stash House · Backroom Weed Front · likely area",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "visible": false,
+        "width": 200,
+        "height": 69
+      },
+      {
+        "text": "M7 Compound · likely area",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "visible": false,
+        "width": 200,
+        "height": 25
+      },
+      {
+        "text": "Weed Grow · Carter Mining Boathouse · likely area — Lummox County extent (estimate)",
+        "rect": {
+          "x": 38,
+          "y": 84,
+          "w": 200,
+          "h": 54.53
+        },
+        "visible": true,
+        "width": 200,
+        "height": 54.53
+      },
+      {
+        "text": "Palmer Fishing Warehouse · Watson Bay Safehouse · Mill Station Radar Base · likely area",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "visible": false,
+        "width": 200,
+        "height": 55
+      },
+      {
+        "text": "Farm Fix Meth Lab · Biker Hideout · likely area — Leonard County extent (estimate)",
+        "rect": {
+          "x": 187,
+          "y": 306,
+          "w": 200,
+          "h": 54.53
+        },
+        "visible": true,
+        "width": 200,
+        "height": 54.53
+      },
+      {
+        "text": "Hog Stars Garage · Irons Building Supply · likely area",
+        "rect": {
+          "x": 110,
+          "y": 205,
+          "w": 200,
+          "h": 39.69
+        },
+        "visible": true,
+        "width": 200,
+        "height": 39.69
+      },
+      {
+        "text": "Sound4Sond Studio · likely area",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "visible": false,
+        "width": 200,
+        "height": 25
+      },
+      {
+        "text": "La Perle Trap House · Illegal Sneaker Trade · likely area",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "visible": false,
+        "width": 200,
+        "height": 40
+      },
+      {
+        "text": "JanJak's Garage · Leonida Carrier Warehouse · Cigar Import Front · Ocean Beach Lab · likely area",
+        "rect": {
+          "x": 184,
+          "y": 509,
+          "w": 200,
+          "h": 54.53
+        },
+        "visible": true,
+        "width": 200,
+        "height": 54.53
+      },
+      {
+        "text": "Southside Trap House · Kamar Devon Community Center · likely area",
+        "rect": {
+          "x": 181,
+          "y": 605,
+          "w": 200,
+          "h": 39.69
+        },
+        "visible": true,
+        "width": 200,
+        "height": 39.69
+      },
+      {
+        "text": "Saber Shipping Yard · Casa Guardia · likely area",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "visible": false,
+        "width": 200,
+        "height": 40
+      },
+      {
+        "text": "Saber Shipping Facility · likely area",
+        "rect": {
+          "x": 173,
+          "y": 436,
+          "w": 200,
+          "h": 24.84
+        },
+        "visible": true,
+        "width": 200,
+        "height": 24.84
+      },
+      {
+        "text": "Exotic Animals Front · likely area",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "visible": false,
+        "width": 200,
+        "height": 25
+      },
+      {
+        "text": "Slator Towing Inc · likely area",
+        "rect": {
+          "x": 188,
+          "y": 574,
+          "w": 200,
+          "h": 24.84
+        },
+        "visible": true,
+        "width": 200,
+        "height": 24.84
+      },
+      {
+        "text": "Gas Station Meth Front · likely area",
+        "rect": {
+          "x": 59,
+          "y": 366,
+          "w": 200,
+          "h": 24.84
+        },
+        "visible": true,
+        "width": 200,
+        "height": 24.84
+      },
+      {
+        "text": "Walker Farm · likely area — Kelly County extent (estimate)",
+        "rect": {
+          "x": 9,
+          "y": 248,
+          "w": 200,
+          "h": 39.69
+        },
+        "visible": true,
+        "width": 200,
+        "height": 39.69
+      }
+    ],
+    "regions": [
+      {
+        "left": -40,
+        "right": 410,
+        "top": 498,
+        "bottom": 779
+      },
+      {
+        "left": -40,
+        "right": 67,
+        "top": 152,
+        "bottom": 396
+      },
+      {
+        "left": 187,
+        "right": 280,
+        "top": 663,
+        "bottom": 762
+      },
+      {
+        "left": -40,
+        "right": 399,
+        "top": -48,
+        "bottom": 185
+      },
+      {
+        "left": 22,
+        "right": 163,
+        "top": 649,
+        "bottom": 757
+      },
+      {
+        "left": 237,
+        "right": 431,
+        "top": 124,
+        "bottom": 445
+      },
+      {
+        "left": 120,
+        "right": 298,
+        "top": 175,
+        "bottom": 364
+      },
+      {
+        "left": 362,
+        "right": 413,
+        "top": 376,
+        "bottom": 419
+      },
+      {
+        "left": 306,
+        "right": 380,
+        "top": 387,
+        "bottom": 452
+      },
+      {
+        "left": 114,
+        "right": 431,
+        "top": 267,
+        "bottom": 731
+      },
+      {
+        "left": 261,
+        "right": 326,
+        "top": 595,
+        "bottom": 684
+      },
+      {
+        "left": 304,
+        "right": 353,
+        "top": 470,
+        "bottom": 543
+      },
+      {
+        "left": 233,
+        "right": 324,
+        "top": 439,
+        "bottom": 504
+      },
+      {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      {
+        "left": 238,
+        "right": 378,
+        "top": 417,
+        "bottom": 618
+      },
+      {
+        "left": 109,
+        "right": 209,
+        "top": 325,
+        "bottom": 433
+      },
+      {
+        "left": -40,
+        "right": 216,
+        "top": 158,
+        "bottom": 473
+      }
+    ],
+    "pills": [
+      {
+        "name": "Kelly County",
+        "rect": {
+          "left": -48,
+          "right": 70,
+          "top": 294.25,
+          "bottom": 325.75
+        }
+      },
+      {
+        "name": "Leonard County",
+        "rect": {
+          "left": 284,
+          "right": 424,
+          "top": 263.25,
+          "bottom": 294.75
+        }
+      },
+      {
+        "name": "Lummox County",
+        "rect": {
+          "left": 68.5,
+          "right": 205.5,
+          "top": 46.25,
+          "bottom": 77.75
+        }
+      },
+      {
+        "name": "Vice-Dale County",
+        "rect": {
+          "left": 286.5,
+          "right": 435.5,
+          "top": 470.25,
+          "bottom": 501.75
+        }
+      }
+    ],
+    "chrome": [
+      {
+        "name": "hero",
+        "rect": {
+          "left": 0,
+          "right": 390,
+          "top": 0,
+          "bottom": 242
+        }
+      },
+      {
+        "name": "edge-stack",
+        "rect": {
+          "left": 330,
+          "right": 378,
+          "top": 240,
+          "bottom": 346
+        }
+      },
+      {
+        "name": "zoom-controls",
+        "rect": {
+          "left": 328,
+          "right": 378,
+          "top": 532,
+          "bottom": 631
+        }
+      },
+      {
+        "name": "bottom-nav",
+        "rect": {
+          "left": 0,
+          "right": 390,
+          "top": 707,
+          "bottom": 780
+        }
+      }
+    ]
+  }
+}
