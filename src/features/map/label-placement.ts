@@ -154,6 +154,71 @@ export function computeLabelPlacements(
   return placed;
 }
 
+// ---- Likely-area labels (v0.32 regions fix, lane 1) ----
+//
+// A likely-area label is a fixed-width block centred on its
+// region's centre — the only honest anchor it has. It renders only
+// if its screen rect is clear: clear of every geo-label pill
+// already placed (the pills are the map's geographic frame and its
+// tap targets; a label never sits on one) and clear of every
+// likely-area label already placed. First in group order wins;
+// the rest are suppressed, never moved off their anchor — the
+// same precedent as the geo pills and the pin labels in this file.
+// Suppression is reversible: the layer re-runs the pass on every
+// moveend/zoomend, so a label returns as soon as the geometry
+// frees up (pan/zoom out of the pile-up). The rect itself always
+// stays drawn — only the label chip is hidden, and the op stays
+// reachable via Find / Ask / Journal.
+
+export interface LikelyAreaLabelCandidate {
+  /** Group key (groupLikelyAreas key) — the caller maps it back. */
+  key: string;
+  /** The label's screen box, measured live from the tooltip
+   *  element (never estimated — the fixed CSS width makes the
+   *  height content-dependent, so only the live rect is true). */
+  rect: GeoLabelRect;
+}
+
+/** The gap convention, shared with placeGeoLabels in this file: 4px
+ *  horizontal, 2px vertical between neighbouring chips. */
+const LIKELY_AREA_LABEL_GAP_X_PX = 4;
+const LIKELY_AREA_LABEL_GAP_Y_PX = 2;
+
+/**
+ * Which likely-area labels may show: every candidate whose rect
+ * clears all geo pills and every label already kept, in input
+ * order. Returns the kept keys; the caller hides the rest.
+ * A zero-size rect (a tooltip Leaflet has not laid out, or one
+ * hidden by an earlier pass) cannot collide with anything on
+ * screen, so it is kept — the next pass re-measures it live.
+ */
+export function placeLikelyAreaLabels(
+  candidates: readonly LikelyAreaLabelCandidate[],
+  geoPillRects: readonly GeoLabelRect[],
+): Set<string> {
+  const kept = new Set<string>();
+  const placedRects: GeoLabelRect[] = [];
+  const overlaps = (rect: GeoLabelRect, other: GeoLabelRect) =>
+    rect.left < other.right + LIKELY_AREA_LABEL_GAP_X_PX &&
+    rect.right > other.left - LIKELY_AREA_LABEL_GAP_X_PX &&
+    rect.top < other.bottom + LIKELY_AREA_LABEL_GAP_Y_PX &&
+    rect.bottom > other.top - LIKELY_AREA_LABEL_GAP_Y_PX;
+  for (const candidate of candidates) {
+    const rect = candidate.rect;
+    const empty =
+      rect.right <= rect.left || rect.bottom <= rect.top;
+    if (empty) {
+      kept.add(candidate.key);
+      continue;
+    }
+    if (geoPillRects.some((pill) => overlaps(rect, pill))) continue;
+    if (placedRects.some((placed) => overlaps(rect, placed))) continue;
+    kept.add(candidate.key);
+    placedRects.push(rect);
+  }
+  return kept;
+}
+
 // ---- Geo-label pills (§6.4, v0.32 lane 3) ----
 //
 // One rule: a geo pill renders only if its screen rect is clear —

@@ -12,8 +12,11 @@ import {
   labelOffsetForPin,
   labelWidthFor,
   placeGeoLabels,
+  placeLikelyAreaLabels,
   type GeoLabelCandidate,
+  type GeoLabelRect,
   type LabelCandidate,
+  type LikelyAreaLabelCandidate,
 } from '../../src/features/map/label-placement';
 import type { ChromeGeometry } from '../../src/features/map/chrome-geometry';
 
@@ -329,5 +332,101 @@ describe('geo-label pills vs ringed pins and each other (v0.32 lane 3)', () => {
       [{ x: 210, y: 205 }],
     );
     expect(placed).toHaveLength(0);
+  });
+});
+
+describe('likely-area labels vs geo pills and each other (v0.32 regions fix, lane 1)', () => {
+  const rect = (left: number, top: number, width: number, height: number): GeoLabelRect => ({
+    left,
+    right: left + width,
+    top,
+    bottom: top + height,
+  });
+  const label = (key: string, r: GeoLabelRect): LikelyAreaLabelCandidate => ({ key, rect: r });
+
+  it('a lone label with no pills survives', () => {
+    const kept = placeLikelyAreaLabels([label('kelly', rect(100, 300, 200, 84))], []);
+    expect([...kept]).toEqual(['kelly']);
+  });
+
+  it('first in group order wins when two labels overlap; the second is suppressed, never moved', () => {
+    // The live island-zoom shape (DEMOS-GANGOP Finding 1): the La
+    // Perle label sits on the Vice City label (6985px²). First
+    // placed wins; the suppressed label keeps its rect — the layer
+    // hides the chip, it never re-anchors it.
+    const kept = placeLikelyAreaLabels(
+      [
+        label('vice-city', rect(100, 300, 200, 84)),
+        label('la-perle', rect(110, 310, 200, 84)),
+      ],
+      [],
+    );
+    expect([...kept]).toEqual(['vice-city']);
+  });
+
+  it('input order decides the winner, not the key', () => {
+    const kept = placeLikelyAreaLabels(
+      [
+        label('la-perle', rect(110, 310, 200, 84)),
+        label('vice-city', rect(100, 300, 200, 84)),
+      ],
+      [],
+    );
+    expect([...kept]).toEqual(['la-perle']);
+  });
+
+  it('a label under a geo pill is suppressed; a clear label survives', () => {
+    // The live island-zoom shape: the Mariana County pill sits
+    // under the Manatee/M7/Palmer label (2176px²). The pill is the
+    // map's geographic frame and tap target — the label yields.
+    const kept = placeLikelyAreaLabels(
+      [
+        label('manatee', rect(100, 300, 200, 84)),
+        label('ambrosia', rect(100, 100, 200, 60)),
+      ],
+      [rect(150, 320, 118, 32)],
+    );
+    expect([...kept]).toEqual(['ambrosia']);
+  });
+
+  it('a label clear of the pill by the full gap survives', () => {
+    // Same gap convention as placeGeoLabels: 4px horizontal, 2px
+    // vertical. A label whose bottom sits exactly 2px above the
+    // pill's top is clear (the check is strict).
+    const kept = placeLikelyAreaLabels(
+      [label('manatee', rect(100, 300, 200, 84))],
+      [rect(150, 386, 118, 32)],
+    );
+    expect([...kept]).toEqual(['manatee']);
+  });
+
+  it('a label 1px inside the gap is suppressed', () => {
+    const kept = placeLikelyAreaLabels(
+      [label('manatee', rect(100, 300, 200, 84))],
+      [rect(150, 385, 118, 32)],
+    );
+    expect([...kept]).toEqual([]);
+  });
+
+  it('a zero-size rect cannot collide, so it is kept — the next pass re-measures it live', () => {
+    // A tooltip hidden by an earlier pass measures 0×0; keeping
+    // it is what lets a label return when the geometry frees up.
+    const kept = placeLikelyAreaLabels(
+      [label('hidden', rect(100, 300, 0, 0)), label('kelly', rect(100, 300, 200, 84))],
+      [],
+    );
+    expect([...kept]).toEqual(['hidden', 'kelly']);
+  });
+
+  it('a chain of non-overlapping labels all survive', () => {
+    const kept = placeLikelyAreaLabels(
+      [
+        label('a', rect(0, 0, 200, 60)),
+        label('b', rect(0, 100, 200, 60)),
+        label('c', rect(0, 200, 200, 60)),
+      ],
+      [],
+    );
+    expect([...kept]).toEqual(['a', 'b', 'c']);
   });
 });

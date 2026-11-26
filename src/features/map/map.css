@@ -330,7 +330,16 @@
  * isolation label, but the op names read in normal case (never
  * uppercased — "Brooks Boatworks" must stay readable) and the text
  * wraps: one rect can carry eight op names (Kelly County), so the
- * label is a centred block with a max-width, not a nowrap pill.
+ * label is a centred block with a real width, not a nowrap pill.
+ * The width is REAL (200px, not max-width): Leaflet's tooltip
+ * pane shrink-wraps, so max-width alone collapsed the 8-name
+ * Kelly label to a 68px-wide one-word-per-line column
+ * (DEMOS-GANGOP Finding 1). The value is shared with
+ * LIKELY_AREA_LABEL_WIDTH_PX in likely-area-layer.ts — keep the
+ * two in sync. Collision-checked by the layer (likely-area-layer.ts
+ * + placeLikelyAreaLabels): a label that would sit on a geo pill
+ * or on another likely-area label is suppressed, never moved off
+ * its region's centre — the rect stays drawn either way.
  * Never intercepts taps — a region is not a pin and opens nothing. ---- */
 .leaflet-tooltip.likely-area-label {
   background: #0b1018d9;
@@ -344,7 +353,7 @@
   line-height: 1.35;
   text-align: center;
   white-space: normal;
-  max-width: 220px;
+  width: 200px;
   padding: 4px 8px;
   box-shadow: 0 2px 10px #0009;
   pointer-events: none;
