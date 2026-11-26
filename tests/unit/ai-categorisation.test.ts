@@ -90,11 +90,11 @@ function aiRecord(
 }
 
 describe("AI categorisation — real counts (no invented figures)", () => {
-  it("counts the catalogue honestly: 4,456 places in-app, 4,380 GTADB records, 3,280 unnamed, 1,064 named", () => {
+  it("counts the catalogue honestly: 4,471 places in-app, 4,380 GTADB records, 3,280 unnamed, 1,064 named", () => {
     const places = catalogueFromSnapshot(snapshot);
-    expect(places).toHaveLength(4456);
+    expect(places).toHaveLength(4471);
     // 4,380 GTADB + 6 regions + 8 member gyms + 3 free outdoor + 5
-    // breakable-home guide examples + 5 card pins + 29 Loot Map bank
+    // breakable-home guide examples + 20 card pins + 29 Loot Map bank
     // jobs + 20 Loot Map collectibles.
     expect(places.filter((p) => p.layerId === "gyms")).toHaveLength(8);
     expect(places.filter((p) => p.layerId === "equipment")).toHaveLength(3);

@@ -1,0 +1,144 @@
+import { readFileSync } from 'node:fs';
+import { describe, expect, it } from 'vitest';
+import type { LayerDefinition } from '../../src/domain/types';
+import { catalogueFromSnapshot } from '../../src/data/catalogue';
+import {
+  COLLECTABLE_CARD_PLACES,
+  COLLECTABLE_SETS,
+} from '../../src/data/collectables';
+import { retrieveForAsk } from '../../src/features/ask/retrieval';
+import { DEFAULT_LAYERS } from '../../src/features/map/layers';
+
+const snapshot = JSON.parse(
+  readFileSync(
+    new URL(
+      '../../public/assets/street-leonida/maps/gtadb-landmarks-2e9e194.json',
+      import.meta.url,
+    ),
+    'utf8',
+  ),
+);
+
+const layers = (): LayerDefinition[] =>
+  DEFAULT_LAYERS.map((layer) => ({ ...layer, visible: false }));
+
+describe('collectable cards — v0.31.5 written-guides import', () => {
+  it('pins 20 cards across 10 sets — Delights Dancers 4 of 18', () => {
+    expect(COLLECTABLE_CARD_PLACES).toHaveLength(20);
+    const bySet = new Map<string, string[]>();
+    for (const card of COLLECTABLE_CARD_PLACES) {
+      const setId = card.layerId.slice('cards:'.length);
+      bySet.set(setId, [...(bySet.get(setId) ?? []), card.id]);
+    }
+    expect(bySet.get('delights-dancers')).toEqual([
+      'card:vicki',
+      'card:jason',
+      'card:kandi',
+      'card:perla',
+    ]);
+    expect(bySet.get('vice-city-flamingos')).toEqual([
+      'card:ulysses-whitlock',
+    ]);
+    expect(bySet.get('vice-city-narcos')).toEqual([
+      'card:kyle-lewicky',
+      'card:bryson-powers',
+    ]);
+    expect(bySet.get('vice-city-manatees')).toEqual([
+      'card:reggie-pierce',
+      'card:tusi-taufua',
+    ]);
+    expect(bySet.get('liberty-city-wrath')).toEqual(['card:anthony-poke-ii']);
+    expect(bySet.get('jack-of-hearts-dancers')).toEqual([
+      'card:lexi-campbell',
+      'card:brianna-blue-purple',
+      'card:pricilla-pace-gold',
+    ]);
+    expect(bySet.get('nine1nine-dancers')).toEqual([
+      'card:braelynn-pink',
+      'card:meghan-bronze',
+      'card:chrissie-deep-red',
+    ]);
+    expect(bySet.get('right-wing-americas-hero')).toEqual([
+      'card:flamer-red',
+      'card:right-wing-red',
+    ]);
+    expect(bySet.get('backyard-wrestling')).toEqual(['card:luke-x']);
+    expect(bySet.get('los-santos-corkers')).toEqual(['card:victor-maravilla']);
+    // Eight sets still have no pinned card at all — the guides name no
+    // host building for any of their cards.
+    expect(COLLECTABLE_SETS.filter((s) => !bySet.has(s.id))).toHaveLength(8);
+  });
+
+  it('every card carries its source, an approximate pin and a GTADB host (or the one GPS pin)', () => {
+    expect(new Set(COLLECTABLE_CARD_PLACES.map((c) => c.id)).size).toBe(20);
+    for (const card of COLLECTABLE_CARD_PLACES) {
+      expect(card.source.title.length).toBeGreaterThan(0);
+      expect(card.source.url).toMatch(/^https:\/\//);
+      expect(card.evidence).toBe('approximate');
+      expect(card.position).not.toBeNull();
+      expect(card.tags).toContain('trading-card');
+      if (card.id === 'card:kyle-lewicky') {
+        // The one pre-existing GPS pin — no GTADB host record.
+        expect(card.region).toMatch(/GTA6 GPS/);
+      } else {
+        expect(card.region).toMatch(/GTADB L\d+/);
+      }
+    }
+  });
+
+  it('a Delights Dancers set question over the real catalogue returns the pinned cards:* cards — and flags the loot Harley gap', () => {
+    const places = catalogueFromSnapshot(snapshot);
+    const result = retrieveForAsk({
+      question: 'help me find the Delights Dancers card set',
+      places,
+      layers: layers(),
+      filters: { hideFound: false, remainingOnly: false, countyId: null },
+    });
+    // KNOWN INTERACTION (26 Nov 2026, for the lead): "Delights" is now
+    // also an area word — Jason's host region starts with "Delights" —
+    // so the area filter keeps only cards whose title/region mentions
+    // it, and the Loot Map Harley ("Harley dancer card", region "Port
+    // Gellhorn") drops out. The set question returns the four cards:*
+    // pins, nearest-first from the Delights venue, never a meditation.
+    // A retrieval fix (set narrowing over the area filter) or a
+    // loot-Harley region naming Delights would restore all five; this
+    // lane does not touch Ask retrieval or the loot data.
+    expect(result.records.map((p) => p.id)).toEqual([
+      'card:jason',
+      'card:vicki',
+      'card:perla',
+      'card:kandi',
+    ]);
+    expect(result.records.map((p) => p.id)).not.toContain(
+      'loot:meditation-capri',
+    );
+  });
+
+  it('cards for Delights Dancers near Capri still answers honestly — none is near Capri', () => {
+    const places = catalogueFromSnapshot(snapshot);
+    const result = retrieveForAsk({
+      question: 'cards for delight dancers near Capri',
+      places,
+      layers: layers(),
+      filters: { hideFound: false, remainingOnly: false, countyId: null },
+    });
+    expect(result.proximitySummary).toMatch(/no card near capri/i);
+    expect(result.records.map((p) => p.id)).not.toContain(
+      'loot:meditation-capri',
+    );
+    // All five pinned Delights cards are in the answer, nearest first —
+    // the two Port Gellhorn cards (Jason, Harley) lead. Note the nearest
+    // is now Jason, not Harley: Jason sits on the Delights GTADB pin,
+    // ~13 m closer to the Capri centroid than the Loot Map Harley pin.
+    expect(result.records.map((p) => p.id).sort()).toEqual(
+      [
+        'card:jason',
+        'card:kandi',
+        'card:perla',
+        'card:vicki',
+        'loot:guide-harley-card',
+      ].sort(),
+    );
+    expect(result.records[0]?.id).toMatch(/harley|jason/);
+  });
+});

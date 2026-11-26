@@ -173,7 +173,7 @@ describe("Gyms and Workout equipment layers", () => {
 
   it("merges the gyms into the catalogue alongside the community records", () => {
     const places = catalogueFromSnapshot(snapshot);
-    expect(places).toHaveLength(4456);
+    expect(places).toHaveLength(4471);
     expect(places.filter((p) => p.position === null)).toHaveLength(102);
     expect(places.filter((p) => p.layerId === "gyms")).toHaveLength(8);
     expect(places.filter((p) => p.layerId === "equipment")).toHaveLength(3);
@@ -193,10 +193,10 @@ describe("Gyms and Workout equipment layers", () => {
     expect(places.filter((p) => p.layerId === "lootable")).toHaveLength(47);
     expect(
       places.filter((p) => p.layerId.startsWith("cards:")),
-    ).toHaveLength(5);
+    ).toHaveLength(20);
     expect(places.filter((p) => p.layerId === "loot-heists")).toHaveLength(29);
     expect(places.filter((p) => p.layerId === "loot-collectibles")).toHaveLength(20);
-    expect(new Set(places.map((p) => p.id)).size).toBe(4456);
+    expect(new Set(places.map((p) => p.id)).size).toBe(4471);
   });
 });
 
@@ -246,7 +246,7 @@ describe("Map Index categories (v0.21.0) — the game's own filters, not the dat
       expect(counts.get(dead) ?? 0).toBe(0);
     }
     expect(counts.get('activities')).toBe(12);
-    expect(counts.get('collectibles')).toBe(25);
+    expect(counts.get('collectibles')).toBe(40);
     expect(counts.get('exploration')).toBe(737);
     expect(counts.get('food-drink')).toBe(30);
     expect(counts.get('robberies')).toBe(123);

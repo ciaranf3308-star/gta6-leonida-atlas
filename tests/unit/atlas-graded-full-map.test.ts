@@ -148,16 +148,31 @@ describe('Collectable card sets', () => {
   });
 
   it('pins only cards whose host building is verified, never by guess', () => {
-    expect(COLLECTABLE_CARD_PLACES).toHaveLength(5);
+    expect(COLLECTABLE_CARD_PLACES).toHaveLength(20);
     for (const card of COLLECTABLE_CARD_PLACES) {
       expect(card.position).not.toBeNull();
       expect(card.evidence).toBe('approximate');
       expect(card.source.url).toMatch(/^https:\/\//);
     }
     expect(COLLECTABLE_CARD_PLACES.map((c) => c.id).sort()).toEqual([
+      'card:anthony-poke-ii',
+      'card:braelynn-pink',
+      'card:brianna-blue-purple',
+      'card:bryson-powers',
+      'card:chrissie-deep-red',
+      'card:flamer-red',
+      'card:jason',
+      'card:kandi',
       'card:kyle-lewicky',
       'card:lexi-campbell',
+      'card:luke-x',
+      'card:meghan-bronze',
+      'card:perla',
+      'card:pricilla-pace-gold',
       'card:reggie-pierce',
+      'card:right-wing-red',
+      'card:tusi-taufua',
+      'card:ulysses-whitlock',
       'card:vicki',
       'card:victor-maravilla',
     ]);
