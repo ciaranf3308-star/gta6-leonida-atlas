@@ -6,7 +6,7 @@ import { atlasRepository } from '../../db/repository';
 import { useMapStore, useUiStore } from '../../stores/atlas';
 import { useCompletionLogStore } from '../completion/log-store';
 import { recordCompletion, recordSale } from '../completion/record';
-import { retrieveForAsk } from './retrieval';
+import { retrieveForAsk, isPersonalProgressQuestion } from './retrieval';
 import {
   askOpenAi,
   getAskApiKey,
@@ -323,6 +323,26 @@ export default function AskPanel(props: AskPanelProps) {
     let verdict: string | undefined;
     let anchorLabel: string | null | undefined;
     try {
+      const apiKeyEarly = getAskApiKey();
+      // No key, personal-progress question (v0.32 step-9, Demo D
+      // step 3): refuse honestly INSTEAD of running the finder.
+      // The finder answers from the map only — it never consults
+      // the completion log, so it can state the opposite of the
+      // truth ("no place near Lummox County" when Redshaw's there
+      // WAS explored). The tools path answers these, and it needs
+      // a key. No cards, no map highlights, no proximity verdict.
+      if (!apiKeyEarly && isPersonalProgressQuestion(question)) {
+        appendAssistant(
+          {
+            text: "I can't check that without your OpenAI key — questions about what you've found, looted or explored need the tools path, and the local finder can only list what's on the map. It can't tell what you've done, and guessing would get it wrong. Add your key in Settings and ask again.",
+            cards: [],
+            totalInScope: 0,
+            anchorLabel: null,
+          },
+          requestId,
+        );
+        return;
+      }
       result = retrieveForAsk({
         question,
         places: props.places,

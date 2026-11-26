@@ -306,6 +306,70 @@ function asksForCardsOnly(question: string): boolean {
 }
 
 /** Layer ids a question asks for, by keyword. Empty = no layer asked for. */
+/**
+ * Personal-progress intent (v0.32 step-9 follow-up, Demo D step 3).
+ *
+ * A question about the PLAYER's own progress — what they have
+ * found, collected, looted or explored, what is left in a set —
+ * can only be answered from the completion log, through the
+ * tools path (`personal_progress` / `remaining_collectibles`),
+ * which needs an OpenAI key. The no-key finder answers from the
+ * MAP only: it treats "Lummox County" as a place name and returns
+ * a proximity verdict that can state the opposite of the truth
+ * ("There is no place near lummox county" when Redshaw's in
+ * Lummox County WAS explored). AskPanel refuses these questions
+ * honestly without a key instead of running the finder.
+ *
+ * ONLY personal-progress intent matches — a bare card-set name
+ * ("Delight dancers", "Delights", "Jack of Hearts", "flamingos")
+ * is a map question, not a progress question, and must still
+ * return the set's cards. The detector therefore keys on
+ * first-person progress phrasing, never on a set or place name.
+ */
+const PERSONAL_PROGRESS_PHRASES = [
+  // "have I found Vicki?" / "what break-in houses have I looted?"
+  'have i',
+  'did i',
+  'do i have',
+  'what have i',
+  'where have i',
+  'where did i',
+  'what did i',
+  // "what's left in the Delights Dancers set?" (normalised: "what s left")
+  'what s left',
+  'what is left',
+  'left in the set',
+  'left to find',
+  'left to collect',
+  'how many have i',
+  'how many did i',
+  'my progress',
+  'my collection',
+  'my finds',
+  // First-person past tense: "I found the Harley card" as a question.
+  'i found',
+  'i ve found',
+  'i collected',
+  'i ve collected',
+  'i looted',
+  'i ve looted',
+  'i explored',
+  'i ve explored',
+  'i discovered',
+  'i ve discovered',
+  'what am i missing',
+  'am i missing',
+  'what do i have left',
+  'what have i got',
+];
+
+export function isPersonalProgressQuestion(question: string): boolean {
+  const q = ` ${normalizeAsk(question)} `;
+  // Word-boundary match: "i found" must be its own words, never
+  // the tail of another word ("mini found" is not progress).
+  return PERSONAL_PROGRESS_PHRASES.some((phrase) => q.includes(` ${phrase} `));
+}
+
 export function layersRequestedByQuestion(
   question: string,
   layers: readonly LayerDefinition[],
