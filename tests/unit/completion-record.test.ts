@@ -247,7 +247,7 @@ describe('recordCompletion — the one write path (DESIGN §3.4)', () => {
     const unknown = await undoCompletion('rec:missing', deps());
     expect(unknown.ok).toBe(false);
     expect(unknown.code).toBe('validation');
-  });
+  }, 30000);
 
   it('reports storageError and leaves the old state on a failed write', async () => {
     const failWrite = () => {

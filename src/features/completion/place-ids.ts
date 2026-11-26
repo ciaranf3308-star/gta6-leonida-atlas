@@ -116,18 +116,25 @@ export function latestLootedRecordFor(
     }
   }
   if (net <= 0) return undefined;
-  for (let i = db.records.length - 1; i >= 0; i -= 1) {
-    const record = db.records[i]!;
+  // Latest by `at`, not by array position: the log is read back
+  // from Dexie in primary-key (id) order, and `rec:<uuid>` ids
+  // sort nothing like insertion order. `at` is the creation time.
+  let best: CompletionRecord | undefined;
+  let bestAt = '';
+  for (const record of db.records) {
     if (
       record.target.type === 'opportunity' &&
       record.target.id === opportunityId &&
       record.verb === 'looted' &&
       record.count > 0
     ) {
-      return record;
+      if (!best || record.at >= bestAt) {
+        best = record;
+        bestAt = record.at;
+      }
     }
   }
-  return undefined;
+  return best;
 }
 
 /** Net looted count for one opportunity — the "Looted ×N" number.
@@ -242,7 +249,13 @@ export interface CompletionRecordRow {
 }
 
 export function recordListRows(db: GameDatabase): CompletionRecordRow[] {
-  return [...db.records].reverse().map((record) => {
+  // Newest first by `at`, not by array position: the log is read
+  // back from Dexie in primary-key (id) order, and `rec:<uuid>` ids
+  // sort nothing like insertion order.
+  const sorted = [...db.records].sort((a, b) =>
+    a.at === b.at ? (a.id < b.id ? -1 : 1) : a.at < b.at ? 1 : -1,
+  );
+  return sorted.map((record) => {
     const described = describeCompletionRecord(db, record);
     // A looted +1 row offers Undo only while a loot still stands
     // for that opportunity — once every loot is undone (net 0) the
