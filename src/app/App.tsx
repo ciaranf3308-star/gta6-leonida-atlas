@@ -52,7 +52,7 @@ import {
 import { Sidebar } from './Sidebar';
 import { resolveRoute } from './routes';
 import { updateAtlasHead } from './seo';
-import type { Place, Position } from '../domain/types';
+import type { Filters, Place, Position } from '../domain/types';
 
 const PlaceDetails = lazy(() => import('../features/library/PlaceDetails'));
 const MarkerEditor = lazy(() => import('../features/editor/MarkerEditor'));
@@ -173,12 +173,29 @@ export default function App() {
   const selectedAreaNode =
     selectedAreaId && areas ? (areas.get(selectedAreaId) ?? null) : null;
   const deferredQuery = useDeferredValue(filters.query);
-  const filtered = useMemo(
-    () =>
+  /** One visible-places pipeline, two feeds. `filtered` is what the
+   * map pins and the sidebar list — geo-isolated when an area or
+   * county page is open. `likelyAreaPlaces` is the SAME pipeline
+   * with the geo isolation lifted (area + countyId nulled) — it
+   * feeds ONLY MapView's gang-op likely-area regions.
+   *
+   * Why: filterPlaces drops every unpositioned place under an area
+   * or county isolation, and gang-op places have no position — so
+   * feeding the regions from `filtered` (via mapPlaces) emptied the
+   * region list the moment an area page opened, and the effect
+   * cleanup removed every region (v0.32 Finding 2). The isolation
+   * itself is untouched: pins still come from `filtered` /
+   * `mapPlaces`, so opening Kelly County still hides other areas'
+   * pins. Every other filter (query, hideFound, layer visibility)
+   * still applies to the region feed exactly as before — only the
+   * geo isolation is lifted, because a region IS its area's extent:
+   * it cannot be "outside" the isolated area. */
+  const visiblePlaces = useCallback(
+    (activeFilters: Filters) =>
       filterByVisibleLayers(
         filterPlaces(
           allPlaces,
-          { ...filters, query: deferredQuery },
+          { ...activeFilters, query: deferredQuery },
           favorites.map((f) => f.placeId),
           notes,
           collections,
@@ -190,7 +207,15 @@ export default function App() {
         ),
         layers,
       ),
-    [allPlaces, filters, deferredQuery, favorites, notes, collections, gameDb, layers, aiCategories, placeTags],
+    [allPlaces, deferredQuery, favorites, notes, collections, gameDb, layers, aiCategories, placeTags],
+  );
+  const filtered = useMemo(
+    () => visiblePlaces(filters),
+    [visiblePlaces, filters],
+  );
+  const likelyAreaPlaces = useMemo(
+    () => visiblePlaces({ ...filters, area: null, countyId: null }),
+    [visiblePlaces, filters],
   );
   /** Per-layer found / explored / total for the Progress section.
    * Counts every place in the layer. Explored is separate from found:
@@ -714,6 +739,7 @@ export default function App() {
       <section className="map-workspace" id="atlas-map-region" aria-label="Interactive Leonida map">
         <MapView
           places={mapPlaces}
+          likelyAreaPlaces={likelyAreaPlaces}
           layers={layers}
           selectedId={selectedId}
           focus={focus}

@@ -58,6 +58,16 @@ import './map.css';
 
 export interface MapViewProps {
   places: Place[];
+  /** Gang-op likely-area regions (v0.32 regions fix): the places the
+   * region computation reads — the same visible-places pipeline as
+   * `places`, but WITHOUT the area/county isolation. filterPlaces
+   * drops every unpositioned place under an isolation, and gang-op
+   * places have no position, so feeding the regions from `places`
+   * emptied them the moment an area page opened (Finding 2). Pins
+   * still come from `places`; only the region feed is
+   * geo-unfiltered. Optional — absent, the effect falls back to
+   * `places`. */
+  likelyAreaPlaces?: readonly Place[];
   layers: LayerDefinition[];
   selectedId: string | null;
   focus: { position: Position; requestId: number } | null;
@@ -787,12 +797,24 @@ export default function MapView(props: MapViewProps) {
   // get no region; the layer description says so. The two hosted
   // ops (Sunrise RV Park, Parlor Apartments) draw no region either
   // — their host building is their map presence.
+  //
+  // v0.32 regions fix (lane 2, Finding 2): the regions read
+  // `likelyAreaPlaces`, NOT `places` — `places` is the
+  // area-filtered feed, and unpositioned gang-op places are dropped
+  // by the area/county filter, so reading `places` emptied every
+  // region the moment an area page opened. The geo-unfiltered feed
+  // keeps the regions up under isolation; the mask, pill and area
+  // sheet are untouched, and pins still come from `places`.
   useEffect(() => {
     if (!map || !props.areas) return;
-    const regions = gangOpLikelyAreas(props.areas, props.places, props.layers);
+    const regions = gangOpLikelyAreas(
+      props.areas,
+      props.likelyAreaPlaces ?? props.places,
+      props.layers,
+    );
     if (regions.length === 0) return;
     return addLikelyAreaLayers(map, groupLikelyAreas(regions));
-  }, [map, props.areas, props.places, props.layers]);
+  }, [map, props.areas, props.places, props.likelyAreaPlaces, props.layers]);
 
   // Geo labels (§6.4): tappable area-name chips at each area's
   // centroid, INDEPENDENT of gameplay layers — they render with all
