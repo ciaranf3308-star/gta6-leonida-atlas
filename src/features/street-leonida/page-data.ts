@@ -93,7 +93,7 @@ const localRegions: readonly LocalRegionRecord[] = [
   {
     slug: 'port-gellhorn',
     name: 'Port Gellhorn',
-    category: 'CITY',
+    category: 'TOWN',
     description:
       'Officially named western/coastal settlement represented with approximate community placement and roadside motel/commercial character.',
     visualDescription:

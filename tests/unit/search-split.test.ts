@@ -10,6 +10,7 @@ import {
   createSearchSplitState,
   geoNoMatchCounties,
   levenshtein,
+  matchNameTier,
   nearestSpelling,
   poiNoMatchMessage,
   poiUnpositionedMessage,
@@ -65,6 +66,23 @@ describe('search — §6.5a geographical search (areas only)', () => {
     expect(hyphen[0]!.match).toBe('prefix');
     // A typo beyond distance 2 is not a match.
     expect(searchAreas(db.areas, 'vice zzzzz')).toEqual([]);
+  });
+
+  it('whole-name typo has a length floor (§6.5: edit distance ≤2 on tokens ≥4 chars)', () => {
+    const db = buildFullDb();
+    // "v"/"vx" must not typo-match the "VC" alias — the whole-name
+    // typo branch needs the same floor the token branch already has.
+    expect(matchNameTier('vx', 'VC')).toBeNull();
+    expect(matchNameTier('v', 'VC')).toBe('prefix');
+    expect(searchAreas(db.areas, 'vx')).toEqual([]);
+    // Prefix still works for a 1-char query, and real typos still match.
+    // ("VCIA" outranks Vice City here — shortest name first within the
+    // prefix tier — so assert membership, not first place.)
+    const v = searchAreas(db.areas, 'v');
+    const viceCity = v.find((r) => r.areaId === 'area:vice-city')!;
+    expect(viceCity.match).toBe('prefix');
+    expect(matchNameTier('vice ciy', 'Vice City')).toBe('typo');
+    expect(matchNameTier('ambrosya', 'Ambrosia')).toBe('typo');
   });
 
   it('aliases resolve: "VC" → Vice City, "the Keys" → Leonida Keys', () => {

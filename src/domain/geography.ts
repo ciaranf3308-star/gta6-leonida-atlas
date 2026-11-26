@@ -170,12 +170,9 @@ export function areaIdForRegionPlace(regionPlaceId: string): string {
  * 149-area hierarchy is derived by deriveAreaNodes (parent-aware
  * areaLevelForNode); nothing here invents a neighbourhood or district.
  *
- * One deliberate divergence from page-data.ts: that file categories
- * Port Gellhorn as CITY, but DESIGN §6.1 lists Port Gellhorn under
- * Town, and §6.1 governs the hierarchy — so Port Gellhorn is a town
- * here. (Whether page-data.ts's category should change is a
- * coordinator call; it is display copy for the region page, not the
- * hierarchy.)
+ * Port Gellhorn is a town here, and page-data.ts agrees (its category
+ * is 'TOWN' — changed in the step-4 follow-up so the region page and
+ * the hierarchy say the same thing; §6.1 governs).
  *
  * Kept for compatibility: deriveAreaNodes uses the parent-aware
  * `areaLevelForNode` below. This name-only version is the fallback

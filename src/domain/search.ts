@@ -109,7 +109,11 @@ export function matchNameTier(query: string, name: string): MatchTier | null {
   for (const token of tokensOf(n)) {
     if (token.startsWith(q) && q.length >= 2) return 'prefix';
   }
-  if (levenshtein(n, q) <= 2) return 'typo';
+  // Whole-name typo, with the §6.5 floor: edit distance ≤2 on tokens
+  // ≥4 chars. Without it a 1–2-char query typo-matches short names and
+  // aliases ("v"/"vx" → "VC") — the token branch below already enforces
+  // the floor; this branch must too.
+  if (n.length >= 4 && q.length >= 3 && levenshtein(n, q) <= 2) return 'typo';
   for (const token of tokensOf(n)) {
     // A typo'd query against a long name token: "vice ciy" matches
     // the "city" token, "delites" matches "delights".

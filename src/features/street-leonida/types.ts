@@ -13,6 +13,7 @@ export type StreetLinkType =
 export type StreetPlaceCategory =
   | 'REGION'
   | 'CITY'
+  | 'TOWN'
   | 'DISTRICT'
   | 'LANDMARK'
   | 'BUSINESS'

@@ -270,6 +270,7 @@ export default function PlaceDetails({
       );
       const kindLabels: Record<StreetPlaceCategory, string> = {
         CITY: 'City',
+        TOWN: 'Town',
         REGION: 'Region',
         DISTRICT: 'District',
         LANDMARK: 'Landmark',
