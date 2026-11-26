@@ -1,33 +1,31 @@
 import { PlaceIcon, type IconKey } from '../features/map/place-icons';
-import { useMapStore, useUiStore, type NavTab } from '../stores/atlas';
+import { useUiStore, type NavTab } from '../stores/atlas';
 
 /**
- * Bottom navigation — the one way around the app. Five labelled tabs for
- * the five real jobs: Map, Find, Layers, Saved, Ask. Every tab is a big
- * labelled target (never icon-only), the active tab is obvious, and the
- * Layers tab carries a badge with how many layers are on right now.
- * There are no other menus: no top-bar buttons, no hidden sidebar.
+ * Bottom navigation — the one way around the app. Four labelled tabs
+ * for the four real jobs (v0.32 step 5): Map, Collections, Progress,
+ * Ask. Every tab is a big labelled target (never icon-only) — the
+ * buttons are at least 48px tall (see --nav-height in atlas.css) —
+ * and the active tab is obvious. Find is a search overlay on the Map
+ * tab and the map filter is a contextual sheet over the map; neither
+ * is a nav tab, and "Layers" is not a tab at all any more.
  * The icons are the atlas's own blip set (PlaceIcon) — the same glyphs
  * as the map pins — not a second, generic icon style.
  */
 
-const TABS: { id: NavTab; label: string; icon: IconKey }[] = [
+export const NAV_TABS: { id: NavTab; label: string; icon: IconKey }[] = [
   { id: 'map', label: 'Map', icon: 'map' },
-  { id: 'explore', label: 'Find', icon: 'search' },
-  { id: 'layers', label: 'Layers', icon: 'layers' },
-  { id: 'saved', label: 'Saved', icon: 'star' },
+  { id: 'collections', label: 'Collections', icon: 'star' },
+  { id: 'progress', label: 'Progress', icon: 'trophy' },
   { id: 'ask', label: 'Ask', icon: 'sparkles' },
 ];
 
 export default function BottomNav({ onNavigate }: { onNavigate: (tab: NavTab) => void }) {
   const navTab = useUiStore((s) => s.navTab);
-  const layers = useMapStore((s) => s.layers);
-  const layersOn = layers.filter((l) => l.visible && l.id !== 'my-markers').length;
   return (
     <nav className="bottom-nav" aria-label="Atlas sections">
-      {TABS.map((tab) => {
+      {NAV_TABS.map((tab) => {
         const active = navTab === tab.id;
-        const badge = tab.id === 'layers' && layersOn > 0 ? layersOn : null;
         return (
           <button
             key={tab.id}
@@ -38,13 +36,6 @@ export default function BottomNav({ onNavigate }: { onNavigate: (tab: NavTab) =>
           >
             <span className="bottom-nav-icon">
               <PlaceIcon icon={tab.icon} size={22} />
-              {badge !== null && (
-                // Decorative dot only: it must be aria-hidden, or its
-                // aria-label ("30 layers on") becomes the START of the
-                // button's accessible name ("30 layers onLayers") and
-                // the tab stops matching its own name.
-                <span className="bottom-nav-badge" aria-hidden="true" />
-              )}
             </span>
             <span className="bottom-nav-label">{tab.label}</span>
           </button>

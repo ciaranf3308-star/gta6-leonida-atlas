@@ -22,7 +22,6 @@ export default function SettingsDialog({
   onClose,
   onOpenBackup,
   onOpenAbout,
-  onShowWelcome,
 }: {
   onClose: () => void;
   /** The panel footer used to carry these on every page — they live
@@ -30,7 +29,6 @@ export default function SettingsDialog({
    * dialog also works standalone (tests, deep links). */
   onOpenBackup?: () => void;
   onOpenAbout?: () => void;
-  onShowWelcome?: () => void;
 }) {
   const preferences = useUserStore((s) => s.preferences);
   const ready = usePersistenceStore((s) => s.ready);
@@ -292,7 +290,7 @@ export default function SettingsDialog({
           mouse.
         </p>
       </section>
-      {(onOpenBackup || onOpenAbout || onShowWelcome) && (
+      {(onOpenBackup || onOpenAbout) && (
         <section className="detail-section">
           <h3>More</h3>
           <div className="button-row settings-more">
@@ -304,11 +302,6 @@ export default function SettingsDialog({
             {onOpenAbout && (
               <button className="button" type="button" onClick={() => { onClose(); onOpenAbout(); }}>
                 About
-              </button>
-            )}
-            {onShowWelcome && (
-              <button className="button" type="button" onClick={() => { onClose(); onShowWelcome(); }}>
-                What is mapped
               </button>
             )}
           </div>

@@ -70,15 +70,23 @@ describe('v0.12.0 mobile redesign', () => {
     expect(app).not.toContain('FilterBar');
   });
 
-  it('Find has its own county + kind filters and Layers has county cards', async () => {
+  it('Find has its own county + kind filters; county cards and the index reminder left the sidebar', async () => {
     const sidebar = await readFile(
       new URL('../../src/app/Sidebar.tsx', import.meta.url),
       'utf8',
     );
-    expect(sidebar).toContain('county-card');
+    // Re-homed, not deleted: Find keeps its filters, Collections
+    // keeps the Add section.
     expect(sidebar).toContain('find-filters');
-    expect(sidebar).toContain('index-reminder');
     expect(sidebar).toContain('add-section');
+    // v0.32 step 5 (§6.5c): county cards, the completion panel and
+    // the AI index reminder left the primary experience — county
+    // isolation is the area selector's job now, completion lives on
+    // the Progress tab, and the index panel is developer-side only.
+    expect(sidebar).not.toContain('county-card');
+    expect(sidebar).not.toContain('index-reminder');
+    expect(sidebar).not.toContain('CompletionPanel');
+    expect(sidebar).not.toContain('IndexPanel');
   });
 
   it('place detail is a full bottom sheet with a photo-led card head and badges', async () => {
@@ -89,7 +97,7 @@ describe('v0.12.0 mobile redesign', () => {
     expect(details).toContain('place-sheet');
     expect(details).toContain('sheet-grabber');
     // v0.23.0: the reference card head — photo left of the title,
-    // county line, description, and the Set Route / View Area /
+    // county line, description, and the Show on Map / View Area /
     // Add to List row for every place. The old stacked hero
     // (place-hero, 148px photo over a 56px icon) is gone.
     expect(details).toContain('place-card-head');

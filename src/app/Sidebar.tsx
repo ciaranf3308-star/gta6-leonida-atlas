@@ -6,7 +6,6 @@ import {
   MapPinPlus,
   Search,
   Settings,
-  Sparkles,
   X,
 } from 'lucide-react';
 import type { Place } from '../domain/types';
@@ -20,26 +19,22 @@ import {
 } from '../stores/atlas';
 import { useAiIndexStore } from '../features/categorise/store';
 import { COUNTIES, countyForPlace, countyIdForPosition } from '../data/counties';
-import { STUNT_JUMPS_TOTAL } from '../data/completion';
-import { CompletionPanel } from '../features/completion/CompletionPanel';
 import { areaIsolation, areaOptions, countyIsolation } from '../features/map/isolation';
-import { countyOutlineSvg, islandOutlineSvg, useAfterHoursGeo } from '../features/map/after-hours-geo';
-import { useCountyArt } from '../features/art/ai-images';
 import { DEFAULT_LAYERS, layersWithCategoryEnabled } from '../features/map/layers';
 import {
   PlaceIcon,
   iconKeyForAiRecord,
-  iconKeyForLayer,
   iconKeyForPlace,
   type IconKey,
 } from '../features/map/place-icons';
 import { SavedPlaces } from '../features/library/SavedPlaces';
+import { ProgressPanel } from '../features/completion/ProgressPanel';
+import { LayerRow } from '../features/map/MapFilterSheet';
 import { Status } from './Status';
 import { setAccountEntryTarget } from '../capabilities/extension-host';
-import IndexPanel from '../features/categorise/IndexPanel';
 import { aiCategoryShortLabel, effectiveAiCategory } from '../features/categorise/categories';
 import { INITIAL_BOUNDS } from '../features/map/coordinates';
-import { CATEGORIES, CATEGORY_GROUPS, EMPTY_GROUP_NOTES, MAP_INDEX_GROUPS } from './categories';
+import { CATEGORIES } from './categories';
 import { distanceBetween, distanceWord } from '../domain/distance';
 import {
   housesToCheck,
@@ -56,23 +51,28 @@ import {
 import { useSearchSplitStore } from '../stores/search-split';
 import type { GameDatabase } from '../domain/game-db';
 import {
-  VENUE_TYPE_OPTIONS,
   possibleBreakableHouse,
-  type VenueType,
 } from '../domain/interiors';
 import { userTagsMap } from '../domain/user-tags';
-import { tagResolutionCounts, tagResolutionFor } from '../domain/resolve-tags';
+import { tagResolutionFor } from '../domain/resolve-tags';
 import { NEAR_DISTANCE_UNITS } from '../features/ask/retrieval';
 
 /**
- * The panel — Find, Layers and Saved live here, driven by the bottom
- * nav. On a phone each tab is a full screen over the map: nothing sits
- * on the map itself. Find has its own two big filters (county, kind);
- * the layer switches live in Layers.
+ * The panel — Collections and Progress live here, driven by the bottom
+ * nav, and Find lives here as a search overlay on the Map tab (the map
+ * search pill and `/` open it; it is not a nav tab). On a phone each
+ * tab is a full screen over the map: nothing sits on the map itself.
  *
- * On a phone the panel is a bottom sheet above the bottom nav; on a
- * wide screen it is the left column. One sheet at a time: picking a
- * place closes the panel and opens the place detail instead.
+ * Step 5 (§6.5c): the old Layers sheet is gone. Its filter-only
+ * contents live in the contextual map-filter sheet
+ * (features/map/MapFilterSheet); the completion panel lives in the
+ * Progress tab; the library lives in the Collections tab; trading
+ * cards and Add-to-map live in Collections too; the AI indexing panel
+ * left the primary experience entirely (developer-side enrichment —
+ * the player's existing index is preserved, nothing gates on it);
+ * county cards are gone (isolating a county is the area selector's
+ * job now); the basemap credit lives on the Credits page, not in a
+ * panel.
  */
 
 /** Layer colour per layer id — the search-result roundel wears the layer colour. */
@@ -85,392 +85,6 @@ export interface LayerProgress {
   found: number;
   /** Explored (been there, checked it out) — separate from found. */
   explored: number;
-}
-
-/** "Narrow it down" — the narrowing filters that used to live on the
- * old filter bar. They live in Layers now, as big toggle rows:
- * Can go inside, Interior houses, Lootable only, Not found yet,
- * Saved only, My markers only — plus the interior-type picker while
- * an interiors layer is on. Step 4 (§6.5c): toggles carry no
- * statistics — the per-toggle counts are gone. */
-function NarrowFilters() {
-  const layers = useMapStore((s) => s.layers);
-  const filters = useUiStore((s) => s.filters);
-  const interiorsOn =
-    layers.some((l) => l.id === 'interiors' && l.visible) ||
-    layers.some((l) => l.id === 'breakable' && l.visible) ||
-    filters.enterableOnly;
-  function toggleFlag(
-    key:
-      | 'enterableOnly'
-      | 'lootableOnly'
-      | 'remainingOnly'
-      | 'favoritesOnly'
-      | 'personalOnly'
-      | 'interiorHouseOnly',
-  ) {
-    const patch: Partial<typeof filters> = { [key]: !filters[key] };
-    if (key === 'remainingOnly') patch.hideFound = !filters.remainingOnly;
-    useUiStore.getState().setFilters(patch);
-  }
-  const toggles: {
-    key:
-      | 'enterableOnly'
-      | 'lootableOnly'
-      | 'remainingOnly'
-      | 'favoritesOnly'
-      | 'personalOnly'
-      | 'interiorHouseOnly';
-    label: string;
-    hint: string;
-  }[] = [
-    { key: 'enterableOnly', label: 'Can go inside', hint: 'Only places with an interior' },
-    { key: 'interiorHouseOnly', label: 'Interior houses', hint: 'Houses you can go inside' },
-    { key: 'lootableOnly', label: 'Lootable only', hint: 'Only places you can loot' },
-    { key: 'remainingOnly', label: 'Not found yet', hint: 'Hide places you already found' },
-    { key: 'favoritesOnly', label: 'Saved only', hint: 'Only your saved places' },
-    { key: 'personalOnly', label: 'My markers only', hint: 'Only your own markers' },
-  ];
-  return (
-    <section className="narrow-filters" aria-label="Narrow what shows">
-      <h3>Narrow it down</h3>
-      {toggles.map((toggle) => (
-        <button
-          key={toggle.key}
-          type="button"
-          className={`narrow-row ${filters[toggle.key] ? 'active' : ''}`}
-          aria-pressed={filters[toggle.key]}
-          onClick={() => toggleFlag(toggle.key)}
-        >
-          <span>
-            <strong>{toggle.label}</strong>
-            <small>{toggle.hint}</small>
-          </span>
-        </button>
-      ))}
-      {interiorsOn && (
-        <label className="narrow-select">
-          <span>Kind of interior</span>
-          <select
-            value={filters.venueType}
-            onChange={(e) =>
-              useUiStore
-                .getState()
-                .setFilters({ venueType: e.target.value as VenueType | 'all' })
-            }
-            aria-label="Show one kind of interior"
-          >
-            {VENUE_TYPE_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.value === 'all' ? 'All interiors' : option.label}
-              </option>
-            ))}
-          </select>
-        </label>
-      )}
-    </section>
-  );
-}
-
-function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allPlaces: Place[] }) {
-  const layers = useMapStore((s) => s.layers);
-  const highlightIds = useMapStore((s) => s.highlightIds);
-  const offline = usePersistenceStore((s) => s.offline);
-  // Traced county outlines (After Hours geo) and key-painted county art.
-  const geo = useAfterHoursGeo();
-  const countyArt = useCountyArt();
-  // The whole island, traced, for the "All Leonida" card.
-  const islandOutline = islandOutlineSvg(geo);
-  const totalById = new Map(progress.map((entry) => [entry.layerId, entry.total]));
-  const ordered = [...layers].sort((a, b) => b.order - a.order);
-  // Trading-card sets live in one group at the bottom: only the sets with
-  // a verified pin are listed — the rest have no verified position yet and
-  // would otherwise fill the list with 18 empty rows.
-  const mainLayers = ordered.filter((layer) => !layer.id.startsWith('cards:'));
-  const cardLayers = ordered.filter((layer) => layer.id.startsWith('cards:'));
-  const cardLayersWithPins = cardLayers.filter(
-    (layer) => (totalById.get(layer.id) ?? 0) > 0,
-  );
-  const cardPins = cardLayers.reduce(
-    (sum, layer) => sum + (totalById.get(layer.id) ?? 0),
-    0,
-  );
-  function row(layer: (typeof ordered)[number]) {
-    return (
-      <div className="layer-row" key={layer.id}>
-        <label>
-          <input
-            type="checkbox"
-            checked={layer.visible}
-            onChange={(e) =>
-              useMapStore
-                .getState()
-                .setLayers(
-                  layers.map((l) =>
-                    l.id === layer.id ? { ...l, visible: e.target.checked } : l,
-                  ),
-                )
-            }
-          />
-          <span
-            className="layer-icon"
-            style={{ background: layer.style.color }}
-            aria-hidden="true"
-          >
-            <PlaceIcon icon={iconKeyForLayer(layer.id)} size={15} />
-          </span>
-          <span>
-            {layer.name}
-            {/* Step 4 (§6.5c): the map-filter sheet is filter toggles
-              only — no per-layer statistics. */}
-            <small>{layer.description}</small>
-          </span>
-        </label>
-      </div>
-    );
-  }
-  const filters = useUiStore((s) => s.filters);
-  const attempted = useAiIndexStore((s) => s.job.attemptedPlaceIds.length);
-  const ready = usePersistenceStore((s) => s.ready);
-  /** "?" places the map data's own tags cannot resolve — the indexing
-   * job's real remaining work (2,700 on a fresh phone). */
-  const unnamedRemaining = tagResolutionCounts(allPlaces).remaining;
-  function chooseCounty(id: string | null) {
-    useUiStore.getState().setFilters({ countyId: id, area: null });
-    const county = COUNTIES.find((c) => c.id === id);
-    useMapStore.getState().setBoundsFocus(county ? county.bounds : INITIAL_BOUNDS);
-    // Isolation, on the map: the county stays lit and named, the rest
-    // of Leonida dims. Picking All Leonida lifts it.
-    useMapStore.getState().setIsolation(county ? countyIsolation(county) : null);
-  }
-  function beginAdd(preset: 'marker' | 'workout' | 'breakable') {
-    useMapStore
-      .getState()
-      .setMarkerKindPreset(preset === 'marker' ? null : preset);
-    useMapStore.getState().setEditor('create');
-    useUiStore.getState().setNavTab('map');
-  }
-  // Layers grouped by the game's Map Index (v0.21.0) — the nine
-  // filters the pause map offers, in the game's order, then
-  // Collectibles, My markers and Unverified. A layer with no verified
-  // places yet (Weapons, Style) is hidden and the group says why,
-  // instead of showing an empty toggle.
-  function groupSection(group: (typeof CATEGORY_GROUPS)[number]) {
-    const groupLayers = mainLayers.filter(
-      (layer) =>
-        layer.mapIndex === group.id &&
-        (layer.id === 'my-markers' || (totalById.get(layer.id) ?? 0) > 0),
-    );
-    if (groupLayers.length === 0 && !EMPTY_GROUP_NOTES[group.id]) return null;
-    return (
-      <section className="layer-group-section" key={group.id} aria-label={group.name}>
-        <h3 className="layer-group-title">
-          <PlaceIcon icon={group.icon} size={18} />
-          {group.name}
-        </h3>
-        {/* Step 4 (§6.5c): the map-filter sheet is filter toggles
-          only — no explanatory paragraphs under the group titles. */}
-        {groupLayers.map((layer) => row(layer))}
-        {groupLayers.length === 0 && EMPTY_GROUP_NOTES[group.id] && (
-          <p className="empty-state">{EMPTY_GROUP_NOTES[group.id]}</p>
-        )}
-      </section>
-    );
-  }
-  return (
-    <div className="layer-manager">
-      <button
-        type="button"
-        className="button"
-        disabled={
-          !layers.some((l) => l.visible && l.id !== 'my-markers') && highlightIds.length === 0
-        }
-        onClick={() => {
-          // The one-tap kill switch (v0.30.0): layers off AND the reveal
-          // cleared. A revealed pin is visible with every layer off, so
-          // turning the layers off alone would leave a pin on screen
-          // after "everything" was turned off — the spoiler promise is
-          // that one tap leaves zero markers. My markers are untouched.
-          const store = useMapStore.getState();
-          store.setLayers(
-            layers.map((l) =>
-              l.id === 'my-markers' ? l : { ...l, visible: false },
-            ),
-          );
-          store.clearHighlights();
-        }}
-      >
-        Turn everything off
-      </button>
-      {/* v0.26.1: the nine Map Index groups come FIRST in the sheet —
-        they are what Layers is for. v0.26.0 opened on the county
-        cards and the first group title sat just below the sheet's
-        bottom edge, ~3,000px down a ~6,944px scroll. County
-        isolation stays, below the groups. */}
-      {MAP_INDEX_GROUPS.map((group) => groupSection(group))}
-      <section className="county-cards" aria-label="Isolate one county">
-        <h3>Isolate a county</h3>
-        <div className="county-grid">
-          <button
-            type="button"
-            className={`county-card is-all ${filters.countyId === null ? 'active' : ''}`}
-            aria-pressed={filters.countyId === null}
-            onClick={() => chooseCounty(null)}
-          >
-            {/* The island, traced from the real map — the same traced
-                geometry the county cards draw, so the card is never
-                an empty dark tile. No "AI image" tag: this is traced
-                geometry, not AI art. */}
-            {islandOutline && (
-              <svg
-                className="county-outline"
-                viewBox={islandOutline.viewBox}
-                preserveAspectRatio="xMidYMid slice"
-                aria-hidden="true"
-              >
-                <path d={islandOutline.coast} className="county-outline-coast" />
-              </svg>
-            )}
-            <strong>All Leonida</strong>
-            <small>The whole map</small>
-            <small className="county-stunts">{STUNT_JUMPS_TOTAL} stunt jumps across Leonida</small>
-          </button>
-          {COUNTIES.map((county) => {
-            // Art: a key-painted image wins over the bundled photograph.
-            // Both are AI-generated art (never a photo of a real place),
-            // so the card carries the "AI image" tag either way.
-            const aiRecord = countyArt[county.id];
-            const artSrc = aiRecord
-              ? aiRecord.dataUrl
-              : county.photo
-                ? `${import.meta.env.BASE_URL ?? '/'}${county.photo}`
-                : null;
-            const outline = countyOutlineSvg(county, geo);
-            return (
-              <button
-                type="button"
-                key={county.id}
-                className={`county-card ${artSrc ? 'has-photo' : ''} ${filters.countyId === county.id ? 'active' : ''}`}
-                aria-pressed={filters.countyId === county.id}
-                style={
-                  artSrc
-                    ? {
-                        backgroundImage: `linear-gradient(180deg, #0b101800 30%, #0b1018d9 100%), url(${artSrc})`,
-                      }
-                    : undefined
-                }
-                onClick={() => chooseCounty(county.id)}
-              >
-                {outline && (
-                  <svg
-                    className="county-outline"
-                    viewBox={outline.viewBox}
-                    preserveAspectRatio="xMidYMid slice"
-                    aria-hidden="true"
-                  >
-                    <path d={outline.estimate} className="county-outline-estimate" />
-                    <path d={outline.coast} className="county-outline-coast" />
-                  </svg>
-                )}
-                {artSrc && <span className="county-art-tag">AI image</span>}
-                <strong>{county.name.replace(' County', '')}</strong>
-                <small>{county.area}</small>
-                <small className="county-stunts">{county.stuntJumps} stunt jumps</small>
-              </button>
-            );
-          })}
-        </div>
-        <p className="help-text">
-          The coastline on each card is traced from the in-game map; inland edges are estimates
-          — the official map prints county names but no boundary lines.
-        </p>
-      </section>
-      <CompletionPanel />
-      {attempted === 0 && unnamedRemaining > 0 && (
-        <button
-          type="button"
-          className="index-reminder"
-          onClick={() =>
-            document.getElementById('index-panel')?.scrollIntoView({ behavior: 'smooth' })
-          }
-        >
-          <Sparkles size={16} />
-          <span>
-            <strong>{unnamedRemaining.toLocaleString()} places still unnamed</strong>
-            <small>Sort them with your key — tap here</small>
-          </span>
-        </button>
-      )}
-      <details className="layer-group">
-        <summary>
-          Trading cards · {cardPins.toLocaleString()} verified pin
-          {cardPins === 1 ? '' : 's'} so far
-        </summary>
-        <p className="panel-intro">
-          18 sets, 480 cards in total — only {cardPins} have a verified spot on the map so far.
-          The rest have no verified position yet. Turn a set on only when you want to hunt it.
-        </p>
-        {cardLayersWithPins.map((layer) => row(layer))}
-        {cardLayers.length - cardLayersWithPins.length > 0 && (
-          <p className="empty-state">
-            {cardLayers.length - cardLayersWithPins.length} more set
-            {cardLayers.length - cardLayersWithPins.length === 1 ? '' : 's'} with no verified
-            pin yet — they are hidden until a card in the set gets a verified spot.
-          </p>
-        )}
-      </details>
-      {CATEGORY_GROUPS.filter(
-        (group) =>
-          group.id === 'my-markers' ||
-          group.id === 'unverified' ||
-          group.id === 'collectibles',
-      ).map((group) => groupSection(group))}
-      <NarrowFilters />
-      <IndexPanel
-        places={allPlaces}
-        offline={offline}
-        onOpenSettings={() => useUiStore.getState().setDialog('settings')}
-      />
-      <section className="add-section" aria-label="Add to the map">
-        <h3>Add to the map</h3>
-        <p className="panel-intro">
-          Your own marks only — nothing here invents a place. Pick what you found, then tap
-          the map to place it, or use the map centre.
-        </p>
-        <div className="add-options">
-          <button type="button" className="button" disabled={!ready} onClick={() => beginAdd('marker')}>
-            <MapPinPlus size={18} />
-            <span>
-              Add marker
-              <small>A place or note of your own</small>
-            </span>
-          </button>
-          <button type="button" className="button" onClick={() => beginAdd('workout')}>
-            <Dumbbell size={18} />
-            <span>
-              Add workout spot
-              <small>Free equipment — a bench, a deck, a bar</small>
-            </span>
-          </button>
-          <button type="button" className="button" onClick={() => beginAdd('breakable')}>
-            <Home size={18} />
-            <span>
-              Add breakable home
-              <small>A house you can get into — dark blue on the map</small>
-            </span>
-          </button>
-        </div>
-      </section>
-      <p className="empty-state">
-        The basemap is the GTADB in-game map (map artwork © Rockstar Games, CC BY 4.0),
-        colour-graded only — geography unchanged. Place positions are approximate
-        community data. County stunt counts and 100% thresholds: gta6-leonida-map-data
-        (gta6maps.io), CC BY 4.0 — county extents are estimates. Bank jobs and Loot Map
-        collectibles: GTA 6 Loot Map dataset (MIT), community-sourced — positions
-        unverified.
-      </p>
-    </div>
-  );
 }
 
 /**
@@ -770,7 +384,7 @@ function Results({
       ) : !anyPublicLayerVisible ? (
         <p className="empty-state">
           Your map starts blank on purpose — all layers are off, so there is nothing to list
-          yet. Open Layers and turn on just what you want to see — your own markers are always
+          yet. Open the map filter and turn on just what you want to see — your own markers are always
           listed. Or tap a chip on the map.
         </p>
       ) : (
@@ -791,7 +405,7 @@ function Results({
  * screen, never pills over the map. County isolates one county and
  * area isolates one town/city (both fly the map there and dim the
  * rest); kind narrows to one kind of place. The full layer switches
- * live in Layers. */
+ * live in the map filter. */
 function FindFilters({
   allPlaces,
   showingCount,
@@ -806,6 +420,8 @@ function FindFilters({
     useUiStore.getState().setFilters({ countyId: id, area: null });
     const county = COUNTIES.find((c) => c.id === id);
     useMapStore.getState().setBoundsFocus(county ? county.bounds : INITIAL_BOUNDS);
+    // Isolation, on the map: the county stays lit and named, the rest
+    // of Leonida dims. Picking All Leonida lifts it.
     useMapStore.getState().setIsolation(county ? countyIsolation(county) : null);
   }
   /** Isolate one town/city/area: the area's own places draw its box,
@@ -978,11 +594,162 @@ function CategoryTiles() {
   );
 }
 
-const PANEL_TITLES = {
-  explore: 'Find a place',
-  layers: 'Layers',
-  saved: 'Saved',
-} as const;
+/** Trading-card sets (step 5: re-homed from the old Layers sheet
+ * into Collections). Only the sets with a verified pin are listed —
+ * the rest have no verified position yet and would otherwise fill
+ * the list with 18 empty rows. */
+function TradingCardSets({ progress }: { progress: LayerProgress[] }) {
+  const layers = useMapStore((s) => s.layers);
+  const totalById = new Map(progress.map((entry) => [entry.layerId, entry.total]));
+  const ordered = [...layers].sort((a, b) => b.order - a.order);
+  const cardLayers = ordered.filter((layer) => layer.id.startsWith('cards:'));
+  const cardLayersWithPins = cardLayers.filter(
+    (layer) => (totalById.get(layer.id) ?? 0) > 0,
+  );
+  const cardPins = cardLayers.reduce(
+    (sum, layer) => sum + (totalById.get(layer.id) ?? 0),
+    0,
+  );
+  return (
+    <details className="layer-group">
+      <summary>
+        Trading cards · {cardPins.toLocaleString()} verified pin
+        {cardPins === 1 ? '' : 's'} so far
+      </summary>
+      <p className="panel-intro">
+        18 sets, 480 cards in total — only {cardPins} have a verified spot on the map so far.
+        The rest have no verified position yet. Turn a set on only when you want to hunt it.
+      </p>
+      {cardLayersWithPins.map((layer) => (
+        <LayerRow key={layer.id} layer={layer} />
+      ))}
+      {cardLayers.length - cardLayersWithPins.length > 0 && (
+        <p className="empty-state">
+          {cardLayers.length - cardLayersWithPins.length} more set
+          {cardLayers.length - cardLayersWithPins.length === 1 ? '' : 's'} with no verified
+          pin yet — they are hidden until a card in the set gets a verified spot.
+        </p>
+      )}
+    </details>
+  );
+}
+
+/** Add to the map (step 5: re-homed from the old Layers sheet into
+ * Collections). Your own marks only — nothing here invents a place. */
+function AddToMapSection() {
+  const ready = usePersistenceStore((s) => s.ready);
+  function beginAdd(preset: 'marker' | 'workout' | 'breakable') {
+    useMapStore
+      .getState()
+      .setMarkerKindPreset(preset === 'marker' ? null : preset);
+    useMapStore.getState().setEditor('create');
+    useUiStore.getState().setNavTab('map');
+  }
+  return (
+    <section className="add-section" aria-label="Add to the map">
+      <h3>Add to the map</h3>
+      <p className="panel-intro">
+        Your own marks only — nothing here invents a place. Pick what you found, then tap
+        the map to place it, or use the map centre.
+      </p>
+      <div className="add-options">
+        <button type="button" className="button" disabled={!ready} onClick={() => beginAdd('marker')}>
+          <MapPinPlus size={18} />
+          <span>
+            Add marker
+            <small>A place or note of your own</small>
+          </span>
+        </button>
+        <button type="button" className="button" onClick={() => beginAdd('workout')}>
+          <Dumbbell size={18} />
+          <span>
+            Add workout spot
+            <small>Free equipment — a bench, a deck, a bar</small>
+          </span>
+        </button>
+        <button type="button" className="button" onClick={() => beginAdd('breakable')}>
+          <Home size={18} />
+          <span>
+            Add breakable home
+            <small>A house you can get into — dark blue on the map</small>
+          </span>
+        </button>
+      </div>
+    </section>
+  );
+}
+
+/** Find overlay (Map tab) — exported so tests can render it without
+ * driving the nav store. The search field, Find's filters, the
+ * category tiles and the results. */
+export function FindPanel({
+  places,
+  allPlaces,
+  db,
+  anyPublicLayerVisible,
+  showingCount,
+  onSelect,
+}: {
+  places: Place[];
+  allPlaces: Place[];
+  db: GameDatabase | null;
+  anyPublicLayerVisible: boolean;
+  showingCount: number;
+  onSelect: (id: string) => void;
+}) {
+  const poiQuery = useSearchSplitStore((s) => s.poi.query);
+  const setPoiQuery = useSearchSplitStore((s) => s.setPoiQuery);
+  const clearPoi = useSearchSplitStore((s) => s.clearPoi);
+  return (
+    <>
+      <div className="search-field">
+        <Search size={18} />
+        <input
+          id="atlas-search"
+          type="search"
+          maxLength={250}
+          placeholder="Search places, shops, cards…"
+          aria-label="Search places, opportunities and items"
+          value={poiQuery}
+          onChange={(e) => {
+            // Explicit POI search (§6.5b): its own state, separate
+            // from geo search and from layers. Clearing it never
+            // touches either.
+            setPoiQuery(e.target.value);
+          }}
+        />
+        {poiQuery !== '' && (
+          <button
+            type="button"
+            className="icon-button"
+            aria-label="Clear search"
+            onClick={clearPoi}
+          >
+            <X size={18} />
+          </button>
+        )}
+        <kbd>/</kbd>
+      </div>
+      <div className="sidebar-content">
+        <FindFilters allPlaces={allPlaces} showingCount={showingCount} />
+        <CategoryTiles />
+        <Results places={places} allPlaces={allPlaces} db={db} anyPublicLayerVisible={anyPublicLayerVisible} onSelect={onSelect} />
+      </div>
+    </>
+  );
+}
+
+/** Collections tab content — exported so tests can render it without
+ * driving the nav store. */
+export function CollectionsPanel({ progress }: { progress: LayerProgress[] }) {
+  return (
+    <div className="sidebar-content">
+      <SavedPlaces />
+      <TradingCardSets progress={progress} />
+      <AddToMapSection />
+    </div>
+  );
+}
 
 export function Sidebar({
   places,
@@ -1002,23 +769,25 @@ export function Sidebar({
   onSelect: (id: string) => void;
 }) {
   const navTab = useUiStore((s) => s.navTab);
-  const poiQuery = useSearchSplitStore((s) => s.poi.query);
-  const setPoiQuery = useSearchSplitStore((s) => s.setPoiQuery);
-  const clearPoi = useSearchSplitStore((s) => s.clearPoi);
-  if (navTab !== 'explore' && navTab !== 'layers' && navTab !== 'saved') return null;
-  /** Layers is a compact bottom sheet, not a full screen (v0.26.0):
-   * the reference's filter presentation is a sheet over a live map,
-   * and the panel's own intro paragraph went with the full screen —
-   * the guidance ("nothing is turned on yet") now lives in the
-   * first-open Vice City sheet. Find and Saved stay full screens:
-   * they are lists, not filters. */
-  const isLayersSheet = navTab === 'layers';
+  const findOpen = useUiStore((s) => s.findOpen);
+  // Find wins while it is open — it is a search overlay, and opening
+  // it from Collections (a row tap) returns to Collections when it
+  // closes. Otherwise the open tab decides.
+  const showingFind = findOpen;
+  if (navTab !== 'collections' && navTab !== 'progress' && !showingFind) return null;
+  const title = showingFind ? 'Find a place' : navTab === 'collections' ? 'Collections' : 'Progress';
+  function closePanel() {
+    if (showingFind) {
+      useUiStore.getState().setFindOpen(false);
+      return;
+    }
+    useUiStore.getState().setNavTab('map');
+  }
   return (
     <aside
-      className={`sidebar${isLayersSheet ? ' is-layers-sheet' : ''}`}
+      className="sidebar"
       aria-label="Atlas panel"
     >
-      {isLayersSheet && <div className="sheet-grabber" aria-hidden="true" />}
       <header className="brand-header">
         <div className="brand-identity">
           <img
@@ -1037,57 +806,28 @@ export function Sidebar({
         <button
           className="icon-button"
           aria-label="Close panel"
-          onClick={() => useUiStore.getState().setNavTab('map')}
+          onClick={closePanel}
         >
           <X size={21} />
         </button>
       </header>
-      <h2 className="panel-title">{PANEL_TITLES[navTab]}</h2>
-      {navTab === 'explore' && (
-        <div className="search-field">
-          <Search size={18} />
-          <input
-            id="atlas-search"
-            type="search"
-            maxLength={250}
-            placeholder="Search places, shops, cards…"
-            aria-label="Search places, opportunities and items"
-            value={poiQuery}
-            onChange={(e) => {
-              // Explicit POI search (§6.5b): its own state, separate
-              // from geo search and from layers. Clearing it never
-              // touches either.
-              setPoiQuery(e.target.value);
-            }}
-          />
-          {poiQuery !== '' && (
-            <button
-              type="button"
-              className="icon-button"
-              aria-label="Clear search"
-              onClick={clearPoi}
-            >
-              <X size={18} />
-            </button>
-          )}
-          <kbd>/</kbd>
+      <h2 className="panel-title">{title}</h2>
+      {showingFind ? (
+        <FindPanel
+          places={places}
+          allPlaces={allPlaces}
+          db={db}
+          anyPublicLayerVisible={anyPublicLayerVisible}
+          showingCount={showingCount}
+          onSelect={onSelect}
+        />
+      ) : navTab === 'collections' ? (
+        <CollectionsPanel progress={progress} />
+      ) : (
+        <div className="sidebar-content">
+          <ProgressPanel progress={progress} />
         </div>
       )}
-      <div className="sidebar-content">
-        {navTab === 'explore' && (
-          <>
-            <FindFilters allPlaces={allPlaces} showingCount={showingCount} />
-            <CategoryTiles />
-          </>
-        )}
-        {navTab === 'explore' ? (
-          <Results places={places} allPlaces={allPlaces} db={db} anyPublicLayerVisible={anyPublicLayerVisible} onSelect={onSelect} />
-        ) : navTab === 'layers' ? (
-          <LayerManager progress={progress} allPlaces={allPlaces} />
-        ) : (
-          <SavedPlaces progress={progress} />
-        )}
-      </div>
       <footer className="sidebar-footer">
         <div ref={setAccountEntryTarget} data-atlas-account-slot />
         <Status />

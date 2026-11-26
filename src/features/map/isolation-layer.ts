@@ -14,6 +14,10 @@ import L from 'leaflet';
 import { GTADB_TILE_BOUNDS } from './gtadb-tiles';
 import { runToLatLngs, type AfterHoursGeo } from './after-hours-geo';
 import type { Isolation } from './isolation';
+import {
+  ESTIMATED_EXTENT_TOOLTIP_CLASS,
+  ESTIMATED_EXTENT_TOOLTIP_TEXT,
+} from './isolation-label';
 
 export function addIsolationLayers(
   map: L.Map,
@@ -100,23 +104,30 @@ export function addIsolationLayers(
     // dashed edge marks the estimated extent (the member bbox),
     // an extent indicator, not a boundary line. No boundary lines
     // are drawn anywhere; counties keep their traced coastline
-    // above (real geography).
-    added.push(
-      L.rectangle(
-        [
-          [b.south, b.west],
-          [b.north, b.east],
-        ],
-        {
-          color: '#f6f0e5',
-          weight: 1,
-          opacity: 0.65,
-          dashArray: '5 5',
-          fill: false,
-          interactive: false,
-        },
-      ).addTo(map),
-    );
+    // above (real geography). The rect carries a permanent
+    // "estimated extent" label (step 5, §6.1: an estimate is
+    // labelled as such everywhere it is shown) — a dark chip that
+    // matches the map chrome, never Leaflet's default pale tooltip.
+    const rect = L.rectangle(
+      [
+        [b.south, b.west],
+        [b.north, b.east],
+      ],
+      {
+        color: '#f6f0e5',
+        weight: 1,
+        opacity: 0.65,
+        dashArray: '5 5',
+        fill: false,
+        interactive: false,
+      },
+    ).bindTooltip(ESTIMATED_EXTENT_TOOLTIP_TEXT, {
+      permanent: true,
+      direction: 'center',
+      className: ESTIMATED_EXTENT_TOOLTIP_CLASS,
+      interactive: false,
+    });
+    added.push(rect.addTo(map));
   }
   return () => {
     for (const layer of added) layer.remove();

@@ -1,20 +1,20 @@
-import { useState, type CSSProperties } from 'react';
+import { useState } from 'react';
 import { Bookmark, Check, Pencil, Plus, Star, Trash2 } from 'lucide-react';
 import { atlasRepository } from '../../db/repository';
 import {
   saveLocal,
-  useMapStore,
   usePersistenceStore,
   useUiStore,
   useUserStore,
 } from '../../stores/atlas';
 import type { Collection } from '../../domain/types';
 
-export function SavedPlaces({
-  progress,
-}: {
-  progress: { layerId: string; name: string; total: number; found: number; explored: number }[];
-}) {
+/**
+ * Collections tab (v0.32 step 5) — favorites, my markers, and the
+ * user's own collections. The per-layer progress rows that used to
+ * live here moved to the Progress tab.
+ */
+export function SavedPlaces() {
   const collections = useUserStore((s) => s.collections);
   const favorites = useUserStore((s) => s.favorites);
   const markers = useUserStore((s) => s.markers);
@@ -31,7 +31,8 @@ export function SavedPlaces({
       personalOnly: kind === 'personal',
       collectionId: id,
     });
-    useUiStore.getState().setNavTab('explore');
+    // Find is a search overlay on the Map tab now, not a nav tab.
+    useUiStore.getState().setFindOpen(true);
   }
   async function save() {
     const trimmed = name.trim();
@@ -69,51 +70,6 @@ export function SavedPlaces({
         <span>My markers</span>
         <span>{markers.length}</span>
       </button>
-      <div className="section-label">
-        Progress <span>{visited.length}</span>
-      </div>
-      <p className="empty-state">
-        Mark places as found or explored from their details. Progress is per layer — turn a
-        layer on, then use “Only places I haven’t found” to chase the last ones.
-      </p>
-      {progress
-        .filter((row) => row.total > 0)
-        .map((row) => {
-          const percent = row.total ? Math.round((row.found / row.total) * 100) : 0;
-          return (
-            <button
-              className="library-row"
-              key={row.layerId}
-              onClick={() => {
-                useMapStore.getState().setLayers(
-                  useMapStore
-                    .getState()
-                    .layers.map((layer) =>
-                      layer.id === row.layerId ? { ...layer, visible: true } : layer,
-                    ),
-                );
-                useUiStore.getState().resetFilters();
-                useUiStore
-                  .getState()
-                  .setFilters({ remainingOnly: true, collectionId: null });
-                useUiStore.getState().setNavTab('explore');
-              }}
-            >
-              <span className="progress-name">
-                {row.name}
-                <small>
-                  {row.found} of {row.total} found · {row.explored} explored · {percent}%
-                </small>
-              </span>
-              <span className="progress-wrap" aria-hidden="true">
-                <span
-                  className="progress-bar"
-                  style={{ '--progress': `${percent}%` } as CSSProperties}
-                />
-              </span>
-            </button>
-          );
-        })}
       <div className="section-label">
         Collections <span>{collections.length}</span>
       </div>

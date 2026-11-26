@@ -125,37 +125,51 @@ export const useMapStore = create<{
   setMapCenter: (mapCenter) => set({ mapCenter }),
 }));
 /**
- * Bottom navigation — the one way around the app. Five labelled tabs for
- * the five real jobs: Map, Find, Layers, Saved, Ask. The panel tabs
- * (Find / Layers / Saved) open the panel; Map closes it; Ask opens the
- * Ask sheet. One sheet at a time: opening a panel tab or Ask closes any
- * place detail on a phone, and picking a place closes the panel and Ask.
+ * Bottom navigation — the one way around the app. Four labelled tabs
+ * for the four real jobs (v0.32 step 5): Map, Collections, Progress,
+ * Ask. Find is a search overlay on the Map tab (the map search pill
+ * and `/`), and the map filter is a contextual sheet over the map —
+ * neither is a nav tab. One sheet at a time: opening a tab, Find, or
+ * the filter sheet closes any place detail on a phone, and picking a
+ * place closes the tab panel and Ask.
  */
-export type NavTab = 'map' | 'explore' | 'layers' | 'saved' | 'ask';
+export type NavTab = 'map' | 'collections' | 'progress' | 'ask';
 export const useUiStore = create<{
   filters: Filters;
   navTab: NavTab;
   /** Ask Nylah sheet open — controlled here so the bottom nav, the panel
    * and place selection can never stack two sheets. */
   askOpen: boolean;
+  /** Find search overlay open (Map tab). Separate from navTab: Find is
+   * a search over the map, not a section of the app. */
+  findOpen: boolean;
+  /** Contextual map-filter sheet open (Map tab) — layer toggles and
+   * narrowing filters only, no stats, no paragraphs. */
+  filterSheetOpen: boolean;
   dialog: 'settings' | 'backup' | null;
   editorOpen: boolean;
   setFilters: (filters: Partial<Filters>) => void;
   resetFilters: () => void;
   setNavTab: (tab: NavTab) => void;
   setAskOpen: (open: boolean) => void;
+  setFindOpen: (open: boolean) => void;
+  setFilterSheetOpen: (open: boolean) => void;
   setDialog: (dialog: 'settings' | 'backup' | null) => void;
   setEditorOpen: (open: boolean) => void;
 }>((set) => ({
   filters: DEFAULT_FILTERS,
   navTab: 'map',
   askOpen: false,
+  findOpen: false,
+  filterSheetOpen: false,
   dialog: null,
   editorOpen: false,
   setFilters: (filters) => set((state) => ({ filters: { ...state.filters, ...filters } })),
   resetFilters: () => set({ filters: DEFAULT_FILTERS }),
   setNavTab: (navTab) => set({ navTab }),
   setAskOpen: (askOpen) => set({ askOpen }),
+  setFindOpen: (findOpen) => set({ findOpen }),
+  setFilterSheetOpen: (filterSheetOpen) => set({ filterSheetOpen }),
   setDialog: (dialog) => set({ dialog }),
   setEditorOpen: (editorOpen) => set({ editorOpen }),
 }));
@@ -232,6 +246,8 @@ export function switchLocalWorkspace(workspaceId: string | null): Promise<void> 
     filters: DEFAULT_FILTERS,
     navTab: 'map',
     askOpen: false,
+    findOpen: false,
+    filterSheetOpen: false,
   });
   useMapStore.setState({ selectedId: null, focus: null, boundsFocus: null, isolation: null, editorMode: 'none', draftPosition: null, markerKindPreset: null, highlightIds: [] });
   const operation = writeQueue.then(async () => {

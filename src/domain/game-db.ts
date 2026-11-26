@@ -1103,10 +1103,16 @@ export function locationCard(db: GameDatabase, locationId: string): LocationCard
  * yet"), never dropped. Without a setId, the area filter matches both
  * pinned items (by their host's area) and area-known items (by their
  * lead's area).
+ *
+ * Step 5 (descendant-aware): `areaIds` is a SET of area ids — the
+ * caller passes a subtree (geography.subtreeAreaIds), so filtering
+ * by Vice City matches Downtown items and filtering by Port Gellhorn
+ * matches its children. A single `areaId` is the exact-match form
+ * and keeps working unchanged; when both are given, `areaIds` wins.
  */
 export function remainingItems(
   db: GameDatabase,
-  opts: { setId?: string; kind?: ItemKind; areaId?: string } = {},
+  opts: { setId?: string; kind?: ItemKind; areaId?: string; areaIds?: Iterable<string> } = {},
 ): CollectibleItem[] {
   let candidates: CollectibleItem[];
   if (opts.setId) {
@@ -1121,18 +1127,21 @@ export function remainingItems(
     );
   }
   if (opts.kind) candidates = candidates.filter((item) => item.kind === opts.kind);
-  if (opts.areaId) {
-    const areaId = opts.areaId;
+  if (opts.areaId || opts.areaIds) {
+    const areaSet = opts.areaIds
+      ? new Set(opts.areaIds)
+      : new Set([opts.areaId!]);
     candidates = candidates.filter((item) => {
       if (item.locationId) {
-        return db.locations.get(item.locationId)?.areaId === areaId;
+        const hostAreaId = db.locations.get(item.locationId)?.areaId;
+        return hostAreaId !== undefined && hostAreaId !== null && areaSet.has(hostAreaId);
       }
       // No location: with a set, the set wins — the item is kept as
       // "no position yet" (§7.2, normative: the area filter applies
       // only to items that HAVE a location in that area). Without a
       // set, the lead's area decides.
       if (opts.setId) return true;
-      return item.areaId === areaId;
+      return item.areaId !== null && areaSet.has(item.areaId);
     });
   }
   return candidates;

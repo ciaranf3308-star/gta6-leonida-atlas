@@ -633,6 +633,28 @@ export function breadcrumbChain(
 }
 
 /**
+ * All area ids in a subtree: the area itself plus every descendant
+ * (childrenIds, walked). Used by the descendant-aware area filter
+ * (step 5): filtering by Vice City matches Downtown items, filtering
+ * by Port Gellhorn matches its children. Ambrosia appears under both
+ * claimed counties, so a county subtree containing it lists it once
+ * (the Set dedupes).
+ */
+export function subtreeAreaIds(
+  nodes: ReadonlyMap<string, AreaNode>,
+  areaId: string,
+): Set<string> {
+  const ids = new Set<string>();
+  const walk = (id: string): void => {
+    if (ids.has(id)) return;
+    ids.add(id);
+    for (const childId of nodes.get(id)?.childrenIds ?? []) walk(childId);
+  };
+  walk(areaId);
+  return ids;
+}
+
+/**
  * An area's DIRECT members — locations whose region names exactly
  * this area's path (not a descendant's). The area page lists these
  * under the child areas.

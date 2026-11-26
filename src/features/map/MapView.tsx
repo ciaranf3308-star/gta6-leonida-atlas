@@ -954,9 +954,9 @@ export default function MapView(props: MapViewProps) {
       <div className="atlas-edge-stack" aria-label="Map shortcuts">
         <button
           type="button"
-          aria-label="Open Layers"
-          title="Layers"
-          onClick={() => useUiStore.getState().setNavTab('layers')}
+          aria-label="Open map filters"
+          title="Map filters"
+          onClick={() => useUiStore.getState().setFilterSheetOpen(true)}
         >
           <Layers size={20} />
         </button>
@@ -995,10 +995,12 @@ export default function MapView(props: MapViewProps) {
           GTADB attribution footer are both gone from here (the user
           asked for a clean map). The credit lives on in the app:
           About → Credits & sources carries the full GTADB section
-          with the CC BY 4.0 licence link, and the Layers sheet
-          footer names the GTADB basemap. The chrome geometry reads
-          both elements as absent (null) and falls back to the 40px
-          bottom strip, so removing them changes no clamp. */}
+          with the CC BY 4.0 licence link (step 5: the old Layers
+          sheet footer that also named the GTADB basemap is gone with
+          the sheet — Credits is the one honest home for it). The
+          chrome geometry reads both elements as absent (null) and
+          falls back to the 40px bottom strip, so removing them
+          changes no clamp. */}
       {mapError ? (
         <div className="atlas-map-error" role="alert">
           <span>{mapError}</span>

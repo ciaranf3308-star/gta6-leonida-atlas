@@ -297,6 +297,30 @@
 /* ---- Area isolation (v0.15.0 After Hours): a geographical title
  * rendered onto the map itself, plus one slim dismissible pill.
  * No card, no explanation paragraph, no giant exit button. ---- */
+/* ---- Isolation rect label (§6.1, step 5): the estimated-extent
+ * rect carries a permanent "estimated extent" label. Leaflet's
+ * default tooltip is a pale box with an arrow that clashes with
+ * the dark map — this chip matches the geo-label chrome instead
+ * (dark translucent, ivory condensed caps, no arrow), and it never
+ * intercepts taps (pointer-events: none). ---- */
+.leaflet-tooltip.isolation-extent-label {
+  background: #0b1018d9;
+  border: 1px solid #f6f0e52e;
+  border-radius: 999px;
+  color: #f6f0e5;
+  font-family: var(--condensed, 'Oswald', sans-serif);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  padding: 4px 10px;
+  box-shadow: 0 2px 10px #0009;
+  pointer-events: none;
+}
+.leaflet-tooltip.isolation-extent-label::before {
+  display: none;
+}
 /* ---- Geo labels (§6.4, step 4): tappable area-name chips at each
  * area's centroid, independent of gameplay layers. The wrapper div
  * is unstyled (Leaflet's default white div-icon is overridden);

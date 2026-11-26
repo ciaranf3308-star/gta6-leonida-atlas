@@ -1,9 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Bookmark, Camera, Check, Dumbbell, ExternalLink, Footprints, Home, MapPin, Move, Navigation, Pencil, Scan, Sparkles, Star, Tag, X } from 'lucide-react';
+import { Banknote, Bookmark, Camera, Check, Dumbbell, ExternalLink, Footprints, Home, MapPin, Move, Navigation, Pencil, Scan, ShoppingBag, Sparkles, Star, Tag, X } from 'lucide-react';
 import type { Place, Position } from '../../domain/types';
 import { displayTitleFor, isUnnamedPlace } from '../../domain/types';
+import { resolveViewArea } from './view-area';
+import { locationCard, type GameDatabase } from '../../domain/game-db';
+import {
+  locationCardActions,
+  type LocationCardAction,
+} from '../completion/location-actions';
+import { loadGameDatabase, recordCompletion } from '../completion/record';
 import { topCategoriesNear } from '../../domain/nearby-categories';
 import { categoryLabel } from '../../app/categories';
+import { CATEGORY_GROUPS } from '../../app/categories';
 import {
   displayTagsFor,
   placeStatusLine,
@@ -49,16 +57,24 @@ import { countyIsolation } from '../map/isolation';
 export default function PlaceDetails({
   place,
   allPlaces,
+  db,
+  completionDb: completionDbProp,
   onAddMarkerHere,
   onMarkWorkout,
   onMarkBreakable,
-  firstOpen,
-  onClose,
 }: {
   place: Place;
   /** Every place, for the "Hidden collectables" row: verified card pins
    * near this place. The card receives only its own place otherwise. */
   allPlaces: readonly Place[];
+  /** The gameplay database (App) — the location's area for View Area
+   * and the initial card view. May be null while the catalogue loads. */
+  db?: GameDatabase | null;
+  /** A records-aware database to start from (tests / a future store
+   * injection). When absent the card loads its own via
+   * loadGameDatabase and refreshes it from every recordCompletion
+   * result, so looted counts and collected marks are never stale. */
+  completionDb?: GameDatabase | null;
   /** Start a My marker at this place's position (for "?" places the user identifies). */
   onAddMarkerHere?: (position: Position) => void;
   /** Start a workout-equipment marker at this place's position — the
@@ -69,18 +85,6 @@ export default function PlaceDetails({
    * found a house / apartment / trailer he can break into, and most
    * breakable homes have no tag in the public data at all. */
   onMarkBreakable?: (place: Place) => void;
-  /** First-open sheet (v0.26.0): "Pick what to see" — the layer
-   * buttons that used to live in the empty-map banner, now inside
-   * the Vice City sheet, right under the card head. */
-  firstOpen?: {
-    onPickLayers: (layerIds: string[] | 'all') => void;
-    lastSession: { layerIds: string[] } | null;
-    onRestore: () => void;
-  };
-  /** Close without selecting: the first-open sheet is not a
-   * selection, so its × cannot call select(null) — that would be a
-   * no-op and the sheet would never close. */
-  onClose?: () => void;
 }) {
   const favorite = useUserStore((s) => s.favorites.some((f) => f.placeId === place.id));
   const found = useUserStore((s) => s.visited.some((v) => v.placeId === place.id));
@@ -342,28 +346,118 @@ export default function PlaceDetails({
     await saveLocal(() => atlasRepository.toggleFavorite(place.id));
   }
   /** Region sheet actions (v0.16.0, reference bottom sheet): fly the
-   * camera to the region, or isolate its county on the map. */
-  function setRoute() {
+   * camera to the region, or isolate its area on the map. There is no
+   * routing — "Show on Map" only re-selects the place so the camera
+   * flies to it (DESIGN §6.3). */
+  function showOnMap() {
     // Re-selecting re-fires the focus (new requestId) — the camera flies.
     useMapStore.getState().select(place);
   }
+  /** View Area (§6.3, step 5): the area's OWN extent via
+   * resolveAreaBounds — the member bbox, an estimate — falling back
+   * to the county only when the area has none, and saying so. A
+   * county fallback shows the county's traced isolation with the
+   * reason on the card; no bounds at all means no camera move, just
+   * the reason. Places with no area in the database keep the old
+   * county-by-position behaviour. */
+  const [viewAreaNote, setViewAreaNote] = useState<string | null>(null);
   function viewArea() {
-    const county =
-      COUNTIES.find(
-        (c) => c.area.includes(place.title) || c.name.includes(place.title),
-      ) ??
-      COUNTIES.find(
-        (c) =>
-          place.position &&
-          place.position.x >= c.bounds.west &&
-          place.position.x <= c.bounds.east &&
-          place.position.y >= c.bounds.south &&
-          place.position.y <= c.bounds.north,
-      );
-    if (!county) return;
-    useUiStore.getState().setFilters({ countyId: county.id, area: null });
-    useMapStore.getState().setBoundsFocus(county.bounds);
-    useMapStore.getState().setIsolation(countyIsolation(county));
+    const resolved = resolveViewArea(db ?? null, place);
+    if (resolved.kind === 'none') {
+      setViewAreaNote(resolved.note);
+      return;
+    }
+    if (resolved.kind === 'county') {
+      const county = COUNTIES.find((c) => c.id === resolved.countyId);
+      if (!county) {
+        setViewAreaNote(resolved.note ?? 'No county found for this place.');
+        return;
+      }
+      useUiStore.getState().setFilters({ countyId: county.id, area: null });
+      useMapStore.getState().setBoundsFocus(resolved.bounds);
+      useMapStore.getState().setIsolation(countyIsolation(county));
+      setViewAreaNote(resolved.note);
+      return;
+    }
+    useUiStore.getState().setFilters({ area: resolved.areaPath, countyId: null });
+    useMapStore.getState().setBoundsFocus(resolved.bounds);
+    useMapStore.getState().setIsolation({
+      label: resolved.areaName,
+      subtitle: `${resolved.placeCount.toLocaleString()} places · estimated extent`,
+      bounds: resolved.bounds,
+    });
+    setViewAreaNote(null);
+  }
+  /** View Area needs no position: an unpositioned place can still
+   * belong to an area with an extent (its siblings draw the box). */
+  const canViewArea = Boolean(place.position) || Boolean(db?.locations.get(place.id)?.areaId);
+  /** The game's own Map Index group for this place (DESIGN §3.1) —
+   * the ACTUAL in-game category, not the app's filing. From the
+   * place's layer, never invented. */
+  const mapIndexGroup = useMemo(() => {
+    const layer = DEFAULT_LAYERS.find((l) => l.id === place.layerId);
+    if (!layer) return null;
+    return CATEGORY_GROUPS.find((group) => group.id === layer.mapIndex)?.name ?? null;
+  }, [place.layerId]);
+  // --- Completion (step 5): the records-aware database, loaded here
+  // so the card's looted counts and collected marks are never stale.
+  // The App database has the areas but no records; the card view
+  // below falls back to it until this load lands. The load passes
+  // allPlaces, so no second catalogue fetch happens. ---
+  const [completionDb, setCompletionDb] = useState<GameDatabase | null>(
+    completionDbProp ?? null,
+  );
+  useEffect(() => {
+    if (completionDbProp) {
+      setCompletionDb(completionDbProp);
+      return;
+    }
+    let alive = true;
+    void loadGameDatabase({ places: allPlaces })
+      .then((loaded) => {
+        if (alive) setCompletionDb(loaded);
+      })
+      .catch(() => {
+        // No completion data: the card still shows its actions, just
+        // without completed state. The record calls surface their own
+        // errors when the user taps.
+      });
+    return () => {
+      alive = false;
+    };
+  }, [place.id, allPlaces, completionDbProp]);
+  const activeDb = completionDb ?? db ?? null;
+  const cardView = useMemo(
+    () => (activeDb ? locationCard(activeDb, place.id) : null),
+    [activeDb, place.id],
+  );
+  const cardActions = useMemo(
+    () => (cardView && activeDb ? locationCardActions(cardView, activeDb) : []),
+    [cardView, activeDb],
+  );
+  const [completionBusy, setCompletionBusy] = useState<string | null>(null);
+  const [completionError, setCompletionError] = useState('');
+  /** The one write path (step 2's recordCompletion — called, never
+   * changed). On success the returned db becomes the card's db, so
+   * the struck-through state and the counts update immediately. */
+  async function recordAction(
+    action: Extract<LocationCardAction, { kind: 'record' | 'collect' }>,
+  ) {
+    if (completionBusy) return;
+    const target =
+      action.kind === 'collect'
+        ? { type: 'item' as const, id: action.itemId }
+        : action.target;
+    const verb = action.kind === 'collect' ? ('collected' as const) : action.verb;
+    setCompletionBusy(action.key);
+    setCompletionError('');
+    const result = await recordCompletion({ target, verb });
+    setCompletionBusy(null);
+    if (result.ok && result.db) {
+      setCompletionDb(result.db);
+    } else {
+      setCompletionError(result.error ?? 'Could not save that — try again.');
+    }
   }
   const photoInputRef = useRef<HTMLInputElement>(null);
   async function share() {
@@ -392,7 +486,7 @@ export default function PlaceDetails({
         <button
           className="icon-button"
           aria-label="Close place details"
-          onClick={() => (onClose ? onClose() : useMapStore.getState().select(null))}
+          onClick={() => useMapStore.getState().select(null)}
         >
           <X size={20} />
         </button>
@@ -483,54 +577,6 @@ export default function PlaceDetails({
               ? 'Map view of this spot — not a photo'
               : ''}
         </p>
-        {/* First-open sheet (v0.26.0): "Pick what to see", right
-         * under the card head so it reads without scrolling — the
-         * layer buttons the old empty-map banner carried, now
-         * inside the Vice City sheet. One tap turns the layers on
-         * and closes the sheet, so the pins appear on the island
-         * the user was just looking at. */}
-        {firstOpen && (
-          <section className="detail-section first-open-picker" aria-label="Pick what to see">
-            <h3>Pick what to see</h3>
-            <p className="help-text">
-              {allPlaces.length.toLocaleString()} places are in the map — nothing is turned
-              on yet.
-            </p>
-            <div className="empty-map-buttons">
-              <button type="button" onClick={() => firstOpen.onPickLayers(['interiors'])}>
-                Show interiors
-              </button>
-              <button type="button" onClick={() => firstOpen.onPickLayers(['lootable'])}>
-                Show lootable
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  firstOpen.onPickLayers([
-                    'shops-food',
-                    'shops-vehicles',
-                    'shops-weapons',
-                    'shops-style',
-                  ])
-                }
-              >
-                Show shops
-              </button>
-              <button type="button" onClick={() => firstOpen.onPickLayers('all')}>
-                Show everything
-              </button>
-              {firstOpen.lastSession && (
-                <button
-                  type="button"
-                  className="restore-last"
-                  onClick={firstOpen.onRestore}
-                >
-                  Restore my last layers ({firstOpen.lastSession.layerIds.length} on)
-                </button>
-              )}
-            </div>
-          </section>
-        )}
         <div className="button-row">
           <button
             type="button"
@@ -579,19 +625,19 @@ export default function PlaceDetails({
           </p>
         )}
         {/* Reference action row — one row of three, for every place,
-          * not only regions. Set Route flies the camera to the place;
-          * View Area isolates its county; Add to List is the
-          * favorite toggle. */}
+          * not only regions. Show on Map flies the camera to the
+          * place (there is no routing — §6.3); View Area isolates
+          * the place's own area; Add to List is the favorite toggle. */}
         <div className="place-card-actions">
           <button
             type="button"
             className="button primary"
             disabled={!place.position}
-            onClick={setRoute}
+            onClick={showOnMap}
           >
-            <Navigation size={18} /> Set Route
+            <Navigation size={18} /> Show on Map
           </button>
-          <button type="button" className="button" disabled={!place.position} onClick={viewArea}>
+          <button type="button" className="button" disabled={!canViewArea} onClick={viewArea}>
             <Scan size={18} /> View Area
           </button>
           <button
@@ -604,6 +650,11 @@ export default function PlaceDetails({
             {favorite ? 'Saved' : 'Add to List'}
           </button>
         </div>
+        {viewAreaNote && (
+          <p className="view-area-note" role="status">
+            {viewAreaNote}
+          </p>
+        )}
         <p className="place-badges" aria-label="What this place is">
           {interior.breakable && <span>Breakable home</span>}
           {place.layerId === 'lootable' && <span>Lootable</span>}
@@ -657,6 +708,92 @@ export default function PlaceDetails({
             {explored ? 'Explored ✓ — tap to undo' : 'Mark as explored'}
           </button>
         </div>
+        {/* Your progress here (step 5): contextual actions driven by
+          * this location's opportunities — the same recordCompletion
+          * write the journal will use. Completed rows are struck
+          * through and dimmed; looted rows keep their count
+          * ("Looted ×3") and stay live, because hold-ups repeat.
+          * "Shop here" is not a completion — it records nothing.
+          * NOTE (step 6 handoff): the "Mark as found / explored"
+          * row above still writes the old store; these buttons write
+          * the completion log. The two "Mark as explored" buttons
+          * converge when step 6 replaces the old store. */}
+        {cardActions.length > 0 && (
+          <section className="detail-section completion-actions" aria-label="Your progress here">
+            <h3>Your progress here</h3>
+            <ul className="completion-action-list">
+              {cardActions.map((action) => {
+                if (action.kind === 'info') {
+                  return (
+                    <li key={action.key} className="completion-action is-info">
+                      <ShoppingBag size={16} aria-hidden="true" />
+                      <span>
+                        <strong>{action.label}</strong>
+                        <small>{action.detail}</small>
+                      </span>
+                    </li>
+                  );
+                }
+                if (action.kind === 'collect') {
+                  return (
+                    <li
+                      key={action.key}
+                      className={`completion-action is-collect ${action.done ? 'is-done' : ''}`}
+                    >
+                      <label>
+                        <input
+                          type="checkbox"
+                          checked={action.done}
+                          disabled={action.done || completionBusy !== null}
+                          onChange={() => void recordAction(action)}
+                          aria-label={`Mark ${action.label} as collected`}
+                        />
+                        <span>
+                          <strong className={action.done ? 'is-struck' : ''}>
+                            {action.label}
+                          </strong>
+                          {action.done && <small>Collected ✓</small>}
+                        </span>
+                      </label>
+                    </li>
+                  );
+                }
+                const busy = completionBusy === action.key;
+                const isLooted = action.verb === 'looted';
+                return (
+                  <li
+                    key={action.key}
+                    className={`completion-action ${action.done ? 'is-done' : ''} ${isLooted && action.count > 0 ? 'is-looted' : ''}`}
+                  >
+                    {isLooted ? <Banknote size={16} aria-hidden="true" /> : <MapPin size={16} aria-hidden="true" />}
+                    <span>
+                      <strong className={action.done ? 'is-struck' : ''}>
+                        {action.done ? action.doneLabel : action.label}
+                      </strong>
+                      <small>{action.detail}</small>
+                    </span>
+                    {isLooted && action.count > 0 && (
+                      <span className="completion-count">{action.doneLabel}</span>
+                    )}
+                    <button
+                      type="button"
+                      className="button"
+                      disabled={action.done || busy || !ready}
+                      onClick={() => void recordAction(action)}
+                    >
+                      {busy ? 'Saving…' : action.label}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+            {completionError && (
+              <p className="inline-error" role="alert">
+                {completionError}
+              </p>
+            )}
+          </section>
+        )}
         {(loot || nearbyCollectables.length > 0 || place.layerId === 'lootable' || place.layerId === 'breakable') && (
           <section className="detail-section" aria-label="Loot and collectables">
             {loot && (
@@ -995,6 +1132,12 @@ export default function PlaceDetails({
             <dt>Category</dt>
             <dd>{categoryLabel(place.category)}</dd>
           </div>
+          {mapIndexGroup && (
+            <div>
+              <dt>Map Index</dt>
+              <dd>{mapIndexGroup}</dd>
+            </div>
+          )}
           {place.region && (
             <div>
               <dt>Region</dt>

@@ -869,6 +869,64 @@ h3 {
   flex-wrap: wrap;
   gap: 6px;
 }
+/* ---- First-open hint (step 5): the single dismissible hint on a
+ * clean first launch — one line, bottom-left of the map, never the
+ * centre. It only shows while nothing is on yet. ---- */
+.first-open-hint {
+  position: absolute;
+  z-index: 440;
+  left: 12px;
+  bottom: 12px;
+  max-width: min(430px, calc(100% - 24px));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: #0b1018e0;
+  backdrop-filter: blur(12px);
+  border: 1px solid #f6f0e52e;
+  border-radius: 12px;
+  padding: 10px 8px 10px 14px;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.4;
+  box-shadow: 0 4px 24px #000a;
+}
+.first-open-hint .icon-button {
+  flex-shrink: 0;
+}
+/* ---- Map-filter sheet (step 5): the old Layers sheet, filters
+ * only. A bottom sheet over the map workspace on every width —
+ * never a full screen, never the left column — so the island stays
+ * visible above it. ---- */
+.map-filter-sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 620;
+  display: flex;
+  flex-direction: column;
+  max-height: 78dvh;
+  background: #101823f2;
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  border-bottom: 0;
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 -12px 48px #000b;
+  overflow: hidden;
+}
+.map-filter-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 12px 0;
+  flex-shrink: 0;
+}
+.map-filter-head .panel-title {
+  padding: 10px 6px 4px;
+  margin: 0;
+}
 .empty-map-buttons button {
   flex: 1 1 auto;
   min-height: 40px;
@@ -2207,6 +2265,75 @@ h3 {
 .place-actions .button {
   width: 100%;
   min-height: 56px;
+}
+/* ---- Location-card completion actions (step 5): contextual rows
+ * driven by the location's opportunities. A done row is struck
+ * through and dimmed; a looted row keeps its count ("Looted ×3")
+ * and stays live, because hold-ups repeat. ---- */
+.completion-action-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.completion-action {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.completion-action > span {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.completion-action strong {
+  font-size: 14px;
+}
+.completion-action small {
+  color: var(--muted);
+  font-size: 12px;
+}
+.completion-action .is-struck {
+  text-decoration: line-through;
+}
+.completion-action.is-done {
+  opacity: 0.6;
+}
+.completion-action .completion-count {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--coral);
+  white-space: nowrap;
+}
+.completion-action .button {
+  flex-shrink: 0;
+}
+.completion-action.is-collect label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+.completion-action input[type='checkbox'] {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  accent-color: var(--coral);
+}
+.view-area-note {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
 }
 .detail-actions {
   display: grid;
