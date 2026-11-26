@@ -6,7 +6,8 @@ import { atlasRepository } from '../../db/repository';
 import { useMapStore, useUiStore } from '../../stores/atlas';
 import { useCompletionLogStore } from '../completion/log-store';
 import { recordCompletion, recordSale } from '../completion/record';
-import { retrieveForAsk, isPersonalProgressQuestion } from './retrieval';
+import { retrieveForAsk, isPersonalProgressQuestion, normalizeAsk } from './retrieval';
+import { executeGetHint, type ToolCall, type ToolResult } from './tools';
 import {
   askOpenAi,
   getAskApiKey,
@@ -14,7 +15,7 @@ import {
   sanitizeAiNote,
   setAskApiKey,
 } from './openai';
-import { askWithTools, type AskProposal } from './intent';
+import { askWithTools, hintItemForQuestion, type AskProposal } from './intent';
 import { FindCardButton } from './FindCardButton';
 import { useMatchStore } from './match-store';
 import { buildAskCard, buildAskCards, askAnchorLabel, shortVerdict, type AskCard } from './cards';
@@ -77,6 +78,19 @@ export interface AskPanelProps {
  * suggested" line, no county line, no evidence paragraph on the card:
  * all of that lives behind one tap, in the place sheet.
  */
+/** Progressive-hint state (v0.32 step-9, Demo G): the item a hint
+ * answer is about and the level already shown, so the "Bigger
+ * hint" button can call the next get_hint level. Level 0 means no
+ * hint has been shown yet — the finder answered the question and
+ * the button starts the ladder at level 1. */
+export interface AskHintState {
+  itemId: string;
+  itemName: string;
+  level: number;
+  nextLevelAvailable: boolean;
+  nextLevelBlockedReason?: string;
+}
+
 interface AskMessage {
   role: 'user' | 'assistant';
   text: string;
@@ -104,6 +118,42 @@ interface AskMessage {
    *  confirms, one tap, through the same step-2 recordCompletion /
    *  recordSale path, source 'ask'. */
   proposals?: AskProposal[];
+  /** Progressive-hint state (Demo G) — see AskHintState above. */
+  hint?: AskHintState;
+}
+
+/** The hint state behind a tools answer: the get_hint call (if any)
+ * and its result. The level shown and whether a bigger hint exists
+ * come from the tool, never from the narration text. */
+function hintStateFromTools(
+  db: GameDatabase,
+  toolCalls: readonly ToolCall[],
+  results: readonly ToolResult<unknown>[],
+): AskHintState | undefined {
+  const index = toolCalls.findIndex((call) => call.name === 'get_hint');
+  if (index < 0) return undefined;
+  const call = toolCalls[index]!;
+  const result = results[index];
+  const targetId =
+    typeof call.args['targetId'] === 'string' ? call.args['targetId'] : null;
+  if (!targetId || !result?.ok) return undefined;
+  const data = result.data as {
+    level?: unknown;
+    nextLevelAvailable?: unknown;
+    nextLevelBlockedReason?: unknown;
+  };
+  if (typeof data.level !== 'number') return undefined;
+  const item = db.items.get(targetId);
+  return {
+    itemId: targetId,
+    itemName: item?.name ?? targetId,
+    level: data.level,
+    nextLevelAvailable: data.nextLevelAvailable === true,
+    nextLevelBlockedReason:
+      typeof data.nextLevelBlockedReason === 'string'
+        ? data.nextLevelBlockedReason
+        : undefined,
+  };
 }
 
 const SUGGESTED_PROMPTS = [
@@ -306,6 +356,100 @@ export default function AskPanel(props: AskPanelProps) {
     setMessages((prev) => [...prev, { ...message, role: 'assistant' }]);
   }
 
+  /** "Bigger hint" (v0.32 step-9, Demo G): call the next get_hint
+   * level for the item the last hint was about. The tool is
+   * deterministic — no LLM round trip — but the ladder runs
+   * through the tools path, so without a key there is nothing to
+   * call: the honest refusal, never a faked hint. A failed call
+   * (already collected, no spot published) surfaces the tool's own
+   * honest error as the answer. Level 3 names the host building,
+   * so the map focuses on it (highlight + pan, never opening the
+   * sheet — the hint stays on screen). */
+  async function escalateHint(hint: AskHintState, requestId: number) {
+    const db = props.db ?? null;
+    if (!db) {
+      appendAssistant(
+        {
+          text: 'Hints need the map database — it is still loading. Try again in a moment.',
+          cards: [],
+          totalInScope: 0,
+          anchorLabel: null,
+        },
+        requestId,
+      );
+      return;
+    }
+    if (!getAskApiKey()) {
+      appendAssistant(
+        {
+          text: `A bigger hint for ${hint.itemName} needs your OpenAI key — the hint ladder runs through the tools path, and without a key there is nothing to call. I won't make one up. Add your key in Settings and ask again.`,
+          cards: [],
+          totalInScope: 0,
+          anchorLabel: null,
+        },
+        requestId,
+      );
+      return;
+    }
+    const nextLevel = hint.level + 1;
+    const result = executeGetHint(db, {
+      level: nextLevel,
+      targetType: 'item',
+      targetId: hint.itemId,
+    });
+    if (!result.ok) {
+      appendAssistant(
+        {
+          text: result.error,
+          cards: [],
+          totalInScope: 0,
+          anchorLabel: null,
+        },
+        requestId,
+      );
+      return;
+    }
+    const data = result.data;
+    if (data.level === 3) {
+      const item = db.items.get(hint.itemId);
+      const host = item?.locationId ? placeById.get(item.locationId) : undefined;
+      if (host) showOnMap([host]);
+    }
+    appendAssistant(
+      {
+        text: `Hint ${data.level} of 4 — ${data.hint}`,
+        cards: [],
+        totalInScope: 0,
+        anchorLabel: null,
+        hint: {
+          itemId: hint.itemId,
+          itemName: hint.itemName,
+          level: data.level,
+          nextLevelAvailable: data.nextLevelAvailable,
+          nextLevelBlockedReason: data.nextLevelBlockedReason,
+        },
+      },
+      requestId,
+    );
+  }
+
+  /** The button's tap: one escalation, one request id, spinner
+   * while it runs. */
+  async function biggerHint(hint: AskHintState) {
+    if (busy) return;
+    const requestId = ++requestRef.current;
+    setBusy(true);
+    setBusyNote('Getting a bigger hint…');
+    try {
+      await escalateHint(hint, requestId);
+    } finally {
+      if (requestId === requestRef.current) {
+        setBusy(false);
+        setBusyNote(null);
+      }
+    }
+  }
+
   async function submit(questionText: string) {
     const question = questionText.trim();
     if (!question || busy) return;
@@ -323,6 +467,15 @@ export default function AskPanel(props: AskPanelProps) {
     let verdict: string | undefined;
     let anchorLabel: string | null | undefined;
     try {
+      // A typed "Bigger hint" follow-up escalates the last hint
+      // shown, exactly like the button (Demo G asked it by typing).
+      const lastHint = [...messages]
+        .reverse()
+        .find((message) => message.role === 'assistant' && message.hint)?.hint;
+      if (normalizeAsk(question).includes('bigger hint') && lastHint?.nextLevelAvailable) {
+        await escalateHint(lastHint, requestId);
+        return;
+      }
       const apiKeyEarly = getAskApiKey();
       // No key, personal-progress question (v0.32 step-9, Demo D
       // step 3): refuse honestly INSTEAD of running the finder.
@@ -360,6 +513,21 @@ export default function AskPanel(props: AskPanelProps) {
       });
       anchorLabel = askAnchorLabel(result);
       cards = buildAskCards(result, props.places, props.aiCategories, props.userTags);
+      // The hint ladder's starting point (Demo G): a hint question
+      // that names one item by name carries that item, level 0 — no
+      // hint shown yet — so the "Bigger hint" button can start the
+      // ladder. Without a key the button says so honestly; with a
+      // key the tools path above already answered.
+      const dbForHint = props.db ?? null;
+      const hintItem = dbForHint ? hintItemForQuestion(question, dbForHint) : null;
+      const finderHint: AskHintState | undefined = hintItem
+        ? {
+            itemId: hintItem.id,
+            itemName: hintItem.name,
+            level: 0,
+            nextLevelAvailable: true,
+          }
+        : undefined;
       setBusyNote(
         anchorLabel
           ? `Finding places ${anchorLabel.toLowerCase()}…`
@@ -430,6 +598,7 @@ export default function AskPanel(props: AskPanelProps) {
               totalInScope: revealPlaces.length,
               anchorLabel,
               proposals: toolsResult.proposals,
+              hint: hintStateFromTools(db, toolsResult.toolCalls, toolsResult.results),
             },
             requestId,
           );
@@ -454,6 +623,7 @@ export default function AskPanel(props: AskPanelProps) {
             totalInScope: 0,
             anchorLabel,
             houses,
+            hint: finderHint,
           },
           requestId,
         );
@@ -477,6 +647,7 @@ export default function AskPanel(props: AskPanelProps) {
             anchorLabel,
             houses: housesFor(result),
             ruleNote: result.ruleNote,
+            hint: finderHint,
           },
           requestId,
         );
@@ -493,6 +664,7 @@ export default function AskPanel(props: AskPanelProps) {
         anchorLabel,
         houses: housesFor(result),
         ruleNote: result.ruleNote,
+        hint: finderHint,
       };
       const answer = await (async () => {
         const controller = new AbortController();
@@ -644,6 +816,23 @@ export default function AskPanel(props: AskPanelProps) {
             )}
             {message.role === 'assistant' && message.ruleNote && (
               <p className="ask-rule-note">{message.ruleNote}</p>
+            )}
+            {message.role === 'assistant' && message.hint && (
+              message.hint.nextLevelAvailable ? (
+                <button
+                  type="button"
+                  className="button ask-bigger-hint"
+                  disabled={busy}
+                  onClick={() => void biggerHint(message.hint!)}
+                >
+                  Bigger hint
+                </button>
+              ) : (
+                <p className="help-text">
+                  {message.hint.nextLevelBlockedReason ??
+                    "That's everything the map knows about this one — there is no bigger hint."}
+                </p>
+              )
             )}
             {message.cards.length > 0 && (
               <ul className="ask-cards">

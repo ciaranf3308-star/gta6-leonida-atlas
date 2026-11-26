@@ -15,7 +15,7 @@ import {
   type ToolCall,
   type ToolResult,
 } from './tools';
-import type { GameDatabase } from '../../domain/game-db';
+import type { GameDatabase, CollectibleItem } from '../../domain/game-db';
 import type { AiCategoryRecord } from '../categorise/categories';
 
 /**
@@ -92,6 +92,38 @@ export interface AskWithToolsInput {
  *  question. They must be independent — no call may depend on
  *  another call's result. */
 export const MAX_TOOL_CALLS_PER_QUESTION = 3;
+
+/**
+ * The collectible a hint question names, if it names one by name
+ * (v0.32 step-9, Demo G: the "Bigger hint" button). "Give me a hint
+ * for the Harley card" names Harley; the longest matching item name
+ * wins. Only hint questions resolve — a question that never says
+ * "hint" is not a hint question, and a hint question naming no item
+ * resolves to null (the button needs one item to escalate; it never
+ * guesses which card the player meant). The caller decides what the
+ * button does with it: with a key it calls get_hint at the next
+ * level, without a key it says so honestly.
+ */
+export function hintItemForQuestion(
+  question: string,
+  db: GameDatabase,
+): CollectibleItem | null {
+  const q = ` ${normalizeAsk(question)} `;
+  if (!q.includes(' hint ')) return null;
+  let best: CollectibleItem | null = null;
+  let bestLength = 0;
+  for (const item of db.items.values()) {
+    const name = normalizeAsk(item.name);
+    if (name.length < 3) continue;
+    // Word-boundary match, longest name wins, so "Harley Quinn"
+    // in the question matches that card rather than plain "Harley".
+    if (q.includes(` ${name} `) && name.length > bestLength) {
+      best = item;
+      bestLength = name.length;
+    }
+  }
+  return best;
+}
 
 /** The 120-marker DOM cap — the answer never reveals more locations
  *  than the map can render. */

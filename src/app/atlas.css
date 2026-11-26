@@ -2842,6 +2842,11 @@ h3 {
   font-size: 13px;
   line-height: 1.6;
 }
+/* "Bigger hint" (v0.32 step-9, Demo G): the explicit escalation
+ * button under a hint answer — one tap, next get_hint level. */
+.ask-bigger-hint {
+  margin-top: 10px;
+}
 .ask-cards {
   list-style: none;
   margin: 12px 0 0;
