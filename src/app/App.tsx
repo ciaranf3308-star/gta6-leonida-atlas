@@ -9,6 +9,8 @@ import MapView from '../features/map/MapView';
 import BottomNav from './BottomNav';
 import MapFilterSheet from '../features/map/MapFilterSheet';
 import {
+  layersForLaunch,
+  loadSavedMapView,
   mapViewFromState,
   saveMapView,
 } from '../features/map/view-persistence';
@@ -502,7 +504,15 @@ export default function App() {
   }, [markers, pendingJotSlotId, gameDb]);
   useEffect(() => {
     useAiIndexStore.getState().load();
-    useMapStore.getState().setLayers([...atlasRegistry.layers.values()]);
+    // Launch layers: public layers always open off (clean launch,
+    // v0.16.0); only the player's own my-markers choice is read back
+    // from the saved view — an explicit OFF survives a reload instead
+    // of silently coming back on from the registry default.
+    useMapStore
+      .getState()
+      .setLayers(
+        layersForLaunch([...atlasRegistry.layers.values()], loadSavedMapView()),
+      );
     // v0.16.0: restore NOTHING visible on launch (step 5: the
     // "Restore my last layers" offer died with the first-open sheet
     // that carried it — the saved view is still written on change,

@@ -1,4 +1,4 @@
-import type { Filters } from '../../domain/types';
+import type { Filters, LayerDefinition } from '../../domain/types';
 import { migrateLegacyCategory } from '../../domain/types';
 
 /**
@@ -149,4 +149,30 @@ export function mapViewFromState(
 export function savedLayersOffer(saved: SavedMapView | null): string[] {
   if (!saved) return [];
   return saved.visibleLayerIds.filter((id) => id !== 'my-markers');
+}
+
+/**
+ * Launch layers (v0.32 gang-op follow-up): the clean launch above
+ * applies to PUBLIC layers only. 'my-markers' is the player's own
+ * preference, not a spoiler — an explicit OFF must survive a reload.
+ * Before this, App's mount effect reset every layer to the registry
+ * defaults on every launch, so my-markers silently came back on after
+ * the player had switched it off (verified by probe: switch all off,
+ * Ask + Find, re-read in-session — still off; reload — checked again,
+ * and the persist effect then overwrote the saved view with the
+ * default, destroying the OFF choice). Public layers still always
+ * open off, whatever the saved view lists — only my-markers is read
+ * back. No saved view (fresh player) keeps the default ON.
+ */
+export function layersForLaunch(
+  layers: readonly LayerDefinition[],
+  saved: SavedMapView | null,
+): LayerDefinition[] {
+  if (!saved) return [...layers];
+  const visible = new Set(saved.visibleLayerIds);
+  return layers.map((layer) =>
+    layer.id === 'my-markers'
+      ? { ...layer, visible: visible.has('my-markers') }
+      : layer,
+  );
 }
