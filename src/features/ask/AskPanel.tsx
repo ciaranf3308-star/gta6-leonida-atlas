@@ -616,9 +616,17 @@ export default function AskPanel(props: AskPanelProps) {
               ? houses.kind === 'equipment'
                 ? `No verified workout equipment in ${houses.areaName} — the houses below are worth checking instead.`
                 : `No verified gym in ${houses.areaName} — the houses below are worth checking instead.`
-              : result.areaMismatch
-                ? `Nothing${scope} in that area in the map data — the nearest matching places are shown below instead.`
-                : `Nothing${scope} in the map data for that. I won't guess — try turning a layer on, or drop your own marker when you find one.`,
+              : // The honest empty answer (v0.32 gang-op follow-up,
+                // lane 2): when retrieval computed emptyAdvice, the
+                // record asked about is area-known, or the kind
+                // asked for has no layer yet — the advice says the
+                // area instead of pointing at a layer that does not
+                // exist. Otherwise the existing line, which names
+                // only layers that exist.
+                result.emptyAdvice ??
+                (result.areaMismatch
+                  ? `Nothing${scope} in that area in the map data — the nearest matching places are shown below instead.`
+                  : `Nothing${scope} in the map data for that. I won't guess — try turning a layer on, or drop your own marker when you find one.`),
             cards: [],
             totalInScope: 0,
             anchorLabel,

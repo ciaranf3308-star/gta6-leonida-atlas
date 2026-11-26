@@ -3,6 +3,8 @@ import { isUnnamedPlace } from '../../domain/types';
 import { COUNTIES, countyForPlace, countyIdFromText } from '../../data/counties';
 import { COLLECTABLE_SETS, type CollectableSet } from '../../data/collectables';
 import { ROBBABLE_SHOP_TAGS, SHOP_TAGS } from '../../data/catalogue';
+import { GUIDE_BREAKABLE_LOOT } from '../../data/breakable-homes';
+import { gangOpRecordForLocation } from '../../data/gang-operations';
 import { housesToCheck, isWorkoutMarker } from '../../domain/gym-check';
 import { userTagsMatchLayer } from '../../domain/user-tags';
 import {
@@ -138,6 +140,16 @@ export interface AskRetrievalResult {
    * question was asked and a proximity verdict exists.
    */
   ruleNote: string | null;
+  /**
+   * Honest empty-answer advice (v0.32 gang-op follow-up, lane 2),
+   * used only when records is empty: the area instead of a layer
+   * when the record asked about is area-known, and the gang-op
+   * area-only line when the question asked for gang ops by kind but
+   * no 'gang-op' layer is defined yet. Null when the generic "try
+   * turning a layer on" line is the honest one — that line names
+   * only layers that exist, via requestedLayerNames.
+   */
+  emptyAdvice: string | null;
 }
 
 export function normalizeAsk(text: string): string {
@@ -723,6 +735,50 @@ function formatDistance(units: number): string {
 }
 
 /**
+ * The area-known answer for a named place with no verified position
+ * (v0.32 gang-op follow-up, lane 2): its area + likely area + safe
+ * code / loot where known, in two sentences. The verdict shows the
+ * first two sentences (shortVerdict), so the facts that matter —
+ * gang, area, likely area, no position, code — are in them, never
+ * in a third sentence the panel cuts off. Null for positioned places
+ * and unnamed "?" records: neither is an area-known answer.
+ */
+function areaKnownSummaryFor(place: Place): string | null {
+  if (place.position !== null || isUnnamedPlace(place)) return null;
+  const record = gangOpRecordForLocation(place.id);
+  if (record) {
+    // The likely area is the guide's area lead, minus the region it
+    // already repeats ("Port Gellhorn, north of the Pay 'n' Spray"
+    // after "Port Gellhorn, Kelly County" is just its second half).
+    const regionFirst = record.region.split(',')[0] ?? '';
+    let detail = record.areaLead;
+    if (detail.startsWith(`${regionFirst}, `)) detail = detail.slice(regionFirst.length + 2);
+    else if (detail.endsWith(`, ${record.region}`)) detail = detail.slice(0, -record.region.length - 2);
+    else if (detail === record.region) detail = '';
+    const first = `${record.name} is a ${record.gang} illegal operation in ${record.region}${detail ? ` — ${detail}` : ''}.`;
+    const loot = record.loot.contents;
+    const second =
+      record.loot.code !== undefined
+        ? `It has no verified position, so it can't be pinned on the map — the safe code is ${record.loot.code}.`
+        : loot.length > 0
+          ? `It has no verified position, so it can't be pinned on the map — the guides list ${loot
+              .slice(0, 2)
+              .join(' and ')} among the key valuables.`
+          : `It has no verified position, so it can't be pinned on the map, and no guide has published its key valuables yet.`;
+    return `${first} ${second}`;
+  }
+  // Any other area-known place: title + region, then no position +
+  // the guide loot where the breakable-loot map has it (Parlor
+  // Apartments is the gang-op case above, not this one).
+  const loot = GUIDE_BREAKABLE_LOOT.get(place.id);
+  const first = `${place.title} is in ${place.region}.`;
+  const second = loot
+    ? `It has no verified position, so it can't be pinned on the map — the guides list ${loot.charAt(0).toLowerCase() + loot.slice(1)}`
+    : `It has no verified position, so it can't be pinned on the map — it is listed by area only.`;
+  return `${first} ${second}`;
+}
+
+/**
  * The proximity verdict, in plain words, from the computed distances.
  * Never calls a far place near: when nothing is within NEAR_DISTANCE_UNITS
  * it says so first, names the nearest with its area, and says it is a long
@@ -739,7 +795,12 @@ function proximitySummaryFor(
     return `There is no verified position for ${areaName} in the map data, so how far away things are from there cannot be measured.`;
   }
   const positioned = records.filter((p) => distances.has(p.id));
-  if (positioned.length === 0) return null;
+  if (positioned.length === 0) {
+    // Every record in scope is area-known: no distance was ever
+    // measured, so the answer must never claim "these are the
+    // nearest" — the fallback verdict would, and it would be a lie.
+    return `There is no ${noun} with a verified position near ${areaName} in the map data, so how far away things are cannot be measured.`;
+  }
   const nearest = [...positioned].sort(
     (a, b) => (distances.get(a.id) ?? Infinity) - (distances.get(b.id) ?? Infinity),
   )[0]!;
@@ -800,6 +861,54 @@ export function tagMatchesLayer(place: Place, layerId: string): boolean {
 export function retrieveForAsk(input: AskRetrievalInput): AskRetrievalResult {
   const { question, places, layers } = input;
   let requestedLayerIds = layersRequestedByQuestion(question, layers);
+  // A PLACE named by its full title beats a SET named by one
+  // signature word inside that title ("where is Manatee Motel?" is
+  // the motel, not the Vice City Manatees cards — the motel's name
+  // says more than the set word alone). The set route only ever
+  // fires on a signature word (or the set's full name); when the
+  // anchor's short name carries a word beyond the set's name, the
+  // question names the place, so the set layers drop out and the
+  // bare-place fallback below brings the anchor's own layer in
+  // instead. A place whose short name adds NOTHING to the set name
+  // ("Delights", "Jack of Hearts", "NINE1NINE") keeps the Delights
+  // ruling: the set wins, unless a kind is named.
+  const namedSetForPlace = cardSetForQuestion(question);
+  const anchorForPlace = anchorForQuestion(question, places);
+  if (
+    namedSetForPlace &&
+    anchorForPlace &&
+    requestedLayerIds.every((id) => id.startsWith('cards:') || id === 'loot-collectibles')
+  ) {
+    const stem = (word: string): string => (word.endsWith('s') ? word.slice(0, -1) : word);
+    const setWords = new Set(normalizeAsk(namedSetForPlace.name).split(' ').map(stem));
+    const short = normalizeAsk(
+      (anchorForPlace.title.split(' — ')[0] ?? anchorForPlace.title).split(',')[0] ?? '',
+    );
+    const extra = short
+      .split(' ')
+      .filter((word) => word.length > 0 && !setWords.has(stem(word)));
+    if (extra.length > 0) requestedLayerIds = [];
+  }
+  if (!namedSetForPlace && anchorForPlace && requestedLayerIds.length > 0) {
+    // Kind words inside a place name do not hijack a "where is X?"
+    // question ("where is Gas Station Meth Front?" is the op, not a
+    // request for the Vehicle services layer — "gas" is in its
+    // name). If nothing outside the anchor's short name asks for a
+    // layer, the question is about the place: drop the kind scope
+    // and let the bare-place fallback below bring the anchor's own
+    // layer in instead. A kind question that ALSO names a kind
+    // outside the place ("shops near Starlet Motel") keeps its scope
+    // — the remainder still asks for it.
+    const short = normalizeAsk(
+      (anchorForPlace.title.split(' — ')[0] ?? anchorForPlace.title).split(',')[0] ?? '',
+    );
+    if (short.length > 0) {
+      const withoutAnchor = normalizeAsk(question).split(short).join(' ');
+      if (layersRequestedByQuestion(withoutAnchor, layers).length === 0) {
+        requestedLayerIds = [];
+      }
+    }
+  }
   // A bare PLACE name brings its layer into scope (the same bare-name
   // class as the set fix above): "Starlet Motel" or "NINE1NINE" with
   // every layer off must answer with that place, not "Nothing in the
@@ -935,14 +1044,23 @@ export function retrieveForAsk(input: AskRetrievalInput): AskRetrievalResult {
   let anchor: Place | null = null;
   let areaWord: string | null = null;
   let namedCounty: string | null = null;
-  for (const scopeQuestion of scopeQuestions) {
+  // Whether the scope above came from the CURRENT question: a
+  // follow-up inherits the earlier question's PLACE for distances,
+  // never as the subject of a new answer — the area-known path below
+  // only fires on a current-question anchor.
+  let scopeFromCurrentQuestion = false;
+  for (let i = 0; i < scopeQuestions.length; i += 1) {
+    const scopeQuestion = scopeQuestions[i]!;
     anchor = anchorForQuestion(scopeQuestion, places);
     areaWord = areaWordForQuestion(scopeQuestion, places);
     namedCounty =
       countyIdFromText(scopeQuestion) ??
       COUNTIES.find((c) => hasWord(normalizeAsk(scopeQuestion), c.id))?.id ??
       null;
-    if (anchor || areaWord || namedCounty) break;
+    if (anchor || areaWord || namedCounty) {
+      scopeFromCurrentQuestion = i === 0;
+      break;
+    }
     anchor = null;
     areaWord = null;
     namedCounty = null;
@@ -1058,6 +1176,40 @@ export function retrieveForAsk(input: AskRetrievalInput): AskRetrievalResult {
     }
   }
 
+  // AREA-KNOWN ANSWER (v0.32 gang-op follow-up, lane 2): the
+  // question names a place the catalogue knows by area only — no
+  // verified position, so no distance can ever be measured from it.
+  // The answer is the place itself first, its same-region area-mates
+  // after it, and a summary built from the place's own facts (area,
+  // gang, safe code / loot) — never a proximity verdict, never
+  // "Nothing in the map data". The anchor here is the place the
+  // CURRENT question names by title — NOT the scope loop's anchor,
+  // which an area word can overwrite with the area's centroid
+  // representative ("where is Watson Bay Safehouse?" must answer
+  // the Safehouse, not the Palmer warehouse that shares its bay).
+  // Only when that named place is in scope: a kind question that
+  // merely measures from a place ("gyms near Brooks Boatworks")
+  // keeps its own scope, and a follow-up never inherits a subject.
+  const namedAnchor = anchorForQuestion(question, places);
+  const unpositionedAnchor =
+    scopeFromCurrentQuestion &&
+    namedAnchor !== null &&
+    namedAnchor.position === null &&
+    !isUnnamedPlace(namedAnchor) &&
+    scoped.some((p) => p.id === namedAnchor!.id)
+      ? namedAnchor
+      : null;
+  if (unpositionedAnchor) {
+    areaLabel = `near ${unpositionedAnchor.title}`;
+    const anchorRegion = normalizeAsk(unpositionedAnchor.region);
+    scoped = [
+      unpositionedAnchor,
+      ...scoped.filter(
+        (p) => p.id !== unpositionedAnchor!.id && normalizeAsk(p.region) === anchorRegion,
+      ),
+    ];
+  }
+
   const records = scoped.slice(0, ASK_MAX_RECORDS);
   const anchorDistances = new Map<string, number>();
   if (anchorPosition) {
@@ -1112,9 +1264,12 @@ export function retrieveForAsk(input: AskRetrievalInput): AskRetrievalResult {
   }
 
   const noun = placeNounForLayers(requestedLayerIds);
+  // The area-known summary replaces the proximity verdict outright:
+  // there is no distance to report for a place with no position.
+  const areaKnownSummary = unpositionedAnchor ? areaKnownSummaryFor(unpositionedAnchor) : null;
   let proximitySummary: string | null = null;
   if (areaLabel && (anchorPosition || anchor)) {
-    proximitySummary = proximitySummaryFor(
+    proximitySummary = areaKnownSummary ?? proximitySummaryFor(
       areaLabel.startsWith('near ') ? areaLabel.slice('near '.length) : areaLabel,
       noun,
       records,
@@ -1127,7 +1282,9 @@ export function retrieveForAsk(input: AskRetrievalInput): AskRetrievalResult {
     // when it is near — this line says where to get one when there is
     // none. Equipment the user knows about is in a garage in a house:
     // the houses below are the ones to check, not a guessed pin.
-    if (asksWorkout && nearCount === 0 && proximitySummary) {
+    // Not for an area-known answer: that answer is about the named
+    // place, not about where to work out.
+    if (asksWorkout && nearCount === 0 && proximitySummary && !areaKnownSummary) {
       if (asksEquipment && !asksGyms) {
         proximitySummary +=
           ' Workout equipment in a garage in a house is not in the public map data yet — no source lists it. If you mark a house yourself, Ask will use your marker next time.';
@@ -1157,6 +1314,42 @@ export function retrieveForAsk(input: AskRetrievalInput): AskRetrievalResult {
       ? (DARK_BLUE_RULE.split(/(?<=[.!])\s+/).filter(Boolean)[0] ?? null)
       : null;
 
+  // EMPTY-ANSWER ADVICE (v0.32 gang-op follow-up, lane 2): the "try
+  // turning a layer on" line is only ever actionable when a layer
+  // exists to turn on. When the question asked for gang ops by kind
+  // but no 'gang-op' layer is defined yet, say so and name one by
+  // name — that check comes FIRST, so an incidental area anchor
+  // (e.g. the Lost Vista trailers for "gang operations in Lost
+  // Vista") never answers a kind question about something else.
+  // When the question named an area-known record, say the area
+  // instead — a layer toggle can never pin it, so the advice names
+  // the place, its gang and its code, and points at Find. Otherwise
+  // null, and AskPanel keeps its existing line (which names only
+  // layers that exist, via requestedLayerNames).
+  let emptyAdvice: string | null = null;
+  if (records.length === 0) {
+    if (asksForGangOps(question) && !layers.some((layer) => layer.id === 'gang-op')) {
+      emptyAdvice =
+        'Gang operations are listed by area only — no verified positions, so no layer can pin them on the map. Ask for one by name, like "where is Brooks Boatworks?", and I will tell you its area and safe code.';
+    } else {
+      // The place the current question names, else the scope loop's
+      // anchor (an inherited follow-up subject, or the area's
+      // representative for a bare area question).
+      const adviceAnchor = namedAnchor ?? anchor;
+      if (
+        adviceAnchor &&
+        !adviceAnchor.position &&
+        !isUnnamedPlace(adviceAnchor) &&
+        (requestedLayerIds.length === 0 || requestedLayerIds.includes(adviceAnchor.layerId))
+      ) {
+        const summary = areaKnownSummaryFor(adviceAnchor);
+        emptyAdvice = summary
+          ? `${summary} Find lists it by name, or drop your own marker when you find it.`
+          : `${adviceAnchor.title} is in ${adviceAnchor.region} — it has no verified position, so it can't be pinned on the map. Find lists it by name, or drop your own marker when you find it.`;
+      }
+    }
+  }
+
   return {
     records,
     requestedLayerIds,
@@ -1175,5 +1368,6 @@ export function retrieveForAsk(input: AskRetrievalInput): AskRetrievalResult {
     housesAreaName,
     housesKind: houses.length > 0 ? housesKind : null,
     ruleNote,
+    emptyAdvice,
   };
 }

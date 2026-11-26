@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { LayerDefinition, Place } from '../../src/domain/types';
 import { DEFAULT_LAYERS } from '../../src/features/map/layers';
+import { GANG_OPERATIONS, GANG_OP_PLACES } from '../../src/data/gang-operations';
+import { shortVerdict } from '../../src/features/ask/cards';
 import {
   asksForGangOps,
   cardSetForQuestion,
@@ -728,6 +730,225 @@ describe('Ask Nylah — gang-op keyword routing (v0.32 gang-op follow-up, lane 2
     const noGangOp = layers().filter((layer) => layer.id !== 'gang-op');
     expect(asksForGangOps('show me the gang operations')).toBe(true);
     expect(layersRequestedByQuestion('show me the gang operations', noGangOp)).toEqual([]);
+  });
+});
+
+describe('Ask Nylah — area-known answers (v0.32 gang-op follow-up, lane 2)', () => {
+  const ask = (
+    question: string,
+    places: readonly Place[],
+    layerList: readonly LayerDefinition[] = layersWithGangOp(),
+    extra: { priorQuestions?: readonly string[] } = {},
+  ) =>
+    retrieveForAsk({
+      question,
+      places,
+      layers: layerList,
+      filters: { hideFound: false, remainingOnly: false, countyId: null },
+      ...extra,
+    });
+
+  it('"where is Brooks Boatworks?" names the op, gang, area, likely area and safe code — never a proximity verdict', () => {
+    const result = ask('where is Brooks Boatworks?', GANG_OP_PLACES);
+    expect(result.requestedLayerIds).toEqual(['gang-op']);
+    expect(result.records[0]?.id).toBe('gang-op:brooks-boatworks');
+    // The anchor first, then its Port Gellhorn area-mates — never
+    // the whole 37, and never another layer's places.
+    expect(result.records.map((p) => p.id).sort()).toEqual(
+      [
+        'gang-op:brooks-boatworks',
+        'gang-op:kingpin-bowling',
+        'gang-op:june-warehouse',
+        'gang-op:la-cascara-motel',
+        'gang-op:stash-house',
+        'gang-op:backroom-weed-front',
+      ].sort(),
+    );
+    expect(result.records.every((p) => p.layerId === 'gang-op')).toBe(true);
+    expect(result.anchorPlace?.id).toBe('gang-op:brooks-boatworks');
+    expect(result.areaLabel).toBe('near Brooks Boatworks');
+    expect(result.proximitySummary).toMatch(/Brooks Boatworks/);
+    expect(result.proximitySummary).toMatch(/Kolts & Associates/);
+    expect(result.proximitySummary).toMatch(/Port Gellhorn, Kelly County/);
+    expect(result.proximitySummary).toMatch(/north of the Pay 'n' Spray/);
+    expect(result.proximitySummary).toMatch(/no verified position/);
+    expect(result.proximitySummary).toMatch(/6823/);
+    expect(result.proximitySummary).not.toMatch(/nearest|map units away|long way across the map/);
+    // The verdict shows the first two sentences — the code is in them.
+    expect(shortVerdict(result.proximitySummary)).toMatch(/6823/);
+    expect(shortVerdict(result.proximitySummary)).toMatch(/no verified position/);
+  });
+
+  it('"where is Brooks Boatworks?" works against the real DEFAULT_LAYERS', () => {
+    // Lane 1's 'gang-op' definition is in the tree (committed) —
+    // the bare-name path works end to end, not just on a fixture.
+    const result = ask('where is Brooks Boatworks?', GANG_OP_PLACES, layers());
+    expect(result.records[0]?.id).toBe('gang-op:brooks-boatworks');
+    expect(result.proximitySummary).toMatch(/6823/);
+  });
+
+  it('every one of the 37 area-known gang ops answers by bare name', () => {
+    for (const op of GANG_OPERATIONS.filter((record) => record.hostLocationId === undefined)) {
+      const result = ask(`where is ${op.name}?`, GANG_OP_PLACES);
+      expect(result.records[0]?.id).toBe(op.id);
+      expect(result.proximitySummary).toContain(op.region);
+      expect(result.proximitySummary).toMatch(/no verified position/);
+      expect(result.proximitySummary).not.toMatch(/nearest .* map units away/i);
+      if (op.loot.code) expect(result.proximitySummary).toContain(op.loot.code);
+    }
+  });
+
+  it('a gang-op kind question answers from the whole list, with the real layer list', () => {
+    const result = retrieveForAsk({
+      question: 'show me the gang operations',
+      places: GANG_OP_PLACES,
+      layers: layers(),
+      filters: { hideFound: false, remainingOnly: false, countyId: null },
+    });
+    expect(result.requestedLayerIds).toEqual(['gang-op']);
+    expect(result.totalInScope).toBe(37);
+    expect(result.records).toHaveLength(30); // ASK_MAX_RECORDS cap
+    expect(result.records.every((p) => p.layerId === 'gang-op')).toBe(true);
+  });
+
+  it('before the gang-op layer exists, the bare Brooks question answers from the area — never "turn a layer on"', () => {
+    const noGangOp = layers().filter((layer) => layer.id !== 'gang-op');
+    const result = ask('where is Brooks Boatworks?', GANG_OP_PLACES, noGangOp);
+    expect(result.records).toHaveLength(0);
+    expect(result.emptyAdvice).toMatch(/Brooks Boatworks/);
+    expect(result.emptyAdvice).toMatch(/Kolts & Associates/);
+    expect(result.emptyAdvice).toMatch(/Port Gellhorn, Kelly County/);
+    expect(result.emptyAdvice).toMatch(/no verified position/);
+    expect(result.emptyAdvice).toMatch(/6823/);
+    expect(result.emptyAdvice).toMatch(/Find lists it by name/);
+    expect(result.emptyAdvice).not.toMatch(/turn a layer on/i);
+  });
+
+  it('before the gang-op layer exists, a gang-op kind question says the ops are area-only', () => {
+    const noGangOp = layers().filter((layer) => layer.id !== 'gang-op');
+    const result = ask('show me the gang operations', GANG_OP_PLACES, noGangOp);
+    expect(result.records).toHaveLength(0);
+    expect(result.emptyAdvice).toMatch(/listed by area only/);
+    expect(result.emptyAdvice).toMatch(/Brooks Boatworks/);
+    expect(result.emptyAdvice).not.toMatch(/turn a layer on/i);
+  });
+
+  it('a gang-op kind question in an area never answers about that area’s other places', () => {
+    // "gang operations in Lost Vista" before the layer exists: the
+    // area's representative (the Lost Vista trailers, a breakable
+    // place) must not answer a question about gang ops.
+    const noGangOp = layers().filter((layer) => layer.id !== 'gang-op');
+    const places = [
+      ...GANG_OP_PLACES,
+      place({
+        id: 'breakable:lost-vista-trailers',
+        title: 'Lost Vista trailers',
+        layerId: 'breakable',
+        position: null,
+        region: 'Lost Vista',
+        tags: ['breakable', 'house', 'enterable', 'trailer'],
+      }),
+    ];
+    const result = ask('gang operations in Lost Vista', places, noGangOp);
+    expect(result.records).toHaveLength(0);
+    expect(result.emptyAdvice).toMatch(/Gang operations are listed by area only/);
+    expect(result.emptyAdvice).not.toMatch(/Lost Vista trailers/);
+  });
+
+  it('"gang operations near Capri" never claims the nearest — nothing is positioned', () => {
+    const places = [
+      ...GANG_OP_PLACES,
+      place({
+        id: 'L672',
+        title: 'Train Bridge, Capri',
+        layerId: 'community',
+        position: { x: -6837, y: 769 },
+        region: 'Capri',
+        category: 'vehicles',
+      }),
+    ];
+    const result = ask('gang operations near Capri', places);
+    expect(result.requestedLayerIds).toEqual(['gang-op']);
+    expect(result.records.length).toBeGreaterThan(0);
+    expect(result.proximitySummary).toMatch(
+      /no gang operation with a verified position near capri/i,
+    );
+    expect(result.proximitySummary).not.toMatch(/these are the nearest/i);
+  });
+
+  it('a place named by its full title beats a set named by one word inside it — "Manatee Motel" is the motel', () => {
+    // "manatee" is the Vice City Manatees set's signature word, so
+    // the bare set route hijacked the question before this: the
+    // motel's name says more than the set word alone, so the place
+    // wins and the set narrowing stays off.
+    const result = ask('where is Manatee Motel?', GANG_OP_PLACES);
+    expect(result.requestedLayerIds).toEqual(['gang-op']);
+    expect(result.records[0]?.id).toBe('gang-op:manatee-motel');
+    expect(result.proximitySummary).toMatch(/Manatee Motel/);
+    expect(result.proximitySummary).toMatch(/Kingfishers/);
+    expect(result.proximitySummary).toMatch(/Grassrivers, Mariana County/);
+  });
+
+  it('a place whose name adds nothing to the set name keeps the set ruling — "Delights" is the set', () => {
+    // L629 "Delights, Interstate 404, Port Gellhorn" shares the set
+    // word and adds no word of its own: the bare name is the set's
+    // cards, per the Delights precedent — the place does not steal it.
+    const places = [
+      ...GANG_OP_PLACES,
+      place({
+        id: 'L629',
+        title: 'Delights, Interstate 404, Port Gellhorn',
+        layerId: 'community',
+        position: { x: -6000, y: 3000 },
+        region: 'Port Gellhorn',
+        category: 'exploration',
+      }),
+      place({
+        id: 'card:vicki',
+        title: 'Vicki — Delights Dancers',
+        layerId: 'cards:delights-dancers',
+        position: { x: 100, y: 100 },
+        region: 'Corner Store, Capri',
+        tags: ['collectible', 'card'],
+      }),
+    ];
+    const result = ask('Delights', places);
+    expect(result.records.map((p) => p.id)).toContain('card:vicki');
+    expect(result.records.map((p) => p.id)).not.toContain('L629');
+  });
+
+  it('a kind word inside a place name does not hijack the question — "Gas Station Meth Front" is the op', () => {
+    // "gas" is a shop word, so the kind router asked for the Vehicle
+    // services layer before this — but the question names the op by
+    // its full title, and nothing outside that title asks for a layer.
+    const result = ask('where is Gas Station Meth Front?', GANG_OP_PLACES);
+    expect(result.requestedLayerIds).toEqual(['gang-op']);
+    expect(result.records[0]?.id).toBe('gang-op:gas-station-meth-front');
+    expect(result.proximitySummary).toMatch(/Gas Station Meth Front/);
+    expect(result.proximitySummary).toMatch(/Emerald Springs, Kelly County/);
+    expect(result.proximitySummary).toMatch(/no verified position/);
+    // …while a kind question that names a kind outside the place
+    // keeps its own scope: "shops near Starlet Motel" is shops.
+    const shops = ask('shops near Starlet Motel', FIXTURES);
+    expect(shops.requestedLayerIds).not.toContain('interiors');
+  });
+
+  it('a follow-up after Brooks does not re-answer Brooks as its subject', () => {
+    const result = ask('show me the gang operations', GANG_OP_PLACES, layersWithGangOp(), {
+      priorQuestions: ['where is Brooks Boatworks?'],
+    });
+    expect(result.requestedLayerIds).toEqual(['gang-op']);
+    expect(result.records).toHaveLength(30);
+    // The inherited anchor is for distances only — the answer is the
+    // whole list, not a Brooks summary.
+    expect(result.proximitySummary).toBeNull();
+    expect(result.records[0]?.id).toBe('gang-op:fishing-shacks');
+  });
+
+  it('a general question with no anchor and no layer keeps the generic advice', () => {
+    const result = ask("what's around here?", GANG_OP_PLACES, layersWithGangOp());
+    expect(result.records).toHaveLength(0);
+    expect(result.emptyAdvice).toBeNull();
   });
 });
 
