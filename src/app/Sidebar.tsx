@@ -30,6 +30,8 @@ import {
 import { SavedPlaces } from '../features/library/SavedPlaces';
 import { ProgressPanel } from '../features/completion/ProgressPanel';
 import { Journal } from '../features/completion/Journal';
+import { Album, type AlbumScreenshotPreset } from '../features/album/Album';
+import { ScreenshotMatchPanel } from '../features/album/ScreenshotMatchPanel';
 import { MatcherPanel } from '../features/ask/MatcherPanel';
 import { completedPlaceIds } from '../features/completion/place-ids';
 import { Status } from './Status';
@@ -713,11 +715,66 @@ export function CollectionsPanel({
   db?: GameDatabase | null;
   onSelect?: (id: string) => void;
 }) {
+  // Demo F: the album is the Collections view over the same items and
+  // the same completion log as the journal — List is the journal rows,
+  // Album is the 480-slot card album. The screenshot-match sheet is
+  // shared by both views (and by per-set / per-card buttons inside
+  // the album) via the preset.
+  const [view, setView] = useState<'list' | 'album'>('list');
+  const [matchOpen, setMatchOpen] = useState(false);
+  const [matchPreset, setMatchPreset] = useState<AlbumScreenshotPreset | null>(null);
+  const [photosRefresh, setPhotosRefresh] = useState(0);
+  function openScreenshotMatch(preset: AlbumScreenshotPreset) {
+    setMatchPreset(preset);
+    setMatchOpen(true);
+  }
   return (
     <div className="sidebar-content">
       <SavedPlaces foundIds={db ? completedPlaceIds(db) : new Set<string>()} />
       <MatcherPanel db={db ?? null} />
-      <Journal db={db ?? null} onSelectPlace={onSelect} />
+      <div className="collections-view-switch" role="group" aria-label="Collections view">
+        <button
+          type="button"
+          className="button"
+          aria-pressed={view === 'list'}
+          onClick={() => setView('list')}
+        >
+          List
+        </button>
+        <button
+          type="button"
+          className="button"
+          aria-pressed={view === 'album'}
+          onClick={() => setView('album')}
+        >
+          Album
+        </button>
+        <button
+          type="button"
+          className="button"
+          onClick={() => openScreenshotMatch({ kind: 'card-front' })}
+        >
+          Add from screenshot
+        </button>
+      </div>
+      <ScreenshotMatchPanel
+        db={db ?? null}
+        open={matchOpen}
+        preset={matchPreset}
+        onClose={() => setMatchOpen(false)}
+        onApplied={() => setPhotosRefresh((current) => current + 1)}
+        onPhotoSaved={() => setPhotosRefresh((current) => current + 1)}
+      />
+      {view === 'album' ? (
+        <Album
+          db={db ?? null}
+          onSelectPlace={onSelect}
+          onAddFromScreenshot={openScreenshotMatch}
+          photosRefresh={photosRefresh}
+        />
+      ) : (
+        <Journal db={db ?? null} onSelectPlace={onSelect} />
+      )}
       <AddToMapSection />
     </div>
   );

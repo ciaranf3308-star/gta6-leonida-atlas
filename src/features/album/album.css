@@ -1,0 +1,438 @@
+/* ---- Card album (v0.32 Demo F, DESIGN-ADDENDUM §3.2 + §3.3). ---- */
+/* The face of a card is real art, the player's own photo, or the
+ * honest empty slot — never a generated face. The silhouette below
+ * is a generic card back (CSS only): no art, no face. Rarity frames
+ * are CSS only and apply to collected cards alone. */
+
+.album-set-actions {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 8px 0;
+}
+
+.album-set-hint {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.album-cover {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+}
+
+.album-cover-name {
+  font-weight: 600;
+}
+
+.album-cover-count {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.album-cover-remaining {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.album-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 10px 0 4px;
+}
+
+.album-card {
+  border: 1px solid var(--border-soft);
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.album-card.is-found {
+  border-color: var(--orange);
+  border-width: 2px;
+  padding: 9px;
+}
+
+.album-card.is-found.rarity-bronze {
+  border-color: #a67c52;
+}
+
+.album-card.is-found.rarity-silver {
+  border-color: #9aa5b1;
+  box-shadow: 0 0 0 1px rgba(154, 165, 177, 0.35);
+}
+
+.album-card.is-found.rarity-gold {
+  border-color: #c9a227;
+  box-shadow: 0 0 12px rgba(201, 162, 39, 0.25);
+}
+
+.album-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.album-card-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text);
+  min-width: 0;
+}
+
+.album-card-label input {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  accent-color: var(--coral);
+}
+
+.album-card-name {
+  overflow-wrap: anywhere;
+}
+
+.album-card-name small {
+  color: var(--muted);
+}
+
+.album-sold-ribbon {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--coral);
+  border-radius: 999px;
+  padding: 3px 8px;
+}
+
+.album-card-face {
+  width: 100%;
+}
+
+.album-silhouette {
+  width: 100%;
+  aspect-ratio: 5 / 7;
+  border-radius: 10px;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      var(--surface-raised) 0 10px,
+      transparent 10px 20px
+    );
+  border: 1px solid var(--border-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.album-silhouette span {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+}
+
+.album-photo {
+  width: 100%;
+  aspect-ratio: 5 / 7;
+  object-fit: cover;
+  border-radius: 10px;
+  display: block;
+  border: 1px solid var(--border-soft);
+}
+
+.album-art-empty {
+  width: 100%;
+  aspect-ratio: 5 / 7;
+  border-radius: 10px;
+  border: 1px dashed var(--border-soft);
+  background: var(--surface-raised);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  text-align: center;
+}
+
+.album-art-empty span {
+  font-size: 12px;
+  color: var(--text);
+}
+
+.album-art-empty small {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.album-card-found {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.album-card-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.album-card-actions .text-button {
+  padding: 0;
+  min-height: 32px;
+}
+
+.album-card-back {
+  border-top: 1px solid var(--border-soft);
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--text);
+}
+
+.album-card-back p {
+  margin: 0;
+}
+
+.album-card-back-empty {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.album-sale {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.album-sale .text-button {
+  padding: 0;
+  min-height: 32px;
+}
+
+.album-sale-price {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.album-sale-price input {
+  width: 110px;
+  min-height: 40px;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 6px 10px;
+  font-size: 14px;
+}
+
+/* ---- Screenshot match (v0.32 Demo F, DESIGN-ADDENDUM §3.5). ---- */
+
+.screenshot-match {
+  border-top: 1px solid var(--border-soft);
+  padding-top: 12px;
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.screenshot-match-nokey {
+  border: 1px solid var(--orange);
+  background: var(--surface-raised);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.screenshot-match-kind {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.screenshot-match-kind label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  min-height: 40px;
+}
+
+.screenshot-match-set {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.screenshot-match-set select {
+  min-height: 44px;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 6px 10px;
+  font-size: 14px;
+}
+
+.screenshot-match-target {
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.screenshot-match-file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.screenshot-match-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.screenshot-match-preview {
+  width: 100%;
+  max-height: 280px;
+  object-fit: contain;
+  border-radius: 10px;
+  border: 1px solid var(--border-soft);
+  background: var(--surface-raised);
+}
+
+.screenshot-match-note {
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.screenshot-match-results {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.screenshot-match-results h4 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.screenshot-match-proposals {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.screenshot-match-proposal {
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.screenshot-match-proposal label {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.screenshot-match-proposal label input {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  accent-color: var(--coral);
+}
+
+.screenshot-match-proposal-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.screenshot-match-proposal-actions .text-button {
+  padding: 0;
+  min-height: 32px;
+}
+
+.screenshot-match-batch-note {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.screenshot-match-dropped {
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.screenshot-match-dropped h5 {
+  margin: 0 0 4px;
+  font-size: 13px;
+}
+
+.screenshot-match-dropped ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.screenshot-match-local {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ---- Collections view switch (Demo F). ---- */
+
+.collections-view-switch {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 10px 0 4px;
+}
+
+.collections-view-switch .button {
+  min-height: 40px;
+}
