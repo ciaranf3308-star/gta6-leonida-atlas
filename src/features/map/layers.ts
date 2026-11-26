@@ -311,6 +311,29 @@ export function layersWithCategoryEnabled(
   );
 }
 
+/**
+ * The Collectibles quick-filter chip turns on every collectibles layer:
+ * one per trading-card set (cards:<set>) AND the Loot Map collectibles
+ * (loot-collectibles: meditations + guide collectibles). Before v0.31.5
+ * the chip only turned on the cards:* layers, so it showed 3 hero pins
+ * at island zoom and hid the 20 loot collectibles entirely (reported
+ * 2026-11-26: "when I click collectables .. 3 entry's on the whole map
+ * show"). The 3-at-island-zoom collapse itself is by design:
+ * selectHeroPlaces allows one pin per 2200-unit cell, and Vicki shares
+ * the Starlet Motel cell with Victor Maravilla while Reggie Pierce
+ * shares the Drive-In cell with Lexi Campbell.
+ */
+export function collectiblesChipLayerIds(
+  layers: readonly LayerDefinition[],
+): string[] {
+  return layers
+    .filter(
+      (layer) =>
+        layer.id.startsWith('cards:') || layer.id === 'loot-collectibles',
+    )
+    .map((layer) => layer.id);
+}
+
 /** Unpositioned records remain available to the catalogue; the spatial index omits them. */
 export function getVisiblePlaces(
   places: readonly Place[],

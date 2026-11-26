@@ -11,6 +11,21 @@ export interface LeonidaAtlasRelease {
 /** Retained public history starts at v0.5.0; the newest release stays first. */
 export const LEONIDA_ATLAS_RELEASES: readonly LeonidaAtlasRelease[] = [
   {
+    version: "v0.31.5",
+    date: "2026-11-26",
+    title: "Collectibles shows all of them — every card is in the data",
+    summary:
+      "Tapping Collectibles showed only 3 entries: the chip turned on the card-set layers but left out the Loot Map collectibles. It now turns on both, and the 480-slot card checklist is in the data — 40 pinned, 440 with a written direction, none with nothing. The album UI that shows all 480 is v0.32.",
+    status: "public",
+    highlights: [
+      "Collectibles chip fixed (reported 2026-11-26): tapping Collectibles showed only 3 entries on the whole map. The chip turned on only the trading-card set layers (cards:*) and left out the Loot Map collectibles (loot-collectibles: 10 meditations + 10 guide collectibles), so 20 places never appeared. The chip now turns on both. The 3-at-island-zoom part is not a bug: the map allows one hero pin per 2200-unit cell, and Vicki shares the Starlet Motel cell with Victor Maravilla while Reggie Pierce shares the Drive-In cell with Lexi Campbell — at street zoom they separate.",
+      "480-slot card checklist in the data: every one of the 480 in-game collection slots is now a trackable record (597 checklist items: 480 slots + 117 extra tiers that have no collection slot — Crystal Standard fills two slots, so 479 distinct pairs cover the 480). 40 slots are pinned to a host building (37 cards:* pins + 3 Loot Map dancer cards), 440 carry a written direction (area + street/landmark) with no pin yet, and none is left with nothing. The pinning rule is unchanged: a pin only where the direction names a host building that exists in the GTADB data and the guide's area agrees with it — no pin on a nearby house, an area centroid, or an estimate.",
+      "Honest note: this release puts the pins + data in. The album UI that shows all 480 slots — front/back, rarity, collected/sold, with the uncollected concealed — is v0.32. Until then the 440 area-known slots live in the data and in Ask answers, not on the map as pins.",
+      "Ask — \"cards near Capri\" now answers with a real card in Capri: Pricilla Pace (gold), Leonida Brewing Company, Capri — about 500 map units away. Before this release the nearest card to Capri was Jason at Delights, ~3,400 away. The Delights Dancers set question still returns 4 cards, not 5: \"Delights\" is also an area word, so the Loot Map Harley drops out of the set ask. That needs the v0.32 structured Ask, not another patch here.",
+    ],
+    verification: ["[LEAD-VERIFICATION]"],
+  },
+  {
     version: "v0.31.4",
     date: "2026-11-26",
     title: "Ask answers card-set questions — with the set, not a meditation",

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Place } from '../../src/domain/types';
 import { BASEMAP_BOUNDS, fromMapCoordinate, toMapCoordinate, isValidPosition, getFocusCenter } from '../../src/features/map/coordinates';
-import { DEFAULT_LAYERS, getVisiblePlaces, layersWithCategoryEnabled } from '../../src/features/map/layers';
+import { DEFAULT_LAYERS, collectiblesChipLayerIds, getVisiblePlaces, layersWithCategoryEnabled } from '../../src/features/map/layers';
 import { buildSpatialIndex, clusterPlaces, querySpatialIndex } from '../../src/features/map/spatial';
 
 const place = (id: string, x = 0, y = 0, layerId = 'community'): Place => ({
@@ -65,6 +65,31 @@ describe('Atlas layer visibility', () => {
     expect(layersWithCategoryEnabled(DEFAULT_LAYERS, 'all')).toEqual(DEFAULT_LAYERS);
     expect(layersWithCategoryEnabled(DEFAULT_LAYERS, 'story')).toEqual(DEFAULT_LAYERS);
     expect(DEFAULT_LAYERS.find((l) => l.id === 'shops-style')?.visible).toBe(false);
+  });
+  it('collectibles chip turns on the card sets AND the Loot Map collectibles', () => {
+    // Reported 2026-11-26: tapping Collectibles showed only 3 entries
+    // on the whole map — the chip turned on the cards:* layers but left
+    // out loot-collectibles (20 places: meditations + guide
+    // collectibles), so they never appeared.
+    const ids = collectiblesChipLayerIds(DEFAULT_LAYERS);
+    expect(ids).toContain('loot-collectibles');
+    expect(ids.filter((id) => id.startsWith('cards:'))).toHaveLength(18);
+    expect(ids).toHaveLength(19);
+    expect(
+      ids.every((id) => id.startsWith('cards:') || id === 'loot-collectibles'),
+    ).toBe(true);
+    // The predicate itself: card sets and loot-collectibles in, everything else out.
+    const base = DEFAULT_LAYERS.find((l) => l.id === 'regions')!;
+    const fake = [
+      { ...base, id: 'cards:delights-dancers' },
+      { ...base, id: 'loot-collectibles' },
+      { ...base, id: 'loot-heists' },
+      { ...base, id: 'regions' },
+    ];
+    expect(collectiblesChipLayerIds(fake)).toEqual([
+      'cards:delights-dancers',
+      'loot-collectibles',
+    ]);
   });
 });
 

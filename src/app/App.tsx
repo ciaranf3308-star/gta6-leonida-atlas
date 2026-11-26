@@ -3,7 +3,7 @@ import { Gem, LayoutGrid, MapPin, MapPinPlus, Palmtree, Scan, Search, ShoppingBa
 import { loadCatalogue, markerToPlace } from '../data/catalogue';
 import { filterPlaces } from '../domain/filter';
 import { userTagsMap } from '../domain/user-tags';
-import { DEFAULT_LAYERS, filterByVisibleLayers } from '../features/map/layers';
+import { DEFAULT_LAYERS, collectiblesChipLayerIds, filterByVisibleLayers } from '../features/map/layers';
 import { revealSet } from '../features/spoiler/visibility';
 import MapView from '../features/map/MapView';
 import BottomNav from './BottomNav';
@@ -350,7 +350,7 @@ export default function App() {
       id: 'collectibles',
       label: 'Collectibles',
       icon: Gem,
-      layers: layers.filter((l) => l.id.startsWith('cards:')).map((l) => l.id),
+      layers: collectiblesChipLayerIds(layers),
     },
   ];
   const activeChip = useMemo(() => {
