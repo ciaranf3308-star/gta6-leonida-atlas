@@ -4,6 +4,7 @@ import { loadCatalogue, markerToPlace } from '../data/catalogue';
 import { filterPlaces } from '../domain/filter';
 import { userTagsMap } from '../domain/user-tags';
 import { DEFAULT_LAYERS, collectiblesChipLayerIds, filterByVisibleLayers } from '../features/map/layers';
+import { nothingShowing, regionsDrawnCount } from '../features/map/empty-state';
 import { revealSet } from '../features/spoiler/visibility';
 import MapView from '../features/map/MapView';
 import BottomNav from './BottomNav';
@@ -240,6 +241,27 @@ export default function App() {
     () => allPlaces.find((p) => p.id === selectedId),
     [allPlaces, selectedId],
   );
+  /** Likely-area regions currently drawn — the gang-op layer's map
+   * presence. Regions are not places (no position), so showingCount
+   * never sees them; without this the "Nothing showing here" banner
+   * fires while 14 dashed region rects cover the map (v0.32 Finding 3).
+   * Same inputs MapView draws with (areas / mapPlaces / layers),
+   * so the banner agrees with the map in every state. */
+  const regionsShowingCount = useMemo(
+    () => regionsDrawnCount(areas, mapPlaces, layers),
+    [areas, mapPlaces, layers],
+  );
+  /** The empty-state banner fires only when genuinely nothing is
+   * showing: no positioned place matches AND no region is drawn.
+   * One boolean for both sites — the banner itself and MapView's
+   * prompt padding (promptVisible) — so the map never reserves
+   * space for a banner that isn't there, or vice versa. */
+  const showEmptyMapPrompt =
+    navTab === 'map' &&
+    !selected &&
+    status === 'ready' &&
+    nothingShowing(showingCount, regionsShowingCount) &&
+    anyPublicLayerVisible;
   const select = useCallback(
     (id: string) => {
       // One sheet at a time: a place pick closes Ask, the area page,
@@ -702,7 +724,7 @@ export default function App() {
           selectedAreaId={selectedAreaId}
           onSelectArea={selectArea}
           hideIsolationPill={areaPageOpen}
-          promptVisible={navTab === 'map' && !selected && status === 'ready' && showingCount === 0 && anyPublicLayerVisible}
+          promptVisible={showEmptyMapPrompt}
           editorMode={editorMode}
           preferences={preferences}
           foundIds={gameDb ? completedPlaceIds(gameDb) : new Set<string>()}
@@ -833,7 +855,7 @@ export default function App() {
          * only: layers are on but nothing matches here, so the map
          * would otherwise look broken with no explanation. One
          * compact bar, same buttons, never the centre of the map. */}
-        {navTab === 'map' && !selected && status === 'ready' && showingCount === 0 && anyPublicLayerVisible ? (
+        {showEmptyMapPrompt ? (
           <div className="empty-map-prompt" role="status">
             <strong>Nothing showing here</strong>
             <p>
