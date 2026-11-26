@@ -15,11 +15,12 @@ import { visiblePlaces } from '../spoiler/visibility';
  * (food, bars, convenience) and Vehicles (gas, mod, Pay 'n' Spray).
  * The split is real but honest: at GTADB revision 2e9e194 three of
  * the four have verified named pins (Food & Drink 30, Vehicles 9,
- * Style 1 — the Au Courant hair salon). Weapons has none — every
- * #guns / #clothes / #tattoos / #shoes record is still an unnamed
- * "?" or filed under Robberies / Breakable homes — so that layer
- * exists with 0 places and the Layers list says so instead of
- * showing an empty toggle.
+ * Style 1 — the Au Courant hair salon). Weapons has 3 verified named
+ * gun shops in the data (Phil's Ammu-Nation, Pawn & Gun, Gellhorn
+ * Outfitters), but the old filing puts them under Robberies, so that
+ * layer exists with 0 places until the v0.32 model surfaces them as
+ * weapons shops — the Layers list says so instead of showing an
+ * empty toggle.
  *
  * Layer counts below are the verified counts at GTADB revision 2e9e194
  * (4,380 records), computed by catalogueFromSnapshot and asserted in
@@ -105,7 +106,7 @@ export const DEFAULT_LAYERS: LayerDefinition[] = [
     id: 'shops-weapons',
     name: 'Weapons shops',
     description:
-      'Ammu-Nation locations — the game’s Weapons filter. No verified Ammu-Nation yet: the 6 #guns records are 4 unnamed “?” places and 2 lootable shops.',
+      'Ammu-Nation locations — the game’s Weapons filter. 3 verified gun shops: Phil’s Ammu-Nation, Pawn & Gun, and Gellhorn Outfitters. The community list names 24 Ammu-Nations; ~19 have no position in any licensed dataset yet.',
     category: 'activity',
     mapIndex: 'weapons',
     visible: false,

@@ -94,13 +94,21 @@ export function robberyShopSubtype(location: GameLocation): 'pawn' | 'convenienc
  * Hold this shop up. Fires for an enterable shop carrying a robbable
  * tag — INDEPENDENTLY of `shop`: a Style shop with the generic
  * 'retail' tag yields both (the v0.31.3 bug, structurally impossible
- * now). Ammu-Nation (#guns) is excluded — it cannot be robbed — and
- * strip clubs (#stripclub) are not robbable-tagged, so they never
- * yield this opportunity.
+ * now). A gun shop (#guns) never yields this opportunity: the game's
+ * hold-up kinds are pawn/jewellery and convenience (DESIGN §4.2), no
+ * verified source names an Ammu-Nation as a stick-up target, and the
+ * lootable description already states "Ammu-Nation cannot be robbed".
+ * The exclusion is explicit here because the generic 'retail' tag
+ * would otherwise fire it — the three verified gun shops (L298, L1074,
+ * L2413) all carry 'retail'. If a verified source names a gun shop as
+ * a hold-up target, this gains an exception — never silently via
+ * 'retail'. Strip clubs (#stripclub) are not robbable-tagged, so they
+ * never yield this opportunity either.
  */
 export function robberyShopOpportunity(location: GameLocation): Opportunity | null {
   if (!hasTag(location, 'enterable')) return null;
   if (!hasAnyTag(location, ROBBABLE_SHOP_TAGS)) return null;
+  if (hasTag(location, '#guns')) return null;
   const subtype = robberyShopSubtype(location);
   return makeOpportunity(location, 'robbery-shop', 'Hold-up target', {
     detail: subtype,

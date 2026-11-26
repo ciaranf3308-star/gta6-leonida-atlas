@@ -405,14 +405,41 @@ function evidenceFromPlace(place: Place): Evidence {
 function placeToLocation(
   place: Place,
   regionNameIndex: ReadonlyMap<string, string>,
+  corroboratedLocationIds: ReadonlySet<string>,
 ): GameLocation {
   const unnamed = isUnnamedPlace(place);
+  const nameUncertain = unnamed || place.title.includes('?');
+  // A pin is a claim of a confirmed place (DESIGN §3.2, A§9): 'pinned'
+  // needs a position AND a confirmed name AND (evidence better than
+  // 'uncertain' OR a second source establishing the place — see the
+  // corroborated set built in buildGameDatabase). An unnamed "?" record,
+  // a tentative name ("Ammu-Nation?") or an uncorroborated unconfirmed
+  // record is 'area-known' — it exists in the db, it is searchable and
+  // its uncertainty is shown, but it renders no pin until it is
+  // typed/confirmed. (v0.32 step 1 follow-up: the Weapons regression —
+  // L2406 "?" and L1091 "Ammu-Nation?" were 'pinned'.)
+  //
+  // The 'uncertain' demotion applies only to GTADB-sourced records.
+  // A guide-sourced place (Loot Map heist guides) carries 'uncertain'
+  // for a different reason — its position is estimated from the guide,
+  // not its identity doubted — and the guide IS the source establishing
+  // the place, so it is pinned on position + name (evidence 'unverified'
+  // still shown on the card). Without this, all 29 bank-job locations
+  // would demote and the Loot Map heist layer would vanish.
+  const gtadbSourced = place.source.title.startsWith('GTADB');
+  const pinned =
+    place.position !== null &&
+    place.position !== undefined &&
+    !nameUncertain &&
+    (!gtadbSourced ||
+      place.evidence !== 'uncertain' ||
+      corroboratedLocationIds.has(place.id));
   return {
     id: place.id,
     name: unnamed ? null : place.title,
-    nameUncertain: unnamed || place.title.includes('?'),
+    nameUncertain,
     position: place.position ? { x: place.position.x, y: place.position.y } : null,
-    placement: place.position ? 'pinned' : place.region.trim() ? 'area-known' : 'unmapped',
+    placement: pinned ? 'pinned' : place.region.trim() ? 'area-known' : 'unmapped',
     areaId: areaIdForRegion(place.region, regionNameIndex),
     footprint: null,
     evidence: [evidenceFromPlace(place)],
@@ -645,6 +672,23 @@ export function buildGameDatabase(input: BuildGameDatabaseInput): GameDatabase {
     }
   }
 
+  // Corroboration (v0.32 step 1 follow-up — the Weapons regression):
+  // a GTADB record flagged 'uncertain' is pinned only when a second
+  // source establishes the place — here, a pinned checklist slot hosted
+  // there. Delights (L629, 'unconfirmed' tag) hosts Jason + Harley, so
+  // it is pinned; Redshaw's (L1676, 'unconfirmed', hosts nothing) stays
+  // area-known. This is the addendum's corroboration principle applied
+  // to placement: two independent sources lift a place to pinned, one
+  // flagged source does not. The evidence stays 'unverified' on the card
+  // — the GTADB flag is still shown; placement is about "is there a
+  // place here", evidence is about "how sure is the source".
+  const corroboratedLocationIds = new Set<string>();
+  for (const slot of checklistItems) {
+    if (slot.placement === 'pinned' && slot.hostId) {
+      corroboratedLocationIds.add(slot.hostId);
+    }
+  }
+
   // --- Locations (§3.2) ---
   const locations = new Map<string, GameLocation>();
   for (const place of allPlaces) {
@@ -659,7 +703,10 @@ export function buildGameDatabase(input: BuildGameDatabaseInput): GameDatabase {
     ) {
       continue; // dancer card with a GTADB host → item on the host
     }
-    locations.set(place.id, placeToLocation(place, regionNameIndex));
+    locations.set(
+      place.id,
+      placeToLocation(place, regionNameIndex, corroboratedLocationIds),
+    );
   }
 
   // --- Opportunities (§3.2, via opportunitiesForLocation) ---
@@ -1011,9 +1058,20 @@ export function visibleOpportunities(
   }
   return [...db.opportunities.values()].filter((opp) => {
     if (touchedOpportunityIds?.has(opp.id)) return false;
+    const location = db.locations.get(opp.locationId);
+    const isPersonal = opp.evidence.some((entry) => entry.kind === 'personal');
+    // A§9: only a pinned (named, confirmed) location renders a pin. An
+    // uncertain location's opportunities exist in the db and are
+    // searchable, but render nothing until the place is typed/confirmed
+    // — a "?" record must never become a pin. The gate holds even for
+    // reveals: a reveal opens the location card (with its uncertainty
+    // shown), it never draws a pin for an unconfirmed place. Personal
+    // records are the exception (§3.3 rule 1): the player's own markers
+    // are never spoilers.
+    if (location && location.placement !== 'pinned' && !isPersonal) return false;
     if (enabled.has(opp.kind)) return true;
     if (reveal.has(opp.id)) return true;
-    if (opp.evidence.some((entry) => entry.kind === 'personal')) return true;
+    if (isPersonal) return true;
     return false;
   });
 }

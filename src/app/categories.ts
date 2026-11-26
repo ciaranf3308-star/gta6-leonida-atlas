@@ -136,7 +136,7 @@ export const EMPTY_GROUP_NOTES: Partial<Record<Category, string>> = {
   story:
     'Missions are not mapped yet — the atlas covers places, not the story so far.',
   weapons:
-    'No verified Ammu-Nation yet — the 6 #guns records in the public data are 4 unnamed “?” places and 2 lootable shops, so no gun shop has a verified name of its own yet.',
+    '3 verified gun shops are in the data — Phil’s Ammu-Nation, Pawn & Gun, Gellhorn Outfitters. The community list names 24 Ammu-Nations; ~19 have no position in any licensed dataset yet.',
   // No style entry: Style has 7 verified shops (Stock 305, A1 Fashions,
   // Electric Fang Tattoo, Sara's, Kurt's, The Old Mill, Au Courant).
   // It had one until v0.31.3, when the filing put the other six back —

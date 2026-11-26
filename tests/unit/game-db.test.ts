@@ -47,10 +47,10 @@ function findItem(db: GameDatabase, name: string, variant = 'standard') {
 }
 
 describe('game-db — §3.2 derivation from the real catalogue (26 Nov 2026)', () => {
-  it('derives the database at the measured counts: 4,443 locations, 930 opportunities, 614 items, 18 sets, 11 areas', () => {
+  it('derives the database at the measured counts: 4,443 locations, 925 opportunities, 614 items, 18 sets, 11 areas', () => {
     const db = buildFullDb();
     expect(db.locations.size).toBe(4443);
-    expect(db.opportunities.size).toBe(930);
+    expect(db.opportunities.size).toBe(925);
     expect(db.items.size).toBe(614);
     expect(db.sets.size).toBe(18);
     expect(db.areas.size).toBe(11);
@@ -60,7 +60,7 @@ describe('game-db — §3.2 derivation from the real catalogue (26 Nov 2026)', (
       byKind.set(opp.kind, (byKind.get(opp.kind) ?? 0) + 1);
     }
     expect(byKind.get('shop')).toBe(250);
-    expect(byKind.get('robbery-shop')).toBe(124);
+    expect(byKind.get('robbery-shop')).toBe(119);
     expect(byKind.get('bank-job')).toBe(29);
     expect(byKind.get('break-in')).toBe(47);
     expect(byKind.get('interior')).toBe(391);
@@ -140,8 +140,89 @@ describe('game-db — §3.2 derivation from the real catalogue (26 Nov 2026)', (
     ]);
   });
 
-  it('card ids resolve to items, not locations — Vicki and Victor Maravilla are two items on one location (L304)', () => {
+  it('weapons regression (v0.32 step 1): gun shops surface as weapons shops, never hide under Robberies', () => {
     const db = buildFullDb();
+    // The 3 verified gun shops: named, positioned, evidence 'approximate'.
+    // In the old model they filed to LOOTABLE (the generic 'retail' rule
+    // ran before the shop-type rule — the exact v0.31.3 Style bug class),
+    // so the Weapons layer showed 0 places. In the new model each is a
+    // weapons-shop opportunity on its own location.
+    for (const id of ['L1074', 'L298', 'L2413']) {
+      const location = db.locations.get(id)!;
+      expect(location.placement).toBe('pinned');
+      expect(location.evidence[0]!.kind).toBe('approximate');
+      const kinds = db.opportunitiesByLocation
+        .get(id)!
+        .map((opp) => opp.kind)
+        .sort();
+      expect(kinds).toEqual(['interior', 'shop']);
+      const shop = db.opportunitiesByLocation
+        .get(id)!
+        .find((opp) => opp.kind === 'shop')!;
+      expect(shop.label).toBe('Weapons shop');
+      // A gun shop is not a hold-up target (DESIGN §4.2 kinds are
+      // pawn/jewellery and convenience; no verified source names an
+      // Ammu-Nation as a stick-up target) — so NO robbery-shop
+      // opportunity, even though all three carry the generic 'retail' tag.
+    }
+    expect(db.locations.get('L1074')!.name).toBe("Phil's Ammu-Nation, Leonida");
+    // The 3 uncertain ones stay uncertain, with the reason shown — and
+    // render no pin (A§9: a "?" record is never a pin).
+    const tentative = db.locations.get('L1091')!;
+    expect(tentative.placement).toBe('area-known');
+    expect(tentative.nameUncertain).toBe(true);
+    expect(tentative.evidence[0]!.kind).toBe('unverified');
+    const unconfirmed = db.locations.get('L1676')!;
+    expect(unconfirmed.placement).toBe('area-known');
+    expect(unconfirmed.evidence[0]!.kind).toBe('unverified');
+    const unnamed = db.locations.get('L2406')!;
+    expect(unnamed.placement).toBe('area-known');
+    expect(unnamed.name).toBeNull();
+    expect(unnamed.evidence[0]!.kind).toBe('unverified');
+    // The rule, not just these six: no unnamed GTADB location is ever
+    // 'pinned', and the only GTADB locations that are pinned with
+    // unverified evidence are the 7 corroborated by a hosted card
+    // (L304, L475, L590, L629, L996, L1006, L1916 — three of them
+    // 'demolished', so the conflict is shown on the card, not resolved).
+    // Guide-sourced places (Loot Map heist guides) are pinned on
+    // position + name — their 'uncertain' is a position estimate, not
+    // an identity doubt — so they are excluded from this check.
+    const pinnedUnverifiedGtadb = [...db.locations.values()]
+      .filter(
+        (location) =>
+          /^L\d+$/.test(location.id) &&
+          location.placement === 'pinned' &&
+          location.evidence[0]?.kind === 'unverified',
+      )
+      .map((location) => location.id)
+      .sort();
+    expect(pinnedUnverifiedGtadb).toEqual([
+      'L1006',
+      'L1916',
+      'L304',
+      'L475',
+      'L590',
+      'L629',
+      'L996',
+    ]);
+    for (const location of db.locations.values()) {
+      if (/^L\d+$/.test(location.id) && location.name === null) {
+        expect(location.placement).not.toBe('pinned');
+      }
+    }
+    // And the map layer sees it: with shop enabled, the 3 verified gun
+    // shops are visible; the 3 uncertain ones are not (no pin).
+    const visible = visibleOpportunities(db, { enabledKinds: ['shop'] });
+    const visibleIds = new Set(visible.map((opp) => opp.locationId));
+    expect(visibleIds.has('L1074')).toBe(true);
+    expect(visibleIds.has('L298')).toBe(true);
+    expect(visibleIds.has('L2413')).toBe(true);
+    expect(visibleIds.has('L1091')).toBe(false);
+    expect(visibleIds.has('L1676')).toBe(false);
+    expect(visibleIds.has('L2406')).toBe(false);
+  });
+
+  it('card ids resolve to items, not locations — Vicki and Victor Maravilla are two items on one location (L304)', () => {    const db = buildFullDb();
     // No location carries a card id.
     for (const id of db.locations.keys()) {
       expect(id.startsWith('card:')).toBe(false);
@@ -550,7 +631,11 @@ describe('game-db — §3.4 selectors', () => {
     // Nothing enabled and nothing revealed: only personal records show.
     expect(all).toEqual([]);
     const shops = visibleOpportunities(db, { enabledKinds: ['shop'] });
-    expect(shops).toHaveLength(250);
+    // 92, not 250: the other 158 shop opportunities sit on unnamed "?"
+    // or uncorroborated-uncertain locations, which render no pin (A§9).
+    // They still exist in the db and are searchable; only pinned
+    // locations draw a pin.
+    expect(shops).toHaveLength(92);
     expect(shops.every((opp) => opp.kind === 'shop')).toBe(true);
     const bankJob = [...db.opportunities.values()].find((opp) => opp.kind === 'bank-job')!;
     const revealed = visibleOpportunities(db, {
