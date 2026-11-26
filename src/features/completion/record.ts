@@ -441,6 +441,127 @@ export async function undoCompletion(
 }
 
 /**
+ * Attach (or replace) a note on an existing completion record — the
+ * no-key path for Demo C step 2 ("used code 6823" on a looted
+ * gang-op / vehicle-loot record). The Ask confirm flow already
+ * attaches a note at record time (recordCompletion's `note`); this
+ * is the after-the-fact equivalent for a record the player made by
+ * tapping "Mark as looted", with no LLM in the loop.
+ *
+ * Rules, same shape as recordCompletion:
+ * - The record must exist — an unknown id is rejected, never created.
+ * - The note is ≤ 500 chars, like recordCompletion's. An empty note
+ *   CLEARS the note (the key is removed, not stored as '').
+ * - A compensating record (count < 0 — an undo) takes no note: it is
+ *   itself an undo, not a loot.
+ * - Persist-first, read-back verified: the Dexie transaction writes
+ *   the updated record, reads it back, then the store reloads and
+ *   rebuilds — the caller gets the result only after the reload
+ *   proves the note is there. The note lives ON the record, so it
+ *   survives restart and backup/restore exactly like the record
+ *   (backup v4's completionRecords carry `note` — parseBackup keeps
+ *   it, see parseCompletionRecord).
+ */
+export interface AttachCompletionNoteResult {
+  ok: boolean;
+  record?: CompletionRecord;
+  /** The rebuilt GameDatabase — every future surface reads this db. */
+  db?: GameDatabase;
+  error?: string;
+  code?: 'validation' | 'storageError';
+}
+
+export async function attachCompletionNote(
+  recordId: string,
+  note: string,
+  deps: CompletionDeps = {},
+): Promise<AttachCompletionNoteResult> {
+  const { repository, places, storage } = await resolveDeps(deps);
+  try {
+    await ensureMigrated(repository, places, storage);
+  } catch (error) {
+    return {
+      ok: false,
+      code: 'storageError',
+      error: `Could not save that note — the old completion data could not be migrated (${error instanceof Error ? error.message : 'unknown error'}). Nothing was changed.`,
+    };
+  }
+  let before: GameDatabase;
+  try {
+    before = (await loadDatabase(repository, places, deps.user)).db;
+  } catch (error) {
+    return {
+      ok: false,
+      code: 'storageError',
+      error: `Could not save that note — the completion data could not be read (${error instanceof Error ? error.message : 'unknown error'}). Nothing was changed.`,
+    };
+  }
+  if (note.length > 500) {
+    return { ok: false, code: 'validation', error: 'A note can be at most 500 characters.', db: before };
+  }
+  const original = before.records.find((record) => record.id === recordId);
+  if (!original) {
+    return {
+      ok: false,
+      code: 'validation',
+      error: `No completion record with id "${recordId}" exists — nothing was changed.`,
+      db: before,
+    };
+  }
+  if (original.count < 0) {
+    return {
+      ok: false,
+      code: 'validation',
+      error: 'That record is an undo — a note goes on the loot itself, not its undo.',
+      db: before,
+    };
+  }
+  const trimmed = note.trim();
+  const updated: CompletionRecord = { ...original };
+  if (trimmed) updated.note = trimmed;
+  else delete updated.note;
+  try {
+    await repository.transaction('rw', repository.completionRecords, async () => {
+      await repository.completionRecords.put(updated);
+      const readBack = await repository.completionRecords.get(updated.id);
+      if (!readBack || (readBack.note ?? undefined) !== (updated.note ?? undefined)) {
+        throw new Error('The note did not read back after writing.');
+      }
+    });
+  } catch (error) {
+    return {
+      ok: false,
+      code: 'storageError',
+      error: `Could not save that note — it is not lost, try again (${error instanceof Error ? error.message : 'unknown error'}).`,
+      db: before,
+    };
+  }
+  try {
+    const after = (await loadDatabase(repository, places)).db;
+    const verified = after.records.find((candidate) => candidate.id === updated.id);
+    if (
+      !verified ||
+      (verified.note ?? undefined) !== (updated.note ?? undefined)
+    ) {
+      return {
+        ok: false,
+        code: 'storageError',
+        error: 'Could not save that note — the record is not in the database after reloading. Nothing was changed.',
+        db: before,
+      };
+    }
+    return { ok: true, record: verified, db: after };
+  } catch (error) {
+    return {
+      ok: false,
+      code: 'storageError',
+      error: `Could not verify that note — try again (${error instanceof Error ? error.message : 'unknown error'}).`,
+      db: before,
+    };
+  }
+}
+
+/**
  * Record a sale (addendum §3.4). Requires the item collected first —
  * selling a card you have not found is rejected. Writes a
  * PersonalItemState row only: it does NOT write or delete any

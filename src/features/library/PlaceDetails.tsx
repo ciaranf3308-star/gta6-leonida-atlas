@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { Banknote, Bookmark, Camera, Check, Dumbbell, ExternalLink, Home, MapPin, Move, Navigation, Pencil, Scan, ShoppingBag, Sparkles, Star, Tag, X } from 'lucide-react';
 import type { Place, Position } from '../../domain/types';
 import { displayTitleFor, isUnnamedPlace } from '../../domain/types';
@@ -8,7 +8,12 @@ import {
   locationCardActions,
   type LocationCardAction,
 } from '../completion/location-actions';
-import { loadGameDatabase, recordCompletion } from '../completion/record';
+import {
+  attachCompletionNote,
+  loadGameDatabase,
+  recordCompletion,
+} from '../completion/record';
+import { latestLootedRecordFor } from '../completion/place-ids';
 import { useCompletionLogStore } from '../completion/log-store';
 import { topCategoriesNear } from '../../domain/nearby-categories';
 import { categoryLabel } from '../../app/categories';
@@ -467,6 +472,35 @@ export default function PlaceDetails({
       setCompletionError(result.error ?? 'Could not save that — try again.');
     }
   }
+  const [noteEditingKey, setNoteEditingKey] = useState<string | null>(null);
+  const [noteDraft, setNoteDraft] = useState('');
+  const [lootNoteBusy, setLootNoteBusy] = useState<string | null>(null);
+  const [noteError, setNoteError] = useState('');
+  /** Attach a note to the latest still-standing looted record for
+   *  one opportunity (Demo C, no key): the safe code used, or where
+   *  the thing was. The note lives ON the record (record.ts
+   *  attachCompletionNote), so it survives restart and
+   *  backup/restore exactly like the loot itself. */
+  async function saveLootNote(action: Extract<LocationCardAction, { kind: 'record' }>) {
+    if (!activeDb || lootNoteBusy) return;
+    const record = latestLootedRecordFor(activeDb, action.target.id);
+    if (!record) {
+      setNoteError('Nothing looted here yet — mark it looted first, then add a note.');
+      return;
+    }
+    setLootNoteBusy(action.key);
+    setNoteError('');
+    const result = await attachCompletionNote(record.id, noteDraft);
+    setLootNoteBusy(null);
+    if (result.ok && result.db) {
+      setCompletionDb(result.db);
+      useCompletionLogStore.getState().applyDb(result.db);
+      setNoteEditingKey(null);
+      setNoteDraft('');
+    } else {
+      setNoteError(result.error ?? 'Could not save that note — try again.');
+    }
+  }
   const photoInputRef = useRef<HTMLInputElement>(null);
   async function share() {
     const url = new URL(window.location.href);
@@ -754,30 +788,123 @@ export default function PlaceDetails({
                 }
                 const busy = completionBusy === action.key;
                 const isLooted = action.verb === 'looted';
+                // The note target: the latest still-standing looted
+                // record for this opportunity. The suggested note is the opportunity's
+                // own safe code, when it has one.
+                const latestLooted =
+                  isLooted && action.count > 0 && activeDb
+                    ? latestLootedRecordFor(activeDb, action.target.id)
+                    : undefined;
+                const existingNote = latestLooted?.note;
+                const suggestedNote =
+                  action.loot?.code !== undefined ? `used code ${action.loot.code}` : '';
+                const editingNote = noteEditingKey === action.key;
                 return (
-                  <li
-                    key={action.key}
-                    className={`completion-action ${action.done ? 'is-done' : ''} ${isLooted && action.count > 0 ? 'is-looted' : ''}`}
-                  >
-                    {isLooted ? <Banknote size={16} aria-hidden="true" /> : <MapPin size={16} aria-hidden="true" />}
-                    <span>
-                      <strong className={action.done ? 'is-struck' : ''}>
-                        {action.done ? action.doneLabel : action.label}
-                      </strong>
-                      <small>{action.detail}</small>
-                    </span>
-                    {isLooted && action.count > 0 && (
-                      <span className="completion-count">{action.doneLabel}</span>
-                    )}
-                    <button
-                      type="button"
-                      className="button"
-                      disabled={action.done || busy || !ready}
-                      onClick={() => void recordAction(action)}
+                  <Fragment key={action.key}>
+                    <li
+                      className={`completion-action ${action.done ? 'is-done' : ''} ${isLooted && action.count > 0 ? 'is-looted' : ''}`}
                     >
-                      {busy ? 'Saving…' : action.label}
-                    </button>
-                  </li>
+                      {isLooted ? <Banknote size={16} aria-hidden="true" /> : <MapPin size={16} aria-hidden="true" />}
+                      <span>
+                        <strong className={action.done ? 'is-struck' : ''}>
+                          {action.done ? action.doneLabel : action.label}
+                        </strong>
+                        <small>{action.detail}</small>
+                        {action.loot?.code !== undefined && (
+                          <small>Safe code {action.loot.code}</small>
+                        )}
+                      </span>
+                      {isLooted && action.count > 0 && (
+                        <span className="completion-count">{action.doneLabel}</span>
+                      )}
+                      <button
+                        type="button"
+                        className="button"
+                        disabled={action.done || busy || !ready}
+                        onClick={() => void recordAction(action)}
+                      >
+                        {busy ? 'Saving…' : action.label}
+                      </button>
+                    </li>
+                    {latestLooted && (
+                      <li className="completion-note">
+                        {editingNote ? (
+                          <>
+                            <div className="tag-add-row">
+                              <input
+                                type="text"
+                                maxLength={500}
+                                value={noteDraft}
+                                disabled={!ready || lootNoteBusy !== null}
+                                placeholder={
+                                  suggestedNote
+                                    ? `e.g. ${suggestedNote}`
+                                    : 'e.g. safe code used, where it was'
+                                }
+                                aria-label={`Note on this ${action.detail} loot`}
+                                onChange={(e) => setNoteDraft(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') void saveLootNote(action);
+                                  if (e.key === 'Escape') {
+                                    setNoteEditingKey(null);
+                                    setNoteError('');
+                                  }
+                                }}
+                              />
+                              <button
+                                type="button"
+                                className="button primary"
+                                disabled={!ready || lootNoteBusy !== null}
+                                onClick={() => void saveLootNote(action)}
+                              >
+                                {lootNoteBusy === action.key ? 'Saving…' : 'Save note'}
+                              </button>
+                              <button
+                                type="button"
+                                className="button"
+                                disabled={lootNoteBusy !== null}
+                                onClick={() => {
+                                  setNoteEditingKey(null);
+                                  setNoteError('');
+                                }}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                            {noteError && (
+                              <p className="inline-error" role="alert">
+                                {noteError}
+                              </p>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <p className="help-text">
+                              {existingNote ? (
+                                <>
+                                  <strong>Note:</strong> {existingNote}
+                                </>
+                              ) : (
+                                'No note on this loot yet.'
+                              )}
+                            </p>
+                            <button
+                              type="button"
+                              className="button"
+                              disabled={!ready}
+                              onClick={() => {
+                                setNoteEditingKey(action.key);
+                                setNoteDraft(existingNote ?? suggestedNote);
+                                setNoteError('');
+                              }}
+                            >
+                              {existingNote ? 'Edit note' : 'Add a note'}
+                            </button>
+                          </>
+                        )}
+                      </li>
+                    )}
+                  </Fragment>
                 );
               })}
             </ul>

@@ -9,9 +9,13 @@
  * - `shop` → "Shop here" — an info row, NOT a completion. Shopping
  *   is not a completion, so there is no verb and no record.
  * - `robbery-shop` (on the same location as a shop), `bank-job`,
- *   `gang-op`, `break-in` → "Mark as looted" on THAT opportunity.
- *   All four are repeatable, so the button stays live and the row
- *   shows the looted count ("Looted ×3").
+ *   `gang-op`, `break-in`, `vehicle-loot` → "Mark as looted" on THAT
+ *   opportunity. All five are repeatable, so the button stays live
+ *   and the row shows the looted count ("Looted ×3"). Vehicle-loot
+ *   joins this list in the Demo C step (a safe / garage / bunker is
+ *   looted the same way a gang-op site is); before that it fell
+ *   through to the discovered fallback, which could never record a
+ *   loot.
  * - `break-in` → also "Mark as discovered" (the location).
  * - `interior` / `discovery` → "Mark as discovered" and
  *   "Mark as explored" (the location, once each per card — a place
@@ -26,7 +30,7 @@
  * count is per hold-up / job / break-in, not per building.
  *
  * Kinds with no action of their own (gym, workout-equipment, activity,
- * vehicle-loot, easter-egg, mission) still get the fallback below:
+ * easter-egg, mission) still get the fallback below:
  * "Mark as discovered" on the location itself. 'discovered' is an
  * existing model verb targeting the location — finding the place is
  * the completion — so nothing is invented. The fallback fires only
@@ -67,6 +71,12 @@ export type LocationCardAction =
       doneLabel: string;
       /** Looted count (0 when never looted); 1 when a one-time verb is done. */
       count: number;
+      /** The opportunity's loot (safe code + Key Valuables), when the
+       *  opportunity carries any — the card shows the code so the
+       *  player can use it, and offers it as the note suggestion.
+       *  Undefined for opportunities with no published loot (and for
+       *  one-time verbs, which never carry loot). */
+      loot?: { code?: string; contents: string[] };
     }
   | {
       key: string;
@@ -86,12 +96,16 @@ function lootedAction(
     key: `loot:${opp.id}`,
     kind: 'record',
     label: 'Mark as looted',
-    detail: opp.label,
+    // The opportunity's detail is the specific bit (gang name for a
+    // gang-op, safe code for vehicle loot, loot line for a break-in);
+    // the kind label is only the fallback when there is none.
+    detail: opp.detail ?? opp.label,
     target: { type: 'opportunity', id: opp.id },
     verb: 'looted',
     done: false,
     doneLabel: `Looted ×${count}`,
     count,
+    ...(opp.loot ? { loot: { ...opp.loot, contents: [...opp.loot.contents] } } : {}),
   };
 }
 
@@ -115,8 +129,9 @@ export function locationCardActions(
 
   // One "Mark as looted" per repeatable loot opportunity on this
   // location: the hold-up on a shop, a bank job, a gang op, a
-  // break-in. At most one per kind — ids are opp:<loc>:<kind>:1.
-  for (const kind of ['robbery-shop', 'bank-job', 'gang-op', 'break-in'] as const) {
+  // break-in, a vehicle-loot safe / garage / bunker. At most one per
+  // kind — ids are opp:<loc>:<kind>:1.
+  for (const kind of ['robbery-shop', 'bank-job', 'gang-op', 'break-in', 'vehicle-loot'] as const) {
     for (const opp of byKind(kind)) actions.push(lootedAction(opp, db));
   }
 
@@ -157,7 +172,7 @@ export function locationCardActions(
 
   // Fallback (coordinator ruling, step-6 follow-up): a location whose
   // opportunities carry no verb at all — gym, workout-equipment,
-  // activity, vehicle-loot, easter-egg, mission, a shop with no
+  // activity, easter-egg, mission, a shop with no
   // robbery-shop, or no opportunities — still gets one honest action:
   // "Mark as discovered" on the location itself. It only fires when
   // no record or collect action exists yet, so it can never duplicate
