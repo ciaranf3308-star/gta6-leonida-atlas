@@ -305,6 +305,31 @@ function asksForCardsOnly(question: string): boolean {
   );
 }
 
+const GANG_OP_PHRASES = [
+  // Hyphen forms too: normalizeAsk keeps "-", so "gang-op" in a
+  // question is "gang-op", never "gang op".
+  'gang op',
+  'gang-op',
+  'gang ops',
+  'gang-ops',
+  'gang operation',
+  'gang operations',
+  'illegal operation',
+  'illegal operations',
+];
+
+/**
+ * A question asking for gang operations by kind — the 'gang-op'
+ * layer, when it exists. A bare "gang" does not route: it names no
+ * layer on its own. Shared by the layer router and the empty-answer
+ * advice, so a kind question asked before the layer exists still
+ * gets an honest answer instead of a layer that is not there.
+ */
+export function asksForGangOps(question: string): boolean {
+  const q = normalizeAsk(question);
+  return GANG_OP_PHRASES.some((p) => hasPhrase(q, p));
+}
+
 /** Layer ids a question asks for, by keyword. Empty = no layer asked for. */
 /**
  * Personal-progress intent (v0.32 step-9 follow-up, Demo D step 3).
@@ -377,6 +402,16 @@ export function layersRequestedByQuestion(
   const q = normalizeAsk(question);
   const ids = new Set<string>();
   const has = (layerId: string) => layers.some((l) => l.id === layerId) && ids.add(layerId);
+
+  // Gang operations ("Illegal Operations", DESIGN §4.2): a gang-op
+  // question asks for the 'gang-op' layer — the 37 area-known places
+  // plus the two host-matched ones. "gang op" / "gang operation" /
+  // "illegal operation(s)" all route here; a bare "gang" does not
+  // (too generic — it names no layer on its own). The `has` guard
+  // means the route only fires once the layer is defined (lane 1);
+  // until then the question falls through to the empty-advice path,
+  // which answers from the area instead of naming a missing layer.
+  if (asksForGangOps(question)) has('gang-op');
 
   // Gyms vs workout equipment (user correction, 2026-11-23): "workout",
   // "equipment", "bench", "weights" or "gym equipment" asks for the free
@@ -662,6 +697,7 @@ function placeNounForLayers(layerIds: readonly string[]): string {
     if (layerIds[0] === 'breakable') return 'breakable home';
     if (layerIds[0] === 'lootable') return 'lootable building';
     if (layerIds[0] === 'loot-heists') return 'bank job';
+    if (layerIds[0] === 'gang-op') return 'gang operation';
     if (layerIds[0] === 'loot-collectibles') return 'collectible';
     if (layerIds[0]?.startsWith('shops-')) return 'shop';
     if (layerIds[0] === 'interiors') return 'enterable building';
@@ -672,6 +708,7 @@ function placeNounForLayers(layerIds: readonly string[]): string {
   if (layerIds.includes('gyms')) return 'gym';
   if (layerIds.includes('equipment')) return 'workout equipment';
   if (layerIds.includes('breakable')) return 'breakable home';
+  if (layerIds.includes('gang-op')) return 'gang operation';
   // A card question requests all eighteen cards:* layers plus
   // loot-collectibles — the noun is still "card", never "place",
   // or the proximity verdict reads "there is no place near Capri"

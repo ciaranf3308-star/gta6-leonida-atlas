@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { LayerDefinition, Place } from '../../src/domain/types';
 import { DEFAULT_LAYERS } from '../../src/features/map/layers';
 import {
+  asksForGangOps,
   cardSetForQuestion,
   isNightlifePlace,
   nightlifeTagsForQuestion,
@@ -31,6 +32,30 @@ function place(overrides: Partial<Place> & Pick<Place, 'id' | 'title' | 'layerId
 
 const layers = (): LayerDefinition[] =>
   DEFAULT_LAYERS.map((layer) => ({ ...layer, visible: false }));
+
+/**
+ * Fixture 'gang-op' layer (v0.32 gang-op follow-up, lane 2): the
+ * routing tests are self-contained and pass on their own, whether or
+ * not lane 1's definition has landed in DEFAULT_LAYERS yet. The
+ * real-layer integration is pinned separately, against
+ * DEFAULT_LAYERS itself.
+ */
+const GANG_OP_LAYER: LayerDefinition = {
+  id: 'gang-op',
+  name: 'Gang operations',
+  description:
+    'Illegal operations from the in-game Gangs tracker — area-known only.',
+  category: 'activity',
+  mapIndex: 'robberies',
+  visible: false,
+  order: 89,
+  source: 'test',
+  style: { color: '#ff8f8f', radius: 7 },
+  icon: 'users',
+  interactive: true,
+};
+
+const layersWithGangOp = (): LayerDefinition[] => [...layers(), GANG_OP_LAYER];
 
 const FIXTURES: Place[] = [
   place({
@@ -662,6 +687,47 @@ describe('Ask Nylah — bare names bring their layer into scope (v0.32 step 7)',
     });
     expect(result.records).toHaveLength(30);
     expect(result.totalInScope).toBe(40);
+  });
+});
+
+describe('Ask Nylah — gang-op keyword routing (v0.32 gang-op follow-up, lane 2)', () => {
+  it('gang-op phrases route to the gang-op layer', () => {
+    // Every phrasing the brief names, plus the hyphen form
+    // (normalizeAsk keeps "-") and a question-shaped form.
+    for (const question of [
+      'gang op',
+      'gang ops',
+      'gang operation',
+      'gang operations',
+      'illegal operation',
+      'illegal operations',
+      'where are the gang operations?',
+      'show me gang ops in Port Gellhorn',
+      'any illegal operations near Capri?',
+      'where is the gang-op in Port Gellhorn?',
+    ]) {
+      expect(asksForGangOps(question)).toBe(true);
+      expect(layersRequestedByQuestion(question, layersWithGangOp())).toContain('gang-op');
+    }
+  });
+
+  it('a bare "gang" does not route — it names no layer on its own', () => {
+    expect(asksForGangOps('which gang runs Port Gellhorn?')).toBe(false);
+    expect(layersRequestedByQuestion('which gang runs Port Gellhorn?', layersWithGangOp())).toEqual(
+      [],
+    );
+  });
+
+  it('without the layer defined, the keyword route returns nothing — no invented layer id', () => {
+    // The `has` guard means the route only fires once lane 1's
+    // definition exists; until then the question falls through to
+    // the empty-advice path, which answers from the area instead of
+    // naming a layer that is not there. The list here is filtered
+    // explicitly, so the test holds whether or not lane 1 has
+    // landed in DEFAULT_LAYERS yet.
+    const noGangOp = layers().filter((layer) => layer.id !== 'gang-op');
+    expect(asksForGangOps('show me the gang operations')).toBe(true);
+    expect(layersRequestedByQuestion('show me the gang operations', noGangOp)).toEqual([]);
   });
 });
 
