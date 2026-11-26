@@ -147,8 +147,13 @@ export default function App() {
   const gameDb = useMemo(() => {
     if (status !== 'ready') return null;
     try {
+      // Catalogue-only places: buildGameDatabase converts user.markers
+      // to places itself, so passing allPlaces (catalogue + marker
+      // places) collides with the same markers in `user` and the
+      // build throws — which nulled the whole game db (journal,
+      // Progress, Ask) on any profile with a marker. (v0.32 demos.)
       return buildGameDatabase({
-        places: allPlaces,
+        places,
         user: useUserStore.getState(),
         records: completionRecords,
         reconciliation: completionReconciliation,
@@ -157,7 +162,7 @@ export default function App() {
     } catch {
       return null;
     }
-  }, [status, allPlaces, completionRecords, completionReconciliation, cardMatches]);
+  }, [status, places, markers, completionRecords, completionReconciliation, cardMatches]);
   const areas = gameDb?.areas ?? null;
   const selectedAreaId = useSearchSplitStore((s) => s.selectedAreaId);
   const areaPageOpen = useSearchSplitStore((s) => s.areaPageOpen);

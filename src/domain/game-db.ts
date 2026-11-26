@@ -657,6 +657,30 @@ function lootPlaceToItem(
   };
 }
 
+/** Field-by-field identity for two Place rows — the double-passed
+ * marker case in buildGameDatabase below. Tags are order-sensitive
+ * (markerToPlace builds them deterministically), positions compare
+ * by value. */
+function samePlace(a: Place, b: Place): boolean {
+  return (
+    a.id === b.id &&
+    a.title === b.title &&
+    a.description === b.description &&
+    a.category === b.category &&
+    a.layerId === b.layerId &&
+    a.region === b.region &&
+    a.evidence === b.evidence &&
+    a.source.title === b.source.title &&
+    a.source.url === b.source.url &&
+    a.tags.length === b.tags.length &&
+    a.tags.every((tag, i) => tag === b.tags[i]) &&
+    (a.position === null) === (b.position === null) &&
+    (a.position === null ||
+      b.position === null ||
+      (a.position.x === b.position.x && a.position.y === b.position.y))
+  );
+}
+
 export function buildGameDatabase(input: BuildGameDatabaseInput): GameDatabase {
   const places = input.places;
   const checklistItems = input.checklistItems ?? CARD_CHECKLIST_ITEMS;
@@ -681,14 +705,20 @@ export function buildGameDatabase(input: BuildGameDatabaseInput): GameDatabase {
   }
 
   // Personal markers are locations too (evidence 'personal').
+  // A marker-derived place already in the input (a caller that passed
+  // catalogue + marker places AND user.markers) is the same place
+  // twice, not a collision — skip it. A genuinely different place
+  // sharing a marker's id still throws.
   const markerPlaces = user.markers.map(markerToPlace);
   for (const place of markerPlaces) {
-    if (placesById.has(place.id)) {
+    const existing = placesById.get(place.id);
+    if (existing) {
+      if (samePlace(existing, place)) continue;
       throw new Error(`Personal marker id collides with a catalogue place: ${place.id}.`);
     }
     placesById.set(place.id, place);
   }
-  const allPlaces = [...places, ...markerPlaces];
+  const allPlaces = [...placesById.values()];
 
   const regionPlaces = allPlaces.filter((place) => place.layerId === 'regions');
   const regionNameIndex = buildRegionNameIndex(regionPlaces);

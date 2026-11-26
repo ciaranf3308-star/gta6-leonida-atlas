@@ -5,6 +5,8 @@ import type { BackupV4, DroppedCompletionRecord } from '../../db/backup';
 import { MAX_BACKUP_BYTES, parseBackupFileWithDrops } from '../../db/backup';
 import { saveLocal, usePersistenceStore, useWorkspaceStore } from '../../stores/atlas';
 import { useAiIndexStore } from '../categorise/store';
+import { useCompletionLogStore } from '../completion/log-store';
+import { useMatchStore } from '../ask/match-store';
 import { importAtlasBackup } from '../../db/backup-import';
 import type { ImportAtlasBackupResult } from '../../db/backup-import';
 import { downloadAtlasBackup } from '../backup/atlas-backup';
@@ -98,6 +100,13 @@ export default function BackupDialog({ onClose }: { onClose: () => void }) {
       const ai = importResult.result.ai;
       const dropped = importResult.result.droppedCompletionRecords;
       await useAiIndexStore.getState().reloadFromDatabase();
+      // The import wrote the completion log (and the matcher tables)
+      // under the stores' feet — re-read them now, or the journal,
+      // Progress and Ask keep showing the pre-import log until the
+      // next reload or write. (v0.32 demos: a restore showed 0/18 and
+      // 0 of 1,325 after merging a file with 12 records.)
+      await useCompletionLogStore.getState().refresh();
+      await useMatchStore.getState().refresh();
       setBusy(false);
       setPreview(null);
       setPreviewDrops([]);
