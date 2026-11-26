@@ -136,6 +136,25 @@ const schemaV6 = {
   matcherRejections: 'id, slotId, hostId',
 };
 
+/** v7 (v0.32 Demo F) adds the screenshot image bytes only — the
+ * metadata already lives in `userScreenshots` (v5). The bytes sit in
+ * their own table so the metadata row can be read without loading
+ * the image, and so the backup (which assembles named sections)
+ * cannot pick them up by accident: screenshots are device-local and
+ * never in a backup. Existing data is untouched. */
+const schemaV7 = {
+  ...schemaV6,
+  screenshotData: 'id',
+};
+
+/** One uploaded screenshot's image bytes, keyed by the
+ * `UserScreenshot` id. Downscaled JPEG data URL, same 1.5 MB cap as
+ * place photos. */
+export interface ScreenshotData {
+  id: string;
+  dataUrl: string;
+}
+
 /** A photo the user added himself — his own in-game screenshot, stored
  * on this device only (downscaled to ≤1024px JPEG before saving, so
  * one photo stays small). Never AI-generated, never scraped, never in
@@ -208,6 +227,8 @@ export class AtlasDatabase extends Dexie {
   declare personalItemState: Table<PersonalItemState, string>;
   /** Player screenshot uploads (addendum §3.5) — empty until step 7. */
   declare userScreenshots: Table<UserScreenshot, string>;
+  /** Screenshot image bytes, keyed by `UserScreenshot` id (v7, Demo F). */
+  declare screenshotData: Table<ScreenshotData, string>;
   /** Research-when-missing queue (addendum §5.3) — empty until step 7. */
   declare researchRequests: Table<ResearchRequest, string>;
   /** Player-confirmed card matches (CARD-MATCHER-DESIGN §2.3) — one
@@ -235,6 +256,9 @@ export class AtlasDatabase extends Dexie {
     this.version(5).stores(schemaV5);
     // v6 adds the card matcher tables only; existing data is untouched.
     this.version(6).stores(schemaV6);
+    // v7 adds the screenshot image-bytes table only (Demo F); the
+    // metadata table already exists. Existing data is untouched.
+    this.version(7).stores(schemaV7);
   }
 
   private async snapshot(): Promise<UserData> {
@@ -307,6 +331,49 @@ export class AtlasDatabase extends Dexie {
 
   async getPersonalItemState(itemId: string): Promise<PersonalItemState | undefined> {
     return this.personalItemState.get(itemId);
+  }
+
+  /**
+   * Player screenshot uploads (addendum §3.5, Demo F). Metadata row +
+   * image bytes, one transaction, read-back verified — the same
+   * persist-first shape as place photos. Device-local only: no
+   * backup section reads these tables, so a screenshot can never
+   * leak into a backup file.
+   */
+  async saveUserScreenshot(screenshot: UserScreenshot, dataUrl: string): Promise<void> {
+    if (!dataUrl.startsWith('data:image/') || dataUrl.length > 1_500_000) {
+      throw new BackupValidationError('screenshot must be a downscaled image under 1.5 MB');
+    }
+    await this.transaction('rw', [this.userScreenshots, this.screenshotData], async () => {
+      await this.userScreenshots.put(screenshot);
+      await this.screenshotData.put({ id: screenshot.id, dataUrl });
+      const readBack = await this.userScreenshots.get(screenshot.id);
+      if (!readBack) throw new Error('The screenshot did not read back after writing.');
+    });
+  }
+
+  async loadUserScreenshots(): Promise<UserScreenshot[]> {
+    return this.userScreenshots.toArray();
+  }
+
+  async getScreenshotData(id: string): Promise<ScreenshotData | undefined> {
+    return this.screenshotData.get(id);
+  }
+
+  /** Link a confirmed card-front screenshot to its item, so the
+   * album can show the player's own photo as that card's face.
+   * Collection-screen photos never carry an itemId. */
+  async linkScreenshotToItem(screenshotId: string, itemId: string): Promise<void> {
+    const current = await this.userScreenshots.get(screenshotId);
+    if (!current) throw new Error(`No screenshot with id "${screenshotId}" exists.`);
+    await this.userScreenshots.put({ ...current, itemId });
+  }
+
+  async deleteUserScreenshot(id: string): Promise<void> {
+    await this.transaction('rw', [this.userScreenshots, this.screenshotData], async () => {
+      await this.userScreenshots.delete(id);
+      await this.screenshotData.delete(id);
+    });
   }
 
   /** Player-confirmed card matches (CARD-MATCHER-DESIGN §2.3) — one
