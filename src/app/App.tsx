@@ -269,12 +269,17 @@ export default function App() {
   /** Likely-area regions currently drawn — the gang-op layer's map
    * presence. Regions are not places (no position), so showingCount
    * never sees them; without this the "Nothing showing here" banner
-   * fires while 14 dashed region rects cover the map (v0.32 Finding 3).
-   * Same inputs MapView draws with (areas / mapPlaces / layers),
-   * so the banner agrees with the map in every state. */
+   * fires while 17 dashed region rects cover the map (v0.32 Finding 3).
+   * Same inputs MapView draws with (areas / likelyAreaPlaces /
+   * layers), so the banner agrees with the map in every state —
+   * that MUST be the geo-unfiltered region feed, not mapPlaces:
+   * under an area isolation mapPlaces holds no gang-op place (the
+   * area filter drops unpositioned places), so counting from it
+   * would say 0 regions while the regions are drawn, and the banner
+   * would fire over a map full of regions (lane 2, Finding 2). */
   const regionsShowingCount = useMemo(
-    () => regionsDrawnCount(areas, mapPlaces, layers),
-    [areas, mapPlaces, layers],
+    () => regionsDrawnCount(areas, likelyAreaPlaces, layers),
+    [areas, likelyAreaPlaces, layers],
   );
   /** The empty-state banner fires only when genuinely nothing is
    * showing: no positioned place matches AND no region is drawn.

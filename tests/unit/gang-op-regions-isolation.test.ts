@@ -11,6 +11,7 @@ import {
 import {
   gangOpLikelyAreas,
   groupLikelyAreas,
+  measureGangOpBounds,
 } from "../../src/features/map/likely-area";
 import { DEFAULT_FILTERS } from "../../src/stores/atlas";
 
@@ -68,16 +69,21 @@ function regionFeed(
   );
 }
 
-const KELLY_8 = [
-  "Kingpin Bowling",
-  "June Warehouse",
-  "La Cascara Motel",
-  "Brooks Boatworks",
-  "Stash House",
-  "Backroom Weed Front",
-  "Gas Station Meth Front",
-  "Walker Farm",
-];
+/** The regions with NO isolation active — the baseline the isolated
+ * runs must match exactly. Counts are derived, never hardcoded:
+ * the town-extent merges (lanes 4/4b) move ops between own-bounds
+ * and county-fallback and regroup the rects, so pinning a number
+ * here would break on every geography change. What must NOT move
+ * is the isolation behaviour: the isolated run draws exactly what
+ * the open map draws. */
+function baselineGroups(db: GameDatabase, layers: typeof DEFAULT_LAYERS) {
+  const regions = gangOpLikelyAreas(
+    db.areas,
+    regionFeed(allPlaces(), DEFAULT_FILTERS, layers),
+    layers,
+  );
+  return { regions, groups: groupLikelyAreas(regions) };
+}
 
 describe("gang-op regions survive area isolation (v0.32 regions fix, lane 2)", () => {
   it("the area filter drops unpositioned gang-op places — the trap Finding 2 fell into", () => {
@@ -116,7 +122,7 @@ describe("gang-op regions survive area isolation (v0.32 regions fix, lane 2)", (
     ).toHaveLength(0);
   });
 
-  it("the region feed — same pipeline, geo filters lifted — keeps all 34 drawable regions under a Kelly isolation", () => {
+  it("the region feed — same pipeline, geo filters lifted — keeps every drawable region under a Kelly isolation", () => {
     const db = buildFullDb();
     const layers = gangOpLayersOn();
     const feed = regionFeed(
@@ -127,14 +133,29 @@ describe("gang-op regions survive area isolation (v0.32 regions fix, lane 2)", (
     // The feed is the geo-UNfiltered pipeline: every drawable op
     // survives, so the region computation sees all of them.
     const regions = gangOpLikelyAreas(db.areas, feed, layers);
-    expect(regions).toHaveLength(34);
+    expect(regions).toHaveLength(measureGangOpBounds(db.areas).drawn);
     const groups = groupLikelyAreas(regions);
-    expect(groups).toHaveLength(13);
+    // Isolation must change NOTHING about the regions: same groups,
+    // same labels as the open map.
+    const baseline = baselineGroups(db, layers);
+    expect(groups.map((g) => g.label).sort()).toEqual(
+      baseline.groups.map((g) => g.label).sort(),
+    );
+    expect(groups.map((g) => g.areas.map((a) => a.placeId).sort())).toEqual(
+      baseline.groups.map((g) => g.areas.map((a) => a.placeId).sort()),
+    );
+    // The Kelly region itself is still drawn under the Kelly page:
+    // whichever ops the current town merges leave on the county
+    // rect, that group — label included — survives isolation.
     const kelly = groups.find((g) =>
       (g.label ?? "").includes("Kelly County extent (estimate)"),
     );
+    const baselineKelly = baseline.groups.find((g) =>
+      (g.label ?? "").includes("Kelly County extent (estimate)"),
+    );
     expect(kelly).toBeDefined();
-    for (const name of KELLY_8) expect(kelly!.label).toContain(name);
+    expect(kelly!.label).toBe(baselineKelly!.label);
+    expect(kelly!.bounds).toEqual(db.areas.get("county:kelly")?.bounds);
   });
 
   it("the region feed keeps the Kelly region under an unrelated area isolation (Ambrosia)", () => {
@@ -146,7 +167,7 @@ describe("gang-op regions survive area isolation (v0.32 regions fix, lane 2)", (
       layers,
     );
     const regions = gangOpLikelyAreas(db.areas, feed, layers);
-    expect(regions).toHaveLength(34);
+    expect(regions).toHaveLength(measureGangOpBounds(db.areas).drawn);
     const kelly = regions.find((r) => r.countyName === "Kelly County");
     expect(kelly).toBeDefined();
     expect(kelly!.bounds).toEqual(db.areas.get("county:kelly")?.bounds);
