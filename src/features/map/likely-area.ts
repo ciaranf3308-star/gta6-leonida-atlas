@@ -26,14 +26,16 @@
  * (the node's own extentNote says so), not the op's own extent.
  *
  * Shared extents: several ops name the same area (six name Port
- * Gellhorn), and several AREAS fall back to the same county rect
- * (Port Gellhorn, Emerald Springs and Frogswater all fall back to
- * Kelly County — eight ops over one rect). The pure result stays
- * one LikelyArea per op (each op keeps its own label);
- * groupLikelyAreas() collapses identical GEOMETRY for DRAWING only
- * — one dashed rect, one combined label naming every op in it —
- * keyed on the bounds, not the area, so three areas sharing one
- * county rect draw once, not three times on top of each other.
+ * Gellhorn and draw the town extent — see the county-qualified
+ * town redirect in areaIdForGangOpRegion), and several AREAS fall
+ * back to the same county rect (Emerald Springs and Frogswater
+ * both fall back to Kelly County — two ops over one rect). The
+ * pure result stays one LikelyArea per op (each op keeps its own
+ * label); groupLikelyAreas() collapses identical GEOMETRY for
+ * DRAWING only — one dashed rect, one combined label naming every
+ * op in it — keyed on the bounds, not the area, so two areas
+ * sharing one county rect draw once, not twice on top of each
+ * other.
  */
 import type { LayerDefinition, Place } from '../../domain/types';
 import {
@@ -90,6 +92,41 @@ export function likelyAreaLabel(
 }
 
 /**
+ * County-qualified town redirect (v0.32 regions-fix, lane 4 —
+ * Finding 4): the guides name the six Port Gellhorn ops
+ * "Port Gellhorn, Kelly County", which areaIdForRegion resolves
+ * to area:port-gellhorn--kelly-county — a node with no positioned
+ * members (its only members are the six ops themselves plus the
+ * Starlet Motel bench, all unpositioned), so the county fallback
+ * used to fire and all six drew the whole Kelly County rect. The
+ * catalogue's Port Gellhorn is the TOWN area:port-gellhorn:
+ * 337 member places, 335 positioned, parent county:kelly by
+ * plurality vote — and no GTADB record ever addresses a place
+ * "Port Gellhorn, Kelly County" (0 of 4380 in the pinned 2e9e194
+ * snapshot; the town's 333 places are addressed "X, Port
+ * Gellhorn"). Same place, county-qualified naming — so the
+ * gang-op resolution draws the town extent. Evidence + the
+ * cross-op pattern check: hidden_files/v032-regions/
+ * PORT-GELLHORN-NODES.md.
+ *
+ * Scoped to this one region string ON PURPOSE, in the gang-op
+ * resolution only (never in areaIdForRegion — the global
+ * hierarchy's full-path rule stands, and place areaIds are
+ * untouched: gang-op:brooks-boatworks still files under
+ * area:port-gellhorn--kelly-county). The qualified form is NOT
+ * always the bare town: "Starlet Motel, Kelly County" (L1159,
+ * the pool) is a genuine sub-area with its own positioned member
+ * and its own bounds, and the same qualified-vs-bare shape in
+ * Grassrivers / Hamlet / Watson Bay / Emerald Springs is left
+ * for the coordinator to rule on — this lane merges Port
+ * Gellhorn only. The guides' words are untouched:
+ * record.region stays "Port Gellhorn, Kelly County"; only this
+ * resolution changes.
+ */
+const PORT_GELLHORN_QUALIFIED_AREA_ID = 'area:port-gellhorn--kelly-county';
+const PORT_GELLHORN_TOWN_AREA_ID = 'area:port-gellhorn';
+
+/**
  * The area id for a gang-op region string, resolved against the
  * derived nodes. areaIdForRegion first (multi-segment paths are
  * exact); an exact node-path match second, for a region place whose
@@ -103,6 +140,12 @@ export function areaIdForGangOpRegion(
 ): string | null {
   const direct = areaIdForRegion(region);
   if (direct === null) return null;
+  if (
+    direct === PORT_GELLHORN_QUALIFIED_AREA_ID &&
+    areas.has(PORT_GELLHORN_TOWN_AREA_ID)
+  ) {
+    return PORT_GELLHORN_TOWN_AREA_ID;
+  }
   if (areas.has(direct)) return direct;
   const wanted = region.trim().toLowerCase();
   for (const node of areas.values()) {

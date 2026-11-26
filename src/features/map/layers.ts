@@ -57,12 +57,16 @@ for (const card of COLLECTABLE_CARD_PLACES) {
  * operations from the in-game tracker; the hosted ones ride on an
  * existing building (Sunrise RV Park → L265, Parlor Apartments →
  * breakable:parlor-apartments) and the rest are area-known only.
- * The 16 / 18 / 3 likely-area split in the description below is
+ * The 22 / 12 / 3 likely-area split in the description below is
  * MEASURED by measureGangOpBounds (src/features/map/likely-area.ts)
  * over the derived areas and asserted in
  * tests/unit/gang-op-likely-area.test.ts — update this copy if the
  * measurement moves (e.g. a re-sync gains an area positioned
- * members, or a host-match lands).
+ * members, or a host-match lands). The split moved 16 / 18 / 3 →
+ * 22 / 12 / 3 in the v0.32 regions-fix (lane 4): the six Port
+ * Gellhorn ops now draw the town extent instead of the Kelly
+ * County rect — same place, county-qualified naming; see
+ * hidden_files/v032-regions/PORT-GELLHORN-NODES.md.
  */
 const GANG_OP_TOTAL_COUNT = GANG_OPERATIONS.length;
 const GANG_OP_HOSTED = GANG_OPERATIONS.filter(
@@ -226,7 +230,7 @@ export const DEFAULT_LAYERS: LayerDefinition[] = [
       `${GANG_OP_HOSTED_COUNT} ride on an existing building (${GANG_OP_HOSTED_NAMES}) and show there; ` +
       `the other ${GANG_OP_AREA_KNOWN_COUNT} are known by area only — no verified position exists for any of them, ` +
       `so the map shows each one's likely area, a dashed region over the area the guides name, never a pin. ` +
-      `16 draw their own area's extent, 18 draw a county extent instead — a whole-county region for a single ` +
+      `22 draw their own area's extent, 12 draw a county extent instead — a whole-county region for a single ` +
       `building, labelled as the county extent, because its named area has no extent of its own — and 3 have no ` +
       `extent to draw and are listed by area only. Licence: ${GANG_OP_LICENSE}.`,
     category: 'activity',
