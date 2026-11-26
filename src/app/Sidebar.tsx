@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
+  Car,
   ChevronRight,
   Dumbbell,
   Home,
@@ -602,7 +603,7 @@ function CategoryTiles() {
  * Collections). Your own marks only — nothing here invents a place. */
 function AddToMapSection() {
   const ready = usePersistenceStore((s) => s.ready);
-  function beginAdd(preset: 'marker' | 'workout' | 'breakable') {
+  function beginAdd(preset: 'marker' | 'workout' | 'breakable' | 'vehicle-loot') {
     useMapStore
       .getState()
       .setMarkerKindPreset(preset === 'marker' ? null : preset);
@@ -636,6 +637,13 @@ function AddToMapSection() {
           <span>
             Add breakable home
             <small>A house you can get into — dark blue on the map</small>
+          </span>
+        </button>
+        <button type="button" className="button" onClick={() => beginAdd('vehicle-loot')}>
+          <Car size={18} />
+          <span>
+            Add vehicle-loot spot
+            <small>A safe, garage or bunker with a vehicle or code</small>
           </span>
         </button>
       </div>
