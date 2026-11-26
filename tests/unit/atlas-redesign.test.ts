@@ -107,7 +107,12 @@ describe('v0.12.0 mobile redesign', () => {
     expect(details).toContain('place-card-actions');
     expect(details).not.toContain('place-hero');
     expect(details).toContain('place-badges');
-    expect(details).toContain('place-actions');
+    // Step 6 removed the old "Mark as found / explored" row
+    // (place-actions) — it wrote the old visited/explored tables and
+    // duplicated the log section's "Mark as explored". The card's
+    // completion actions live in the completion-actions section now.
+    expect(details).not.toContain('place-actions');
+    expect(details).toContain('completion-actions');
     expect(details).not.toContain('detail-panel');
   });
 

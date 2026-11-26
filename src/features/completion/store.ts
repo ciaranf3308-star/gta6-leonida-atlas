@@ -1,5 +1,12 @@
 /**
- * The user's own 100% completion counts.
+ * The user's own 100% completion counts — RETIRED as a UI data
+ * source (v0.32 step 6). The UI reads the completion log now
+ * (features/completion/log-store.ts); this module stays ONLY because
+ * the v3→v4 migration still reads `leonida-completion-v1` through
+ * `parseCompletionCounts` / `COMPLETION_STORAGE_KEY` (repository.ts),
+ * and its unit tests pin that parse. No UI component may read
+ * `useCompletionStore` anymore — after migration deletes the key,
+ * it reads 0 tallies (the known step-2 consequence step 6 fixed).
  *
  * Counts live in localStorage under a versioned key
  * (`leonida-completion-v1`) — the same persist-first rule as the AI

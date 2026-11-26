@@ -13,12 +13,18 @@ import type { Collection } from '../../domain/types';
  * Collections tab (v0.32 step 5) — favorites, my markers, and the
  * user's own collections. The per-layer progress rows that used to
  * live here moved to the Progress tab.
+ *
+ * Step 6: the "N found" count per collection reads the completion
+ * log (foundIds, passed in from the Collections tab — place ids the
+ * log marks as found), not the old visited table. The old
+ * visited/explored tables stay intact as an audit trail; nothing
+ * here reads them anymore.
  */
-export function SavedPlaces() {
+export function SavedPlaces({ foundIds }: { foundIds?: ReadonlySet<string> }) {
   const collections = useUserStore((s) => s.collections);
   const favorites = useUserStore((s) => s.favorites);
   const markers = useUserStore((s) => s.markers);
-  const visited = useUserStore((s) => s.visited);
+  const found = foundIds ?? new Set<string>();
   const ready = usePersistenceStore((s) => s.ready);
   const filters = useUiStore((s) => s.filters);
   const [name, setName] = useState('');
@@ -124,7 +130,7 @@ export function SavedPlaces() {
               {c.name}
               <small>
                 {c.placeIds.length} places ·{' '}
-                {c.placeIds.filter((id) => visited.some((v) => v.placeId === id)).length} found
+                {c.placeIds.filter((id) => found.has(id)).length} found
               </small>
             </span>
           </button>

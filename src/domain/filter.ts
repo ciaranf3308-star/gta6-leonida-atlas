@@ -25,7 +25,10 @@ export function filterPlaces(
   favoriteIds: string[],
   notes: PlaceNote[],
   collections: Collection[],
-  visitedIds: string[] = [],
+  /** Place ids the completion log marks as found (step 6: App passes
+   * completedPlaceIds — the old visited table is never read here).
+   * `hideFound` / `remainingOnly` hide exactly these. */
+  foundIds: string[] = [],
   /**
    * AI-suggested types (on-device only). A search for "gym" finds a "?"
    * the AI suggested is a gym; "house" finds an AI-suggested house.
@@ -39,7 +42,7 @@ export function filterPlaces(
   userTags?: ReadonlyMap<string, readonly string[]>,
 ): Place[] {
   const favorites = new Set(favoriteIds);
-  const visited = new Set(visitedIds);
+  const visited = new Set(foundIds);
   const members = filters.collectionId
     ? new Set(collections.find((c) => c.id === filters.collectionId)?.placeIds ?? [])
     : null;

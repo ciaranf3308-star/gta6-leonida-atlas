@@ -970,7 +970,11 @@ export function categoryProgress(db: GameDatabase, categoryId: string): Progress
       name: threshold.name,
       required: threshold.required,
       total: threshold.total,
-      displayed: reconciledCount,
+      // Capped at the total, like the derived branch: a hand-edited
+      // backup can carry a count above the game's total, and the row
+      // must never show more than exists (step 6). The entry's raw
+      // count stays in reconciledCount — what was typed.
+      displayed: Math.min(reconciledCount, threshold.total),
       basis: 'reconciled',
       superseded: false,
       derivedCount: 0,
@@ -1011,7 +1015,8 @@ export function categoryProgress(db: GameDatabase, categoryId: string): Progress
     name: threshold.name,
     required: threshold.required,
     total: threshold.total,
-    displayed: reconciledCount,
+    // Capped at the total (step 6 — see the no-derivation branch above).
+    displayed: Math.min(reconciledCount, threshold.total),
     basis: 'reconciled',
     superseded: false,
     derivedCount,

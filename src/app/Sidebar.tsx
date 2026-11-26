@@ -29,7 +29,8 @@ import {
 } from '../features/map/place-icons';
 import { SavedPlaces } from '../features/library/SavedPlaces';
 import { ProgressPanel } from '../features/completion/ProgressPanel';
-import { LayerRow } from '../features/map/MapFilterSheet';
+import { Journal } from '../features/completion/Journal';
+import { completedPlaceIds } from '../features/completion/place-ids';
 import { Status } from './Status';
 import { setAccountEntryTarget } from '../capabilities/extension-host';
 import { aiCategoryShortLabel, effectiveAiCategory } from '../features/categorise/categories';
@@ -594,46 +595,6 @@ function CategoryTiles() {
   );
 }
 
-/** Trading-card sets (step 5: re-homed from the old Layers sheet
- * into Collections). Only the sets with a verified pin are listed —
- * the rest have no verified position yet and would otherwise fill
- * the list with 18 empty rows. */
-function TradingCardSets({ progress }: { progress: LayerProgress[] }) {
-  const layers = useMapStore((s) => s.layers);
-  const totalById = new Map(progress.map((entry) => [entry.layerId, entry.total]));
-  const ordered = [...layers].sort((a, b) => b.order - a.order);
-  const cardLayers = ordered.filter((layer) => layer.id.startsWith('cards:'));
-  const cardLayersWithPins = cardLayers.filter(
-    (layer) => (totalById.get(layer.id) ?? 0) > 0,
-  );
-  const cardPins = cardLayers.reduce(
-    (sum, layer) => sum + (totalById.get(layer.id) ?? 0),
-    0,
-  );
-  return (
-    <details className="layer-group">
-      <summary>
-        Trading cards · {cardPins.toLocaleString()} verified pin
-        {cardPins === 1 ? '' : 's'} so far
-      </summary>
-      <p className="panel-intro">
-        18 sets, 480 cards in total — only {cardPins} have a verified spot on the map so far.
-        The rest have no verified position yet. Turn a set on only when you want to hunt it.
-      </p>
-      {cardLayersWithPins.map((layer) => (
-        <LayerRow key={layer.id} layer={layer} />
-      ))}
-      {cardLayers.length - cardLayersWithPins.length > 0 && (
-        <p className="empty-state">
-          {cardLayers.length - cardLayersWithPins.length} more set
-          {cardLayers.length - cardLayersWithPins.length === 1 ? '' : 's'} with no verified
-          pin yet — they are hidden until a card in the set gets a verified spot.
-        </p>
-      )}
-    </details>
-  );
-}
-
 /** Add to the map (step 5: re-homed from the old Layers sheet into
  * Collections). Your own marks only — nothing here invents a place. */
 function AddToMapSection() {
@@ -740,12 +701,21 @@ export function FindPanel({
 }
 
 /** Collections tab content — exported so tests can render it without
- * driving the nav store. */
-export function CollectionsPanel({ progress }: { progress: LayerProgress[] }) {
+ * driving the nav store. Step 6: the per-set layer list
+ * (TradingCardSets — "18 sets, only N have a verified pin") is gone;
+ * the journal lists every set and every item, pinned or not (DESIGN
+ * §3.5). SavedPlaces and Add to the map stay, as step 5 placed them. */
+export function CollectionsPanel({
+  db,
+  onSelect,
+}: {
+  db?: GameDatabase | null;
+  onSelect?: (id: string) => void;
+}) {
   return (
     <div className="sidebar-content">
-      <SavedPlaces />
-      <TradingCardSets progress={progress} />
+      <SavedPlaces foundIds={db ? completedPlaceIds(db) : new Set<string>()} />
+      <Journal db={db ?? null} onSelectPlace={onSelect} />
       <AddToMapSection />
     </div>
   );
@@ -822,10 +792,10 @@ export function Sidebar({
           onSelect={onSelect}
         />
       ) : navTab === 'collections' ? (
-        <CollectionsPanel progress={progress} />
+        <CollectionsPanel db={db} onSelect={onSelect} />
       ) : (
         <div className="sidebar-content">
-          <ProgressPanel progress={progress} />
+          <ProgressPanel progress={progress} db={db} />
         </div>
       )}
       <footer className="sidebar-footer">

@@ -227,7 +227,7 @@ h3 {
 .icon-button:active,
 .bottom-nav button:active,
 .place-result:active,
-.layer-row:active,
+.layer-row:active {
   transform: scale(0.97);
 }
 .button.primary {
@@ -1529,6 +1529,185 @@ h3 {
 }
 .completion-footer .help-text {
   margin: 4px 0 0;
+}
+/* ---- Progress dashboard, three numbers (v0.32 step 6, DESIGN §4.1). ---- */
+.completion-totals {
+  display: grid;
+  gap: 0;
+  margin-top: 10px;
+}
+.completion-total-row {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-top: 1px solid var(--border-soft);
+}
+.completion-total-name {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text);
+}
+.completion-total-name small {
+  display: block;
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-top: 2px;
+}
+.completion-total-count {
+  font-family: var(--condensed);
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  color: var(--text);
+  white-space: nowrap;
+  text-align: right;
+}
+.completion-total-count small {
+  display: block;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0;
+}
+/* One number per category, typed from the in-game counter (§4.2). */
+.completion-reconcile {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+.completion-reconcile input {
+  width: 72px;
+  height: 48px;
+  border-radius: 12px;
+  border: 1px solid var(--border-soft);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 16px;
+  text-align: center;
+  padding: 0 6px;
+}
+.completion-reconcile input:focus {
+  border-color: var(--coral);
+  outline: none;
+}
+.completion-saved {
+  font-size: 12px;
+  color: var(--orange);
+}
+/* ---- Collections journal (v0.32 step 6, DESIGN §3.5 + §8). ---- */
+.journal-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 12px;
+}
+.journal-filter {
+  border: 1px solid var(--border-soft);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  min-height: 40px;
+}
+.journal-filter.is-active {
+  border-color: var(--coral);
+  color: var(--coral);
+}
+.journal-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+}
+.journal-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 0;
+  border-top: 1px solid var(--border-soft);
+}
+.journal-row.is-found {
+  border-left: 3px solid var(--orange);
+  padding-left: 8px;
+}
+/* The silhouette (addendum §3.3): a generic set-coloured card back,
+ * no art, no face — the artwork slot stays empty until a licence
+ * lands or the player supplies their own photo. */
+.journal-silhouette {
+  flex-shrink: 0;
+  width: 36px;
+  height: 50px;
+  border-radius: 6px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: var(--orange);
+}
+.journal-row-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.journal-row-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text);
+}
+.journal-row-label input {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  accent-color: var(--coral);
+}
+.journal-row-name small {
+  color: var(--muted);
+}
+.journal-row-found {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.journal-hint-toggle {
+  align-self: flex-start;
+  padding: 0;
+  min-height: 32px;
+}
+.journal-hint {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.5;
+}
+.journal-hint .text-button {
+  align-self: flex-start;
+  padding: 0;
+  min-height: 32px;
+}
+.journal-extras {
+  margin-top: 8px;
+}
+.journal-extras summary {
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 8px 0;
 }
 .layer-row {
   padding: 14px;

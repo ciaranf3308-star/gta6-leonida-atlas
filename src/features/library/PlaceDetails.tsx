@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Banknote, Bookmark, Camera, Check, Dumbbell, ExternalLink, Footprints, Home, MapPin, Move, Navigation, Pencil, Scan, ShoppingBag, Sparkles, Star, Tag, X } from 'lucide-react';
+import { Banknote, Bookmark, Camera, Check, Dumbbell, ExternalLink, Home, MapPin, Move, Navigation, Pencil, Scan, ShoppingBag, Sparkles, Star, Tag, X } from 'lucide-react';
 import type { Place, Position } from '../../domain/types';
 import { displayTitleFor, isUnnamedPlace } from '../../domain/types';
 import { resolveViewArea } from './view-area';
@@ -9,6 +9,7 @@ import {
   type LocationCardAction,
 } from '../completion/location-actions';
 import { loadGameDatabase, recordCompletion } from '../completion/record';
+import { useCompletionLogStore } from '../completion/log-store';
 import { topCategoriesNear } from '../../domain/nearby-categories';
 import { categoryLabel } from '../../app/categories';
 import { CATEGORY_GROUPS } from '../../app/categories';
@@ -87,8 +88,6 @@ export default function PlaceDetails({
   onMarkBreakable?: (place: Place) => void;
 }) {
   const favorite = useUserStore((s) => s.favorites.some((f) => f.placeId === place.id));
-  const found = useUserStore((s) => s.visited.some((v) => v.placeId === place.id));
-  const explored = useUserStore((s) => s.explored.some((e) => e.placeId === place.id));
   // Select the raw store array (a stable reference) and derive the
   // place's tags with useMemo. Selecting userTagsFor(...) directly
   // returns a fresh array on every render, and React's external-store
@@ -399,17 +398,22 @@ export default function PlaceDetails({
     if (!layer) return null;
     return CATEGORY_GROUPS.find((group) => group.id === layer.mapIndex)?.name ?? null;
   }, [place.layerId]);
-  // --- Completion (step 5): the records-aware database, loaded here
-  // so the card's looted counts and collected marks are never stale.
-  // The App database has the areas but no records; the card view
-  // below falls back to it until this load lands. The load passes
-  // allPlaces, so no second catalogue fetch happens. ---
+  // --- Completion (step 6): the records-aware database. App's `db`
+  // prop IS records-aware now (built from the log store), so the card
+  // uses it directly — no second load, no stale copy. The
+  // loadGameDatabase fallback below is only for callers that render
+  // the card without a database (tests); it reads the log, never the
+  // old visited/explored tables. ---
   const [completionDb, setCompletionDb] = useState<GameDatabase | null>(
     completionDbProp ?? null,
   );
   useEffect(() => {
     if (completionDbProp) {
       setCompletionDb(completionDbProp);
+      return;
+    }
+    if (db) {
+      setCompletionDb(db);
       return;
     }
     let alive = true;
@@ -425,7 +429,7 @@ export default function PlaceDetails({
     return () => {
       alive = false;
     };
-  }, [place.id, allPlaces, completionDbProp]);
+  }, [place.id, allPlaces, completionDbProp, db]);
   const activeDb = completionDb ?? db ?? null;
   const cardView = useMemo(
     () => (activeDb ? locationCard(activeDb, place.id) : null),
@@ -439,7 +443,9 @@ export default function PlaceDetails({
   const [completionError, setCompletionError] = useState('');
   /** The one write path (step 2's recordCompletion — called, never
    * changed). On success the returned db becomes the card's db, so
-   * the struck-through state and the counts update immediately. */
+   * the struck-through state and the counts update immediately — and
+   * it is adopted by the log store too, so the map pin dims and the
+   * journal checkbox move in the same write (step 6). */
   async function recordAction(
     action: Extract<LocationCardAction, { kind: 'record' | 'collect' }>,
   ) {
@@ -455,6 +461,7 @@ export default function PlaceDetails({
     setCompletionBusy(null);
     if (result.ok && result.db) {
       setCompletionDb(result.db);
+      useCompletionLogStore.getState().applyDb(result.db);
     } else {
       setCompletionError(result.error ?? 'Could not save that — try again.');
     }
@@ -690,34 +697,20 @@ export default function PlaceDetails({
             uncategorised.
           </p>
         )}
-        <div className="place-actions">
-          <button
-            disabled={!ready}
-            className={`button ${found ? 'selected' : ''}`}
-            onClick={() => void saveLocal(() => atlasRepository.toggleVisited(place.id))}
-          >
-            <Check size={18} />
-            {found ? 'Found ✓ — tap to undo' : 'Mark as found'}
-          </button>
-          <button
-            disabled={!ready}
-            className={`button ${explored ? 'selected' : ''}`}
-            onClick={() => void saveLocal(() => atlasRepository.toggleExplored(place.id))}
-          >
-            <Footprints size={18} />
-            {explored ? 'Explored ✓ — tap to undo' : 'Mark as explored'}
-          </button>
-        </div>
-        {/* Your progress here (step 5): contextual actions driven by
-          * this location's opportunities — the same recordCompletion
-          * write the journal will use. Completed rows are struck
-          * through and dimmed; looted rows keep their count
-          * ("Looted ×3") and stay live, because hold-ups repeat.
-          * "Shop here" is not a completion — it records nothing.
-          * NOTE (step 6 handoff): the "Mark as found / explored"
-          * row above still writes the old store; these buttons write
-          * the completion log. The two "Mark as explored" buttons
-          * converge when step 6 replaces the old store. */}
+        {/* Your progress here (step 5, step 6): contextual actions
+          * driven by this location's opportunities — the same
+          * recordCompletion write the journal uses. Completed rows
+          * are struck through and dimmed; looted rows keep their
+          * count ("Looted ×3") and stay live, because hold-ups
+          * repeat. "Shop here" is not a completion — it records
+          * nothing. Step 6 removed the old "Mark as found /
+          * explored" row above this section: it wrote the old
+          * visited/explored tables, duplicating "Mark as explored"
+          * while the log section already had it. A location with no
+          * opportunity-driven action has no completion button here
+          * (DESIGN §8 gives gyms, activities and the rest no verb —
+          * the gap is flagged in the step-6 report for the
+          * coordinator to rule on, not silently filled). */}
         {cardActions.length > 0 && (
           <section className="detail-section completion-actions" aria-label="Your progress here">
             <h3>Your progress here</h3>

@@ -138,9 +138,16 @@ describe('tab homes — §6.5c re-homing (step 5)', () => {
         progress: [
           { layerId: 'lootable', name: 'Lootable', total: 47, found: 3, explored: 5 },
         ],
+        // Step 6: the dashboard reads the completion log, so the
+        // panel takes the database — the old localStorage tally panel
+        // it replaced read 0 after migration.
+        db: buildFullDb(),
       }),
     );
     expect(html).toContain('100% completion');
+    expect(html).toContain('Recorded');
+    expect(html).toContain('Reconciled');
+    expect(html).toContain('Estimated');
     expect(html).toContain('Progress by layer');
     expect(html).toContain('Lootable');
     expect(html).toContain('3 of 47 found');
@@ -148,14 +155,20 @@ describe('tab homes — §6.5c re-homing (step 5)', () => {
     expect(html).not.toContain('Add to the map');
   });
 
-  it('Collections holds the library, the trading-card sets and Add to the map', () => {
+  it('Collections holds the library, the journal and Add to the map', () => {
     const html = renderToStaticMarkup(
-      createElement(CollectionsPanel, { progress: [] }),
+      createElement(CollectionsPanel, {
+        // Step 6: the per-set layer list (TradingCardSets) is replaced
+        // by the journal — every set, every item, pinned or not.
+        db: buildFullDb(),
+        onSelect: () => {},
+      }),
     );
     expect(html).toContain('Favorites');
     expect(html).toContain('My markers');
     expect(html).toContain('Collections');
     expect(html).toContain('Trading cards');
+    expect(html).toContain('Delights Dancers');
     expect(html).toContain('Add to the map');
     expect(html).not.toContain('100% completion');
     expect(html).not.toContain('Progress by layer');

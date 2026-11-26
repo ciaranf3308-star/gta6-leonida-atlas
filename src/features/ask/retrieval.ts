@@ -52,6 +52,9 @@ export interface AskRetrievalInput {
   places: readonly Place[];
   layers: readonly LayerDefinition[];
   filters: Pick<Filters, 'hideFound' | 'remainingOnly' | 'countyId'>;
+  /** Place ids the completion log marks as found (step 6: the old
+   * visited table is never read — App passes completedPlaceIds here).
+   * The name is historical; the values are log-derived. */
   visitedIds?: readonly string[];
   /**
    * AI-suggested types for unnamed places (on-device only). A confident

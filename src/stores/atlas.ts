@@ -15,6 +15,7 @@ import { parseBackupFileWithDrops, parseBackupV4 } from '../db/backup';
 import { exportAiIndex } from '../db/ai-index';
 import { importAtlasBackup } from '../db/backup-import';
 import { useAiIndexStore } from '../features/categorise/store';
+import { useCompletionLogStore } from '../features/completion/log-store';
 
 export const DEFAULT_FILTERS: Filters = {
   query: '',
@@ -386,6 +387,11 @@ export async function importWorkspaceBackup(
           importResult.failure ||
           'Could not import the backup.',
     );
+  // Step 6: the import wrote the completion log (and ran the v3
+  // migration for v1–v3 files) — the log store re-reads it, so the
+  // map, journal and Progress move to the restored state in the same
+  // operation. The user store above already reloaded the old tables.
+  await useCompletionLogStore.getState().refresh();
   await useAiIndexStore.getState().reloadFromDatabase();
 }
 

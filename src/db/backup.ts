@@ -341,14 +341,20 @@ export function parseAiIndexJob(input: unknown): IndexJobState {
   };
 }
 
-/** Returns a new, whitelisted value. Never mutates input or touches browser storage. */
-export function parseBackup(input: unknown): Backup {
-  const data = record(input, 'backup');
-  if (data.format !== 'leonida-atlas') invalid('format', 'must be leonida-atlas');
-  if (data.version !== 1 && data.version !== 2 && data.version !== 3)
-    invalid('version', 'is unsupported (supported versions: 1, 2 and 3)');
-  const exportedAt = timestamp(data.exportedAt, 'exportedAt');
-  const legacyTime = data.version === 1 ? exportedAt : undefined;
+/**
+ * The v3 sections, shared by the v3 and v4 parsers (v0.32 step 6
+ * unification, step-3 ruling #6: "unify when the domain type +
+ * repository are touched together"). One implementation parses the
+ * sections; the version-specific entry points below only check the
+ * version and assemble the result — there is no second parser and
+ * no version-spoofing call anymore (parseBackupV4 used to call
+ * parseBackup with `{ ...data, version: 3 }`).
+ */
+function parseV3Sections(
+  data: Record<string, unknown>,
+  exportedAt: string,
+  legacyTime: string | undefined,
+): Omit<Backup, 'format' | 'version' | 'exportedAt'> {
   const markers = unique(
     list(data.markers, 'markers').map((item, index) =>
       parsePersonalMarker(item, `markers[${index}]`, legacyTime),
@@ -461,10 +467,7 @@ export function parseBackup(input: unknown): Backup {
   // v3 backup carrying such a row used to fail the whole import.
   // Favorites, notes, tags and collections still reject a missing
   // marker: those are live references to a thing that must exist.
-  const result: Backup = {
-    format: 'leonida-atlas',
-    version: 3,
-    exportedAt,
+  return {
     favorites,
     notes,
     placeTags,
@@ -487,10 +490,98 @@ export function parseBackup(input: unknown): Backup {
         ? { ...EMPTY_INDEX_JOB, attemptedPlaceIds: [], updatedAt: exportedAt }
         : parseAiIndexJob(data.aiIndexJob),
   };
-  // Count only whitelisted data: ignored keys cannot become stored executable content.
+}
+
+/**
+ * The ONE parser path (step 6 unification): every backup version
+ * validates through here. The v3 sections are parsed once by
+ * parseV3Sections; version 4 adds its sections on top, with
+ * drop-and-count for completion records (DESIGN §11). The 10 MiB cap
+ * is checked once, on the final whitelisted result — a v3 file
+ * checks the v3 result, a v4 file the v4 result including the new
+ * sections, exactly as before the unification.
+ */
+function parseBackupData(
+  data: Record<string, unknown>,
+  version: 1 | 2 | 3 | 4,
+): { backup: Backup | BackupV4; droppedCompletionRecords: DroppedCompletionRecord[] } {
+  const exportedAt = timestamp(data.exportedAt, 'exportedAt');
+  const legacyTime = version === 1 ? exportedAt : undefined;
+  const sections = parseV3Sections(data, exportedAt, legacyTime);
+  if (version !== 4) {
+    const result: Backup = {
+      format: 'leonida-atlas',
+      version: 3,
+      exportedAt,
+      ...sections,
+    };
+    // Count only whitelisted data: ignored keys cannot become stored executable content.
+    if (new TextEncoder().encode(JSON.stringify(result)).byteLength > MAX_BACKUP_BYTES)
+      invalid('backup', 'exceeds the 10 MiB data limit');
+    return { backup: result, droppedCompletionRecords: [] };
+  }
+  // Completion records are drop-and-count (DESIGN §11): an invalid
+  // record is skipped with its reason, the valid ones survive. Every
+  // other section below is still fail-fast.
+  const { records: completionRecords, dropped: droppedCompletionRecords } =
+    parseCompletionRecords(data.completionRecords);
+  const reconciliation = unique(
+    list(data.reconciliation === undefined ? [] : data.reconciliation, 'reconciliation').map(
+      (item, index) => parseReconciliationEntry(item, `reconciliation[${index}]`),
+    ),
+    (item) => item.categoryId,
+    'reconciliation',
+  );
+  const enrichments = unique(
+    list(data.enrichments === undefined ? [] : data.enrichments, 'enrichments').map((item, index) =>
+      parseEnrichment(item, `enrichments[${index}]`),
+    ),
+    (item) => item.id,
+    'enrichments',
+  );
+  const corrections = unique(
+    list(data.corrections === undefined ? [] : data.corrections, 'corrections').map((item, index) =>
+      parseCorrection(item, `corrections[${index}]`),
+    ),
+    (item) => item.id,
+    'corrections',
+  );
+  const personalItemState = unique(
+    list(
+      data.personalItemState === undefined ? [] : data.personalItemState,
+      'personalItemState',
+    ).map((item, index) => parsePersonalItemState(item, `personalItemState[${index}]`)),
+    (item) => item.itemId,
+    'personalItemState',
+  );
+  // No userScreenshots / researchRequests sections: they are not in
+  // v4 (see the note at the top of the v4 section). A file carrying
+  // them is ignored here — unknown keys, never read.
+  const result: BackupV4 = {
+    format: 'leonida-atlas',
+    version: 4,
+    exportedAt,
+    ...sections,
+    completionRecords,
+    reconciliation,
+    enrichments,
+    corrections,
+    personalItemState,
+  };
+  // Count only whitelisted data: the 10 MiB cap applies to the whole
+  // v4 file, new sections included.
   if (new TextEncoder().encode(JSON.stringify(result)).byteLength > MAX_BACKUP_BYTES)
     invalid('backup', 'exceeds the 10 MiB data limit');
-  return result;
+  return { backup: result, droppedCompletionRecords };
+}
+
+/** Returns a new, whitelisted v3 value. Never mutates input or touches browser storage. */
+export function parseBackup(input: unknown): Backup {
+  const data = record(input, 'backup');
+  if (data.format !== 'leonida-atlas') invalid('format', 'must be leonida-atlas');
+  if (data.version !== 1 && data.version !== 2 && data.version !== 3)
+    invalid('version', 'is unsupported (supported versions: 1, 2 and 3)');
+  return parseBackupData(data, data.version as 1 | 2 | 3).backup as Backup;
 }
 
 // ---------------------------------------------------------------------------
@@ -502,22 +593,21 @@ export function parseBackup(input: unknown): Backup {
  * still rejects version 4:
  *
  * `parseBackup` returns the v3-typed `Backup` (`version: 3`, in
- * `src/domain/types.ts` — step 3 may not touch `src/domain/*`), and
- * `AtlasDatabase.exportBackup` / `importBackup` in `repository.ts`
- * (also untouched in this step) are typed around it. A v4 object is
- * not a `Backup`, so `parseBackup` cannot honestly return one — and
- * changing its return type would break `exportBackup`'s declared
+ * `src/domain/types.ts`), and `AtlasDatabase.exportBackup` /
+ * `importBackup` in `repository.ts` are typed around it. A v4 object
+ * is not a `Backup`, so `parseBackup` cannot honestly return one —
+ * and changing its return type would break `exportBackup`'s declared
  * `Promise<Backup>`. So:
  *
  * - `parseBackup` stays the v3 validator (versions 1–3 only). The
  *   repository's internal gates keep using it, and the existing
  *   "version 4 is unsupported" test still holds — for `parseBackup`.
- * - `parseBackupV4` below is the v4 validator. It reuses `parseBackup`
- *   for the v3 sections (called with `version: 3` — the sections do
- *   not depend on the version except for the v1 legacy path) and adds
- *   the new sections. The store layer (`exportWorkspaceBackup` /
- *   `importWorkspaceBackup`) and the backup dialog use `parseBackupV4`
- *   / `parseBackupFile` for v4 files.
+ * - `parseBackupV4` below is the v4 validator. Since step 6 both
+ *   validators run through the ONE parser path `parseBackupData`
+ *   (shared `parseV3Sections` + the v4 sections) — the v4 parser no
+ *   longer calls `parseBackup` with a spoofed `version: 3`. The store
+ *   layer (`exportWorkspaceBackup` / `importWorkspaceBackup`) and the
+ *   backup dialog use `parseBackupV4` / `parseBackupFile` for v4 files.
  * - `importAtlasBackup` hands the repository a version-3 view of a v4
  *   file (`{ ...backup, version: 3 }`) so the repository's v3 import
  *   runs unchanged, then writes the v4 sections itself.
@@ -846,63 +936,14 @@ export function parseBackupV4WithDrops(input: unknown): {
   const data = record(input, 'backup');
   if (data.format !== 'leonida-atlas') invalid('format', 'must be leonida-atlas');
   if (data.version !== 4) invalid('version', 'is unsupported (this parser expects version 4)');
-  // The v3 sections validate through parseBackup (version downgraded
-  // for the call only — the sections themselves do not depend on the
-  // version except for the v1 legacy path). Unknown keys — including
-  // the v4 sections — are dropped from that view.
-  const v3 = parseBackup({ ...data, version: 3 });
-  // Completion records are drop-and-count (DESIGN §11): an invalid
-  // record is skipped with its reason, the valid ones survive. Every
-  // other section below is still fail-fast.
-  const { records: completionRecords, dropped: droppedCompletionRecords } =
-    parseCompletionRecords(data.completionRecords);
-  const reconciliation = unique(
-    list(data.reconciliation === undefined ? [] : data.reconciliation, 'reconciliation').map(
-      (item, index) => parseReconciliationEntry(item, `reconciliation[${index}]`),
-    ),
-    (item) => item.categoryId,
-    'reconciliation',
-  );
-  const enrichments = unique(
-    list(data.enrichments === undefined ? [] : data.enrichments, 'enrichments').map((item, index) =>
-      parseEnrichment(item, `enrichments[${index}]`),
-    ),
-    (item) => item.id,
-    'enrichments',
-  );
-  const corrections = unique(
-    list(data.corrections === undefined ? [] : data.corrections, 'corrections').map((item, index) =>
-      parseCorrection(item, `corrections[${index}]`),
-    ),
-    (item) => item.id,
-    'corrections',
-  );
-  const personalItemState = unique(
-    list(
-      data.personalItemState === undefined ? [] : data.personalItemState,
-      'personalItemState',
-    ).map((item, index) => parsePersonalItemState(item, `personalItemState[${index}]`)),
-    (item) => item.itemId,
-    'personalItemState',
-  );
-  // No userScreenshots / researchRequests sections: they are not in
-  // v4 (see the note at the top of the v4 section). A file carrying
-  // them is ignored here — unknown keys, dropped by parseBackup's
-  // v3 view and never read below.
-  const result: BackupV4 = {
-    ...v3,
-    version: 4,
-    completionRecords,
-    reconciliation,
-    enrichments,
-    corrections,
-    personalItemState,
+  // One parser path (step 6): the v3 sections and the v4 sections
+  // validate together in parseBackupData — no second parse, no
+  // version-spoofing call. Drop-and-count for invalid completion
+  // records lives there too (DESIGN §11).
+  return parseBackupData(data, 4) as {
+    backup: BackupV4;
+    droppedCompletionRecords: DroppedCompletionRecord[];
   };
-  // Count only whitelisted data: the 10 MiB cap applies to the whole
-  // v4 file, new sections included.
-  if (new TextEncoder().encode(JSON.stringify(result)).byteLength > MAX_BACKUP_BYTES)
-    invalid('backup', 'exceeds the 10 MiB data limit');
-  return { backup: result, droppedCompletionRecords };
 }
 
 /** Returns a new, whitelisted v4 value. Never mutates input or touches browser storage. */

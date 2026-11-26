@@ -42,6 +42,7 @@
  * and writes a `PersonalItemState` row — Progress never moves.
  */
 import { loadCatalogue } from '../../data/catalogue';
+import { completionThresholdById } from '../../data/completion';
 import {
   atlasRepository,
   ensureCompletionMigration,
@@ -53,6 +54,7 @@ import {
   type CompletionTarget,
   type CompletionVerb,
   type GameDatabase,
+  type ReconciliationEntry,
 } from '../../domain/game-db';
 import type { PersonalItemState } from '../../domain/album';
 import type { Place, UserData } from '../../domain/types';
@@ -549,6 +551,93 @@ export async function undoSale(
     await repository.personalItemState.put(state);
   });
   return { ok: true, state };
+}
+
+/**
+ * Record one manual tally (v0.32 step 6, DESIGN §4.2): the number the
+ * player typed from the in-game Progress screen, for one of the 19
+ * categories. The in-game counter is the ONLY basis a manual tally
+ * may have — the entry is always `basis: 'game-stat'`.
+ *
+ * Rules, enforced before any write (same shape as recordCompletion):
+ * - The category must be one of the 19 thresholds; an unknown id is
+ *   rejected, never stored under a made-up key.
+ * - The count must be a whole number in [0, total] for the category
+ *   (a tally above the game's total is a typo, not progress).
+ * - The v3 migration runs first: a stale `leonida-completion-v1` key
+ *   would otherwise overwrite this entry with its tallies on the
+ *   next migration pass (bulkPut by category id).
+ * - Persist-first, read-back verified (repository
+ *   saveReconciliationEntry): a failed write leaves the old entry
+ *   and reports `storageError`.
+ * - Writing an entry for a derived category does NOT change what
+ *   Progress shows — the §4.3 selector displays the derived value
+ *   and marks this entry superseded (shown, not counted). The entry
+ *   is still stored: it is the player's typed cross-check, and it
+ *   becomes the displayed value the moment the derived coverage
+ *   goes away.
+ */
+export interface RecordReconciliationInput {
+  categoryId: string;
+  count: number;
+}
+
+export interface RecordReconciliationResult {
+  ok: boolean;
+  entry?: ReconciliationEntry;
+  error?: string;
+  code?: 'validation' | 'storageError';
+}
+
+export async function recordReconciliation(
+  input: RecordReconciliationInput,
+  deps: CompletionDeps = {},
+): Promise<RecordReconciliationResult> {
+  const { repository, places, storage } = await resolveDeps(deps);
+  try {
+    await ensureMigrated(repository, places, storage);
+  } catch (error) {
+    return {
+      ok: false,
+      code: 'storageError',
+      error: `Could not save that count — the old completion data could not be migrated (${error instanceof Error ? error.message : 'unknown error'}). Nothing was changed.`,
+    };
+  }
+  const threshold = completionThresholdById(input.categoryId);
+  if (!threshold) {
+    return {
+      ok: false,
+      code: 'validation',
+      error: `No completion category with id "${input.categoryId}" exists — nothing was recorded.`,
+    };
+  }
+  if (
+    !Number.isInteger(input.count) ||
+    input.count < 0 ||
+    input.count > threshold.total
+  ) {
+    return {
+      ok: false,
+      code: 'validation',
+      error: `"${threshold.name}" takes a whole number between 0 and ${threshold.total}.`,
+    };
+  }
+  const entry: ReconciliationEntry = {
+    categoryId: input.categoryId,
+    count: input.count,
+    basis: 'game-stat',
+    at: new Date().toISOString(),
+  };
+  try {
+    await repository.saveReconciliationEntry(entry);
+  } catch (error) {
+    return {
+      ok: false,
+      code: 'storageError',
+      error: `Could not save that count — it is not lost, try again (${error instanceof Error ? error.message : 'unknown error'}).`,
+    };
+  }
+  return { ok: true, entry };
 }
 
 // Re-exported for callers that run the migration explicitly (startup

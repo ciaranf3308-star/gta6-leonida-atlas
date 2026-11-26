@@ -240,8 +240,8 @@ export class AtlasDatabase extends Dexie {
   }
 
   /** The completion log + manual tallies, as stored. Read-only: the
-   * only writer is recordCompletion / the v3 migration (and, from
-   * step 3, the backup import). */
+   * only writers are recordCompletion / recordReconciliation / the v3
+   * migration (and, from step 3, the backup import). */
   async loadCompletion(): Promise<{
     records: CompletionRecord[];
     reconciliation: ReconciliationEntry[];
@@ -251,6 +251,25 @@ export class AtlasDatabase extends Dexie {
       this.reconciliation.toArray(),
     ]);
     return { records, reconciliation };
+  }
+
+  /**
+   * Write one manual tally (v0.32 step 6, DESIGN §4.2: one number per
+   * counts-only category, with the in-game counter as the source).
+   * The caller (recordReconciliation) validates the category and the
+   * range and runs the v3 migration first, so a stale tallies key can
+   * never overwrite this entry afterwards. The write is persist-first
+   * with a read-back check inside the transaction: a failed write
+   * throws and leaves the old entry in place.
+   */
+  async saveReconciliationEntry(entry: ReconciliationEntry): Promise<void> {
+    await this.transaction('rw', this.reconciliation, async () => {
+      await this.reconciliation.put(entry);
+      const readBack = await this.reconciliation.get(entry.categoryId);
+      if (!readBack || readBack.count !== entry.count || readBack.at !== entry.at) {
+        throw new Error('The reconciliation entry did not read back after writing.');
+      }
+    });
   }
 
   /** Sold state for every item the player has sold (addendum §3.4).

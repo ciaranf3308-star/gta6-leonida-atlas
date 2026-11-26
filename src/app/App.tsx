@@ -40,6 +40,11 @@ import {
   useUserStore,
   useWorkspaceStore,
 } from '../stores/atlas';
+import { useCompletionLogStore } from '../features/completion/log-store';
+import {
+  completedPlaceIds,
+  exploredPlaceIds,
+} from '../features/completion/place-ids';
 import { Sidebar } from './Sidebar';
 import { resolveRoute } from './routes';
 import { updateAtlasHead } from './seo';
@@ -66,8 +71,14 @@ export default function App() {
   const status = useDomainStore((s) => s.status);
   const error = useDomainStore((s) => s.error);
   const markers = useUserStore((s) => s.markers);
-  const visited = useUserStore((s) => s.visited);
-  const explored = useUserStore((s) => s.explored);
+  /** Step 6: found/explored come from the completion log, never the
+   * old visited/explored tables. The log store holds the records;
+   * the GameDatabase below is built from them, and every reader in
+   * this file goes through its selectors (completedPlaceIds /
+   * exploredPlaceIds) — the old tables are an audit trail only. */
+  const completionRecords = useCompletionLogStore((s) => s.records);
+  const completionReconciliation = useCompletionLogStore((s) => s.reconciliation);
+  const completionError = useCompletionLogStore((s) => s.error);
   const placeTags = useUserStore((s) => s.placeTags);
   const favorites = useUserStore((s) => s.favorites);
   const notes = useUserStore((s) => s.notes);
@@ -119,19 +130,27 @@ export default function App() {
    * blank defaults would overwrite the user's saved layers. */
   const [viewRestored, setViewRestored] = useState(false);
   const allPlaces = useMemo(() => [...places, ...markers.map(markerToPlace)], [places, markers]);
-  /** Step 4 (§6): the gameplay database — areas and POI search run
-   * off this, never off the visible subset. Memoized on the
-   * catalogue + markers; user data is read live so personal markers
-   * become personal locations. A build failure degrades to null
-   * (geo features hide) instead of crashing the map. */
+  /** Step 4 (§6) + step 6: the gameplay database — areas and POI
+   * search run off this, never off the visible subset. Memoized on
+   * the catalogue + markers + the completion log; user data is read
+   * live so personal markers become personal locations. A build
+   * failure degrades to null (geo features hide) instead of crashing
+   * the map. The log is what makes this database records-aware: a
+   * journal checkbox and a map pin read the same selectors, so they
+   * cannot disagree. */
   const gameDb = useMemo(() => {
     if (status !== 'ready') return null;
     try {
-      return buildGameDatabase({ places: allPlaces, user: useUserStore.getState() });
+      return buildGameDatabase({
+        places: allPlaces,
+        user: useUserStore.getState(),
+        records: completionRecords,
+        reconciliation: completionReconciliation,
+      });
     } catch {
       return null;
     }
-  }, [status, allPlaces]);
+  }, [status, allPlaces, completionRecords, completionReconciliation]);
   const areas = gameDb?.areas ?? null;
   const selectedAreaId = useSearchSplitStore((s) => s.selectedAreaId);
   const areaPageOpen = useSearchSplitStore((s) => s.areaPageOpen);
@@ -148,7 +167,7 @@ export default function App() {
           favorites.map((f) => f.placeId),
           notes,
           collections,
-          visited.map((v) => v.placeId),
+          gameDb ? [...completedPlaceIds(gameDb)] : [],
           aiCategories,
           userTagsMap(placeTags),
         ).filter((place) =>
@@ -156,14 +175,15 @@ export default function App() {
         ),
         layers,
       ),
-    [allPlaces, filters, deferredQuery, favorites, notes, collections, visited, layers, aiCategories, placeTags],
+    [allPlaces, filters, deferredQuery, favorites, notes, collections, gameDb, layers, aiCategories, placeTags],
   );
   /** Per-layer found / explored / total for the Progress section.
    * Counts every place in the layer. Explored is separate from found:
-   * found is "got the thing", explored is "been here". */
+   * found is "got the thing", explored is "been here". Both come
+   * from the completion log (step 6), never the old tables. */
   const progress = useMemo(() => {
-    const found = new Set(visited.map((v) => v.placeId));
-    const seen = new Set(explored.map((e) => e.placeId));
+    const found = gameDb ? completedPlaceIds(gameDb) : new Set<string>();
+    const seen = gameDb ? exploredPlaceIds(gameDb) : new Set<string>();
     return layers.map((layer) => {
       const total = allPlaces.filter((p) => p.layerId === layer.id).length;
       const done = allPlaces.filter(
@@ -174,7 +194,7 @@ export default function App() {
       ).length;
       return { layerId: layer.id, name: layer.name, total, found: done, explored: checked };
     });
-  }, [allPlaces, visited, explored, layers]);
+  }, [allPlaces, gameDb, layers]);
   const anyPublicLayerVisible = layers.some(
     (layer) => layer.visible && layer.id !== 'my-markers',
   );
@@ -453,6 +473,15 @@ export default function App() {
     // clean map first.
     setViewRestored(true);
     void hydrateUserData();
+    /** Step 6: the v3→v4 completion migration runs on startup, not
+     * only on backup import. Until now ensureCompletionMigration ran
+     * only from backup-import.ts:217 — a player who never restored a
+     * backup kept the old visited/explored/tallies state unmigrated
+     * and the new surfaces read an empty log. The migration is
+     * idempotent (deterministic record ids, put-only writes), so a
+     * second launch is a no-op; a failure is stored in the log
+     * store and surfaced as a banner with a retry below. */
+    void useCompletionLogStore.getState().load();
     cataloguePromise ??= Promise.all(
       [...atlasRegistry.sources.values()].map((source) => source.load()),
     ).then((batches) => batches.flat());
@@ -506,6 +535,7 @@ export default function App() {
       // elsewhere.
       if (matches && usePersistenceStore.getState().status !== 'saving') {
         void hydrateUserData();
+        void useCompletionLogStore.getState().refresh();
         void useAiIndexStore.getState().reloadFromDatabase();
       }
     });
@@ -622,8 +652,8 @@ export default function App() {
           promptVisible={navTab === 'map' && !selected && status === 'ready' && showingCount === 0 && anyPublicLayerVisible}
           editorMode={editorMode}
           preferences={preferences}
-          foundIds={new Set(visited.map((v) => v.placeId))}
-          exploredIds={new Set(explored.map((e) => e.placeId))}
+          foundIds={gameDb ? completedPlaceIds(gameDb) : new Set<string>()}
+          exploredIds={gameDb ? exploredPlaceIds(gameDb) : new Set<string>()}
           highlightIds={mapHighlightSet}
           aiCategories={aiCategories}
           onSelect={select}
@@ -803,7 +833,7 @@ export default function App() {
           filters={filters}
           aiCategories={aiCategories}
           userTags={userTagsMap(placeTags)}
-          visitedIds={visited.map((v) => v.placeId)}
+          visitedIds={gameDb ? [...completedPlaceIds(gameDb)] : []}
           offline={offline}
           onSelect={select}
           onClearHighlights={() => useMapStore.getState().clearHighlights()}
@@ -818,6 +848,18 @@ export default function App() {
             {error}
             <button className="text-button" onClick={() => location.reload()}>
               Reload
+            </button>
+          </div>
+        )}
+        {completionError && (
+          <div className="map-notice inline-error" role="alert">
+            Your old completion marks could not be migrated to the new log — nothing was
+            lost, and the old marks are still on this device. {completionError}{' '}
+            <button
+              className="text-button"
+              onClick={() => void useCompletionLogStore.getState().load()}
+            >
+              Retry migration
             </button>
           </div>
         )}
