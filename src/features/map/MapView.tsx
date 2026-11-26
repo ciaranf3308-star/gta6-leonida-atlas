@@ -39,6 +39,8 @@ import {
   type LabelCandidate,
 } from './label-placement';
 import { addIsolationLayers } from './isolation-layer';
+import { addLikelyAreaLayers } from './likely-area-layer';
+import { gangOpLikelyAreas, groupLikelyAreas } from './likely-area';
 import { geoLabelsForView } from '../../domain/geography';
 import type { AreaNode } from '../../domain/geography';
 import {
@@ -773,6 +775,24 @@ export default function MapView(props: MapViewProps) {
     if (!isolation) return;
     return addIsolationLayers(map, isolation, geo);
   }, [map, props.isolation, geo]);
+
+  // Gang-op likely areas (v0.32 lane 1): when the Gang operations
+  // layer is on, each area-known op draws a dashed-outline region
+  // over its named area's extent, labelled "<op> · likely area" —
+  // never a pin. Regions render ONLY when the layer is on
+  // (gangOpLikelyAreas gates on it — a revealed op with the layer
+  // off draws nothing), and the effect has no zoom dependency, so
+  // zooming in can never turn a region into a pin. Ops with no
+  // extent to draw (Fishing Shacks, Chatfield, Vespucci Mansion)
+  // get no region; the layer description says so. The two hosted
+  // ops (Sunrise RV Park, Parlor Apartments) draw no region either
+  // — their host building is their map presence.
+  useEffect(() => {
+    if (!map || !props.areas) return;
+    const regions = gangOpLikelyAreas(props.areas, props.places, props.layers);
+    if (regions.length === 0) return;
+    return addLikelyAreaLayers(map, groupLikelyAreas(regions));
+  }, [map, props.areas, props.places, props.layers]);
 
   // Geo labels (§6.4): tappable area-name chips at each area's
   // centroid, INDEPENDENT of gameplay layers — they render with all
