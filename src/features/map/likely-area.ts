@@ -28,8 +28,10 @@
  * Shared extents: several ops name the same area (six name Port
  * Gellhorn and draw the town extent — see the county-qualified
  * town redirect in areaIdForGangOpRegion), and several AREAS fall
- * back to the same county rect (Emerald Springs and Frogswater
- * both fall back to Kelly County — two ops over one rect). The
+ * back to the same county rect (Manatee Motel and Industrial Weed
+ * Grow both fall back to Mariana County — two ops over one rect;
+ * Walker Farm sits alone on the Kelly County rect since the
+ * Emerald Springs merge). The
  * pure result stays one LikelyArea per op (each op keeps its own
  * label); groupLikelyAreas() collapses identical GEOMETRY for
  * DRAWING only — one dashed rect, one combined label naming every
@@ -92,39 +94,67 @@ export function likelyAreaLabel(
 }
 
 /**
- * County-qualified town redirect (v0.32 regions-fix, lane 4 —
- * Finding 4): the guides name the six Port Gellhorn ops
- * "Port Gellhorn, Kelly County", which areaIdForRegion resolves
- * to area:port-gellhorn--kelly-county — a node with no positioned
- * members (its only members are the six ops themselves plus the
- * Starlet Motel bench, all unpositioned), so the county fallback
- * used to fire and all six drew the whole Kelly County rect. The
- * catalogue's Port Gellhorn is the TOWN area:port-gellhorn:
- * 337 member places, 335 positioned, parent county:kelly by
- * plurality vote — and no GTADB record ever addresses a place
- * "Port Gellhorn, Kelly County" (0 of 4380 in the pinned 2e9e194
- * snapshot; the town's 333 places are addressed "X, Port
- * Gellhorn"). Same place, county-qualified naming — so the
- * gang-op resolution draws the town extent. Evidence + the
- * cross-op pattern check: hidden_files/v032-regions/
- * PORT-GELLHORN-NODES.md.
+ * County-qualified town redirects (v0.32 regions-fix, lanes 4 +
+ * 4b — Finding 4): the guides name some ops "Town, County",
+ * which areaIdForRegion resolves to a qualified node with no
+ * positioned members (its only members are the unpositioned op
+ * places themselves), so the county fallback used to fire and the
+ * ops drew the whole county rect. The catalogue's town is the
+ * BARE node — same place, county-qualified naming — so the
+ * gang-op resolution draws the town extent. The evidence for
+ * each pair is the same shape Port Gellhorn proved (lane 4):
+ * the bare node has positioned GTADB members whose county parent
+ * (plurality vote) is the qualifier, the qualified node has
+ * none, and no GTADB record addresses a place in the qualified
+ * form. Full evidence + the cross-op pattern check:
+ * ../../goals/gta-6-leonida-map-spoiler-free-pwa/hidden_files/
+ * v032-regions/PORT-GELLHORN-NODES.md (moved out of the repo by
+ * lane 4b; coordination notes belong in the goal's hidden files).
  *
- * Scoped to this one region string ON PURPOSE, in the gang-op
- * resolution only (never in areaIdForRegion — the global
- * hierarchy's full-path rule stands, and place areaIds are
- * untouched: gang-op:brooks-boatworks still files under
+ * A NAMED table ON PURPOSE, in the gang-op resolution only
+ * (never in areaIdForRegion — the global hierarchy's full-path
+ * rule stands, and place areaIds are untouched: e.g.
+ * gang-op:brooks-boatworks still files under
  * area:port-gellhorn--kelly-county). The qualified form is NOT
  * always the bare town: "Starlet Motel, Kelly County" (L1159,
  * the pool) is a genuine sub-area with its own positioned member
- * and its own bounds, and the same qualified-vs-bare shape in
- * Grassrivers / Hamlet / Watson Bay / Emerald Springs is left
- * for the coordinator to rule on — this lane merges Port
- * Gellhorn only. The guides' words are untouched:
- * record.region stays "Port Gellhorn, Kelly County"; only this
- * resolution changes.
+ * and its own bounds, and "La Perle, Vice City" (62 members) and
+ * bare area:la-perle (59 members) have different bounds — so no
+ * global "X, County → X" rule, ever. Each redirect is gated on
+ * the town node existing; when it doesn't, the qualified id is
+ * returned unchanged and the county fallback fires as before.
+ *
+ * Grassrivers is DELIBERATELY absent (lane 4b sanity check):
+ * the bare node area:grassrivers has only 2 positioned members
+ * — L2943 ("?, Grassrivers", UNKNOWN confidence, APPROXIMATE
+ * placement) and L3389 ("Bridge, Grassrivers") — 21 map units
+ * apart horizontally and 1,088 apart vertically, so its padded
+ * member bbox is a 421 × 1,488 sliver whose width is 95%
+ * padding, not data. That is not a town extent; Manatee Motel
+ * keeps the Mariana County fallback. Frogswater has no bare
+ * node at all (Walker Farm stays county either way).
+ *
+ * The guides' words are untouched: record.region stays the
+ * qualified string; only this resolution changes.
  */
-const PORT_GELLHORN_QUALIFIED_AREA_ID = 'area:port-gellhorn--kelly-county';
-const PORT_GELLHORN_TOWN_AREA_ID = 'area:port-gellhorn';
+const COUNTY_QUALIFIED_TOWN_REDIRECTS: ReadonlyMap<string, string> = new Map([
+  // Port Gellhorn (lane 4): 337 member places, 335 positioned,
+  // parent county:kelly; 0 of 4380 GTADB records in the pinned
+  // 2e9e194 snapshot address a place "Port Gellhorn, Kelly
+  // County".
+  ['area:port-gellhorn--kelly-county', 'area:port-gellhorn'],
+  // Hamlet (lane 4b): 175 direct members, all positioned,
+  // parent county:mariana (plus a Prison, Hamlet child node
+  // whose 10 members sit inside the town bounds).
+  ['area:hamlet--mariana-county', 'area:hamlet'],
+  // Watson Bay (lane 4b): 78 members, all positioned, parent
+  // county:mariana.
+  ['area:watson-bay--mariana-county', 'area:watson-bay'],
+  // Emerald Springs (lane 4b): 7 members, all positioned
+  // (L1111, L1627, L1778, L1779, L2889, L2899, L3812), parent
+  // county:kelly.
+  ['area:emerald-springs--kelly-county', 'area:emerald-springs'],
+]);
 
 /**
  * The area id for a gang-op region string, resolved against the
@@ -140,11 +170,9 @@ export function areaIdForGangOpRegion(
 ): string | null {
   const direct = areaIdForRegion(region);
   if (direct === null) return null;
-  if (
-    direct === PORT_GELLHORN_QUALIFIED_AREA_ID &&
-    areas.has(PORT_GELLHORN_TOWN_AREA_ID)
-  ) {
-    return PORT_GELLHORN_TOWN_AREA_ID;
+  const townId = COUNTY_QUALIFIED_TOWN_REDIRECTS.get(direct);
+  if (townId !== undefined && areas.has(townId)) {
+    return townId;
   }
   if (areas.has(direct)) return direct;
   const wanted = region.trim().toLowerCase();
