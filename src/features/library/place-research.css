@@ -1,0 +1,118 @@
+.place-research {
+  margin-block: 22px;
+  padding-block: 18px;
+  border-block: 1px solid #6b5d4a55;
+  min-width: 0;
+}
+.place-research h3 {
+  margin: 0 0 8px;
+  font-size: 19px;
+}
+.place-research-intro {
+  margin: 0 0 8px;
+  line-height: 1.65;
+  font-size: 13px;
+}
+.place-research-freshness {
+  margin: 0 0 8px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #a89a80;
+}
+.place-research-calls {
+  display: block;
+  margin-top: 2px;
+  color: #e8c06b;
+}
+.place-research-empty {
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 1.65;
+}
+.place-research-fields {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0;
+  display: grid;
+  gap: 14px;
+}
+.place-research-field {
+  border-bottom: 1px solid #6b5d4a44;
+  padding-bottom: 10px;
+}
+.place-research-kind {
+  display: block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #a89a80;
+  margin-bottom: 3px;
+}
+.place-research-field p {
+  margin: 0 0 5px;
+  line-height: 1.65;
+  font-size: 13px;
+}
+.place-research-field small {
+  font-size: 11px;
+  line-height: 1.6;
+  color: #a89a80;
+}
+.place-research-field small a {
+  color: #f2a35c;
+  overflow-wrap: anywhere;
+  text-underline-offset: 3px;
+}
+.place-research-unsure p {
+  color: #a89a80;
+  font-style: italic;
+}
+.place-research-tier2 {
+  margin: 4px 0 8px;
+}
+.place-research-conflicts {
+  margin: 14px 0;
+  padding: 12px;
+  border: 1px solid #c96a4a;
+  border-radius: 8px;
+}
+.place-research-conflicts h4 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: #e8a08a;
+}
+.place-research-conflicts ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+.place-research-conflicts p {
+  margin: 0 0 4px;
+  font-size: 13px;
+  line-height: 1.65;
+}
+.place-research-conflicts small {
+  font-size: 11px;
+  line-height: 1.6;
+  color: #a89a80;
+}
+.place-research-conflicts a {
+  color: #f2a35c;
+  overflow-wrap: anywhere;
+  text-underline-offset: 3px;
+}
+.place-research-actions {
+  margin-top: 12px;
+}
+.place-research-notice {
+  margin: 10px 0 0;
+  font-size: 13px;
+  line-height: 1.65;
+}
+.place-research button:focus-visible,
+.place-research a:focus-visible {
+  outline: 3px solid #e8c06b;
+  outline-offset: 3px;
+}

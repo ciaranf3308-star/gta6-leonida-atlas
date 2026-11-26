@@ -52,6 +52,7 @@ import { getResearchForPlace } from '../street-leonida/leonida-research';
 import { getLocalStreetPlaces } from '../street-leonida/page-data';
 import type { StreetPlaceCategory } from '../street-leonida/types';
 import RegionalResearch from './RegionalResearch';
+import PlaceResearch from './PlaceResearch';
 import { COUNTIES } from '../../data/counties';
 import { countyIsolation } from '../map/isolation';
 
@@ -1155,6 +1156,7 @@ export default function PlaceDetails({
           </a>
         )}
         {research && <RegionalResearch region={research.region.slug} />}
+        <PlaceResearch place={place} db={db} />
         <section className="detail-section">
           <label htmlFor="place-note">Notes</label>
           <textarea
