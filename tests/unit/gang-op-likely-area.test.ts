@@ -50,13 +50,13 @@ describe('gang-op likely-area measurement (v0.32 lane 1)', () => {
     expect(description).toContain(`${measured.none} have no extent to draw`);
   });
 
-  it('measures all 39 ops: 2 hosted, 16 own-bounds, 18 county-fallback, 3 no-extent, 34 drawn', () => {
+  it('measures all 39 ops: 2 hosted, 22 own-bounds, 12 county-fallback, 3 no-extent, 34 drawn', () => {
     const db = buildFullDb();
     const measured = measureGangOpBounds(db.areas);
     expect(measured.total).toBe(39);
     expect(measured.hosted).toBe(2);
-    expect(measured.own).toBe(16);
-    expect(measured.county).toBe(18);
+    expect(measured.own).toBe(22);
+    expect(measured.county).toBe(12);
     expect(measured.none).toBe(3);
     expect(measured.drawn).toBe(34);
     expect(measured.hosted + measured.own + measured.county + measured.none).toBe(39);
@@ -76,31 +76,70 @@ describe('gang-op likely-area measurement (v0.32 lane 1)', () => {
   it('resolves area ids from the full region path, counties included', () => {
     const db = buildFullDb();
     expect(areaIdForGangOpRegion('Port Gellhorn, Kelly County', db.areas)).toBe(
-      'area:port-gellhorn--kelly-county',
+      'area:port-gellhorn',
     );
     expect(areaIdForGangOpRegion('Mariana County', db.areas)).toBe('county:mariana');
     expect(areaIdForGangOpRegion('Ambrosia', db.areas)).toBe('area:ambrosia');
     expect(areaIdForGangOpRegion('Vice City', db.areas)).toBe('area:vice-city');
   });
 
-  it('Brooks Boatworks draws the KELLY COUNTY extent, not a Port Gellhorn extent — the Port Gellhorn node has no positioned members', () => {
+  it('Brooks Boatworks draws the PORT GELLHORN town extent — the guides’ county-qualified name is the same town (v0.32 regions-fix, lane 4)', () => {
     const db = buildFullDb();
     const place = GANG_OP_PLACES.find((p) => p.id === 'gang-op:brooks-boatworks')!;
     const region = likelyAreaForPlace(db.areas, place);
     expect(region).not.toBeNull();
-    // The catalogue's Port Gellhorn places file under "Port
-    // Gellhorn" (area:port-gellhorn); the guides name the ops
-    // "Port Gellhorn, Kelly County" — a different node, with no
-    // positioned members, so the county fallback fires.
-    expect(region?.kind).toBe('county');
-    expect(region?.countyName).toBe('Kelly County');
-    expect(region?.areaId).toBe('area:port-gellhorn--kelly-county');
-    expect(region?.bounds).toEqual(db.areas.get('county:kelly')?.bounds);
-    expect(region?.label).toBe(
-      'Brooks Boatworks · likely area — Kelly County extent (estimate)',
+    // The guides name the ops "Port Gellhorn, Kelly County" and
+    // the catalogue's Port Gellhorn is the TOWN area:port-gellhorn
+    // (337 member places, 335 positioned, parent county:kelly) —
+    // same place, county-qualified naming — so the gang-op
+    // resolution draws the town extent. The guides' words are
+    // untouched: the record region is still the qualified string,
+    // and the place still files under the qualified node; only
+    // this resolution changes.
+    expect(place.region).toBe('Port Gellhorn, Kelly County');
+    expect(db.locations.get('gang-op:brooks-boatworks')?.areaId).toBe(
+      'area:port-gellhorn--kelly-county',
     );
-    expect(region?.reason).toContain('No positioned places in Port Gellhorn');
-    expect(region?.reason).toContain('Kelly County extent instead (estimate)');
+    expect(region?.kind).toBe('own');
+    expect(region?.countyName).toBeNull();
+    expect(region?.areaId).toBe('area:port-gellhorn');
+    expect(region?.areaName).toBe('Port Gellhorn');
+    expect(region?.bounds).toEqual(db.areas.get('area:port-gellhorn')?.bounds);
+    expect(region?.bounds).toEqual({
+      west: -8213.502793266167,
+      east: -5403.483414978226,
+      south: 1829.856884400902,
+      north: 5730.9954744969755,
+    });
+    expect(region?.label).toBe('Brooks Boatworks · likely area');
+    expect(region?.reason).toBe('The area’s own extent.');
+  });
+
+  it('the merge is scoped to Port Gellhorn: the other qualified-vs-bare towns still fall back to their county', () => {
+    const db = buildFullDb();
+    // Same qualified-vs-bare shape (Grassrivers, Hamlet, Watson
+    // Bay, Emerald Springs) — left for the coordinator to rule on;
+    // this lane merges Port Gellhorn only.
+    expect(areaIdForGangOpRegion('Grassrivers, Mariana County', db.areas)).toBe(
+      'area:grassrivers--mariana-county',
+    );
+    expect(areaIdForGangOpRegion('Emerald Springs, Kelly County', db.areas)).toBe(
+      'area:emerald-springs--kelly-county',
+    );
+    const manatee = GANG_OP_PLACES.find((p) => p.id === 'gang-op:manatee-motel')!;
+    expect(likelyAreaForPlace(db.areas, manatee)?.kind).toBe('county');
+    const gasStation = GANG_OP_PLACES.find(
+      (p) => p.id === 'gang-op:gas-station-meth-front',
+    )!;
+    const gasRegion = likelyAreaForPlace(db.areas, gasStation);
+    expect(gasRegion?.kind).toBe('county');
+    expect(gasRegion?.countyName).toBe('Kelly County');
+  });
+
+  it('without the town node in the map, the qualified id is returned unchanged (no invented node)', () => {
+    expect(
+      areaIdForGangOpRegion('Port Gellhorn, Kelly County', new Map()),
+    ).toBe('area:port-gellhorn--kelly-county');
   });
 
   it('an own-bounds op draws its named area: Hog Stars Garage → Ambrosia extent', () => {
@@ -170,33 +209,46 @@ describe('gang-op likely-area measurement (v0.32 lane 1)', () => {
     }
   });
 
-  it('regions sharing one extent draw once: 34 regions group into 13 rects, Kelly County carrying 8 ops', () => {
+  it('regions sharing one extent draw once: 34 regions group into 14 rects, Kelly County carrying 2 ops, Port Gellhorn town carrying 6', () => {
     const db = buildFullDb();
     const regions = gangOpLikelyAreas(db.areas, GANG_OP_PLACES, gangOpLayersOn());
     const groups = groupLikelyAreas(regions);
-    expect(groups).toHaveLength(13);
+    expect(groups).toHaveLength(14);
     const kelly = groups.find((group) => group.countyName === 'Kelly County');
-    expect(kelly?.areas).toHaveLength(8);
+    expect(kelly?.areas).toHaveLength(2);
     expect(kelly?.areas.map((area) => area.name).sort()).toEqual([
-      'Backroom Weed Front',
-      'Brooks Boatworks',
       'Gas Station Meth Front',
-      'June Warehouse',
-      'Kingpin Bowling',
-      'La Cascara Motel',
-      'Stash House',
       'Walker Farm',
     ]);
     expect(kelly?.label).toContain('likely area — Kelly County extent (estimate)');
     for (const name of kelly?.areas.map((area) => area.name) ?? []) {
       expect(kelly?.label).toContain(name);
     }
-    // One Port Gellhorn rect, not six: the six ops share one group.
+    // The six Port Gellhorn ops draw the town extent as one rect,
+    // not six — and no longer share the Kelly County rect.
+    const portGellhorn = groups.find((group) =>
+      group.areas.some((area) => area.areaId === 'area:port-gellhorn'),
+    );
+    expect(portGellhorn).toBeDefined();
+    expect(portGellhorn?.kind).toBe('own');
+    expect(portGellhorn?.countyName).toBeNull();
+    expect(portGellhorn?.areas).toHaveLength(6);
+    expect(portGellhorn?.areas.map((area) => area.name).sort()).toEqual([
+      'Backroom Weed Front',
+      'Brooks Boatworks',
+      'June Warehouse',
+      'Kingpin Bowling',
+      'La Cascara Motel',
+      'Stash House',
+    ]);
+    expect(portGellhorn?.bounds).toEqual(db.areas.get('area:port-gellhorn')?.bounds);
+    expect(portGellhorn?.label).toContain('likely area');
+    expect(portGellhorn?.label).not.toContain('Kelly County');
     expect(
       groups.filter((group) =>
         group.areas.some((area) => area.areaId === 'area:port-gellhorn--kelly-county'),
       ),
-    ).toHaveLength(1);
+    ).toHaveLength(0);
   });
 
   it('zoom can never turn a region into a pin: regions are zoom-independent and gang-op places are unpositioned', () => {
