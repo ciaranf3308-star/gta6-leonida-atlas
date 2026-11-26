@@ -1,11 +1,39 @@
 import { readFile } from 'node:fs/promises';
-import { expect, test, type Page, type TestInfo } from '@playwright/test';
+import { expect, test, type Locator, type Page, type TestInfo } from '@playwright/test';
 import type { Backup } from '../../src/domain/types';
 
 const sidebar = (page: Page) => page.getByRole('complementary', { name: 'Atlas panel' });
 const details = (page: Page) => page.getByRole('complementary', { name: 'Place details' });
 const search = (page: Page) =>
   page.getByRole('searchbox', { name: 'Search places, regions, tags' });
+
+// Headless WPE WebKit stops producing compositor frames once this
+// page settles: on the mounted app rAF fires ~0-4 times in 9s (vs
+// 186 on a blank page, 185-186 on the same page with the bundle
+// unmounted, with Leaflet alone, or with the JS bundle blocked;
+// the service worker is exonerated too). The main thread is idle
+// (zero longtasks), the targets are pixel-stable (one distinct
+// bounding box over 50 samples at 4-decimal precision), timers run,
+// and force clicks land — so this is the headless compositor going
+// quiet on a settled full-viewport page, not a moving or covered
+// control and not an app busy-loop. Playwright's normal click waits
+// on rAF-driven stability polling, so it hangs 30s on a button that
+// is visible, enabled, stable and uncovered (reproduced locally).
+// Chromium's rAF is degraded on this page too (33/3s) but still
+// enough for its checks, which is why Chromium is green. A force
+// click dispatches the same event at the same coordinates; the state
+// assertions after each click (checked, visible, saved, backup
+// contents) still catch a covered or missing control. WebKit only —
+// Chromium keeps the strict actionability gates. See
+// hidden_files/v032-ci/DIAGNOSIS.md for the probe evidence.
+function isWebkit(page: Page): boolean {
+  return page.context().browser()?.browserType().name() === 'webkit';
+}
+
+async function tap(page: Page, locator: Locator): Promise<void> {
+  if (isWebkit(page)) await locator.click({ force: true });
+  else await locator.click();
+}
 
 async function dismissPlaceSheet(page: Page): Promise<void> {
   // v0.26.0: first open shows the Vice City region sheet ("Pick what
@@ -16,9 +44,28 @@ async function dismissPlaceSheet(page: Page): Promise<void> {
   // click the test means to land on a panel control.
   const close = page.getByRole('button', { name: 'Close place details', exact: true });
   if (await close.isVisible()) {
-    await close.click();
+    await tap(page, close);
     await expect(details(page)).not.toBeVisible();
   }
+}
+
+async function dismissSheetAfterReload(page: Page): Promise<void> {
+  // A reload remounts the app, resetting firstOpenDismissed and
+  // firstOpenFired: the Vice City first-open sheet fires ~1s after
+  // load (once persistence is ready), so a test that interacts
+  // immediately after reload races it — the sheet opens over the
+  // panel mid-interaction and swallows the click (local full-suite
+  // run: :304's Named-regions check, :348's marker-row tap). Wait
+  // for it to appear, then close it; it fires at most once per
+  // mount, so once closed it stays closed. If it never appears
+  // (layers already restored visible), there is nothing to do.
+  const sheet = details(page);
+  const appeared = await sheet
+    .waitFor({ state: 'visible', timeout: 8000 })
+    .then(() => true)
+    .catch(() => false);
+  if (appeared) await dismissPlaceSheet(page);
+  await expect(sheet).not.toBeVisible();
 }
 
 async function openPanel(
@@ -28,7 +75,7 @@ async function openPanel(
   await dismissPlaceSheet(page);
   // One place to go: the labelled bottom-nav tabs open the panel.
   const label = tab === 'find' ? 'Find' : tab === 'layers' ? 'Layers' : tab === 'saved' ? 'Saved' : 'Ask';
-  await page.locator('.bottom-nav').getByRole('button', { name: label }).click();
+  await tap(page, page.locator('.bottom-nav').getByRole('button', { name: label }));
   await expect(sidebar(page)).toBeVisible();
 }
 
@@ -88,8 +135,16 @@ async function openAtlas(page: Page): Promise<void> {
 
 async function enableLayer(page: Page, name: string): Promise<void> {
   await openPanel(page, 'layers');
+  // The sheet can fire late (after a reload it appears ~1s after load,
+  // mid-interaction) and cover the checkbox — dismiss it immediately
+  // before touching the checkbox, not just when the panel opens. (An
+  // earlier fail-fast visibility assertion here backfired: on desktop
+  // Chromium the sheet is legitimately visible without covering the
+  // sidebar checkboxes, so it broke tests that would otherwise pass.)
+  await dismissPlaceSheet(page);
   const checkbox = page.getByRole('checkbox', { name: new RegExp(`^${name}`) });
-  if (!(await checkbox.isChecked())) await checkbox.check();
+  if (!(await checkbox.isChecked()))
+    await checkbox.check(isWebkit(page) ? { force: true } : {});
 }
 
 async function selectRegion(page: Page, name = 'Ambrosia'): Promise<void> {
@@ -98,29 +153,34 @@ async function selectRegion(page: Page, name = 'Ambrosia'): Promise<void> {
   await openPanel(page, 'find');
   await page.getByLabel('Show one kind of place').selectOption('exploration');
   await search(page).fill(name);
-  // v0.14.0 minimal cards: the card face is title + area + distance only,
-  // so the button name starts with the place title, not "Name Region".
-  await page
+  // The region row is the one whose title AND area are both the name
+  // ("Ambrosia Ambrosia · Nearby") — a plain /^Ambrosia/ also matches
+  // the community places in Ambrosia (L832 Police Department, L3788
+  // Fire District), which the exploration Kind turns on since v0.31.3,
+  // so the click violates strict mode with 3 elements. The distance
+  // word varies ("Nearby" vs "Close by") and may be absent, hence the
+  // "( · |$)" tail.
+  const regionRow = page
     .locator('.place-results')
-    .getByRole('button', { name: new RegExp(`^${name}`) })
-    .click();
+    .getByRole('button', { name: new RegExp(`^${name} ${name}( · |$)`) });
+  await tap(page, regionRow);
   await expect(details(page).getByRole('heading', { name, exact: true })).toBeVisible();
 }
 
 async function createCollection(page: Page, name: string): Promise<void> {
   await openPanel(page, 'saved');
   await page.getByLabel('Collection name', { exact: true }).fill(name);
-  await page.getByRole('button', { name: 'Create collection', exact: true }).click();
+  await tap(page, page.getByRole('button', { name: 'Create collection', exact: true }));
   await expect(page.getByRole('button', { name: `Rename ${name}`, exact: true })).toBeVisible();
 }
 
 async function createMarker(page: Page, title: string): Promise<void> {
   if (await page.getByRole('button', { name: 'Close panel', exact: true }).isVisible()) {
-    await page.getByRole('button', { name: 'Close panel', exact: true }).click();
+    await tap(page, page.getByRole('button', { name: 'Close panel', exact: true }));
   }
   await openPanel(page, 'layers');
-  await page.getByRole('button', { name: /^Add marker/ }).click();
-  await page.getByRole('button', { name: 'Enter coordinates', exact: true }).click();
+  await tap(page, page.getByRole('button', { name: /^Add marker/ }));
+  await tap(page, page.getByRole('button', { name: 'Enter coordinates', exact: true }));
   const editor = page.getByRole('dialog', { name: 'New marker', exact: true });
   await expect(editor).toBeVisible();
   await editor.getByLabel('Title', { exact: true }).fill(title);
@@ -128,7 +188,7 @@ async function createMarker(page: Page, title: string): Promise<void> {
   await editor.getByLabel('Game X', { exact: true }).fill('-1200');
   await editor.getByLabel('Game Y', { exact: true }).fill('900');
   await editor.getByLabel('Icon', { exact: true }).selectOption('flag');
-  await editor.getByRole('button', { name: 'Save marker', exact: true }).click();
+  await tap(page, editor.getByRole('button', { name: 'Save marker', exact: true }));
   await expect(editor).not.toBeVisible();
   await expect(details(page).getByRole('heading', { name: title, exact: true })).toBeVisible();
 }
@@ -137,20 +197,20 @@ async function openBackup(page: Page): Promise<void> {
   if (await page.getByRole('dialog', { name: 'Your local backup', exact: true }).isVisible())
     return;
   if (await details(page).isVisible()) {
-    await page.getByRole('button', { name: 'Close place details', exact: true }).click();
+    await tap(page, page.getByRole('button', { name: 'Close place details', exact: true }));
   }
   await openPanel(page, 'find');
   // Backup moved into the Settings dialog (v0.12.0 redesign): Find no
   // longer carries a Backup button.
-  await sidebar(page).getByRole('button', { name: 'Settings', exact: true }).click();
-  await page.getByRole('button', { name: 'Backup', exact: true }).click();
+  await tap(page, sidebar(page).getByRole('button', { name: 'Settings', exact: true }));
+  await tap(page, page.getByRole('button', { name: 'Backup', exact: true }));
   await expect(page.getByRole('dialog', { name: 'Your local backup', exact: true })).toBeVisible();
 }
 
 async function exportBackup(page: Page, testInfo: TestInfo, label: string): Promise<Backup> {
   await openBackup(page);
   const downloading = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Export backup', exact: true }).click();
+  await tap(page, page.getByRole('button', { name: 'Export backup', exact: true }));
   const download = await downloading;
   const path = testInfo.outputPath(`backup-${label}.json`);
   await download.saveAs(path);
@@ -226,18 +286,20 @@ test('the map opens without an account, filters public evidence, and toggles vis
   // The list repopulates — regions sort first now, so assert on the list
   // being back rather than on which kind of place is first.
   await expect(page.locator('.place-results .place-result').first()).toBeVisible();
-  await page.getByRole('button', { name: 'Clear all', exact: true }).click();
+  await tap(page, page.getByRole('button', { name: 'Clear all', exact: true }));
   await selectRegion(page);
-  await page.getByRole('button', { name: 'Close place details', exact: true }).click();
+  await tap(page, page.getByRole('button', { name: 'Close place details', exact: true }));
   await openPanel(page, 'layers');
   // Only the region pin should be in view for the count assertions below.
   const communityLayer = page.getByRole('checkbox', { name: /^Community places/ });
-  if (await communityLayer.isChecked()) await communityLayer.uncheck();
+  if (await communityLayer.isChecked())
+    await communityLayer.uncheck(isWebkit(page) ? { force: true } : {});
   const uncertainLayer = page.getByRole('checkbox', { name: /^Unverified places/ });
-  if (await uncertainLayer.isChecked()) await uncertainLayer.uncheck();
+  if (await uncertainLayer.isChecked())
+    await uncertainLayer.uncheck(isWebkit(page) ? { force: true } : {});
   const regionLayer = page.getByRole('checkbox', { name: /^Named regions/ });
   await expect(regionLayer).toBeChecked();
-  await regionLayer.uncheck();
+  await regionLayer.uncheck(isWebkit(page) ? { force: true } : {});
   await expect(regionLayer).not.toBeChecked();
   await page.screenshot({
     path: testInfo.outputPath(`atlas-qa-${testInfo.project.name}-layers.png`),
@@ -248,7 +310,7 @@ test('the map opens without an account, filters public evidence, and toggles vis
   await openPanel(page, 'find');
   await expect(page.locator('.find-count')).toContainText('0 places showing');
   await openPanel(page, 'layers');
-  await page.getByRole('checkbox', { name: /^Named regions/ }).check();
+  await page.getByRole('checkbox', { name: /^Named regions/ }).check(isWebkit(page) ? { force: true } : {});
   await openPanel(page, 'find');
   await expect(page.locator('.find-count')).toContainText('1 place showing');
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
@@ -264,22 +326,22 @@ test('a renamed collection, favorite and note survive a browser reload', async (
 }, testInfo) => {
   await openAtlas(page);
   await createCollection(page, 'Weekend route');
-  await page.getByRole('button', { name: 'Rename Weekend route', exact: true }).click();
+  await tap(page, page.getByRole('button', { name: 'Rename Weekend route', exact: true }));
   await page.getByLabel('Collection name', { exact: true }).fill('Sunset route');
-  await page.getByRole('button', { name: 'Save collection name', exact: true }).click();
+  await tap(page, page.getByRole('button', { name: 'Save collection name', exact: true }));
   await expect(
     page.getByRole('button', { name: 'Rename Sunset route', exact: true }),
   ).toBeVisible();
   await selectRegion(page);
-  await details(page).getByRole('button', { name: 'Add to favorites', exact: true }).click();
+  await tap(page, details(page).getByRole('button', { name: 'Add to favorites', exact: true }));
   await expect(
     details(page).getByRole('button', { name: 'Remove from favorites', exact: true }),
   ).toBeVisible();
   await details(page)
     .getByLabel('Notes', { exact: true })
     .fill('Return to Ambrosia before sunset.');
-  await details(page).getByRole('button', { name: 'Save note', exact: true }).click();
-  await expect(details(page).getByRole('button', { name: 'Saved', exact: true })).toBeVisible();
+  await tap(page, details(page).getByRole('button', { name: 'Save note', exact: true }));
+  await expect(details(page).getByRole('button', { name: 'Note saved', exact: true })).toBeVisible();
   await details(page)
     .getByLabel('Add to collection', { exact: true })
     .selectOption({ label: 'Sunset route' });
@@ -287,6 +349,7 @@ test('a renamed collection, favorite and note survive a browser reload', async (
     details(page).getByRole('button', { name: 'Remove from Sunset route', exact: true }),
   ).toBeVisible();
   await page.reload();
+  await dismissSheetAfterReload(page);
   await selectRegion(page);
   await expect(
     details(page).getByRole('button', { name: 'Remove from favorites', exact: true }),
@@ -309,55 +372,53 @@ test('a personal marker can be edited, moved and deleted with its saved referenc
   await openAtlas(page);
   await createCollection(page, 'Personal trip');
   await createMarker(page, 'Quiet beach');
-  await details(page).getByRole('button', { name: 'Add to favorites', exact: true }).click();
+  await tap(page, details(page).getByRole('button', { name: 'Add to favorites', exact: true }));
   await expect(
     details(page).getByRole('button', { name: 'Remove from favorites', exact: true }),
   ).toBeVisible();
   await details(page)
     .getByLabel('Notes', { exact: true })
     .fill('A private note to remove with this marker.');
-  await details(page).getByRole('button', { name: 'Save note', exact: true }).click();
-  await expect(details(page).getByRole('button', { name: 'Saved', exact: true })).toBeVisible();
+  await tap(page, details(page).getByRole('button', { name: 'Save note', exact: true }));
+  await expect(details(page).getByRole('button', { name: 'Note saved', exact: true })).toBeVisible();
   await details(page)
     .getByLabel('Add to collection', { exact: true })
     .selectOption({ label: 'Personal trip' });
   await expect(
     details(page).getByRole('button', { name: 'Remove from Personal trip', exact: true }),
   ).toBeVisible();
-  await details(page).getByRole('button', { name: 'Edit marker', exact: true }).click();
+  await tap(page, details(page).getByRole('button', { name: 'Edit marker', exact: true }));
   let editor = page.getByRole('dialog', { name: 'Edit my marker', exact: true });
   await editor.getByLabel('Title', { exact: true }).fill('Quiet beach overlook');
-  await editor.getByRole('button', { name: 'Save marker', exact: true }).click();
+  await tap(page, editor.getByRole('button', { name: 'Save marker', exact: true }));
   await expect(
     details(page).getByRole('heading', { name: 'Quiet beach overlook', exact: true }),
   ).toBeVisible();
-  await details(page).getByRole('button', { name: 'Move', exact: true }).click();
-  await page.getByRole('button', { name: 'Enter coordinates', exact: true }).click();
+  await tap(page, details(page).getByRole('button', { name: 'Move', exact: true }));
+  await tap(page, page.getByRole('button', { name: 'Enter coordinates', exact: true }));
   editor = page.getByRole('dialog', { name: 'Edit my marker', exact: true });
   await editor.getByLabel('Game X', { exact: true }).fill('-1000');
   await editor.getByLabel('Game Y', { exact: true }).fill('1200');
-  await editor.getByRole('button', { name: 'Save marker', exact: true }).click();
+  await tap(page, editor.getByRole('button', { name: 'Save marker', exact: true }));
   // v0.21.0: the card no longer prints raw game coordinates (cut as a
   // redundant line), so the moved position is proven by reopening the
   // editor and reading the fields back.
-  await details(page).getByRole('button', { name: 'Edit marker', exact: true }).click();
+  await tap(page, details(page).getByRole('button', { name: 'Edit marker', exact: true }));
   editor = page.getByRole('dialog', { name: 'Edit my marker', exact: true });
   await expect(editor.getByLabel('Game X', { exact: true })).toHaveValue('-1000');
   await expect(editor.getByLabel('Game Y', { exact: true })).toHaveValue('1200');
-  await editor.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await tap(page, editor.getByRole('button', { name: 'Cancel', exact: true }));
   await page.reload();
+  await dismissSheetAfterReload(page);
   await openPanel(page, 'find');
   await search(page).fill('Quiet beach overlook');
-  await page
-    .locator('.place-results')
-    .getByRole('button', { name: /^Quiet beach overlook My marker/ })
-    .click();
-  await details(page).getByRole('button', { name: 'Edit marker', exact: true }).click();
+  await tap(page, page.locator('.place-results').getByRole('button', { name: /^Quiet beach overlook My marker/ }));
+  await tap(page, details(page).getByRole('button', { name: 'Edit marker', exact: true }));
   editor = page.getByRole('dialog', { name: 'Edit my marker', exact: true });
   await expect(editor.getByLabel('Game X', { exact: true })).toHaveValue('-1000');
   await expect(editor.getByLabel('Game Y', { exact: true })).toHaveValue('1200');
-  await editor.getByRole('button', { name: 'Delete marker', exact: true }).click();
-  await editor.getByRole('button', { name: 'Confirm deletion', exact: true }).click();
+  await tap(page, editor.getByRole('button', { name: 'Delete marker', exact: true }));
+  await tap(page, editor.getByRole('button', { name: 'Confirm deletion', exact: true }));
   await expect(editor).not.toBeVisible();
   // Deleting the last visible place on a fresh profile empties the
   // map, so the first-open Vice City sheet can fire again (it never
@@ -449,14 +510,14 @@ test('the installed app reloads offline with its saved preferences and personal 
   test.setTimeout(60_000);
   await openAtlas(page);
   await createMarker(page, 'Offline stop');
-  await page.getByRole('button', { name: 'Close place details', exact: true }).click();
+  await tap(page, page.getByRole('button', { name: 'Close place details', exact: true }));
   await openPanel(page, 'find');
-  await sidebar(page).getByRole('button', { name: 'Settings', exact: true }).click();
+  await tap(page, sidebar(page).getByRole('button', { name: 'Settings', exact: true }));
   const reducedMotion = page.getByRole('checkbox', { name: /^Reduce motion/ });
-  await reducedMotion.click();
+  await tap(page, reducedMotion);
   await expect(reducedMotion).toBeChecked();
   await expect(page.locator('html')).toHaveAttribute('data-reduced-motion', 'true');
-  await page.getByRole('button', { name: 'Close dialog', exact: true }).click();
+  await tap(page, page.getByRole('button', { name: 'Close dialog', exact: true }));
   await page.waitForFunction(
     async () => Boolean((await navigator.serviceWorker.getRegistration())?.active),
     undefined,
@@ -464,6 +525,7 @@ test('the installed app reloads offline with its saved preferences and personal 
   );
   await page.reload();
   await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
+  await dismissSheetAfterReload(page);
   await context.setOffline(true);
   try {
     try {
@@ -481,6 +543,7 @@ test('the installed app reloads offline with its saved preferences and personal 
       }
       throw error;
     }
+    await dismissSheetAfterReload(page);
     await expectTilesLoaded(page);
     // Playwright 1.62 can incorrectly expose navigator.onLine=true after an offline reload.
     // Prove the network is actually unavailable instead of using that emulated flag.
@@ -495,10 +558,7 @@ test('the installed app reloads offline with its saved preferences and personal 
     ).toBe(true);
     await openPanel(page, 'find');
     await search(page).fill('Offline stop');
-    await page
-      .locator('.place-results')
-      .getByRole('button', { name: /^Offline stop My marker/ })
-      .click();
+    await tap(page, page.locator('.place-results').getByRole('button', { name: /^Offline stop My marker/ }));
     await expect(
       details(page).getByRole('heading', { name: 'Offline stop', exact: true }),
     ).toBeVisible();
@@ -507,7 +567,7 @@ test('the installed app reloads offline with its saved preferences and personal 
       path: testInfo.outputPath(`atlas-qa-${testInfo.project.name}-offline.png`),
       fullPage: true,
     });
-    await page.getByRole('button', { name: 'Close place details', exact: true }).click();
+    await tap(page, page.getByRole('button', { name: 'Close place details', exact: true }));
     await selectRegion(page);
     await expect(
       details(page).getByRole('heading', { name: 'Ambrosia', exact: true }),
@@ -580,6 +640,11 @@ test('clean note editors synchronize across tabs without overwriting newer saved
   page,
   context,
 }) => {
+  // Two full app loads + three region selections + a reload: 37s on the
+  // 1.5-CPU sandbox, over the 30s default (proven by a 90s-budget run
+  // passing in 37.1s). Same pattern as the offline-reload test below,
+  // which already carries test.setTimeout(60_000).
+  test.setTimeout(60_000);
   await openAtlas(page);
   await selectRegion(page);
   const second = await context.newPage();
@@ -587,13 +652,14 @@ test('clean note editors synchronize across tabs without overwriting newer saved
     await openAtlas(second);
     await selectRegion(second);
     await details(second).getByLabel('Notes', { exact: true }).fill('Written in the second tab.');
-    await details(second).getByRole('button', { name: 'Save note', exact: true }).click();
-    await expect(details(second).getByRole('button', { name: 'Saved', exact: true })).toBeVisible();
+    await tap(second, details(second).getByRole('button', { name: 'Save note', exact: true }));
+    await expect(details(second).getByRole('button', { name: 'Note saved', exact: true })).toBeVisible();
     const firstNote = details(page).getByLabel('Notes', { exact: true });
     await expect(firstNote).toHaveValue('Written in the second tab.');
     await firstNote.focus();
-    await details(page).getByRole('heading', { name: 'Ambrosia', exact: true }).click();
+    await tap(page, details(page).getByRole('heading', { name: 'Ambrosia', exact: true }));
     await second.reload();
+    await dismissSheetAfterReload(second);
     await selectRegion(second);
     await expect(details(second).getByLabel('Notes', { exact: true })).toHaveValue(
       'Written in the second tab.',
@@ -608,7 +674,7 @@ test('a dismissed direct link stays closed when local data refreshes', async ({ 
   await dismissWelcome(page);
   const heading = details(page).getByRole('heading', { name: 'Vice City', exact: true });
   await expect(heading).toBeVisible();
-  await page.getByRole('button', { name: 'Close place details', exact: true }).click();
+  await tap(page, page.getByRole('button', { name: 'Close place details', exact: true }));
   await expect(heading).not.toBeVisible();
   const other = await context.newPage();
   try {
@@ -634,12 +700,13 @@ test('notes saved offline remain available after reconnecting and reloading', as
     await details(page)
       .getByLabel('Notes', { exact: true })
       .fill('Saved while the connection was unavailable.');
-    await details(page).getByRole('button', { name: 'Save note', exact: true }).click();
-    await expect(details(page).getByRole('button', { name: 'Saved', exact: true })).toBeVisible();
+    await tap(page, details(page).getByRole('button', { name: 'Save note', exact: true }));
+    await expect(details(page).getByRole('button', { name: 'Note saved', exact: true })).toBeVisible();
   } finally {
     await context.setOffline(false);
   }
   await page.reload();
+  await dismissSheetAfterReload(page);
   await selectRegion(page);
   await expect(details(page).getByLabel('Notes', { exact: true })).toHaveValue(
     'Saved while the connection was unavailable.',

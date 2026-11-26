@@ -1048,7 +1048,7 @@ export default function PlaceDetails({
               ) : noteSaved ? (
                 <>
                   <Check size={14} />
-                  Saved
+                  Note saved
                 </>
               ) : (
                 'Save note'
