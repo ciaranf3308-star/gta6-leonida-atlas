@@ -4,7 +4,7 @@ import { loadCatalogue, markerToPlace } from '../data/catalogue';
 import { filterPlaces } from '../domain/filter';
 import { userTagsMap } from '../domain/user-tags';
 import { DEFAULT_LAYERS, collectiblesChipLayerIds, filterByVisibleLayers } from '../features/map/layers';
-import { nothingShowing, regionsDrawnCount } from '../features/map/empty-state';
+import { layersTurnedOn, nothingShowing, regionsDrawnCount } from '../features/map/empty-state';
 import { revealSet } from '../features/spoiler/visibility';
 import MapView from '../features/map/MapView';
 import BottomNav from './BottomNav';
@@ -382,24 +382,31 @@ export default function App() {
       }
     }
   }, [status, allPlaces]);
+  /** Clear every filter and lift the isolation: back to all of Leonida. */
+  const clearFiltersAndIsolation = useCallback(() => {
+    useUiStore.getState().resetFilters();
+    useMapStore.getState().setIsolation(null);
+    useMapStore.getState().setBoundsFocus(INITIAL_BOUNDS);
+  }, []);
   /** Turn layers on from the empty-map prompt: one tap, pins appear
    * immediately. "Everything" is every public layer — the user's tap
    * is the consent to show it all. Turning anything on ends
-   * first-open: the hint's "everything is off" is no longer true. */
+   * first-open: the hint's "everything is off" is no longer true.
+   * Finding 4 (v0.32.1): turning layers on alone is not enough —
+   * with a narrow filter active ("Saved only", zero saved places)
+   * the feeds still drop every place, the banner stays up and the
+   * button reads as dead. So this also runs the same reset "Clear
+   * filters" performs: the narrow filters go, and the isolation
+   * lifts too — "Show everything" means the whole island, not a
+   * dimmed slice of it. The layer half is layersTurnedOn
+   * (features/map/empty-state.ts); my-markers is never switched on. */
   const turnOnLayers = useCallback((layerIds: string[] | 'all') => {
     dismissFirstOpen();
     useMapStore.getState().setLayers(
-      useMapStore
-        .getState()
-        .layers.map((layer) =>
-          layer.id === 'my-markers'
-            ? layer
-            : layerIds === 'all' || layerIds.includes(layer.id)
-              ? { ...layer, visible: true }
-              : layer,
-        ),
+      layersTurnedOn(useMapStore.getState().layers, layerIds),
     );
-  }, [dismissFirstOpen]);
+    clearFiltersAndIsolation();
+  }, [dismissFirstOpen, clearFiltersAndIsolation]);
   /** Map chips (v0.16.0, reference row: All / Locations / Activities /
    * Stores / Collectibles): one group on, the rest off — the map stays
    * fast and readable. "All" is the only one that turns everything on,
@@ -452,12 +459,6 @@ export default function App() {
     }
     return null;
   }, [layers]);
-  /** Clear every filter and lift the isolation: back to all of Leonida. */
-  const clearFiltersAndIsolation = useCallback(() => {
-    useUiStore.getState().resetFilters();
-    useMapStore.getState().setIsolation(null);
-    useMapStore.getState().setBoundsFocus(INITIAL_BOUNDS);
-  }, []);
   const goToTab = useCallback((tab: 'map' | 'collections' | 'progress' | 'ask') => {
     if (tab === 'ask') {
       useMapStore.getState().select(null);

@@ -55,3 +55,27 @@ export function nothingShowing(
 ): boolean {
   return showingCount === 0 && regionsDrawn === 0;
 }
+
+/**
+ * "Show everything" (v0.32.1, Finding 4) — the layer half of the
+ * banner button, pure so it is unit-testable. "Everything" is every
+ * public layer; my-markers is personal data, never switched on by
+ * a banner tap — exactly the turnOnLayers rule it replaces. Layers
+ * already on stay on; named layers turn on only the named ones.
+ * The filter half lives in App.tsx (turnOnLayers also resets the
+ * filters + isolation): turning layers on alone left a narrow
+ * filter in place, so with "Saved only" active the banner stayed
+ * up and the button read as dead.
+ */
+export function layersTurnedOn(
+  layers: readonly LayerDefinition[],
+  layerIds: string[] | 'all',
+): LayerDefinition[] {
+  return layers.map((layer) =>
+    layer.id === 'my-markers'
+      ? layer
+      : layerIds === 'all' || layerIds.includes(layer.id)
+        ? { ...layer, visible: true }
+        : layer,
+  );
+}
