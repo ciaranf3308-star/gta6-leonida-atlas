@@ -1,7 +1,14 @@
 import type { Backup } from "../domain/types";
 import type { Place } from "../domain/types";
-import { atlasRepository, ensureCompletionMigration, type AtlasDatabase } from "./repository";
-import type { BackupV4 } from "./backup";
+import {
+  atlasRepository,
+  COMPLETION_MIGRATION_LOG_KEY,
+  ensureCompletionMigration,
+  getCompletionMigrationLog,
+  type AtlasDatabase,
+  type CompletionMigrationLog,
+} from "./repository";
+import type { BackupV4, DroppedCompletionRecord } from "./backup";
 import { loadCatalogue } from "../data/catalogue";
 import { browserStorage, type StorageLike } from "../features/categorise/storage";
 import {
@@ -34,7 +41,7 @@ import {
  *    it was. (If the rollback itself fails, the error carries both
  *    failures — the caller must surface that, not claim success.)
  *
- * v0.32 step 3 (backup v4): a v4 file carries seven more sections
+ * v0.32 step 3 (backup v4): a v4 file carries five more sections
  * (DESIGN §11 + addendum §6 step 3). They import after the v3
  * sections, in this order, for a reason:
  *
@@ -51,13 +58,15 @@ import {
  *     migration converts the local key, then the file's entries
  *     overwrite them by category id).
  * 3c. The v4 sections (completion log, reconciliation, enrichments,
- *     corrections, sold state, screenshot metadata, research queue)
- *     land in one transaction, merged by id — import wins on a
- *     same-id conflict, local rows not in the file are never deleted.
- *     Re-importing the same file is a no-op (identical rows, put
- *     semantics), and a migration record the file carries overwrites
- *     the identical record step 3b just created (deterministic ids,
- *     same classification — no duplicates, no double-count).
+ *     corrections, sold state) land in one transaction, merged by id
+ *     — import wins on a same-id conflict, local rows not in the file
+ *     are never deleted. Re-importing the same file is a no-op
+ *     (identical rows, put semantics), and a migration record the
+ *     file carries overwrites the identical record step 3b just
+ *     created (deterministic ids, same classification — no duplicates,
+ *     no double-count). Screenshots and research requests are NOT
+ *     among them (addendum lines 518, 725): they were never in the
+ *     file, so there is nothing to import for them.
  *
  * If 3b or 3c throws, the AI half is rolled back like any other step-3
  * failure — but the v3 sections (and any v4 sections already written)
@@ -80,6 +89,77 @@ export interface ImportAtlasBackupDeps {
   places?: readonly Place[];
   /** Defaults to the browser's localStorage (the tallies key lives there). */
   storage?: StorageLike | null;
+  /** Completion records the file carried that could not be trusted,
+   * as reported by parseBackupV4WithDrops / parseBackupFileWithDrops
+   * (DESIGN §11 drop-and-count). They were already excluded from the
+   * parsed backup — this only carries them through to the migration
+   * log and the import result. Defaults to none dropped. */
+  droppedCompletionRecords?: DroppedCompletionRecord[];
+}
+
+/** What one import did, beyond the AI merge: the completion records
+ * dropped under DESIGN §11's drop-and-count rule. Empty when the
+ * file's completion records were all valid (or the file was v1–v3,
+ * which never carries completion records). */
+export interface ImportAtlasBackupResult {
+  ai: AiMergeStats;
+  droppedCompletionRecords: DroppedCompletionRecord[];
+}
+
+/** One import's drops, as appended to the migration log (DESIGN §11:
+ * the log shows "N records dropped: reason"). */
+export interface DroppedCompletionRecordsEntry {
+  /** When the import ran (ISO UTC). */
+  at: string;
+  count: number;
+  reasons: string[];
+}
+
+/** The migration log plus the import drops appended by this step.
+ * `repository.ts` owns the log shape (step 3 may not touch it), so
+ * the drops ride as an extra key the typed reader ignores — the
+ * stored JSON keeps them, and a later step can read them from the
+ * same key. */
+type CompletionMigrationLogWithDrops = CompletionMigrationLog & {
+  droppedCompletionRecords?: DroppedCompletionRecordsEntry[];
+};
+
+/**
+ * Append one import's drops to the migration log (DESIGN §11's
+ * channel, localStorage key `leonida-completion-migration-v1`) —
+ * but only when a migration log already exists. Writing a
+ * drops-only object to that key would make
+ * getCompletionMigrationStatus() report `migrated: true` when no
+ * migration ever ran, so a missing log means the drops live in the
+ * import result (and the dialog) only. In the import flow the
+ * migration (step 3b) runs before the v4 sections land, so a log
+ * exists whenever a migration actually ran. Informational only: a
+ * storage failure never fails the import.
+ */
+export function recordDroppedCompletionRecords(
+  storage: StorageLike | null,
+  dropped: DroppedCompletionRecord[],
+): void {
+  if (!storage || dropped.length === 0) return;
+  try {
+    const existing = getCompletionMigrationLog(storage);
+    if (!existing) return;
+    const log = existing as CompletionMigrationLogWithDrops;
+    const previous = Array.isArray(log.droppedCompletionRecords)
+      ? log.droppedCompletionRecords
+      : [];
+    const entry: DroppedCompletionRecordsEntry = {
+      at: new Date().toISOString(),
+      count: dropped.length,
+      reasons: dropped.map((record) => record.reason),
+    };
+    storage.setItem(
+      COMPLETION_MIGRATION_LOG_KEY,
+      JSON.stringify({ ...log, droppedCompletionRecords: [...previous, entry] }),
+    );
+  } catch {
+    // The log is informational; the import itself is done.
+  }
 }
 
 /** Write the v4-only sections into the repository, merged by id. */
@@ -95,8 +175,6 @@ export async function importBackupV4Sections(
       repository.enrichments,
       repository.corrections,
       repository.personalItemState,
-      repository.userScreenshots,
-      repository.researchRequests,
     ],
     async () => {
       await repository.completionRecords.bulkPut(backup.completionRecords);
@@ -104,8 +182,6 @@ export async function importBackupV4Sections(
       await repository.enrichments.bulkPut(backup.enrichments);
       await repository.corrections.bulkPut(backup.corrections);
       await repository.personalItemState.bulkPut(backup.personalItemState);
-      await repository.userScreenshots.bulkPut(backup.userScreenshots);
-      await repository.researchRequests.bulkPut(backup.researchRequests);
     },
   );
 }
@@ -113,10 +189,11 @@ export async function importBackupV4Sections(
 export async function importAtlasBackup(
   backup: Backup | BackupV4,
   deps: ImportAtlasBackupDeps = {},
-): Promise<AiMergeStats> {
+): Promise<ImportAtlasBackupResult> {
   const repository = deps.repository ?? atlasRepository;
   const aiDb = deps.aiDb ?? aiIndexDb;
   const storage = deps.storage !== undefined ? deps.storage : browserStorage();
+  const droppedCompletionRecords = deps.droppedCompletionRecords ?? [];
   const before = await loadAiIndex(aiDb);
   const stats = await mergeImportedAiIndex(
     backup.aiCategories,
@@ -140,6 +217,11 @@ export async function importAtlasBackup(
     await ensureCompletionMigration(repository, places, storage);
     if (backup.version === 4) {
       await importBackupV4Sections(repository, backup);
+      // The v4 sections landed: only now may the drops be logged —
+      // a failed import drops nothing, it fails. The log write is
+      // informational (see recordDroppedCompletionRecords) and the
+      // result below carries the count either way.
+      recordDroppedCompletionRecords(storage, droppedCompletionRecords);
     }
   } catch (error) {
     try {
@@ -152,5 +234,5 @@ export async function importAtlasBackup(
     }
     throw error;
   }
-  return stats;
+  return { ai: stats, droppedCompletionRecords };
 }

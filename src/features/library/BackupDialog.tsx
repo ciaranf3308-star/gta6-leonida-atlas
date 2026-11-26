@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Download, Upload } from 'lucide-react';
 import type { Backup } from '../../domain/types';
-import type { BackupV4 } from '../../db/backup';
-import { MAX_BACKUP_BYTES, parseBackupFile } from '../../db/backup';
+import type { BackupV4, DroppedCompletionRecord } from '../../db/backup';
+import { MAX_BACKUP_BYTES, parseBackupFileWithDrops } from '../../db/backup';
 import { saveLocal, usePersistenceStore, useWorkspaceStore } from '../../stores/atlas';
 import { useAiIndexStore } from '../categorise/store';
 import { importAtlasBackup } from '../../db/backup-import';
-import type { AiMergeStats } from '../../db/ai-index';
+import type { ImportAtlasBackupResult } from '../../db/backup-import';
 import { downloadAtlasBackup } from '../backup/atlas-backup';
 import { Modal } from '../../app/Modal';
 
@@ -19,6 +19,10 @@ export default function BackupDialog({ onClose }: { onClose: () => void }) {
   const ready = usePersistenceStore((s) => s.ready);
   const workspaceId = useWorkspaceStore((s) => s.workspaceId);
   const [preview, setPreview] = useState<Backup | BackupV4 | null>(null);
+  /** Completion records the previewed file carried that could not be
+   * trusted (DESIGN §11 drop-and-count) — shown in the preview and
+   * carried into the import, which logs them and reports the count. */
+  const [previewDrops, setPreviewDrops] = useState<DroppedCompletionRecord[]>([]);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
@@ -40,6 +44,7 @@ export default function BackupDialog({ onClose }: { onClose: () => void }) {
   }
   async function inspect(file: File | undefined) {
     setPreview(null);
+    setPreviewDrops([]);
     setError('');
     setMessage('');
     if (!file) return;
@@ -49,8 +54,14 @@ export default function BackupDialog({ onClose }: { onClose: () => void }) {
     }
     try {
       // v4 files parse as v4, v1–v3 as before; a v4 preview carries
-      // the completion log, so the counts below can show it.
-      setPreview(parseBackupFile(JSON.parse(await file.text())));
+      // the completion log, so the counts below can show it. The
+      // parse also reports completion records that could not be
+      // trusted — they will be skipped on merge, not fail it.
+      const { backup, droppedCompletionRecords } = parseBackupFileWithDrops(
+        JSON.parse(await file.text()),
+      );
+      setPreview(backup);
+      setPreviewDrops(droppedCompletionRecords);
     } catch (error) {
       setError(
         error instanceof Error ? error.message : 'Invalid backup file. No data was changed.',
@@ -71,21 +82,25 @@ export default function BackupDialog({ onClose }: { onClose: () => void }) {
     // (A holder object, not a let: TypeScript cannot see a closure
     // assignment across an await, so a plain variable reads as null
     // after saveLocal returns.)
-    const importResult: { ai?: AiMergeStats; failure?: string } = {};
+    const importResult: { result?: ImportAtlasBackupResult; failure?: string } = {};
     const ok = await saveLocal(async () => {
       try {
-        importResult.ai = await importAtlasBackup(preview);
+        importResult.result = await importAtlasBackup(preview, {
+          droppedCompletionRecords: previewDrops,
+        });
       } catch (error) {
         importResult.failure =
           error instanceof Error ? error.message : 'Import failed.';
         throw error;
       }
     });
-    if (ok && importResult.ai) {
-      const ai = importResult.ai;
+    if (ok && importResult.result) {
+      const ai = importResult.result.ai;
+      const dropped = importResult.result.droppedCompletionRecords;
       await useAiIndexStore.getState().reloadFromDatabase();
       setBusy(false);
       setPreview(null);
+      setPreviewDrops([]);
       setMessage(
         `Backup merged. AI index: ${ai.added.toLocaleString()} new, ` +
           `${ai.updated.toLocaleString()} updated, ` +
@@ -95,6 +110,9 @@ export default function BackupDialog({ onClose }: { onClose: () => void }) {
           `${count(preview.favorites.length, 'saved place')}` +
           (preview.version === 4
             ? `, ${count(preview.completionRecords.length, 'completion record')}`
+            : '') +
+          (dropped.length > 0
+            ? ` — ${count(dropped.length, 'completion record')} in the file could not be read and ${dropped.length === 1 ? 'was' : 'were'} skipped (${dropped[0]?.reason ?? 'unreadable record'}).`
             : '') +
           `. Your local data is saved.`,
       );
@@ -116,9 +134,10 @@ export default function BackupDialog({ onClose }: { onClose: () => void }) {
         Export everything yours — favorites, collections, notes, markers, the completion log
         (every place you marked found, looted or explored, with the dates) and the AI index
         (the sorted &ldquo;?&rdquo; places and how far the job got). No account is needed, and
-        your OpenAI key is never in the file. The job saves after every batch on this phone —
-        back up to keep it forever, past a wipe, a browser-data clear, a PWA uninstall or a
-        new phone.
+        your OpenAI key is never in the file. Screenshot images are not backed up — they stay
+        on this device, so keep them somewhere safe separately. The job saves after every batch
+        on this phone — back up to keep it forever, past a wipe, a browser-data clear, a PWA
+        uninstall or a new phone.
       </p>
       <button className="button primary" disabled={!ready} onClick={() => void exportData()}>
         <Download size={18} />
@@ -163,10 +182,24 @@ export default function BackupDialog({ onClose }: { onClose: () => void }) {
             always win: a place you corrected or confirmed keeps your word, and a &ldquo;not
             sure&rdquo; in the file never overwrites a type.
           </p>
+          {previewDrops.length > 0 && (
+            <p className="help-text">
+              {count(previewDrops.length, 'completion record')} in this file could not be read
+              and will be skipped on merge ({previewDrops[0]?.reason ?? 'unreadable record'}
+              {previewDrops.length > 1 ? `, plus ${previewDrops.length - 1} more` : ''}). The
+              rest of the backup still merges.
+            </p>
+          )}
           <button className="button primary" disabled={busy} onClick={() => void merge()}>
             {busy ? 'Importing…' : 'Merge backup'}
           </button>
-          <button className="text-button" onClick={() => setPreview(null)}>
+          <button
+            className="text-button"
+            onClick={() => {
+              setPreview(null);
+              setPreviewDrops([]);
+            }}
+          >
             Cancel import
           </button>
         </section>

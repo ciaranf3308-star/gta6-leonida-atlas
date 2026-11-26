@@ -424,8 +424,11 @@ describe("AI index — backup import (v0.30.0)", () => {
       places,
       storage: memoryStorage(),
     });
-    expect(imported.added).toBe(1);
-    expect(imported.addedAttempted).toBe(1);
+    // importAtlasBackup returns the AI merge stats under `ai`, plus
+    // the completion records dropped under §11 drop-and-count.
+    expect(imported.ai.added).toBe(1);
+    expect(imported.ai.addedAttempted).toBe(1);
+    expect(imported.droppedCompletionRecords).toEqual([]);
     const snapshot = await loadAiIndex(aiDb);
     expect(snapshot.categories["L9"]?.aiCategory).toBe("shop");
     expect(snapshot.job.attemptedPlaceIds).toEqual(["L9"]);

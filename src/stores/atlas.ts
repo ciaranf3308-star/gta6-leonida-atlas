@@ -11,7 +11,7 @@ import {
   workspaceDatabaseName,
 } from '../db/repository';
 import { atlasRegistry } from '../plugins/registry';
-import { parseBackupFile, parseBackupV4 } from '../db/backup';
+import { parseBackupFileWithDrops, parseBackupV4 } from '../db/backup';
 import { exportAiIndex } from '../db/ai-index';
 import { importAtlasBackup } from '../db/backup-import';
 import { useAiIndexStore } from '../features/categorise/store';
@@ -300,18 +300,17 @@ export async function exportWorkspaceBackup(workspaceId: string | null) {
   // batch can never produce a corrupt backup.
   const ai = await exportAiIndex();
   // v0.32 step 3 (backup v4): the completion log, reconciliation,
-  // enrichments, corrections, sold state, screenshot metadata and
-  // research queue ride along with the v3 sections. The repository's
-  // export stays v3 (repository.ts is step 2's file); the store
-  // assembles v4 from it. Screenshot blobs stay device-local — only
-  // the metadata rows are in the file (addendum §6 step 3).
+  // enrichments, corrections and sold state ride along with the v3
+  // sections. The repository's export stays v3 (repository.ts is
+  // step 2's file); the store assembles v4 from it. Screenshots are
+  // NOT in the file — the images stay on this device (addendum line
+  // 518) — and neither are research requests (addendum line 725: v4
+  // gains exactly enrichments, corrections, personalItemState).
   const { records, reconciliation } = await atlasRepository.loadCompletion();
   const personalItemState = await atlasRepository.loadPersonalItemStates();
-  const [enrichments, corrections, userScreenshots, researchRequests] = await Promise.all([
+  const [enrichments, corrections] = await Promise.all([
     atlasRepository.enrichments.toArray(),
     atlasRepository.corrections.toArray(),
-    atlasRepository.userScreenshots.toArray(),
-    atlasRepository.researchRequests.toArray(),
   ]);
   assertWorkspace(workspaceId, expectedGeneration);
   return parseBackupV4({
@@ -324,8 +323,6 @@ export async function exportWorkspaceBackup(workspaceId: string | null) {
     enrichments,
     corrections,
     personalItemState,
-    userScreenshots,
-    researchRequests,
   });
 }
 
@@ -335,11 +332,14 @@ export async function importWorkspaceBackup(
 ): Promise<void> {
   const expectedGeneration = generation;
   assertWorkspace(workspaceId, expectedGeneration);
-  // v4 files parse as v4 (completion log, reconciliation, the five
+  // v4 files parse as v4 (completion log, reconciliation, the three
   // addendum tables); v1–v3 files parse as before and migrate on
   // import (importAtlasBackup triggers the completion migration after
-  // visited/explored land).
-  const backup = parseBackupFile(value);
+  // visited/explored land). The WithDrops parse also reports the
+  // completion records the file carried that could not be trusted
+  // (DESIGN §11 drop-and-count) — they travel with the import so the
+  // migration log and the import result can carry the count.
+  const { backup, droppedCompletionRecords } = parseBackupFileWithDrops(value);
   // The import is one honest operation across both stores: the AI
   // half merges first, then the user-data half imports, and if the
   // user-data half fails the AI half is rolled back to its
@@ -353,7 +353,7 @@ export async function importWorkspaceBackup(
   const saved = await saveLocal(async () => {
     assertWorkspace(workspaceId, expectedGeneration);
     try {
-      await importAtlasBackup(backup);
+      await importAtlasBackup(backup, { droppedCompletionRecords });
     } catch (error) {
       importResult.failure =
         error instanceof Error ? error.message : 'Could not import the backup.';

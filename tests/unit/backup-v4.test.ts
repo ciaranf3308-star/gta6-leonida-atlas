@@ -6,11 +6,13 @@ import {
   AtlasDatabase,
   atlasRepository,
   ensureCompletionMigration,
+  getCompletionMigrationLog,
 } from '../../src/db/repository';
 import {
   parseBackup,
   parseBackupFile,
   parseBackupV4,
+  parseBackupV4WithDrops,
 } from '../../src/db/backup';
 import { importAtlasBackup } from '../../src/db/backup-import';
 import { AiIndexDatabase, loadAiIndex, mergeImportedAiIndex } from '../../src/db/ai-index';
@@ -247,8 +249,6 @@ describe('backup v4 — validation of the new sections', () => {
       enrichments: [],
       corrections: [],
       personalItemState: [],
-      userScreenshots: [],
-      researchRequests: [],
     };
   }
 
@@ -273,13 +273,24 @@ describe('backup v4 — validation of the new sections', () => {
     }
     const bad = v4Base();
     bad.completionRecords = [{ ...oneRecord(), source: 'ai' }];
-    expect(() => parseBackupV4(bad)).toThrow(/source/i);
+    // An unsupported source is invalid — and invalid completion
+    // records are dropped and counted (DESIGN §11), never fail-fast.
+    const dropped = parseBackupV4WithDrops(bad);
+    expect(dropped.backup.completionRecords).toHaveLength(0);
+    expect(dropped.droppedCompletionRecords).toHaveLength(1);
+    expect(dropped.droppedCompletionRecords[0]?.reason).toMatch(/source/i);
   });
 
-  it('enforces the §11 count rules: collected is 1, only looted may be -1', () => {
+  it('enforces the §11 count rules by dropping, not failing: collected is 1, only looted may be -1', () => {
+    // The validation rules are unchanged from the step-3 lane (bad
+    // verb, bad count, bad target are all still invalid) — only the
+    // handling changed: invalid records are dropped and counted.
     const collected = v4Base();
     collected.completionRecords = [oneRecord({ count: 2 })];
-    expect(() => parseBackupV4(collected)).toThrow(/count/i);
+    const droppedCount = parseBackupV4WithDrops(collected);
+    expect(droppedCount.backup.completionRecords).toHaveLength(0);
+    expect(droppedCount.droppedCompletionRecords).toHaveLength(1);
+    expect(droppedCount.droppedCompletionRecords[0]?.reason).toMatch(/count/i);
     const undo = v4Base();
     undo.completionRecords = [
       oneRecord({
@@ -292,13 +303,34 @@ describe('backup v4 — validation of the new sections', () => {
     expect(parseBackupV4(undo).completionRecords).toHaveLength(1);
     const badUndo = v4Base();
     badUndo.completionRecords = [oneRecord({ verb: 'discovered', count: -1 })];
-    expect(() => parseBackupV4(badUndo)).toThrow(/count/i);
+    expect(parseBackupV4WithDrops(badUndo).droppedCompletionRecords).toHaveLength(1);
+    expect(parseBackupV4WithDrops(badUndo).droppedCompletionRecords[0]?.reason).toMatch(
+      /count/i,
+    );
     const badVerb = v4Base();
     badVerb.completionRecords = [{ ...oneRecord(), verb: 'found' }];
-    expect(() => parseBackupV4(badVerb)).toThrow(/verb/i);
+    const droppedVerb = parseBackupV4WithDrops(badVerb);
+    expect(droppedVerb.backup.completionRecords).toHaveLength(0);
+    expect(droppedVerb.droppedCompletionRecords[0]?.reason).toMatch(/verb/i);
     const badTarget = v4Base();
     badTarget.completionRecords = [{ ...oneRecord(), target: { type: 'place', id: 'L629' } }];
-    expect(() => parseBackupV4(badTarget)).toThrow(/target/i);
+    const droppedTarget = parseBackupV4WithDrops(badTarget);
+    expect(droppedTarget.droppedCompletionRecords[0]?.reason).toMatch(/target/i);
+    // A file mixing valid and invalid records keeps the valid ones.
+    const mixed = v4Base();
+    mixed.completionRecords = [
+      oneRecord(),
+      { ...oneRecord(), id: 'rec:bad-550e8400-e29b-41d4-a716-446655440000', verb: 'found' },
+      oneRecord({
+        id: 'rec:second-550e8400-e29b-41d4-a716-446655440000',
+        target: { type: 'opportunity', id: 'opp:L360:robbery-shop:1' },
+        verb: 'looted',
+      }),
+    ];
+    const parsedMixed = parseBackupV4WithDrops(mixed);
+    expect(parsedMixed.backup.completionRecords).toHaveLength(2);
+    expect(parsedMixed.droppedCompletionRecords).toHaveLength(1);
+    expect(parsedMixed.droppedCompletionRecords[0]?.index).toBe(1);
   });
 
   it('drops a citation-less enrichment field and a stored superseded flag, never the row', () => {
@@ -341,15 +373,54 @@ describe('backup v4 — validation of the new sections', () => {
     expect(withTally.reconciliation[0]).not.toHaveProperty('superseded');
   });
 
-  it('rejects duplicate ids, bad kinds and unknown versions; drops unknown keys', () => {
+  it('drops duplicate completion ids, still rejects duplicates elsewhere; ignores screenshot/research sections', () => {
+    // A duplicate completion id is an invalid completion record, so
+    // it is dropped and counted like any other (DESIGN §11) — the
+    // first record survives, the import does not fail.
     const dup = v4Base();
     dup.completionRecords = [oneRecord(), oneRecord()];
-    expect(() => parseBackupV4(dup)).toThrow(/duplicate/i);
-    const badKind = v4Base();
-    badKind.userScreenshots = [
+    const droppedDup = parseBackupV4WithDrops(dup);
+    expect(droppedDup.backup.completionRecords).toHaveLength(1);
+    expect(droppedDup.droppedCompletionRecords).toHaveLength(1);
+    expect(droppedDup.droppedCompletionRecords[0]?.reason).toMatch(/duplicate/i);
+    // Every other section keeps its fail-fast contract: a duplicate
+    // reconciliation entry still fails the whole import.
+    const dupTally = v4Base();
+    dupTally.reconciliation = [
+      { categoryId: 'missions', count: 10, basis: 'game-stat', at: time },
+      { categoryId: 'missions', count: 11, basis: 'game-stat', at: time },
+    ];
+    expect(() => parseBackupV4(dupTally)).toThrow(/duplicate/i);
+    // Step-3 follow-up ruling 1: a v4 file carrying userScreenshots
+    // or researchRequests sections is IGNORED, not rejected — even a
+    // malformed row in them cannot fail the import of the valid
+    // sections. The sections are not in v4 (addendum lines 518,
+    // 725); the rows were never restorable (dangling blobIds), so
+    // ignoring them loses nothing importable.
+    const carried = v4Base();
+    carried.userScreenshots = [
+      { id: 'shot:1', at: time, kind: 'card-front', setId: 'delights-dancers', blobId: 'blob:1' },
+    ];
+    carried.researchRequests = [
+      {
+        id: 'req:1',
+        targetType: 'item',
+        targetId: 'card:vicki',
+        question: 'Where is the Vicki card?',
+        requestedAt: time,
+        status: 'queued',
+      },
+    ];
+    const parsedCarried = parseBackupV4(carried);
+    expect(parsedCarried).not.toHaveProperty('userScreenshots');
+    expect(parsedCarried).not.toHaveProperty('researchRequests');
+    const malformed = v4Base();
+    malformed.userScreenshots = [
       { id: 'shot:1', at: time, kind: 'video', blobId: 'blob:1' },
     ];
-    expect(() => parseBackupV4(badKind)).toThrow(/kind/i);
+    malformed.researchRequests = [{ id: 'req:1', status: 'sideways' }];
+    expect(() => parseBackupV4(malformed)).not.toThrow();
+    expect(parseBackupV4(malformed)).not.toHaveProperty('userScreenshots');
     const badBasis = v4Base();
     badBasis.reconciliation = [
       { categoryId: 'missions', count: 10, basis: 'player-guess', at: time },
@@ -394,7 +465,8 @@ describe('backup v4 — headline: a v0.31.5 backup survives import + migration',
       places,
       storage,
     });
-    expect(stats.added).toBe(1);
+    expect(stats.ai.added).toBe(1);
+    expect(stats.droppedCompletionRecords).toEqual([]);
 
     // --- Markers incl. kind workout AND breakable, with color/createdAt.
     const after = await db.load();
@@ -528,6 +600,11 @@ describe('backup v4 — round-trip: export → wipe → import preserves the log
       at: time,
       source: 'user',
     });
+    // Step-3 follow-up ruling 1: screenshots and research requests
+    // are NOT in v4 — the tables still exist locally (the album
+    // feature writes them), but they are never exported, so seed
+    // rows here to prove they stay behind: the export below must not
+    // carry them, and the import must not restore them.
     await db.userScreenshots.put({
       id: 'shot:550e8400-e29b-41d4-a716-446655440000',
       at: time,
@@ -557,14 +634,16 @@ describe('backup v4 — round-trip: export → wipe → import preserves the log
       enrichments: await db.enrichments.toArray(),
       corrections: await db.corrections.toArray(),
       personalItemState: await db.loadPersonalItemStates(),
-      userScreenshots: await db.userScreenshots.toArray(),
-      researchRequests: await db.researchRequests.toArray(),
     });
     expect(exported.version).toBe(4);
     expect(exported.visited).toHaveLength(13);
     expect(exported.completionRecords).toHaveLength(17); // 16 migrated + 1 screenshot
     expect(exported.reconciliation).toHaveLength(4);
     expect(exported.personalItemState).toHaveLength(1);
+    // Ruling 1: the file carries neither section, even though the
+    // source database has rows in both tables.
+    expect(exported).not.toHaveProperty('userScreenshots');
+    expect(exported).not.toHaveProperty('researchRequests');
     // The file round-trips through JSON and parses as v4.
     const parsed = parseBackupFile(JSON.parse(JSON.stringify(exported)));
     expect(parsed.version).toBe(4);
@@ -576,8 +655,6 @@ describe('backup v4 — round-trip: export → wipe → import preserves the log
     const sourceSold = [...(await db.loadPersonalItemStates())].sort(byItem);
     const sourceEnrichments = [...(await db.enrichments.toArray())].sort(byId);
     const sourceCorrections = [...(await db.corrections.toArray())].sort(byId);
-    const sourceScreenshots = [...(await db.userScreenshots.toArray())].sort(byId);
-    const sourceRequests = [...(await db.researchRequests.toArray())].sort(byId);
     const sourceVisited = (await db.load()).visited;
     const sourceMarkers = [...(await db.load()).markers].sort(byMarkerId);
 
@@ -599,8 +676,10 @@ describe('backup v4 — round-trip: export → wipe → import preserves the log
       expect([...(await db2.loadPersonalItemStates())].sort(byItem)).toEqual(sourceSold);
       expect([...(await db2.enrichments.toArray())].sort(byId)).toEqual(sourceEnrichments);
       expect([...(await db2.corrections.toArray())].sort(byId)).toEqual(sourceCorrections);
-      expect([...(await db2.userScreenshots.toArray())].sort(byId)).toEqual(sourceScreenshots);
-      expect([...(await db2.researchRequests.toArray())].sort(byId)).toEqual(sourceRequests);
+      // --- Ruling 1: the screenshot and research rows stayed behind
+      // on the source device — the restored database has none.
+      expect(await db2.userScreenshots.toArray()).toEqual([]);
+      expect(await db2.researchRequests.toArray()).toEqual([]);
       // --- The v3 sections survive too.
       const restoredUser = await db2.load();
       expect(restoredUser.visited).toEqual(sourceVisited);
@@ -655,8 +734,11 @@ describe('backup v4 — store export assembles v4 (filename unchanged)', () => {
       expect(backup.enrichments).toEqual([]);
       expect(backup.corrections).toEqual([]);
       expect(backup.personalItemState).toEqual([]);
-      expect(backup.userScreenshots).toEqual([]);
-      expect(backup.researchRequests).toEqual([]);
+      // Step-3 follow-up ruling 1: v4 gains exactly enrichments,
+      // corrections, personalItemState — the file has no screenshot
+      // or research sections at all.
+      expect(backup).not.toHaveProperty('userScreenshots');
+      expect(backup).not.toHaveProperty('researchRequests');
       expect(backup.notes.map((n) => n.text)).toContain('Store export');
       expect(parseBackupFile(JSON.parse(JSON.stringify(backup))).version).toBe(4);
       // The filename and the "Back up my ViceWire" label are unchanged.
@@ -667,5 +749,189 @@ describe('backup v4 — store export assembles v4 (filename unchanged)', () => {
       await switchLocalWorkspace(null);
       await atlasRepository.delete();
     }
+  });
+});
+
+describe('backup v4 — follow-up ruling 1: carried screenshot/research sections ignored on import', () => {
+  const oneRecord = (overrides: Partial<CompletionRecord> = {}): CompletionRecord => ({
+    id: 'rec:550e8400-e29b-41d4-a716-446655440000',
+    target: { type: 'item', id: 'card-checklist:delights-dancers:vicki:standard' },
+    verb: 'collected',
+    count: 1,
+    at: time,
+    source: 'user',
+    ...overrides,
+  });
+
+  function v4WithCarried(): Record<string, unknown> {
+    return {
+      ...v3Fixture(),
+      version: 4,
+      completionRecords: [oneRecord()],
+      reconciliation: [],
+      enrichments: [],
+      corrections: [],
+      personalItemState: [],
+      userScreenshots: [
+        {
+          id: 'shot:550e8400-e29b-41d4-a716-446655440000',
+          at: time,
+          kind: 'card-front',
+          setId: 'delights-dancers',
+          blobId: 'blob:local-1',
+        },
+      ],
+      researchRequests: [
+        {
+          id: 'req:550e8400-e29b-41d4-a716-446655440000',
+          targetType: 'item',
+          targetId: 'card-checklist:delights-dancers:vicki:standard',
+          question: 'Where is the Vicki card?',
+          requestedAt: time,
+          status: 'queued',
+        },
+      ],
+    };
+  }
+
+  it('imports the valid sections and leaves the screenshot/research tables empty', async () => {
+    // DECISION (step-3 follow-up ruling 1): a v4 file carrying
+    // userScreenshots / researchRequests sections is IGNORED, not
+    // rejected. The sections are not in v4 (addendum lines 518,
+    // 725); rows-only export would have created dangling blobIds on
+    // restore, so the rows were never restorable from the file and
+    // ignoring them loses nothing importable.
+    const { backup, droppedCompletionRecords } = parseBackupV4WithDrops(v4WithCarried());
+    expect(droppedCompletionRecords).toEqual([]);
+    const result = await importAtlasBackup(backup, {
+      repository: db,
+      aiDb,
+      places,
+      storage: memoryStorage(),
+      droppedCompletionRecords,
+    });
+    expect(result.droppedCompletionRecords).toEqual([]);
+    // The valid sections landed: the file's completion record plus
+    // the 16 migration records, and both markers.
+    const { records } = await db.loadCompletion();
+    expect(records.some((r) => r.id === 'rec:550e8400-e29b-41d4-a716-446655440000')).toBe(true);
+    expect(records).toHaveLength(17);
+    expect((await db.load()).markers).toHaveLength(2);
+    // The carried rows did NOT land: the tables stay empty on the
+    // restoring device (no dangling blobIds).
+    expect(await db.userScreenshots.toArray()).toEqual([]);
+    expect(await db.researchRequests.toArray()).toEqual([]);
+  });
+});
+
+describe('backup v4 — follow-up ruling 2: drop-and-count on import', () => {
+  const oneRecord = (overrides: Partial<CompletionRecord> = {}): CompletionRecord => ({
+    id: 'rec:550e8400-e29b-41d4-a716-446655440000',
+    target: { type: 'item', id: 'card-checklist:delights-dancers:vicki:standard' },
+    verb: 'collected',
+    count: 1,
+    at: time,
+    source: 'user',
+    ...overrides,
+  });
+
+  function v4File(completionRecords: unknown[]): Record<string, unknown> {
+    return {
+      ...v3Fixture(),
+      version: 4,
+      completionRecords,
+      reconciliation: [],
+      enrichments: [],
+      corrections: [],
+      personalItemState: [],
+    };
+  }
+
+  it('imports the valid records and reports 1 dropped with the reason — in the result and the migration log', async () => {
+    const bad = {
+      ...oneRecord(),
+      id: 'rec:bad-550e8400-e29b-41d4-a716-446655440000',
+      verb: 'found',
+    };
+    const { backup, droppedCompletionRecords } = parseBackupV4WithDrops(
+      v4File([oneRecord(), bad]),
+    );
+    expect(backup.completionRecords).toHaveLength(1);
+    expect(droppedCompletionRecords).toHaveLength(1);
+    expect(droppedCompletionRecords[0]?.reason).toMatch(/verb/i);
+
+    const storage = talliesStorage();
+    const result = await importAtlasBackup(backup, {
+      repository: db,
+      aiDb,
+      places,
+      storage,
+      droppedCompletionRecords,
+    });
+    expect(result.droppedCompletionRecords).toHaveLength(1);
+    expect(result.droppedCompletionRecords[0]?.reason).toMatch(/verb/i);
+    // The valid file record landed alongside the 16 migration records.
+    const { records } = await db.loadCompletion();
+    expect(records).toHaveLength(17);
+    expect(
+      records.some((r) => r.id === 'rec:550e8400-e29b-41d4-a716-446655440000'),
+    ).toBe(true);
+    // DESIGN §11: the migration log shows "N records dropped: reason".
+    const log = getCompletionMigrationLog(storage);
+    expect(log).not.toBeNull();
+    const entries = (
+      log as unknown as {
+        droppedCompletionRecords?: Array<{ at: string; count: number; reasons: string[] }>;
+      }
+    ).droppedCompletionRecords;
+    expect(entries).toHaveLength(1);
+    expect(entries?.[0]?.count).toBe(1);
+    expect(entries?.[0]?.reasons[0]).toMatch(/verb/i);
+    expect(typeof entries?.[0]?.at).toBe('string');
+  });
+
+  it('imports the rest of the backup when ALL completion records are malformed', async () => {
+    const badVerb = {
+      ...oneRecord(),
+      id: 'rec:bad-verb-550e8400-e29b-41d4-a716-446655440000',
+      verb: 'found',
+    };
+    const badCount = {
+      ...oneRecord(),
+      id: 'rec:bad-count-550e8400-e29b-41d4-a716-446655440000',
+      count: 2,
+    };
+    const { backup, droppedCompletionRecords } = parseBackupV4WithDrops(
+      v4File([badVerb, badCount]),
+    );
+    expect(backup.completionRecords).toEqual([]);
+    expect(droppedCompletionRecords).toHaveLength(2);
+    const storage = talliesStorage();
+    const result = await importAtlasBackup(backup, {
+      repository: db,
+      aiDb,
+      places,
+      storage,
+      droppedCompletionRecords,
+    });
+    expect(result.droppedCompletionRecords).toHaveLength(2);
+    // Everything else landed: markers, the migration's records, tallies.
+    expect((await db.load()).markers).toHaveLength(2);
+    const { records, reconciliation } = await db.loadCompletion();
+    expect(records).toHaveLength(16);
+    expect(reconciliation.map((e) => [e.categoryId, e.count]).sort()).toEqual([
+      ['card-sets', 3],
+      ['gang-ops', 5],
+      ['missions', 10],
+      ['stunts', 250],
+    ]);
+    const log = getCompletionMigrationLog(storage);
+    const entries = (
+      log as unknown as {
+        droppedCompletionRecords?: Array<{ count: number; reasons: string[] }>;
+      }
+    ).droppedCompletionRecords;
+    expect(entries?.[0]?.count).toBe(2);
+    expect(entries?.[0]?.reasons).toHaveLength(2);
   });
 });

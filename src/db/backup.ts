@@ -22,11 +22,7 @@ import {
 } from '../features/categorise/categories';
 import type { CompletionRecord, ReconciliationEntry } from '../domain/game-db';
 import type { Correction, Enrichment, EnrichmentFieldKind } from '../domain/enrichment';
-import type {
-  PersonalItemState,
-  ResearchRequest,
-  UserScreenshot,
-} from '../domain/album';
+import type { PersonalItemState } from '../domain/album';
 import {
   EMPTY_INDEX_JOB,
   RESOLVER_VERSION,
@@ -527,13 +523,22 @@ export function parseBackup(input: unknown): Backup {
  *   runs unchanged, then writes the v4 sections itself.
  *
  * A v4 file is a strict superset of v3: every v3 section, plus the
- * completion log, reconciliation, and the five addendum tables.
- * Screenshots and research requests ride along as ROWS — the
- * screenshot blob bytes do NOT (addendum §6 step 3: device-local
- * blobs, 10 MiB JSON cap). A restored `UserScreenshot` row references
- * a blob id that may not exist on the new device; the row is kept
- * (it is the audit trail of what was matched) and the missing blob
- * is the caller's honest empty state, not a silent drop.
+ * completion log, reconciliation, and exactly three addendum tables
+ * — `enrichments`, `corrections`, `personalItemState` (addendum line
+ * 725). Screenshots and research requests are NOT in the backup:
+ * screenshots are device-local blobs (addendum line 518: "device-local
+ * only, never in a backup"; the JSON is capped at 10 MiB — stated
+ * plainly in Settings and in the export dialog, not hidden), and
+ * research requests are fulfilled developer-side (the answers arrive
+ * as data). A v4 file that still carries `userScreenshots` or
+ * `researchRequests` sections — e.g. one written by the step-3 lane
+ * before this ruling — is NOT rejected: the sections are ignored as
+ * unknown keys, like any other unknown key, and the valid sections
+ * import normally. Rows-only export would have created dangling
+ * blobIds on restore (a restored UserScreenshot row referencing a
+ * blob that may not exist on the new device), so ignoring the rows
+ * is the honest behaviour, not a silent loss of restorable data:
+ * the blobs were never restorable from the file.
  */
 
 export type BackupV4 = Omit<Backup, 'version'> & {
@@ -543,8 +548,6 @@ export type BackupV4 = Omit<Backup, 'version'> & {
   enrichments: Enrichment[];
   corrections: Correction[];
   personalItemState: PersonalItemState[];
-  userScreenshots: UserScreenshot[];
-  researchRequests: ResearchRequest[];
 };
 
 /** The completion sources a v4 file may carry (DESIGN §11 says only
@@ -562,11 +565,11 @@ function parseCount(input: unknown, path: string, min: number, max: number): num
 
 /**
  * One completion record, whitelisted like every other backup entry.
- * Invalid records fail the whole import (the same fail-fast contract
- * as every other section) — DESIGN §11's drop-and-count rule needs a
- * log channel the import path does not have yet; failing loudly with
- * the record index and reason never silently fixes or loses a record.
- * See the design-conflicts note in the step-3 report.
+ * What counts as invalid is unchanged from the step-3 lane (bad
+ * verb, bad count, bad source, bad target, bad id/timestamp) — only
+ * the handling changed: an invalid record is DROPPED, never trusted,
+ * and the drop is counted (DESIGN §11), instead of failing the whole
+ * import. See `parseCompletionRecords`.
  */
 export function parseCompletionRecord(input: unknown, path = 'completionRecord'): CompletionRecord {
   const item = record(input, path);
@@ -600,6 +603,57 @@ export function parseCompletionRecord(input: unknown, path = 'completionRecord')
       ? {}
       : { note: parseText(item.note, `${path}.note`, 500) }),
   };
+}
+
+/** One completion record the file carried that could not be trusted.
+ * `reason` is the validator's message (e.g. "completionRecords[2].verb
+ * is unsupported"), so the drop is explainable, never silent. */
+export interface DroppedCompletionRecord {
+  /** Index of the record in the file's `completionRecords` array. */
+  index: number;
+  reason: string;
+}
+
+/**
+ * DESIGN §11's drop-and-count, for completion records ONLY — every
+ * other section keeps its fail-fast contract. An invalid record is
+ * skipped and counted with its reason; the valid records survive.
+ * A record whose id duplicates an earlier one in the file is invalid
+ * in context (the same duplicate rule the other sections enforce by
+ * throwing) and is dropped the same way, with a duplicate-id reason.
+ * The section itself must still be an array within the item limit —
+ * a non-array `completionRecords` is a corrupt file, not a droppable
+ * record, and still fails the import.
+ */
+export function parseCompletionRecords(input: unknown): {
+  records: CompletionRecord[];
+  dropped: DroppedCompletionRecord[];
+} {
+  const items = input === undefined ? [] : list(input, 'completionRecords');
+  const records: CompletionRecord[] = [];
+  const dropped: DroppedCompletionRecord[] = [];
+  const seen = new Set<string>();
+  items.forEach((item, index) => {
+    try {
+      const parsed = parseCompletionRecord(item, `completionRecords[${index}]`);
+      if (seen.has(parsed.id)) {
+        dropped.push({
+          index,
+          reason: `completionRecords[${index}].id duplicate id ${parsed.id}`,
+        });
+        return;
+      }
+      seen.add(parsed.id);
+      records.push(parsed);
+    } catch (error) {
+      dropped.push({
+        index,
+        reason:
+          error instanceof Error ? error.message : 'completion record is invalid',
+      });
+    }
+  });
+  return { records, dropped };
 }
 
 /** One manual tally, typed from the in-game Progress screen. `basis`
@@ -780,56 +834,15 @@ export function parsePersonalItemState(
 }
 
 /**
- * A screenshot upload's metadata. The blob itself is NOT in the file
- * (device-local, addendum §6 step 3) — `blobId` references a blob
- * that may not exist on the restoring device. The row restores as
- * the audit trail of what was matched; a missing blob is the
- * caller's honest empty state.
+ * The v4 validator WITH its drop-and-count report. `parseBackupV4`
+ * below is the same parse without the report (existing callers keep
+ * their signature); use this one wherever the drops must be surfaced
+ * — the import path and the backup dialog.
  */
-export function parseUserScreenshot(input: unknown, path = 'userScreenshot'): UserScreenshot {
-  const item = record(input, path);
-  const kind = item.kind;
-  if (kind !== 'card-front' && kind !== 'collection-screen')
-    invalid(`${path}.kind`, 'is unsupported');
-  return {
-    id: parseId(item.id, `${path}.id`),
-    at: timestamp(item.at, `${path}.at`),
-    kind,
-    ...(item.setId === undefined || item.setId === null
-      ? {}
-      : { setId: parseId(item.setId, `${path}.setId`) }),
-    blobId: parseText(item.blobId, `${path}.blobId`, 200, true),
-  };
-}
-
-/** A research-when-missing queue entry. Fulfilment is developer-side
- * (addendum §5.3); the queue itself is user data and rides along. */
-export function parseResearchRequest(input: unknown, path = 'researchRequest'): ResearchRequest {
-  const item = record(input, path);
-  const targetType = item.targetType;
-  if (targetType !== 'item' && targetType !== 'opportunity' && targetType !== 'location')
-    invalid(`${path}.targetType`, 'is unsupported');
-  const status = item.status;
-  if (status !== 'queued' && status !== 'answered' && status !== 'unanswerable')
-    invalid(`${path}.status`, 'is unsupported');
-  return {
-    id: parseId(item.id, `${path}.id`),
-    targetType,
-    targetId: parseId(item.targetId, `${path}.targetId`),
-    question: parseText(item.question, `${path}.question`, 200, true),
-    ...(item.sourceUrl === undefined
-      ? {}
-      : { sourceUrl: parseText(item.sourceUrl, `${path}.sourceUrl`, 2000) }),
-    requestedAt: timestamp(item.requestedAt, `${path}.requestedAt`),
-    status,
-    ...(item.resolutionNote === undefined
-      ? {}
-      : { resolutionNote: parseText(item.resolutionNote, `${path}.resolutionNote`, 1000) }),
-  };
-}
-
-/** Returns a new, whitelisted v4 value. Never mutates input or touches browser storage. */
-export function parseBackupV4(input: unknown): BackupV4 {
+export function parseBackupV4WithDrops(input: unknown): {
+  backup: BackupV4;
+  droppedCompletionRecords: DroppedCompletionRecord[];
+} {
   const data = record(input, 'backup');
   if (data.format !== 'leonida-atlas') invalid('format', 'must be leonida-atlas');
   if (data.version !== 4) invalid('version', 'is unsupported (this parser expects version 4)');
@@ -838,13 +851,11 @@ export function parseBackupV4(input: unknown): BackupV4 {
   // version except for the v1 legacy path). Unknown keys — including
   // the v4 sections — are dropped from that view.
   const v3 = parseBackup({ ...data, version: 3 });
-  const completionRecords = unique(
-    list(data.completionRecords === undefined ? [] : data.completionRecords, 'completionRecords').map(
-      (item, index) => parseCompletionRecord(item, `completionRecords[${index}]`),
-    ),
-    (item) => item.id,
-    'completionRecords',
-  );
+  // Completion records are drop-and-count (DESIGN §11): an invalid
+  // record is skipped with its reason, the valid ones survive. Every
+  // other section below is still fail-fast.
+  const { records: completionRecords, dropped: droppedCompletionRecords } =
+    parseCompletionRecords(data.completionRecords);
   const reconciliation = unique(
     list(data.reconciliation === undefined ? [] : data.reconciliation, 'reconciliation').map(
       (item, index) => parseReconciliationEntry(item, `reconciliation[${index}]`),
@@ -874,20 +885,10 @@ export function parseBackupV4(input: unknown): BackupV4 {
     (item) => item.itemId,
     'personalItemState',
   );
-  const userScreenshots = unique(
-    list(data.userScreenshots === undefined ? [] : data.userScreenshots, 'userScreenshots').map(
-      (item, index) => parseUserScreenshot(item, `userScreenshots[${index}]`),
-    ),
-    (item) => item.id,
-    'userScreenshots',
-  );
-  const researchRequests = unique(
-    list(data.researchRequests === undefined ? [] : data.researchRequests, 'researchRequests').map(
-      (item, index) => parseResearchRequest(item, `researchRequests[${index}]`),
-    ),
-    (item) => item.id,
-    'researchRequests',
-  );
+  // No userScreenshots / researchRequests sections: they are not in
+  // v4 (see the note at the top of the v4 section). A file carrying
+  // them is ignored here — unknown keys, dropped by parseBackup's
+  // v3 view and never read below.
   const result: BackupV4 = {
     ...v3,
     version: 4,
@@ -896,14 +897,17 @@ export function parseBackupV4(input: unknown): BackupV4 {
     enrichments,
     corrections,
     personalItemState,
-    userScreenshots,
-    researchRequests,
   };
   // Count only whitelisted data: the 10 MiB cap applies to the whole
   // v4 file, new sections included.
   if (new TextEncoder().encode(JSON.stringify(result)).byteLength > MAX_BACKUP_BYTES)
     invalid('backup', 'exceeds the 10 MiB data limit');
-  return result;
+  return { backup: result, droppedCompletionRecords };
+}
+
+/** Returns a new, whitelisted v4 value. Never mutates input or touches browser storage. */
+export function parseBackupV4(input: unknown): BackupV4 {
+  return parseBackupV4WithDrops(input).backup;
 }
 
 /**
@@ -912,9 +916,22 @@ export function parseBackupV4(input: unknown): BackupV4 {
  * (which still rejects version 4 when called directly — see the note
  * at the top of the v4 section). Use this in the store layer and the
  * backup dialog; use `parseBackup` only where a v3 value is required.
+ *
+ * The WithDrops variant also returns the completion records the file
+ * carried that could not be trusted (DESIGN §11 drop-and-count) —
+ * v1–v3 files never carry completion records, so their list is empty.
+ * The plain variant discards the report; use the WithDrops variant
+ * wherever the drops must be surfaced (import path, backup dialog).
  */
-export function parseBackupFile(input: unknown): Backup | BackupV4 {
+export function parseBackupFileWithDrops(input: unknown): {
+  backup: Backup | BackupV4;
+  droppedCompletionRecords: DroppedCompletionRecord[];
+} {
   const data = record(input, 'backup');
-  if (data.version === 4) return parseBackupV4(data);
-  return parseBackup(data);
+  if (data.version === 4) return parseBackupV4WithDrops(data);
+  return { backup: parseBackup(data), droppedCompletionRecords: [] };
+}
+
+export function parseBackupFile(input: unknown): Backup | BackupV4 {
+  return parseBackupFileWithDrops(input).backup;
 }
