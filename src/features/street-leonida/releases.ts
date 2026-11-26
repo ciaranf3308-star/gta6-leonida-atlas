@@ -11,6 +11,23 @@ export interface LeonidaAtlasRelease {
 /** Retained public history starts at v0.5.0; the newest release stays first. */
 export const LEONIDA_ATLAS_RELEASES: readonly LeonidaAtlasRelease[] = [
   {
+    version: "v0.31.4",
+    date: "2026-11-26",
+    title: "Ask answers card-set questions — with the set, not a meditation",
+    summary:
+      "Asking for Delights Dancers cards near Capri answered with the Smooth Sand meditation, and naming a card set returned all 25 collectibles. A card question now takes trading cards only, a named set narrows to that set, and the verdict says honestly when no card is near.",
+    status: "public",
+    highlights: [
+      "Ask — card questions answer with cards (reported 2026-11-26): \"I need any cards for delight dancers near Capri\" answered with the Smooth Sand meditation — the \"cards\" question pulled the whole Loot Map collectibles bucket, and the meditation was the only eligible place with \"Capri\" in its region, so the summary called a meditation \"the nearest card\". A question that asks for cards (and doesn't also name meditations or magazines) now takes trading cards only from the Loot Map bucket. A generic \"collectibles\" question still takes the whole bucket.",
+      "Ask — naming a card set narrows to that set: \"help me find the Delights Dancers card set\" returned all 25 collectibles — five cards from five different sets plus every meditation, magazine and watch — because nothing ever narrowed by set. The question's set is matched by name (stemmed, so \"delight dancers\" names the Delights Dancers set) and the answer is that set only: Vicki at the Starlet Motel plus the Harley dancer card at Delights. The three Loot Map dancer cards now carry their set tag (Harley → Delights Dancers, Marquise Bernard → Los Santos Panic, Aimie → NINE1NINE Dancers), written into the import script so a re-run keeps them.",
+      "Ask — the verdict calls it a card: the proximity noun was \"place\" for a card question, so the fallback read \"there is no place near Capri\" for a question that asked for a card. Card questions now say \"card\". For his exact question the answer is now: \"There is no card near Capri in the map data. The nearest is Harley dancer card, in Port Gellhorn — about 3,500 map units away, a long way across the map.\"",
+      "Honest gap, unchanged: the Delights Dancers set has 18 cards and only 2 have a published position precise enough to pin (Vicki, Harley). The other 16 have no verified position in any source checked and are not placed by guess — drop your own marker when you find one. The AI index does not change this: it types the unnamed \"?\" places, it holds no card positions.",
+    ],
+    verification: [
+      "Lead integration (2026-11-26): tsc --noEmit clean; eslint 0 errors (1 pre-existing warning); full unit suite 913/913 over 93 files (3 new card tests: the Capri card-set question answers with the set's cards and never a meditation, a named set narrows to that set only, and a generic cards question takes trading cards only while a generic collectibles question still takes the whole bucket); one-command production build (ATLAS_BASE_PATH=/gta6-leonida-atlas/, bundle assets/index-CAncpyDZ.js, SW cache atlas-b40404d5-5d13d82e0034, generated worker verified in the same command, CORE 41 entries, 31,527 graded tiles); app walk 43/43 PASS; Ask cards probe 11/11 PASS (his exact question shows Vicki + Harley, no meditation, verdict 'There is no card near Capri in the map data. The nearest is Harley dancer card, in Port Gellhorn — about 3,500 map units away'; the set ask shows only the two set cards; a generic collectibles ask still shows a meditation); Ask nightclub probe 8/8 PASS (no regression); geometry probe 16/16; basemap walk OK (aborted 1 / error tiles 1 / ocean 0); loot probe 32/32; Style probe 13/13; spoiler probe 21/21; reveal probe 4/4; fix probe 10/10. The Loot Map import script re-run after the tag edit reproduced the file with only the three tag lines changed, so the set tags survive a re-import.",
+    ],
+  },
+  {
     version: "v0.31.3",
     date: "2026-11-25",
     title: "Clothes stores are back under Style — and the filter says what Style means",

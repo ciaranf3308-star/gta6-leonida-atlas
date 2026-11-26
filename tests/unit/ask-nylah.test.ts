@@ -89,6 +89,27 @@ const FIXTURES: Place[] = [
     region: 'Corner Store, Capri',
     tags: ['collectible', 'card'],
   }),
+  // The set's second card, from the Loot Map collectibles bucket — a
+  // dancer card tagged with its set (reported 2026-11-26: "cards for
+  // delight dancers near Capri" answered with a meditation).
+  place({
+    id: 'loot:harley-card',
+    title: 'Harley dancer card',
+    layerId: 'loot-collectibles',
+    position: { x: -6360, y: 3590 },
+    region: 'Port Gellhorn',
+    tags: ['collectible', 'loot-map', 'trading-card', 'delights-dancers'],
+  }),
+  // A meditation in Capri, same bucket as the dancer card — a card
+  // question must never answer with it.
+  place({
+    id: 'loot:meditation-capri',
+    title: 'Smooth Sand meditation',
+    layerId: 'loot-collectibles',
+    position: { x: -6800, y: 200 },
+    region: 'Capri',
+    tags: ['collectible', 'loot-map', 'meditation'],
+  }),
   place({
     id: 'L2001',
     title: 'Starlet Motel',
@@ -296,6 +317,55 @@ describe('Ask Nylah — the spoiler rule', () => {
     });
     expect(result.requestedLayerIds).toContain('cards:delights-dancers');
     expect(result.records.map((p) => p.id)).toContain('card:vicki');
+  });
+
+  it('a card-set question near Capri answers with the set’s cards, never a meditation (reported 2026-11-26)', () => {
+    // His exact words: "I need any cards for delight dancers near
+    // Capri". Before the fix this answered with the Smooth Sand
+    // meditation — the only eligible place with "Capri" in its region —
+    // and the summary called it "the nearest card".
+    const result = retrieveForAsk({
+      question: 'I need any cards for delight dancers near Capri',
+      places: FIXTURES,
+      layers: layers(),
+      filters: { hideFound: false, remainingOnly: false, countyId: null },
+    });
+    expect(result.records.map((p) => p.id)).toEqual(['card:vicki']);
+    expect(result.records.map((p) => p.id)).not.toContain('loot:meditation-capri');
+    // The noun is "card", never "place", and the verdict is honest
+    // about the distance: the set's cards are not near Capri.
+    expect(result.proximitySummary).toMatch(/no card near capri/i);
+    expect(result.proximitySummary).not.toMatch(/meditation/i);
+  });
+
+  it('naming a card set narrows to that set only', () => {
+    const result = retrieveForAsk({
+      question: 'help me find the Delights Dancers card set',
+      places: FIXTURES,
+      layers: layers(),
+      filters: { hideFound: false, remainingOnly: false, countyId: null },
+    });
+    expect(result.records.map((p) => p.id)).toEqual(['card:vicki', 'loot:harley-card']);
+    expect(result.records.map((p) => p.id)).not.toContain('loot:meditation-capri');
+  });
+
+  it('a generic cards question takes trading cards only — a generic collectibles question takes the whole bucket', () => {
+    const cards = retrieveForAsk({
+      question: 'where are the cards?',
+      places: FIXTURES,
+      layers: layers(),
+      filters: { hideFound: false, remainingOnly: false, countyId: null },
+    });
+    expect(cards.records.map((p) => p.id)).toContain('card:vicki');
+    expect(cards.records.map((p) => p.id)).toContain('loot:harley-card');
+    expect(cards.records.map((p) => p.id)).not.toContain('loot:meditation-capri');
+    const collectibles = retrieveForAsk({
+      question: 'where are the collectibles?',
+      places: FIXTURES,
+      layers: layers(),
+      filters: { hideFound: false, remainingOnly: false, countyId: null },
+    });
+    expect(collectibles.records.map((p) => p.id)).toContain('loot:meditation-capri');
   });
 
   it('a scoped gym question never returns a visible-but-unasked layer', () => {

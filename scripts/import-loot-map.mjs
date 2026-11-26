@@ -126,6 +126,20 @@ const COLLECTIBLE_TAGS = {
   'Sculpture scans': 'scan',
 };
 
+/**
+ * Trading-card records whose set is named in their own evidence — the
+ * PowerPyx guide URL carries the set slug (Harley, Marquise), or the
+ * description names the set (Aimie: "A NINE1NINE card"). Ask narrows a
+ * named-set question to the set's tag (see cardSetForQuestion in
+ * src/features/ask/retrieval.ts) — without these tags the set's Loot
+ * Map cards never answer a set question. Keyed by the guide record id.
+ */
+const CARD_SET_TAGS = {
+  'guide-harley-card': 'delights-dancers',
+  'guide-marquise-card': 'los-santos-panic',
+  'guide-rusty-anchor-card': 'nine1nine-dancers',
+};
+
 function readJson(path) {
   return JSON.parse(readFileSync(path, 'utf8'));
 }
@@ -222,7 +236,7 @@ function main() {
       category,
       position: pos,
       layerId,
-      tags: [kindTag, 'loot-map', record._subTag].filter(Boolean),
+      tags: [kindTag, 'loot-map', record._subTag, CARD_SET_TAGS[record.id]].filter(Boolean),
       region: record.region ?? '',
       source: {
         title: `Loot Map (MIT) · ${record.sourceLabel ?? 'Loot Map'}`,

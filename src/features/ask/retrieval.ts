@@ -1,6 +1,7 @@
 import type { Filters, LayerDefinition, Place } from '../../domain/types';
 import { isUnnamedPlace } from '../../domain/types';
 import { COUNTIES, countyForPlace, countyIdFromText } from '../../data/counties';
+import { COLLECTABLE_SETS, type CollectableSet } from '../../data/collectables';
 import { ROBBABLE_SHOP_TAGS, SHOP_TAGS } from '../../data/catalogue';
 import { housesToCheck, isWorkoutMarker } from '../../domain/gym-check';
 import { normalizeUserTag, userTagsMatchLayer } from '../../domain/user-tags';
@@ -197,6 +198,51 @@ const NIGHTLIFE_TAG_WORDS: Record<string, readonly string[]> = {
   '#stripclub': ['stripclub', 'strip club'],
   '#bar': ['bar', 'pub'],
 };
+
+/**
+ * The card set a question names, if it names one — e.g. "delight
+ * dancers" (his spelling, singular) names the Delights Dancers set.
+ * Words are stemmed by dropping a trailing "s", so "delight dancers"
+ * matches "Delights Dancers" and "vice city flamingo" matches
+ * "Vice City Flamingos". The longest matching set wins; a question
+ * naming no set returns null and the answer stays the whole
+ * collectibles pool. Without this, "help me find the Delights
+ * Dancers card set" returned all 25 collectibles — five cards from
+ * five different sets plus every meditation, magazine and watch —
+ * because nothing ever narrowed by set (reported 2026-11-26).
+ */
+export function cardSetForQuestion(question: string): CollectableSet | null {
+  const stem = (word: string): string => (word.endsWith('s') ? word.slice(0, -1) : word);
+  const questionWords = new Set(normalizeAsk(question).split(' ').map(stem));
+  let best: CollectableSet | null = null;
+  let bestLength = 0;
+  for (const set of COLLECTABLE_SETS) {
+    const setWords = normalizeAsk(set.name).split(' ').map(stem);
+    if (setWords.every((word) => questionWords.has(word)) && setWords.length > bestLength) {
+      best = set;
+      bestLength = setWords.length;
+    }
+  }
+  return best;
+}
+
+/** A question that asks for cards specifically — not a generic
+ * "collectibles" ask, and not one that also names meditations or
+ * magazines. A card question takes trading cards only: before this,
+ * "cards" also pulled the whole Loot Map collectibles bucket, so a
+ * "cards near Capri" question answered with the Smooth Sand
+ * meditation — the only eligible place with "Capri" in its region —
+ * and the summary called a meditation "the nearest card"
+ * (reported 2026-11-26). */
+function asksForCardsOnly(question: string): boolean {
+  const q = normalizeAsk(question);
+  const cardWords = ['card', 'cards', 'trading card', 'trading cards'];
+  const otherCollectibles = ['meditation', 'meditations', 'magazine', 'magazines'];
+  return (
+    cardWords.some((p) => hasPhrase(q, p)) &&
+    !otherCollectibles.some((p) => hasPhrase(q, p))
+  );
+}
 
 /** Is this place one of the nightlife venues asked for, by any
  * evidence on the device? A source #tag, the user's own tag saying
@@ -487,6 +533,12 @@ function placeNounForLayers(layerIds: readonly string[]): string {
   if (layerIds.includes('gyms')) return 'gym';
   if (layerIds.includes('equipment')) return 'workout equipment';
   if (layerIds.includes('breakable')) return 'breakable home';
+  // A card question requests all eighteen cards:* layers plus
+  // loot-collectibles — the noun is still "card", never "place",
+  // or the proximity verdict reads "there is no place near Capri"
+  // for a question that asked for a card.
+  if (layerIds.some((id) => id.startsWith('cards:'))) return 'card';
+  if (layerIds.includes('loot-collectibles')) return 'collectible';
   return 'place';
 }
 
@@ -635,6 +687,27 @@ export function retrieveForAsk(input: AskRetrievalInput): AskRetrievalResult {
         input.userTags?.get(place.id),
         input.aiCategories?.[place.id],
       ),
+    );
+  }
+  // Card narrowing (reported 2026-11-26): a question that asks for
+  // CARDS takes trading cards only — the Loot Map collectibles bucket
+  // holds meditations, magazines and watches too, and a "cards near
+  // Capri" question answered with the Smooth Sand meditation because
+  // it was the only eligible place with "Capri" in its region. A
+  // generic "collectibles" question still takes the whole bucket.
+  if (asksForCardsOnly(question)) {
+    eligible = eligible.filter(
+      (place) => place.layerId !== 'loot-collectibles' || place.tags.includes('trading-card'),
+    );
+  }
+  // Set narrowing: a question naming one card set takes that set only —
+  // its cards:* layer plus the Loot Map dancer cards tagged with the
+  // set id. "Help me find the Delights Dancers card set" is two cards
+  // (Vicki + Harley), not all 25 collectibles.
+  const askedSet = cardSetForQuestion(question);
+  if (askedSet) {
+    eligible = eligible.filter(
+      (place) => place.layerId === `cards:${askedSet.id}` || place.tags.includes(askedSet.id),
     );
   }
   const totalInScope = eligible.length;

@@ -1,6 +1,6 @@
 {
   "name": "gta6-leonida-atlas",
-  "version": "0.31.3",
+  "version": "0.31.4",
   "packageManager": "pnpm@12.18.0",
   "private": false,
   "type": "module",
