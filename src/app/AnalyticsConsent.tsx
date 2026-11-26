@@ -5,7 +5,7 @@ import {
   setAnalyticsConsent,
   subscribeAnalyticsConsent,
 } from './analytics';
-import { projectPath } from '../features/explorer/public-path';
+import { projectPath } from '../features/project/public-path';
 import './analytics-consent.css';
 
 function useConsent() {
@@ -48,7 +48,7 @@ export function AnalyticsConsent() {
     const destination =
       preference ??
       document.querySelector<HTMLElement>(
-        'main button:not(:disabled), main a[href], main input:not(:disabled), .explorer-view button:not(:disabled)',
+        'main button:not(:disabled), main a[href], main input:not(:disabled)',
       );
     destination?.focus();
   }, [consent]);

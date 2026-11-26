@@ -9,7 +9,7 @@ const projectPages = new Set([
 export function resolveRoute(
   pathname: string,
   search: string,
-): { view: 'map' | 'explorer' | 'project'; page: string; placeId: string | null } {
+): { view: 'map' | 'project'; page: string; placeId: string | null } {
   const segments = pathname.split('/').filter(Boolean);
   const params = new URLSearchParams(search);
   const tail = params.get('page') ?? segments.at(-1) ?? '';
@@ -22,7 +22,7 @@ export function resolveRoute(
         ? segments[viewpointIndex + 1]?.replace(/-regional-entry$/, '')
         : null;
   return {
-    view: params.get('view') === '3d' ? 'explorer' : projectPages.has(tail) ? 'project' : 'map',
+    view: projectPages.has(tail) ? 'project' : 'map',
     page: tail,
     placeId: params.get('place') ?? (oldSlug ? `region:${oldSlug}` : null),
   };

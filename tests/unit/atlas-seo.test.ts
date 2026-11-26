@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { projectPath } from "../../src/features/explorer/public-path";
+import { projectPath } from "../../src/features/project/public-path";
 import { atlasPageMeta, ATLAS_PROJECT_META } from "../../src/app/seo";
 
 describe("Atlas public SEO boundary", () => {
@@ -28,7 +28,6 @@ describe("Atlas public SEO boundary", () => {
       atlasPageMeta("/atlas/", "", "/atlas/", "https://example.org").robots,
     ).toBe("index, follow");
     for (const [path, query] of [
-      ["/atlas/", "?view=3d"],
       ["/atlas/", "?place=region:vice-city"],
       ["/atlas/app", ""],
       ["/atlas/nonsense", ""],

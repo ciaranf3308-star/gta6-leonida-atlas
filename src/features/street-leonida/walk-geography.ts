@@ -1,4 +1,4 @@
-import { publicPath } from '../explorer/public-path';
+import { publicPath } from '../project/public-path';
 import type { WalkPoint } from './walk-engine';
 import { GTADB_BASEMAP_REVISION, GTADB_REVISION, GTADB_SOURCE } from './gtadb';
 import {

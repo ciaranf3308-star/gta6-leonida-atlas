@@ -8,7 +8,7 @@ import {
   GTADB_REVISION,
   GTADB_SOURCE,
 } from "../street-leonida/gtadb";
-import { projectPath, publicPath } from "../explorer/public-path";
+import { projectPath, publicPath } from "./public-path";
 import { LEONIDA_ATLAS_RELEASES } from "../street-leonida/releases";
 import { AnalyticsPreferences } from "../../app/AnalyticsConsent";
 import { ATLAS_PROJECT_META } from "../../app/seo";
@@ -94,8 +94,7 @@ function About() {
         <p>
           The public application builds as static files and runs without a CMS,
           private server or account. Its source code is licensed under
-          AGPL-3.0-only. The optional 3D explorer uses the same community
-          coordinate frame.
+          AGPL-3.0-only.
         </p>
       </Section>
       <Section title="Where ViceWire is used" id="deployments">
@@ -224,11 +223,7 @@ function Documentation() {
           colour and texture are illustrative. Neither view creates a
           place, a name or a pin; place data stays verified-only.
           Place positions on either view are approximate community
-          data, never official coordinates. The 3D explorer still uses
-          the earlier Yanis v16-derived raster; its land, water,
-          vegetation, roads and building marks are generalized and
-          recolored, and its coastline halo is decorative, not
-          bathymetry.
+          data, never official coordinates.
         </p>
         <p>
           Unmapped margins represent absent source coverage, not evidence of
@@ -250,21 +245,6 @@ function Documentation() {
           backup contains personal notes and markers, so share it deliberately.
         </p>
       </Section>
-      <Section title="Optional 3D explorer">
-        <p>
-          The 3D view loads only when opened. Move with WASD or arrow keys, hold
-          Shift to run, click the scene for mouse look, press E to inspect
-          nearby evidence and M to open its travel map. Escape releases the
-          pointer. Touch users have an analog movement pad, look pad and button
-          controls.
-        </p>
-        <p>
-          A deliberate tap on the travel map moves to that coordinate. Panning,
-          pinching and cancelled gestures do not trigger travel. Collision-safe
-          arrival adjustments are disclosed. If WebGL is unavailable, the main
-          atlas and your saved work remain available.
-        </p>
-      </Section>
     </>
   );
 }
@@ -283,8 +263,7 @@ function Credits() {
             GTADB / Map GTA
           </a>{" "}
           and its contributors. The 2D basemap is GTADB&apos;s In-Game Day map
-          tiles (map artwork © Rockstar Games); the 3D explorer uses the Yanis
-          v16-derived raster, distributed through GTADB.
+          tiles (map artwork © Rockstar Games), distributed through GTADB.
         </p>
         <p>
           The pinned revision is{" "}

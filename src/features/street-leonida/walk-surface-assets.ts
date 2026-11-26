@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { publicPath } from "../explorer/public-path";
+import { publicPath } from "../project/public-path";
 
 export type WalkSurfaceKind =
   "asphalt" | "concrete" | "rock" | "wood" | "gravel";

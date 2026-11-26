@@ -1,4 +1,4 @@
-import { publicPath } from '../explorer/public-path';
+import { publicPath } from '../project/public-path';
 import * as THREE from 'three';
 
 import { REVIEWED_GTADB_ANCHORS } from './leonida-evidence';

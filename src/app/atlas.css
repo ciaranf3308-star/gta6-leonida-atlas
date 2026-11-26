@@ -2843,7 +2843,7 @@ h3 {
   justify-content: center;
 }
 
-/* Footer buttons never wrap their label ("3D explorer" wrapped). */
+/* Footer buttons never wrap their label. */
 .sidebar-footer .button-row .button {
   white-space: nowrap;
   font-size: 12px;

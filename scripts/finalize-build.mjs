@@ -232,7 +232,7 @@ const assets = (await readdir(join(outDir, "assets")))
   .filter((name) => /\.(?:js|css|woff2)$/.test(name))
   .map((name) => `${base}assets/${name}`);
 const threeDimensionalAssets = assets.filter((url) =>
-  /\/(?:ExplorerView|walk-[a-z-]+)-[^/]+\.(?:js|css)$/.test(url),
+  /\/(?:walk-[a-z-]+)-[^/]+\.(?:js|css)$/.test(url),
 );
 const precache = [
   base,

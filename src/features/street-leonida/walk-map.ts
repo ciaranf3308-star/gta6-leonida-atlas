@@ -1,4 +1,4 @@
-import { publicPath } from '../explorer/public-path';
+import { publicPath } from '../project/public-path';
 import {
   classifyGtadbEvidence,
   classifyGtadbUncertaintyReasons,

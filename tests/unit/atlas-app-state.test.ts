@@ -12,7 +12,9 @@ describe('standalone routes and optional analytics', () => {
       resolveRoute('/gta6-leonida-atlas/app/viewpoint/grassrivers-regional-entry', '').placeId,
     ).toBe('region:grassrivers');
     expect(resolveRoute('/atlas/', '?page=credits').view).toBe('project');
-    expect(resolveRoute('/atlas/', '?view=3d').view).toBe('explorer');
+    // The 3D explorer is removed (v0.32): its legacy ?view=3d deep link
+    // now falls back to the map instead of opening a 3D view.
+    expect(resolveRoute('/atlas/', '?view=3d').view).toBe('map');
     expect(resolveRoute('/', '?place=custom%3Aone').placeId).toBe('custom:one');
   });
   it('rejects unset, malformed or executable measurement IDs', () => {

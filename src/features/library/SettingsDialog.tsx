@@ -21,7 +21,6 @@ import {
 export default function SettingsDialog({
   onClose,
   onOpenBackup,
-  onOpenExplorer,
   onOpenAbout,
   onShowWelcome,
 }: {
@@ -30,7 +29,6 @@ export default function SettingsDialog({
    * here now, in the one dedicated settings area. All optional: the
    * dialog also works standalone (tests, deep links). */
   onOpenBackup?: () => void;
-  onOpenExplorer?: () => void;
   onOpenAbout?: () => void;
   onShowWelcome?: () => void;
 }) {
@@ -294,18 +292,13 @@ export default function SettingsDialog({
           mouse.
         </p>
       </section>
-      {(onOpenBackup || onOpenExplorer || onOpenAbout || onShowWelcome) && (
+      {(onOpenBackup || onOpenAbout || onShowWelcome) && (
         <section className="detail-section">
           <h3>More</h3>
           <div className="button-row settings-more">
             {onOpenBackup && (
               <button className="button" type="button" onClick={() => { onClose(); onOpenBackup(); }}>
                 Backup
-              </button>
-            )}
-            {onOpenExplorer && (
-              <button className="button" type="button" onClick={() => { onClose(); onOpenExplorer(); }}>
-                3D explorer
               </button>
             )}
             {onOpenAbout && (

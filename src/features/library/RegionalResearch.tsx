@@ -1,5 +1,4 @@
 import { useId } from "react";
-import { explorerPath } from "../explorer/public-path";
 import type { StreetLeonidaRegionSlug } from "../street-leonida/leonida-evidence";
 import {
   getRegionDiscoveries,
@@ -10,14 +9,12 @@ import {
 import "./regional-research.css";
 
 interface RegionalResearchProps {
-  /** Omit to show all six region groups in the explorer's existing Evidence dialog. */
+  /** Omit to show all six region groups. */
   region?: StreetLeonidaRegionSlug;
-  travel?: "explorer" | "link";
 }
 
 export default function RegionalResearch({
   region,
-  travel = "link",
 }: RegionalResearchProps) {
   const headingId = useId();
   const groups = region
@@ -71,26 +68,6 @@ export default function RegionalResearch({
               </li>
             ))}
           </ul>
-          <p className="regional-research-placement">
-            Travel opens the existing approximate region view, not the specific
-            site described above.
-          </p>
-          {travel === "explorer" ? (
-            <button
-              type="button"
-              data-walk-region={group.slug}
-              aria-label={`Explore the region: ${group.name}`}
-            >
-              Explore the region
-            </button>
-          ) : (
-            <a
-              className="regional-research-travel"
-              href={explorerPath(`region:${group.slug}`)}
-            >
-              Explore {group.name} in 3D
-            </a>
-          )}
         </details>
       ))}
       {!region && (

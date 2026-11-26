@@ -93,7 +93,7 @@ export function parseWalkMapTravelDetail(value: unknown): WalkMapTravelDetail | 
   };
 }
 
-/** The React handoff uses the same validated destination contract as travel inside the explorer. */
+/** The React handoff uses the same validated destination contract as travel inside the 3D walk. */
 export function parseInitialWalkDestination(
   serialized: string | undefined,
 ): WalkMapTravelDetail | null {
@@ -1722,14 +1722,6 @@ export function initializeWalkableWorld(
   overlays.setBeforeOpen(() => pauseWalking());
   const eventOptions = { signal: eventController.signal } as const;
   dom.start?.addEventListener('click', startWalking, eventOptions);
-  root
-    .closest('[data-street-shell]')
-    ?.querySelector<HTMLButtonElement>('[data-enter-explorer]')
-    ?.addEventListener('click', startWalking, eventOptions);
-  root
-    .closest('[data-street-shell]')
-    ?.querySelector<HTMLButtonElement>('[data-exit-explorer]')
-    ?.addEventListener('click', exitWalking, eventOptions);
   dom.canvas.addEventListener(
     'click',
     (event) => {

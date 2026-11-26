@@ -7,8 +7,8 @@
 //   (4) Find with a layer on -> place sheet actions (Set Route /
 //       View Area / Add to List) all respond without error;
 //   (5) Settings open/close; backup dialog opens from Settings;
-//   (6) 3D explorer via ?view=3d: renders or fails gracefully
-//       (sandbox WebGL timeout is pre-existing — record, don't fail);
+//   (6) legacy ?view=3d (explorer removed in v0.32): falls back to
+//       the map — no explorer canvas, no "Opening 3D" loading state;
 //   (7) DPR 1 and DPR 3 spot-checks (island + street).
 // Self-serves dist/ on port 4356. Fixture ids only.
 /* global document */
@@ -237,17 +237,19 @@ const overflow = (pg) => pg.evaluate(() => document.documentElement.scrollWidth 
     await page.waitForTimeout(600);
   }
 
-  // (6) 3D explorer via the route.
+  // (6) Legacy ?view=3d (3D explorer removed in v0.32): the route falls
+  // back to the map — no explorer canvas, no "Opening 3D" loading state.
   await page.goto(`${base}?view=3d`, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(8000);
   const explorerState = await page.evaluate(() => ({
     canvas: document.querySelectorAll('canvas').length,
     loading: /Opening 3D/.test(document.body.innerText),
+    mapVisible: document.querySelectorAll('#atlas-map-region').length,
     bodyStart: document.body.innerText.slice(0, 120),
   }));
-  note(`(6) 3D explorer: canvas=${explorerState.canvas}, still loading=${explorerState.loading}`);
-  await shot(page, 'nav-3d-explorer');
-  check('(6) 3D explorer renders or shows its loading state (no hard crash)', explorerState.canvas > 0 || explorerState.loading, JSON.stringify(explorerState).slice(0, 160));
+  note(`(6) legacy ?view=3d: canvas=${explorerState.canvas}, still loading=${explorerState.loading}, map=${explorerState.mapVisible}`);
+  await shot(page, 'nav-legacy-3d-fallback');
+  check('(6) legacy ?view=3d falls back to the map (no explorer, no hard crash)', explorerState.canvas === 0 && !explorerState.loading && explorerState.mapVisible > 0, JSON.stringify(explorerState).slice(0, 160));
   await context.close();
 }
 

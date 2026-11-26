@@ -8,7 +8,6 @@ import { COLLECTABLE_CARD_PLACES } from "../../src/data/collectables";
 import { GYM_PLACES, EQUIPMENT_PLACES } from "../../src/data/gyms";
 import { LOOT_MAP_PLACES } from "../../src/data/loot-map";
 import { filterPlaces } from "../../src/domain/filter";
-import ExplorerView from "../../src/features/explorer/ExplorerView";
 import RegionalResearch from "../../src/features/library/RegionalResearch";
 import {
   getResearchForPlace,
@@ -85,28 +84,6 @@ describe("regional source discoveries", () => {
           expect(source!.publishedAt).toBeNull();
       }
     }
-  });
-
-  it("offers only established region travel actions in the mounted explorer evidence dialog", () => {
-    const html = renderToStaticMarkup(
-      createElement(ExplorerView, { onClose() {} }),
-    );
-    const evidence =
-      html.split('data-walk-evidence-dialog=""')[1]?.split("</dialog>")[0] ??
-      "";
-    const destinations = [
-      ...evidence.matchAll(/data-walk-region="([^"]+)"/g),
-    ].map((match) => match[1]);
-    expect(destinations.sort()).toEqual([
-      "ambrosia",
-      "grassrivers",
-      "leonida-keys",
-      "mount-kalaga-national-park",
-      "port-gellhorn",
-      "vice-city",
-    ]);
-    expect(evidence).toContain("Explore the region");
-    expect(evidence).not.toContain("data-walk-map-marker");
   });
 
   it("adds source context without changing any source coordinate or introducing discovery pins", () => {

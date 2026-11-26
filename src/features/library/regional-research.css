@@ -84,22 +84,6 @@
 .regional-discovery-sources a {
   font-size: 12px;
 }
-.regional-research .regional-research-placement {
-  margin: 18px 0 10px;
-  color: #a89a80;
-  font-size: 11px;
-  line-height: 1.65;
-}
-.regional-research-travel {
-  display: inline-flex;
-  min-height: 44px;
-  align-items: center;
-  padding-block: 8px;
-  font-size: 13px;
-}
-.regional-research-group > button {
-  margin-bottom: 9px;
-}
 .regional-research-videos {
   margin-top: 22px;
 }

@@ -24,7 +24,6 @@ import {
   hasSeenIndexOnboarding,
   markIndexOnboardingSeen,
 } from '../features/onboarding/onboarding';
-import { explorerPath } from '../features/explorer/public-path';
 import { atlasRegistry } from '../plugins/registry';
 import {
   hydrateUserData,
@@ -44,7 +43,6 @@ const PlaceDetails = lazy(() => import('../features/library/PlaceDetails'));
 const MarkerEditor = lazy(() => import('../features/editor/MarkerEditor'));
 const BackupDialog = lazy(() => import('../features/library/BackupDialog'));
 const SettingsDialog = lazy(() => import('../features/library/SettingsDialog'));
-const ExplorerView = lazy(() => import('../features/explorer/ExplorerView'));
 const ProjectPage = lazy(() => import('../features/project/ProjectPage'));
 
 let cataloguePromise: ReturnType<typeof loadCatalogue> | undefined;
@@ -138,8 +136,6 @@ export default function App() {
     useUiStore.getState().setAskOpen(false);
     useUiStore.getState().setNavTab('layers');
   }
-  const persistenceLoading = usePersistenceStore((s) => s.status === 'loading');
-  const workspaceRevision = useWorkspaceStore((s) => s.revision);
   const allPlaces = useMemo(() => [...places, ...markers.map(markerToPlace)], [places, markers]);
   /** First run: once the catalogue is loaded, the forced indexing
    * onboarding shows BEFORE the map is usable — it is the one thing
@@ -430,9 +426,8 @@ export default function App() {
     history.pushState({}, '', import.meta.env.BASE_URL);
     setRoute(resolveRoute(location.pathname, location.search));
   }, []);
-  function navigate(view: '3d' | 'about') {
-    const url = view === '3d' ? explorerPath(selected?.id) : `${import.meta.env.BASE_URL}about`;
-    history.pushState({}, '', url);
+  function goAbout() {
+    history.pushState({}, '', `${import.meta.env.BASE_URL}about`);
     setRoute(resolveRoute(location.pathname, location.search));
   }
   /** Long-press / right-click on the map: start a marker right there. */
@@ -629,22 +624,6 @@ export default function App() {
       ),
     );
   }, [layers, filters, viewRestored]);
-  if (route.view === 'explorer') {
-    const initialPlace = allPlaces.find((place) => place.id === route.placeId);
-    // Deep links must wait for the catalogue/local hydration before choosing a spawn.
-    if (route.placeId && !initialPlace && (status === 'loading' || persistenceLoading))
-      return <div className="full-loading">Opening selected place in 3D…</div>;
-    return (
-      <Suspense fallback={<div className="full-loading">Opening 3D explorer…</div>}>
-        <ExplorerView
-          key={`${route.placeId ?? 'default'}:${workspaceRevision}`}
-          initialPlace={initialPlace}
-          requestedPlaceId={route.placeId}
-          onClose={goMap}
-        />
-      </Suspense>
-    );
-  }
   if (route.view === 'project')
     return (
       <Suspense fallback={<div className="full-loading">Loading project information…</div>}>
@@ -866,8 +845,7 @@ export default function App() {
           <SettingsDialog
             onClose={closeDialog}
             onOpenBackup={() => useUiStore.getState().setDialog('backup')}
-            onOpenExplorer={() => navigate('3d')}
-            onOpenAbout={() => navigate('about')}
+            onOpenAbout={goAbout}
             onShowWelcome={() => {
               setWelcomeForced(false);
               setWelcomeOpen(true);

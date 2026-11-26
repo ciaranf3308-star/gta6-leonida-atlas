@@ -46,7 +46,7 @@ describe('living actor contact and surfaces', () => {
     life.dispose();
   });
 
-  it('releases moving instance buffers exactly once when the explorer closes', () => {
+  it('releases moving instance buffers exactly once when the world is disposed', () => {
     const scene = new THREE.Scene();
     const life = createWalkWorldLife(scene, false);
     const car = scene.children.find((object) => object.name === 'moving-road-vehicle')!;
