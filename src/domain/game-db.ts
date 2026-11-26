@@ -784,9 +784,14 @@ export function buildGameDatabase(input: BuildGameDatabaseInput): GameDatabase {
       const total = (itemCollectedCounts.get(record.target.id) ?? 0) + record.count;
       itemCollectedCounts.set(record.target.id, total);
     } else if (record.target.type === 'opportunity') {
+      // Sum unconditionally here; the ≤ 0 filter runs AFTER the loop
+      // (below). Record order is id order, not chronological — a -1
+      // compensating record may sort before its +1s, and filtering
+      // during accumulation would silently drop it (step-2 lane finding:
+      // loot ×2 + undo read back as ×2, ~50% of runs). The item branch
+      // already sums-then-filters; this matches it.
       const total = (completedOpportunityIds.get(record.target.id) ?? 0) + record.count;
-      if (total > 0) completedOpportunityIds.set(record.target.id, total);
-      else completedOpportunityIds.delete(record.target.id);
+      completedOpportunityIds.set(record.target.id, total);
       const opp = opportunities.get(record.target.id);
       if (record.verb === 'discovered' && opp) discoveredLocationIds.add(opp.locationId);
       if (record.verb === 'explored' && opp) exploredLocationIds.add(opp.locationId);
@@ -797,6 +802,9 @@ export function buildGameDatabase(input: BuildGameDatabaseInput): GameDatabase {
   }
   for (const [itemId, total] of itemCollectedCounts) {
     if (total > 0) completedItemIds.add(itemId);
+  }
+  for (const [oppId, total] of completedOpportunityIds) {
+    if (total <= 0) completedOpportunityIds.delete(oppId);
   }
 
   const itemsByLocation = new Map<string, readonly CollectibleItem[]>();

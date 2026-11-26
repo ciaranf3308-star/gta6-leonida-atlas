@@ -665,6 +665,46 @@ describe('game-db — §3.4 selectors', () => {
     expect(shown).toHaveLength(28);
   });
 
+  it('completedOpportunityIds sums-then-filters: a -1 record sorting before its +1s still counts (step-2 lane finding)', () => {
+    const db0 = buildFullDb();
+    const shop = [...db0.opportunities.values()].find(
+      (opp) => opp.kind === 'robbery-shop' && opp.detail === 'convenience',
+    )!;
+    // Dexie returns records in id order, not chronological order — so a
+    // compensating -1 whose id sorts before the +1s must still count.
+    // (The step-2 lane's rec:undo- prefix makes this hold in practice;
+    // the derivation must not depend on id order at all.)
+    const db = buildFullDb({
+      records: [
+        {
+          id: 'rec:aaa-undo',
+          target: { type: 'opportunity', id: shop.id },
+          verb: 'looted',
+          count: -1,
+          at: '2026-11-26T03:00:00.000Z',
+          source: 'user',
+        },
+        {
+          id: 'rec:zzz-loot-1',
+          target: { type: 'opportunity', id: shop.id },
+          verb: 'looted',
+          count: 1,
+          at: '2026-11-26T03:01:00.000Z',
+          source: 'user',
+        },
+        {
+          id: 'rec:zzz-loot-2',
+          target: { type: 'opportunity', id: shop.id },
+          verb: 'looted',
+          count: 1,
+          at: '2026-11-26T03:02:00.000Z',
+          source: 'user',
+        },
+      ],
+    });
+    expect(db.completedOpportunityIds.get(shop.id)).toBe(1);
+  });
+
   it('locationCard returns null for an unknown id', () => {
     expect(locationCard(buildFullDb(), 'L999999')).toBeNull();
   });
