@@ -14,7 +14,13 @@ import {
   saveMapView,
 } from '../features/map/view-persistence';
 import { INITIAL_BOUNDS } from '../features/map/coordinates';
-import { areaIsolation } from '../features/map/isolation';
+import { areaIsolation, countyIsolation } from '../features/map/isolation';
+import { COUNTIES } from '../data/counties';
+import { buildGameDatabase } from '../domain/game-db';
+import { AreaSelector } from '../features/map/AreaSelector';
+import { AreaSearch } from '../features/map/AreaSearch';
+import { AreaPage } from '../features/map/AreaPage';
+import { useSearchSplitStore } from '../stores/search-split';
 import { saveCamera } from '../features/map/camera-persistence';
 import AskPanel from '../features/ask/AskPanel';
 import { useAiIndexStore } from '../features/categorise/store';
@@ -137,6 +143,25 @@ export default function App() {
     useUiStore.getState().setNavTab('layers');
   }
   const allPlaces = useMemo(() => [...places, ...markers.map(markerToPlace)], [places, markers]);
+  /** Step 4 (§6): the gameplay database — areas and POI search run
+   * off this, never off the visible subset. Memoized on the
+   * catalogue + markers; user data is read live so personal markers
+   * become personal locations. A build failure degrades to null
+   * (geo features hide) instead of crashing the map. */
+  const gameDb = useMemo(() => {
+    if (status !== 'ready') return null;
+    try {
+      return buildGameDatabase({ places: allPlaces, user: useUserStore.getState() });
+    } catch {
+      return null;
+    }
+  }, [status, allPlaces]);
+  const areas = gameDb?.areas ?? null;
+  const selectedAreaId = useSearchSplitStore((s) => s.selectedAreaId);
+  const areaPageOpen = useSearchSplitStore((s) => s.areaPageOpen);
+  const geoOpen = useSearchSplitStore((s) => s.geoOpen);
+  const selectedAreaNode =
+    selectedAreaId && areas ? (areas.get(selectedAreaId) ?? null) : null;
   /** First run: once the catalogue is loaded, the forced indexing
    * onboarding shows BEFORE the map is usable — it is the one thing
    * that cannot be skipped past with an ×. A new key (v0.11.0) means
@@ -222,8 +247,10 @@ export default function App() {
   );
   const select = useCallback(
     (id: string) => {
-      // One sheet at a time: a place pick closes Ask, and on a phone it
-      // closes the panel too — the detail is the sheet now open.
+      // One sheet at a time: a place pick closes Ask, the area page
+      // and — on a phone — the panel too. The area itself (and its
+      // isolation) stay put; only the page closes.
+      useSearchSplitStore.getState().setAreaPageOpen(false);
       useUiStore.getState().setAskOpen(false);
       if (useUiStore.getState().navTab === 'ask' || window.innerWidth < 1000)
         useUiStore.getState().setNavTab('map');
@@ -245,10 +272,54 @@ export default function App() {
   );
   /** Exit area isolation: back to all of Leonida, filters and map. */
   const exitIsolation = useCallback(() => {
+    useSearchSplitStore.getState().selectArea(null);
     useUiStore.getState().setFilters({ countyId: null, area: null });
     useMapStore.getState().setIsolation(null);
     useMapStore.getState().setBoundsFocus(INITIAL_BOUNDS);
   }, []);
+  /** Select an area (§6.3): focus its OWN bounds (the member bbox,
+   * not the whole county) and dim outside it; a county uses its
+   * traced isolation; an area with no extent shows its member list
+   * with no camera move. Selecting an area never touches a layer. */
+  const selectArea = useCallback(
+    (areaId: string | null) => {
+      const store = useSearchSplitStore.getState();
+      if (areaId === null) {
+        exitIsolation();
+        return;
+      }
+      const node = gameDb?.areas.get(areaId);
+      if (!node) return;
+      store.selectArea(areaId);
+      store.setGeoOpen(false);
+      if (node.level === 'state') {
+        exitIsolation();
+        return;
+      }
+      if (node.level === 'county') {
+        const county = COUNTIES.find((c) => `county:${c.id}` === areaId);
+        if (!county) return;
+        useUiStore.getState().setFilters({ countyId: county.id, area: null });
+        useMapStore.getState().setBoundsFocus(county.bounds);
+        useMapStore.getState().setIsolation(countyIsolation(county));
+        return;
+      }
+      useUiStore.getState().setFilters({ area: node.path, countyId: null });
+      if (node.bounds) {
+        useMapStore.getState().setIsolation({
+          label: node.name,
+          subtitle: `${node.locationIds.length.toLocaleString()} places`,
+          bounds: node.bounds,
+          noOutline: true,
+        });
+        useMapStore.getState().setBoundsFocus(node.bounds);
+      } else {
+        // No positioned places: the member list, not a camera move.
+        useMapStore.getState().setIsolation(null);
+      }
+    },
+    [gameDb, exitIsolation],
+  );
   /** Restore a saved area isolation once the catalogue is in — the
    * area's bounds come from its own places, so this waits for them. */
   useEffect(() => {
@@ -639,6 +710,7 @@ export default function App() {
       <Sidebar
         places={filtered}
         allPlaces={allPlaces}
+        db={gameDb}
         progress={progress}
         anyPublicLayerVisible={anyPublicLayerVisible}
         showingCount={showingCount}
@@ -653,6 +725,10 @@ export default function App() {
           boundsFocus={boundsFocus}
           isolation={isolation}
           onExitIsolation={exitIsolation}
+          areas={areas ?? undefined}
+          selectedAreaId={selectedAreaId}
+          onSelectArea={selectArea}
+          hideIsolationPill={areaPageOpen}
           promptVisible={navTab === 'map' && !selected && status === 'ready' && showingCount === 0 && anyPublicLayerVisible}
           editorMode={editorMode}
           preferences={preferences}
@@ -731,7 +807,51 @@ export default function App() {
                 </button>
               ))}
             </div>
+            {areas && (
+              <AreaSelector
+                nodes={areas}
+                selectedAreaId={selectedAreaId}
+                onSelectArea={selectArea}
+                onOpenGeoSearch={() => {
+                  useSearchSplitStore.getState().setAreaPageOpen(false);
+                  useSearchSplitStore.getState().setGeoOpen(true);
+                }}
+              />
+            )}
           </div>
+        )}
+        {/* Permanent area selector (§6.3): when the hero is hidden
+          (a place is open, or another tab), the selector still sits
+          on the map, top-left. */}
+        {areas && !(navTab === 'map' && !selected) && (
+          <div className="area-selector-standalone">
+            <AreaSelector
+              nodes={areas}
+              selectedAreaId={selectedAreaId}
+              onSelectArea={selectArea}
+              onOpenGeoSearch={() => {
+                useSearchSplitStore.getState().setAreaPageOpen(false);
+                useSearchSplitStore.getState().setGeoOpen(true);
+              }}
+            />
+          </div>
+        )}
+        {geoOpen && areas && (
+          <AreaSearch
+            nodes={areas}
+            onSelectArea={selectArea}
+            onClose={() => useSearchSplitStore.getState().setGeoOpen(false)}
+          />
+        )}
+        {areaPageOpen && selectedAreaNode && gameDb && (
+          <AreaPage
+            node={selectedAreaNode}
+            nodes={areas!}
+            db={gameDb}
+            onSelectArea={selectArea}
+            onSelectPlace={select}
+            onClose={() => selectArea(null)}
+          />
         )}
         {/* v0.26.0: the "nothing showing yet" banner is gone — the
          * first-open Vice City region sheet (above) is the empty

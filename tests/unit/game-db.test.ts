@@ -47,13 +47,13 @@ function findItem(db: GameDatabase, name: string, variant = 'standard') {
 }
 
 describe('game-db — §3.2 derivation from the real catalogue (26 Nov 2026)', () => {
-  it('derives the database at the measured counts: 4,443 locations, 925 opportunities, 614 items, 18 sets, 11 areas', () => {
+  it('derives the database at the measured counts: 4,443 locations, 925 opportunities, 614 items, 18 sets, 126 areas', () => {
     const db = buildFullDb();
     expect(db.locations.size).toBe(4443);
     expect(db.opportunities.size).toBe(925);
     expect(db.items.size).toBe(614);
     expect(db.sets.size).toBe(18);
-    expect(db.areas.size).toBe(11);
+    expect(db.areas.size).toBe(126);
     expect(db.missionsEnabled).toBe(false);
     const byKind = new Map<string, number>();
     for (const opp of db.opportunities.values()) {
@@ -284,7 +284,7 @@ describe('game-db — §3.2 derivation from the real catalogue (26 Nov 2026)', (
     const db = buildFullDb();
     const parlor = db.locations.get('breakable:parlor-apartments')!;
     expect(parlor.placement).toBe('area-known');
-    expect(parlor.areaId).toBe('area:vice-city');
+    expect(parlor.areaId).toBe('area:rockridge--vice-city');
     const kinds = db.opportunitiesByLocation
       .get('breakable:parlor-apartments')!
       .map((opp) => opp.kind)
@@ -368,13 +368,13 @@ describe('game-db — §3.2 derivation from the real catalogue (26 Nov 2026)', (
     for (const id of db.locations.keys()) {
       expect(id.startsWith('region:')).toBe(false);
     }
-    expect(db.areas.size).toBe(11);
+    expect(db.areas.size).toBe(126);
     const portGellhorn = db.areas.get('area:port-gellhorn')!;
     expect(portGellhorn.name).toBe('Port Gellhorn');
     expect(portGellhorn.level).toBe('city');
     expect(portGellhorn.locationIds).toContain('L629');
-    expect(portGellhorn.bounds).toBeNull();
-    expect(portGellhorn.parentId).toBeNull();
+    expect(portGellhorn.bounds).not.toBeNull();
+    expect(portGellhorn.parentId).toBe('county:kelly');
     expect(portGellhorn.childrenIds).toEqual([]);
     const kelly = db.areas.get('county:kelly')!;
     expect(kelly.level).toBe('county');

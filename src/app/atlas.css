@@ -551,6 +551,258 @@ h3 {
 .map-search-expand svg {
   color: #9aa7b8;
 }
+/* ---- Area selector (§6.3, step 4): the permanent compact area
+ * breadcrumb on the map — Leonida › Vice-Dale › Vice City ›
+ * Downtown. One tap on a crumb returns to that parent; the Area
+ * button opens the area search (geo mode). It lives as a row inside
+ * the hero when the hero is up, and as a standalone overlay
+ * (top-left) when the hero is hidden. ---- */
+.area-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+}
+.area-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+  padding: 6px 12px;
+  background: #0b1018d9;
+  backdrop-filter: blur(12px);
+  border: 1px solid #f6f0e52e;
+  border-radius: 999px;
+}
+.area-breadcrumb::-webkit-scrollbar {
+  display: none;
+}
+.area-crumb-wrap {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.area-crumb-sep {
+  color: #f6f0e580;
+}
+.area-crumb {
+  border: 0;
+  background: none;
+  padding: 2px 4px;
+  color: #f6f0e5;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+.area-crumb:hover,
+.area-crumb:focus-visible {
+  color: #ffb56b;
+  outline: 2px solid #e8823a;
+}
+.area-crumb.is-current {
+  color: #ffb56b;
+  font-weight: 700;
+  cursor: default;
+}
+.area-search-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #0b1018d9;
+  backdrop-filter: blur(12px);
+  border: 1px solid #f6f0e52e;
+  color: #f6f0e5;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.area-search-button:hover,
+.area-search-button:focus-visible {
+  color: #ffb56b;
+  outline: 2px solid #e8823a;
+}
+.area-selector-standalone {
+  position: absolute;
+  z-index: 450;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+}
+/* ---- Area search + area page (§6.3/§6.5, step 4): bottom sheets
+ * over the map. One at a time — opening one closes the other. ---- */
+.area-search-panel,
+.area-page {
+  position: absolute;
+  z-index: 460;
+  left: 12px;
+  right: 12px;
+  bottom: calc(var(--nav-height) + 10px);
+  max-height: 52dvh;
+  overflow-y: auto;
+  background: #0b1018f2;
+  backdrop-filter: blur(12px);
+  border: 1px solid #f6f0e52e;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px #000c;
+  padding: 12px;
+  color: #f6f0e5;
+}
+@media (min-width: 1000px) {
+  .area-search-panel,
+  .area-page {
+    left: auto;
+    right: 24px;
+    width: 420px;
+    bottom: 24px;
+  }
+}
+.area-search-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.area-search-field input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  color: #f6f0e5;
+  font: inherit;
+  font-size: 15px;
+  outline: none;
+}
+.area-search-field input::placeholder {
+  color: #9aa7b8;
+}
+.area-search-start p,
+.area-search-empty p {
+  margin: 10px 0 8px;
+  font-size: 13px;
+  color: #e8e2d4;
+}
+.area-county-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.area-county-buttons button {
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid #f6f0e52e;
+  background: #19232f;
+  color: #f6f0e5;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.area-county-buttons button:hover,
+.area-county-buttons button:focus-visible {
+  color: #ffb56b;
+  outline: 2px solid #e8823a;
+}
+.area-search-results,
+.area-page-children ul,
+.area-page-members ul {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+.area-search-results button,
+.area-page-children button,
+.area-page-members button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  padding: 10px 8px;
+  border: 0;
+  border-bottom: 1px solid #f6f0e51a;
+  background: none;
+  color: #f6f0e5;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.area-search-results button:hover,
+.area-search-results button:focus-visible,
+.area-page-children button:hover,
+.area-page-children button:focus-visible,
+.area-page-members button:hover,
+.area-page-members button:focus-visible {
+  background: #19232f;
+  outline: 2px solid #e8823a;
+}
+.area-search-results small,
+.area-page-children small,
+.area-page-members small {
+  font-size: 12px;
+  color: #9aa7b8;
+}
+.area-page-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.area-page-head .area-breadcrumb {
+  flex: 1;
+}
+.area-page h2 {
+  margin: 10px 0 2px;
+  font-family: var(--condensed);
+  font-size: 24px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.area-page-sub {
+  margin: 0 0 8px;
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #9aa7b8;
+}
+.area-page-dispute,
+.area-page-extent,
+.area-page-empty {
+  margin: 8px 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #e8e2d4;
+}
+.area-page-empty {
+  color: #ffb56b;
+}
+.area-page-children h3,
+.area-page-members h3 {
+  margin: 14px 0 0;
+  font-family: var(--condensed);
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #9aa7b8;
+}
+.area-page-all {
+  margin-top: 14px;
+  width: 100%;
+}
+.poi-empty p,
+.poi-unpositioned {
+  margin: 10px 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.poi-unpositioned {
+  color: #ffb56b;
+}
 /* ---- Empty map (v0.14.0, bottom bar v0.17.0, slimmed v0.19.0):
  * the map must never look empty with no explanation. Spoiler-free
  * first launch turns every public layer off, so 0 places show — and

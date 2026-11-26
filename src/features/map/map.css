@@ -297,12 +297,44 @@
 /* ---- Area isolation (v0.15.0 After Hours): a geographical title
  * rendered onto the map itself, plus one slim dismissible pill.
  * No card, no explanation paragraph, no giant exit button. ---- */
+/* ---- Geo labels (§6.4, step 4): tappable area-name chips at each
+ * area's centroid, independent of gameplay layers. The wrapper div
+ * is unstyled (Leaflet's default white div-icon is overridden);
+ * the inner button centres itself on the point. ---- */
+.atlas-geo-label-wrap {
+  background: transparent;
+  border: 0;
+}
+.atlas-geo-label {
+  display: inline-block;
+  transform: translate(-50%, -50%);
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: #0b1018d9;
+  border: 1px solid #f6f0e52e;
+  color: #f6f0e5;
+  font-family: var(--condensed, 'Oswald', sans-serif);
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 2px 10px #0009;
+}
+.atlas-geo-label:hover,
+.atlas-geo-label:focus-visible {
+  background: #19232f;
+  color: #ffb56b;
+  outline: 2px solid #e8823a;
+}
 .county-map-title {
   position: absolute;
   left: 50%;
   /* Below the slimmed hero (banner 48 + search 44 + chips 38 +
-   * gaps) so the title sits on the map, not under the chips. */
-  top: 158px;
+   * area selector 36 + gaps) so the title sits on the map, not
+   * under the chips. Step 4: the hero gained the area-selector
+   * row (+44px), so the title moved down with it. */
+  top: 202px;
   transform: translateX(-50%);
   z-index: 430;
   pointer-events: none;
@@ -606,12 +638,13 @@
     bottom: 150px;
   }
   /* Phones carry the wrapped two-row chips, so the hero is ~188px
-   * tall: every overlay that sits below it moves down with it. */
+   * tall: every overlay that sits below it moves down with it.
+   * Step 4: the hero gained the area-selector row (+44px). */
   .county-map-title {
-    top: 196px;
+    top: 240px;
   }
   .atlas-edge-stack {
-    top: 196px;
+    top: 240px;
   }
   .atlas-app[data-details='true'] .atlas-map-editor-hint {
     bottom: calc(52dvh + 20px);

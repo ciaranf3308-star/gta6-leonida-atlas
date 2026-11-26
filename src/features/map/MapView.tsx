@@ -33,6 +33,8 @@ import {
 import { markerColor, markerIcon } from './marker-icon';
 import { computeLabelPlacements, type LabelCandidate } from './label-placement';
 import { addIsolationLayers } from './isolation-layer';
+import { geoLabelsForView } from '../../domain/geography';
+import type { AreaNode } from '../../domain/geography';
 import {
   iconKeyForAiRecord,
   iconKeyForPlace,
@@ -58,6 +60,17 @@ export interface MapViewProps {
   isolation?: Isolation | null;
   /** Exit isolation — back to all of Leonida. */
   onExitIsolation?: () => void;
+  /** Geography (§6.4, step 4): area nodes for the geo-label chips,
+   * the selected area (its own chip is hidden — its name is already
+   * on the map), and the tap handler. Labels render with all
+   * gameplay layers off and never reveal a gameplay record. */
+  areas?: ReadonlyMap<string, AreaNode>;
+  selectedAreaId?: string | null;
+  onSelectArea?: (areaId: string) => void;
+  /** Hide the isolation pill while the area page is open — the page
+   * already names the area and offers "Show all of Leonida". The
+   * dim mask and the map title stay. */
+  hideIsolationPill?: boolean;
   editorMode: 'none' | 'create' | 'move';
   preferences: Preferences;
   foundIds: ReadonlySet<string>;
@@ -735,6 +748,59 @@ export default function MapView(props: MapViewProps) {
     return addIsolationLayers(map, isolation, geo);
   }, [map, props.isolation, geo]);
 
+  // Geo labels (§6.4): tappable area-name chips at each area's
+  // centroid, INDEPENDENT of gameplay layers — they render with all
+  // gameplay filters off, and tapping one never turns a gameplay
+  // filter on, never reveals a gameplay record, never requires a
+  // layer. Zoom-aware (geoLabelsForView): counties at island zoom,
+  // cities/towns at district zoom, neighbourhoods/districts at
+  // street zoom. Own layer group, re-rendered on pan/zoom — never
+  // part of the pin clamp or the marker budget.
+  useEffect(() => {
+    if (!map || !props.areas) return;
+    const group = L.layerGroup().addTo(map);
+    const render = () => {
+      group.clearLayers();
+      const bounds = map.getBounds();
+      const viewport: MapBounds = {
+        west: bounds.getWest(),
+        east: bounds.getEast(),
+        south: bounds.getSouth(),
+        north: bounds.getNorth(),
+      };
+      for (const label of geoLabelsForView(
+        props.areas!,
+        map.getZoom(),
+        viewport,
+        props.selectedAreaId ?? null,
+      )) {
+        const marker = L.marker(toMapCoordinate(label.position), {
+          icon: L.divIcon({
+            className: 'atlas-geo-label-wrap',
+            // The inner button centres itself on the point
+            // (translate -50%/-50% in map.css); the marker click
+            // is what isolates the area — the button is the
+            // keyboard target, and its click bubbles to the icon.
+            html: `<button type="button" class="atlas-geo-label" aria-label="Show ${label.name} area">${label.name}</button>`,
+          }),
+          interactive: true,
+          keyboard: true,
+          title: label.name,
+        });
+        marker.on('click', () => {
+          callbacks.current.onSelectArea?.(label.areaId);
+        });
+        marker.addTo(group);
+      }
+    };
+    render();
+    map.on('moveend zoomend', render);
+    return () => {
+      map.off('moveend zoomend', render);
+      group.remove();
+    };
+  }, [map, props.areas, props.selectedAreaId]);
+
   useEffect(() => {
     if (props.editorMode === 'none') {
       setPreviewPosition(null);
@@ -814,22 +880,22 @@ export default function MapView(props: MapViewProps) {
         <span />
       </div>
       {props.isolation && (
-        <>
-          <div className="county-map-title" aria-hidden="true">
-            <strong>{props.isolation.label}</strong>
-            <span>{props.isolation.subtitle}</span>
-          </div>
-          <div className="isolation-pill" role="status">
-            <span>{props.isolation.label}</span>
-            <button
-              type="button"
-              aria-label={`Show all of Leonida — leave ${props.isolation.label}`}
-              onClick={() => props.onExitIsolation?.()}
-            >
-              ×
-            </button>
-          </div>
-        </>
+        <div className="county-map-title" aria-hidden="true">
+          <strong>{props.isolation.label}</strong>
+          <span>{props.isolation.subtitle}</span>
+        </div>
+      )}
+      {props.isolation && !props.hideIsolationPill && (
+        <div className="isolation-pill" role="status">
+          <span>{props.isolation.label}</span>
+          <button
+            type="button"
+            aria-label={`Show all of Leonida — leave ${props.isolation.label}`}
+            onClick={() => props.onExitIsolation?.()}
+          >
+            ×
+          </button>
+        </div>
       )}
       {props.editorMode !== 'none' ? (
         <div className="atlas-map-editor-hint">

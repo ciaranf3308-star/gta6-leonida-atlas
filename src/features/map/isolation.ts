@@ -1,5 +1,6 @@
 import type { Place } from "../../domain/types";
 import { COUNTIES, type County } from "../../data/counties";
+import { parseRegionPath } from "../../domain/geography";
 import type { MapBounds } from "./coordinates";
 
 /**
@@ -32,6 +33,12 @@ export interface Isolation {
    * traced coastline from after-hours-geo.json instead of the rect.
    * Undefined for towns/areas, which keep the rect outline. */
   countyId?: string;
+  /** §6.1: no boundary lines are drawn anywhere. An area extent is a
+   * camera focus + a dim mask, never a stroked outline — drawing the
+   * bbox edge would invent a boundary. Set for area isolations;
+   * counties keep their traced coastline (real geography, not a
+   * boundary line). */
+  noOutline?: boolean;
 }
 
 function pad(bounds: MapBounds, fraction = 0.12): MapBounds {
@@ -81,7 +88,10 @@ export function countyIsolation(county: County): Isolation {
 }
 
 /** Isolation for one town/city/area, from its own places. Null when
- * the area has no positioned places to draw a box around. */
+ * the area has no positioned places to draw a box around. The box is
+ * a camera focus + dim mask only — noOutline: the extent is an
+ * estimate, and a stroked edge would read as an invented boundary
+ * (§6.1). */
 export function areaIsolation(
   area: string,
   places: readonly Place[],
@@ -93,6 +103,7 @@ export function areaIsolation(
     label: area,
     subtitle: `${inArea.length.toLocaleString()} places`,
     bounds,
+    noOutline: true,
   };
 }
 
@@ -104,41 +115,30 @@ export interface AreaOption {
 }
 
 /**
- * The areas worth isolating, by how many places they hold: exact
- * regions with at least 50 places, plus city parents (the part after
- * the last ", " of a region) with at least 150 places across their
- * neighbourhoods — so Vice City shows as one city, not as a dozen
- * neighbourhoods. Biggest first, capped at 15 so the picker stays a
- * picker, not a list.
+ * The areas worth isolating — EVERY named area, no restrictions
+ * (§6.5, step 4: the 50 / 150 / top-15 restrictions are removed
+ * entirely). Every parsed region path is independently selectable,
+ * regardless of how many POIs it contains — including areas with a
+ * single place, and areas whose places are all unpositioned
+ * (selecting one shows its member list, not a camera move). The
+ * count is the subtree total: a place counts for its own path and
+ * for every ancestor ("Downtown, Vice City" counts for Downtown
+ * and for Vice City), so a city's count is the whole city, not
+ * just the places named exactly that. Biggest first.
  */
 export function areaOptions(places: readonly Place[]): AreaOption[] {
-  const exact = new Map<string, number>();
-  const parents = new Map<string, number>();
+  const counts = new Map<string, number>();
   for (const place of places) {
-    if (!place.position || !place.region) continue;
-    exact.set(place.region, (exact.get(place.region) ?? 0) + 1);
-    const comma = place.region.lastIndexOf(", ");
-    if (comma >= 0) {
-      const parent = place.region.slice(comma + 2);
-      parents.set(parent, (parents.get(parent) ?? 0) + 1);
+    if (!place.region) continue;
+    const path = parseRegionPath(place.region);
+    for (let i = 0; i < path.length; i++) {
+      const key = path.slice(i).join(', ');
+      counts.set(key, (counts.get(key) ?? 0) + 1);
     }
   }
-  const options = new Map<string, number>();
-  for (const [name, count] of exact) {
-    if (count >= 50) options.set(name, count);
-  }
-  // A city parent counts its neighbourhoods too — "Vice City" is all
-  // of its ", Vice City" regions plus the 60 places named exactly
-  // that, so the parent total wins over the exact count.
-  for (const [name, count] of parents) {
-    if (count >= 150) {
-      options.set(name, (options.get(name) ?? 0) + count);
-    }
-  }
-  return [...options.entries()]
+  return [...counts.entries()]
     .map(([name, count]) => ({ name, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 15);
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 }
 
 export { COUNTIES };

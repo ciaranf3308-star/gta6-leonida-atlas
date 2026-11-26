@@ -49,12 +49,17 @@ import {
   nearestVerifiedGym,
 } from '../domain/gym-check';
 import {
+  poiNoMatchMessage,
+  poiUnpositionedMessage,
+  searchPoi,
+} from '../domain/search';
+import { useSearchSplitStore } from '../stores/search-split';
+import type { GameDatabase } from '../domain/game-db';
+import {
   VENUE_TYPE_OPTIONS,
   possibleBreakableHouse,
-  venueTypeCounts,
   type VenueType,
 } from '../domain/interiors';
-import { filterPlaces } from '../domain/filter';
 import { userTagsMap } from '../domain/user-tags';
 import { tagResolutionCounts, tagResolutionFor } from '../domain/resolve-tags';
 import { NEAR_DISTANCE_UNITS } from '../features/ask/retrieval';
@@ -83,47 +88,14 @@ export interface LayerProgress {
 }
 
 /** "Narrow it down" — the narrowing filters that used to live on the
- * old filter bar. They live in Layers now, as big toggle rows with
- * counts: Can go inside, Interior houses, Lootable only, Not found
- * yet, Saved only, My markers only — plus the interior-type picker
- * while an interiors layer is on. */
-function NarrowFilters({ allPlaces }: { allPlaces: Place[] }) {
+ * old filter bar. They live in Layers now, as big toggle rows:
+ * Can go inside, Interior houses, Lootable only, Not found yet,
+ * Saved only, My markers only — plus the interior-type picker while
+ * an interiors layer is on. Step 4 (§6.5c): toggles carry no
+ * statistics — the per-toggle counts are gone. */
+function NarrowFilters() {
   const layers = useMapStore((s) => s.layers);
   const filters = useUiStore((s) => s.filters);
-  const favorites = useUserStore((s) => s.favorites);
-  const notes = useUserStore((s) => s.notes);
-  const collections = useUserStore((s) => s.collections);
-  const visited = useUserStore((s) => s.visited);
-  const placeTags = useUserStore((s) => s.placeTags);
-  const aiCategories = useAiIndexStore((s) => s.categories);
-  const visibleIds = new Set(layers.filter((l) => l.visible).map((l) => l.id));
-  const favoriteIds = favorites.map((f: { placeId: string }) => f.placeId);
-  const visitedIds = visited.map((v: { placeId: string }) => v.placeId);
-  const countWith = (patch: Partial<typeof filters>) => {
-    const matching = filterPlaces(
-      allPlaces,
-      { ...filters, ...patch },
-      favoriteIds,
-      notes,
-      collections,
-      visitedIds,
-      aiCategories,
-      userTagsMap(placeTags),
-    );
-    return matching.filter((p) => p.position && visibleIds.has(p.layerId)).length;
-  };
-  const venueCounts = venueTypeCounts(
-    filterPlaces(
-      allPlaces,
-      { ...filters, venueType: 'all' },
-      favoriteIds,
-      notes,
-      collections,
-      visitedIds,
-      aiCategories,
-      userTagsMap(placeTags),
-    ),
-  );
   const interiorsOn =
     layers.some((l) => l.id === 'interiors' && l.visible) ||
     layers.some((l) => l.id === 'breakable' && l.visible) ||
@@ -174,7 +146,6 @@ function NarrowFilters({ allPlaces }: { allPlaces: Place[] }) {
             <strong>{toggle.label}</strong>
             <small>{toggle.hint}</small>
           </span>
-          <span className="narrow-count">{countWith({ [toggle.key]: true })}</span>
         </button>
       ))}
       {interiorsOn && (
@@ -191,9 +162,7 @@ function NarrowFilters({ allPlaces }: { allPlaces: Place[] }) {
           >
             {VENUE_TYPE_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
-                {option.value === 'all'
-                  ? 'All interiors'
-                  : `${option.label} (${venueCounts[option.value as VenueType]})`}
+                {option.value === 'all' ? 'All interiors' : option.label}
               </option>
             ))}
           </select>
@@ -252,9 +221,8 @@ function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allP
           </span>
           <span>
             {layer.name}
-            {totalById.has(layer.id) && (
-              <> · {(totalById.get(layer.id) ?? 0).toLocaleString()} places</>
-            )}
+            {/* Step 4 (§6.5c): the map-filter sheet is filter toggles
+              only — no per-layer statistics. */}
             <small>{layer.description}</small>
           </span>
         </label>
@@ -300,7 +268,8 @@ function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allP
           <PlaceIcon icon={group.icon} size={18} />
           {group.name}
         </h3>
-        <p className="help-text">{group.blurb}</p>
+        {/* Step 4 (§6.5c): the map-filter sheet is filter toggles
+          only — no explanatory paragraphs under the group titles. */}
         {groupLayers.map((layer) => row(layer))}
         {groupLayers.length === 0 && EMPTY_GROUP_NOTES[group.id] && (
           <p className="empty-state">{EMPTY_GROUP_NOTES[group.id]}</p>
@@ -456,7 +425,7 @@ function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allP
           group.id === 'unverified' ||
           group.id === 'collectibles',
       ).map((group) => groupSection(group))}
-      <NarrowFilters allPlaces={allPlaces} />
+      <NarrowFilters />
       <IndexPanel
         places={allPlaces}
         offline={offline}
@@ -504,14 +473,90 @@ function LayerManager({ progress, allPlaces }: { progress: LayerProgress[]; allP
   );
 }
 
+/**
+ * Explicit POI search results (§6.5b): locations, opportunities and
+ * items by name, against the whole database — never the visible
+ * subset. A row shows the name and kind only. Tapping a row reveals
+ * THAT ONE record (adds it to the reveal set) and opens its card;
+ * nothing else appears. Clearing this search touches POI only.
+ */
+function PoiResults({
+  db,
+  onSelect,
+}: {
+  db: GameDatabase;
+  onSelect: (id: string) => void;
+}) {
+  const poiQuery = useSearchSplitStore((s) => s.poi.query);
+  const clearPoi = useSearchSplitStore((s) => s.clearPoi);
+  const revealRecord = useSearchSplitStore((s) => s.revealRecord);
+  const outcome = useMemo(() => searchPoi(db, poiQuery), [db, poiQuery]);
+  if (outcome.totalMatching === 0) {
+    return (
+      <div className="poi-empty" role="status">
+        <p>{poiNoMatchMessage(poiQuery, outcome.suggestion)}</p>
+        {outcome.suggestion && (
+          <button
+            type="button"
+            className="button"
+            onClick={() =>
+              useSearchSplitStore.getState().setPoiQuery(outcome.suggestion!)
+            }
+          >
+            Search for {outcome.suggestion}
+          </button>
+        )}
+      </div>
+    );
+  }
+  return (
+    <>
+      <div className="results-count">
+        <span>
+          {outcome.totalMatching.toLocaleString()} result
+          {outcome.totalMatching === 1 ? '' : 's'}
+        </span>
+        <button type="button" className="text-button" onClick={clearPoi}>
+          Clear search
+        </button>
+      </div>
+      {outcome.allUnpositioned && (
+        <p className="poi-unpositioned" role="status">
+          {poiUnpositionedMessage(outcome.totalMatching)}
+        </p>
+      )}
+      <div className="place-results" aria-label="Search results">
+        {outcome.results.map((result) => (
+          <button
+            className="place-result"
+            key={result.id}
+            onClick={() => {
+              revealRecord(result.id);
+              if (result.hostLocationId) onSelect(result.hostLocationId);
+            }}
+          >
+            <span>
+              <strong>{result.name}</strong>
+              <small>{result.kind}</small>
+            </span>
+            <ChevronRight size={16} />
+          </button>
+        ))}
+      </div>
+    </>
+  );
+}
+
 function Results({
   places,
   allPlaces,
+  db,
   anyPublicLayerVisible,
   onSelect,
 }: {
   places: Place[];
   allPlaces: Place[];
+  db: GameDatabase | null;
   anyPublicLayerVisible: boolean;
   onSelect: (id: string) => void;
 }) {
@@ -521,6 +566,7 @@ function Results({
   const status = useDomainStore((s) => s.status);
   const placeTags = useUserStore((s) => s.placeTags);
   const aiCategories = useAiIndexStore((s) => s.categories);
+  const poiQuery = useSearchSplitStore((s) => s.poi.query);
   const [limit, setLimit] = useState(50);
   useEffect(() => setLimit(50), [filters]);
   function select(place: Place) {
@@ -548,8 +594,8 @@ function Results({
    * nothing honest to say "near" about, so no card shows.
    */
   const gymHint = useMemo(() => {
-    const equipment = isEquipmentQuery(filters.query);
-    const gym = !equipment && isGymQuery(filters.query);
+    const equipment = isEquipmentQuery(poiQuery);
+    const gym = !equipment && isGymQuery(poiQuery);
     if (!equipment && !gym) return null;
     const countyId =
       filters.countyId ?? (mapCenter ? countyIdForPosition(mapCenter) : null);
@@ -569,7 +615,7 @@ function Results({
       countyForPlace(place) === county.id,
     );
     return { county, nearest, housesTotal: houses.total, houses: houses.places, equipment };
-  }, [filters.query, filters.countyId, mapCenter, allPlaces, placeTags]);
+  }, [poiQuery, filters.countyId, mapCenter, allPlaces, placeTags]);
 
   function showHousesToCheck() {
     if (!gymHint) return;
@@ -581,10 +627,15 @@ function Results({
       .getState()
       .setHighlights(gymHint.houses.map((place) => place.id));
     useUiStore.getState().setFilters({
-      query: '',
       countyId: gymHint.county.id,
       enterableOnly: true,
     });
+  }
+
+  // Explicit POI search (§6.5b): while a POI query is active the
+  // list is the database search, not the visible subset.
+  if (db && poiQuery.trim() !== '') {
+    return <PoiResults db={db} onSelect={onSelect} />;
   }
 
   return (
@@ -936,6 +987,7 @@ const PANEL_TITLES = {
 export function Sidebar({
   places,
   allPlaces,
+  db,
   progress,
   anyPublicLayerVisible,
   showingCount,
@@ -943,13 +995,16 @@ export function Sidebar({
 }: {
   places: Place[];
   allPlaces: Place[];
+  db: GameDatabase | null;
   progress: LayerProgress[];
   anyPublicLayerVisible: boolean;
   showingCount: number;
   onSelect: (id: string) => void;
 }) {
   const navTab = useUiStore((s) => s.navTab);
-  const query = useUiStore((s) => s.filters.query);
+  const poiQuery = useSearchSplitStore((s) => s.poi.query);
+  const setPoiQuery = useSearchSplitStore((s) => s.setPoiQuery);
+  const clearPoi = useSearchSplitStore((s) => s.clearPoi);
   if (navTab !== 'explore' && navTab !== 'layers' && navTab !== 'saved') return null;
   /** Layers is a compact bottom sheet, not a full screen (v0.26.0):
    * the reference's filter presentation is a sheet over a live map,
@@ -995,13 +1050,26 @@ export function Sidebar({
             id="atlas-search"
             type="search"
             maxLength={250}
-            placeholder="Search places, regions, tags"
-            aria-label="Search places, regions, tags"
-            value={query}
+            placeholder="Search places, shops, cards…"
+            aria-label="Search places, opportunities and items"
+            value={poiQuery}
             onChange={(e) => {
-              useUiStore.getState().setFilters({ query: e.target.value });
+              // Explicit POI search (§6.5b): its own state, separate
+              // from geo search and from layers. Clearing it never
+              // touches either.
+              setPoiQuery(e.target.value);
             }}
           />
+          {poiQuery !== '' && (
+            <button
+              type="button"
+              className="icon-button"
+              aria-label="Clear search"
+              onClick={clearPoi}
+            >
+              <X size={18} />
+            </button>
+          )}
           <kbd>/</kbd>
         </div>
       )}
@@ -1013,7 +1081,7 @@ export function Sidebar({
           </>
         )}
         {navTab === 'explore' ? (
-          <Results places={places} allPlaces={allPlaces} anyPublicLayerVisible={anyPublicLayerVisible} onSelect={onSelect} />
+          <Results places={places} allPlaces={allPlaces} db={db} anyPublicLayerVisible={anyPublicLayerVisible} onSelect={onSelect} />
         ) : navTab === 'layers' ? (
           <LayerManager progress={progress} allPlaces={allPlaces} />
         ) : (
