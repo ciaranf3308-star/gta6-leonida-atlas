@@ -1,0 +1,548 @@
+{
+  "labels": [
+    {
+      "text": "Manatee Motel · Industrial Weed Grow · likely area — Mariana County extent (estimate)",
+      "rect": {
+        "x": 71,
+        "y": 525,
+        "w": 200,
+        "h": 55
+      },
+      "hiddenByPlacement": true
+    },
+    {
+      "text": "Kingpin Bowling · June Warehouse · La Cascara Motel · Brooks Boatworks · Stash House · Backroom Weed Front · likely area",
+      "rect": {
+        "x": -13,
+        "y": 279,
+        "w": 200,
+        "h": 69
+      },
+      "hiddenByPlacement": true
+    },
+    {
+      "text": "M7 Compound · likely area",
+      "rect": {
+        "x": 114,
+        "y": 520,
+        "w": 200,
+        "h": 25
+      },
+      "hiddenByPlacement": true
+    },
+    {
+      "text": "Weed Grow · Carter Mining Boathouse · likely area — Lummox County extent (estimate)",
+      "rect": {
+        "x": 69,
+        "y": 183,
+        "w": 200,
+        "h": 55
+      },
+      "hiddenByPlacement": true
+    },
+    {
+      "text": "Palmer Fishing Warehouse · Watson Bay Safehouse · Mill Station Radar Base · likely area",
+      "rect": {
+        "x": 44,
+        "y": 501,
+        "w": 200,
+        "h": 55
+      },
+      "hiddenByPlacement": true
+    },
+    {
+      "text": "Farm Fix Meth Lab · Biker Hideout · likely area — Leonard County extent (estimate)",
+      "rect": {
+        "x": 177,
+        "y": 291,
+        "w": 200,
+        "h": 55
+      },
+      "hiddenByPlacement": true
+    },
+    {
+      "text": "Hog Stars Garage · Irons Building Supply · likely area",
+      "rect": {
+        "x": 102,
+        "y": 292,
+        "w": 200,
+        "h": 40
+      },
+      "hiddenByPlacement": true
+    },
+    {
+      "text": "Sound4Sond Studio · likely area",
+      "rect": {
+        "x": 191,
+        "y": 363,
+        "w": 200,
+        "h": 25
+      },
+      "hiddenByPlacement": false
+    },
+    {
+      "text": "La Perle Trap House · Illegal Sneaker Trade · likely area",
+      "rect": {
+        "x": 169,
+        "y": 367,
+        "w": 200,
+        "h": 40
+      },
+      "hiddenByPlacement": true
+    },
+    {
+      "text": "JanJak's Garage · Leonida Carrier Warehouse · Cigar Import Front · Ocean Beach Lab · likely area",
+      "rect": {
+        "x": 170,
+        "y": 398,
+        "w": 200,
+        "h": 55
+      },
+      "hiddenByPlacement": true
+    },
+    {
+      "text": "Southside Trap House · Kamar Devon Community Center · likely area",
+      "rect": {
+        "x": 144,
+        "y": 477,
+        "w": 200,
+        "h": 40
+      },
+      "hiddenByPlacement": false
+    },
+    {
+      "text": "Saber Shipping Yard · Casa Guardia · likely area",
+      "rect": {
+        "x": 162,
+        "y": 410,
+        "w": 200,
+        "h": 40
+      },
+      "hiddenByPlacement": true
+    },
+    {
+      "text": "Saber Shipping Facility · likely area",
+      "rect": {
+        "x": 137,
+        "y": 400,
+        "w": 200,
+        "h": 25
+      },
+      "hiddenByPlacement": true
+    },
+    {
+      "text": "Exotic Animals Front · likely area",
+      "rect": {
+        "x": 119,
+        "y": 600,
+        "w": 200,
+        "h": 25
+      },
+      "hiddenByPlacement": false
+    },
+    {
+      "text": "Slator Towing Inc · likely area",
+      "rect": {
+        "x": 152,
+        "y": 423,
+        "w": 200,
+        "h": 25
+      },
+      "hiddenByPlacement": true
+    },
+    {
+      "text": "Gas Station Meth Front · likely area",
+      "rect": {
+        "x": 77,
+        "y": 354,
+        "w": 200,
+        "h": 25
+      },
+      "hiddenByPlacement": true
+    },
+    {
+      "text": "Walker Farm · likely area — Kelly County extent (estimate)",
+      "rect": {
+        "x": 6,
+        "y": 315,
+        "w": 200,
+        "h": 40
+      },
+      "hiddenByPlacement": true
+    }
+  ],
+  "pills": [
+    {
+      "name": "Kelly County",
+      "rect": {
+        "x": 41,
+        "y": 313,
+        "w": 118,
+        "h": 32
+      }
+    },
+    {
+      "name": "Leonard County",
+      "rect": {
+        "x": 201,
+        "y": 297,
+        "w": 140,
+        "h": 32
+      }
+    },
+    {
+      "name": "Lummox County",
+      "rect": {
+        "x": 95,
+        "y": 189,
+        "w": 137,
+        "h": 32
+      }
+    },
+    {
+      "name": "Mariana County",
+      "rect": {
+        "x": 95,
+        "y": 531,
+        "w": 140,
+        "h": 32
+      }
+    },
+    {
+      "name": "Vice-Dale County",
+      "rect": {
+        "x": 201,
+        "y": 401,
+        "w": 149,
+        "h": 32
+      }
+    }
+  ],
+  "regions": [
+    {
+      "rect": {
+        "x": 40,
+        "y": 426,
+        "w": 263,
+        "h": 254
+      }
+    },
+    {
+      "rect": {
+        "x": 43,
+        "y": 253,
+        "w": 88,
+        "h": 122
+      }
+    },
+    {
+      "rect": {
+        "x": 191,
+        "y": 508,
+        "w": 46,
+        "h": 50
+      }
+    },
+    {
+      "rect": {
+        "x": 41,
+        "y": 153,
+        "w": 256,
+        "h": 116
+      }
+    },
+    {
+      "rect": {
+        "x": 109,
+        "y": 502,
+        "w": 70,
+        "h": 54
+      }
+    },
+    {
+      "rect": {
+        "x": 216,
+        "y": 239,
+        "w": 123,
+        "h": 161
+      }
+    },
+    {
+      "rect": {
+        "x": 158,
+        "y": 264,
+        "w": 88,
+        "h": 95
+      }
+    },
+    {
+      "rect": {
+        "x": 279,
+        "y": 365,
+        "w": 25,
+        "h": 22
+      }
+    },
+    {
+      "rect": {
+        "x": 251,
+        "y": 370,
+        "w": 36,
+        "h": 33
+      }
+    },
+    {
+      "rect": {
+        "x": 155,
+        "y": 310,
+        "w": 230,
+        "h": 232
+      }
+    },
+    {
+      "rect": {
+        "x": 228,
+        "y": 475,
+        "w": 32,
+        "h": 44
+      }
+    },
+    {
+      "rect": {
+        "x": 250,
+        "y": 412,
+        "w": 24,
+        "h": 36
+      }
+    },
+    {
+      "rect": {
+        "x": 214,
+        "y": 397,
+        "w": 45,
+        "h": 32
+      }
+    },
+    {
+      "rect": {
+        "x": 188,
+        "y": 573,
+        "w": 62,
+        "h": 80
+      }
+    },
+    {
+      "rect": {
+        "x": 217,
+        "y": 386,
+        "w": 70,
+        "h": 100
+      }
+    },
+    {
+      "rect": {
+        "x": 152,
+        "y": 340,
+        "w": 50,
+        "h": 53
+      }
+    },
+    {
+      "rect": {
+        "x": 7,
+        "y": 256,
+        "w": 199,
+        "h": 157
+      }
+    }
+  ],
+  "pairs": [
+    {
+      "a": "Manatee Motel · Industrial Weed Grow · l",
+      "b": "M7 Compound · likely area",
+      "px2": 3140
+    },
+    {
+      "a": "Manatee Motel · Industrial Weed Grow · l",
+      "b": "Palmer Fishing Warehouse · Watson Bay Sa",
+      "px2": 5363
+    },
+    {
+      "a": "Kingpin Bowling · June Warehouse · La Ca",
+      "b": "Farm Fix Meth Lab · Biker Hideout · like",
+      "px2": 550
+    },
+    {
+      "a": "Kingpin Bowling · June Warehouse · La Ca",
+      "b": "Hog Stars Garage · Irons Building Supply",
+      "px2": 3400
+    },
+    {
+      "a": "Kingpin Bowling · June Warehouse · La Ca",
+      "b": "Walker Farm · likely area — Kelly County",
+      "px2": 5973
+    },
+    {
+      "a": "M7 Compound · likely area",
+      "b": "Palmer Fishing Warehouse · Watson Bay Sa",
+      "px2": 3250
+    },
+    {
+      "a": "Palmer Fishing Warehouse · Watson Bay Sa",
+      "b": "Southside Trap House · Kamar Devon Commu",
+      "px2": 1600
+    },
+    {
+      "a": "Farm Fix Meth Lab · Biker Hideout · like",
+      "b": "Hog Stars Garage · Irons Building Supply",
+      "px2": 5000
+    },
+    {
+      "a": "Farm Fix Meth Lab · Biker Hideout · like",
+      "b": "Walker Farm · likely area — Kelly County",
+      "px2": 899
+    },
+    {
+      "a": "Hog Stars Garage · Irons Building Supply",
+      "b": "Walker Farm · likely area — Kelly County",
+      "px2": 1768
+    },
+    {
+      "a": "Sound4Sond Studio · likely area",
+      "b": "La Perle Trap House · Illegal Sneaker Tr",
+      "px2": 3738
+    },
+    {
+      "a": "Sound4Sond Studio · likely area",
+      "b": "Gas Station Meth Front · likely area",
+      "px2": 1376
+    },
+    {
+      "a": "La Perle Trap House · Illegal Sneaker Tr",
+      "b": "JanJak's Garage · Leonida Carrier Wareho",
+      "px2": 1791
+    },
+    {
+      "a": "La Perle Trap House · Illegal Sneaker Tr",
+      "b": "Saber Shipping Facility · likely area",
+      "px2": 1176
+    },
+    {
+      "a": "La Perle Trap House · Illegal Sneaker Tr",
+      "b": "Gas Station Meth Front · likely area",
+      "px2": 1296
+    },
+    {
+      "a": "JanJak's Garage · Leonida Carrier Wareho",
+      "b": "Saber Shipping Yard · Casa Guardia · lik",
+      "px2": 7680
+    },
+    {
+      "a": "JanJak's Garage · Leonida Carrier Wareho",
+      "b": "Saber Shipping Facility · likely area",
+      "px2": 4175
+    },
+    {
+      "a": "JanJak's Garage · Leonida Carrier Wareho",
+      "b": "Slator Towing Inc · likely area",
+      "px2": 4550
+    },
+    {
+      "a": "Saber Shipping Yard · Casa Guardia · lik",
+      "b": "Saber Shipping Facility · likely area",
+      "px2": 2625
+    },
+    {
+      "a": "Saber Shipping Yard · Casa Guardia · lik",
+      "b": "Slator Towing Inc · likely area",
+      "px2": 4750
+    },
+    {
+      "a": "Saber Shipping Facility · likely area",
+      "b": "Slator Towing Inc · likely area",
+      "px2": 370
+    },
+    {
+      "a": "Gas Station Meth Front · likely area",
+      "b": "Walker Farm · likely area — Kelly County",
+      "px2": 129
+    }
+  ],
+  "pillHits": [
+    {
+      "label": "Manatee Motel · Industrial Weed Grow · l",
+      "pill": "Mariana County",
+      "px2": 4480
+    },
+    {
+      "label": "Kingpin Bowling · June Warehouse · La Ca",
+      "pill": "Kelly County",
+      "px2": 3776
+    },
+    {
+      "label": "M7 Compound · likely area",
+      "pill": "Mariana County",
+      "px2": 1694
+    },
+    {
+      "label": "Weed Grow · Carter Mining Boathouse · li",
+      "pill": "Lummox County",
+      "px2": 4384
+    },
+    {
+      "label": "Palmer Fishing Warehouse · Watson Bay Sa",
+      "pill": "Mariana County",
+      "px2": 3500
+    },
+    {
+      "label": "Farm Fix Meth Lab · Biker Hideout · like",
+      "pill": "Leonard County",
+      "px2": 4480
+    },
+    {
+      "label": "Hog Stars Garage · Irons Building Supply",
+      "pill": "Kelly County",
+      "px2": 1083
+    },
+    {
+      "label": "Hog Stars Garage · Irons Building Supply",
+      "pill": "Leonard County",
+      "px2": 3232
+    },
+    {
+      "label": "La Perle Trap House · Illegal Sneaker Tr",
+      "pill": "Vice-Dale County",
+      "px2": 894
+    },
+    {
+      "label": "JanJak's Garage · Leonida Carrier Wareho",
+      "pill": "Vice-Dale County",
+      "px2": 4768
+    },
+    {
+      "label": "Saber Shipping Yard · Casa Guardia · lik",
+      "pill": "Vice-Dale County",
+      "px2": 3427
+    },
+    {
+      "label": "Saber Shipping Facility · likely area",
+      "pill": "Vice-Dale County",
+      "px2": 3264
+    },
+    {
+      "label": "Slator Towing Inc · likely area",
+      "pill": "Vice-Dale County",
+      "px2": 1490
+    },
+    {
+      "label": "Walker Farm · likely area — Kelly County",
+      "pill": "Kelly County",
+      "px2": 3540
+    },
+    {
+      "label": "Walker Farm · likely area — Kelly County",
+      "pill": "Leonard County",
+      "px2": 70
+    }
+  ]
+}

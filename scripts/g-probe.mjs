@@ -1,0 +1,16 @@
+import { launch, bodyText, clickTab } from './harness.mjs';
+const { ctx, page } = await launch('demo-g', 'G-probe');
+await clickTab(page, 'Ask');
+await page.waitForTimeout(1500);
+const panel = page.locator('section.ask-panel');
+const full = await panel.innerText();
+console.log('panel chars:', full.length);
+console.log('--- last 3000 chars ---');
+console.log(full.slice(-3000));
+console.log('--- contains checks ---');
+console.log('Nobody\'s published a spot:', /Nobody's published a spot/i.test(full));
+console.log('already got that one:', /already got that one/i.test(full));
+console.log('booth:', /booth/i.test(full));
+console.log('Port Gellhorn:', /Port Gellhorn/i.test(full));
+console.log('hint:', /hint/i.test(full));
+await ctx.close();

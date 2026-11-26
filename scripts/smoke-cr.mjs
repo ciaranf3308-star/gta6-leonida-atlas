@@ -1,0 +1,11 @@
+import { launch, shot } from './harness.mjs';
+const { ctx, page } = await launch('smoke-cr', 'smoke-cr');
+console.log('loaded, title:', await page.title());
+await shot(page, 'smoke-cr');
+console.log('chromium screenshot OK');
+await page.getByRole('button', { name: 'Collections', exact: true }).click();
+await page.waitForTimeout(2000);
+await shot(page, 'smoke-cr-collections');
+console.log('chromium collections screenshot OK');
+await ctx.close();
+console.log('done');
