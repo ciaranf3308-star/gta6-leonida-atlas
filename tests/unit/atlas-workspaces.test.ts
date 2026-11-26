@@ -156,7 +156,10 @@ describe('isolated optional account workspaces', () => {
     const id = account();
     await switchLocalWorkspace(id);
     await saveLocal(() => atlasRepository.saveNote('L1', 'Secret'));
-    const backup = await exportWorkspaceBackup(id);
+    // The mock below stands in for the repository's v3 export — the
+    // store's exportWorkspaceBackup now assembles v4 around it, so
+    // the delayed value here is the v3 snapshot, not the v4 file.
+    const backup = await atlasRepository.exportBackup();
     const delayed = gate();
     vi.spyOn(atlasRepository, 'exportBackup').mockImplementationOnce(async () => {
       await delayed.promise;

@@ -1,4 +1,4 @@
-import type { Backup } from "../../domain/types";
+import type { BackupV4 } from "../../db/backup";
 import { exportWorkspaceBackup } from "../../stores/atlas";
 import {
   browserStorage,
@@ -33,13 +33,18 @@ export interface LastBackup {
 }
 
 export interface BackupExportResult {
-  backup: Backup;
+  backup: BackupV4;
   aiCategories: number;
   markers: number;
   notes: number;
   favorites: number;
   collections: number;
   visited: number;
+  /** v4: the completion log and the manual tallies in the file. */
+  completionRecords: number;
+  reconciliation: number;
+  /** v4: sold cards in the file (the album's sold state). */
+  personalItemState: number;
 }
 
 function parseLastBackup(raw: string | null): LastBackup | null {
@@ -155,6 +160,9 @@ export async function downloadAtlasBackup(
     favorites: backup.favorites.length,
     collections: backup.collections.length,
     visited: backup.visited.length,
+    completionRecords: backup.completionRecords.length,
+    reconciliation: backup.reconciliation.length,
+    personalItemState: backup.personalItemState.length,
   };
   if (typeof document !== "undefined") {
     const blob = new Blob([JSON.stringify(backup)], {

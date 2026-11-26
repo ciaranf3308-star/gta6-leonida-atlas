@@ -1,5 +1,8 @@
 import "fake-indexeddb/auto";
+import { readFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { catalogueFromSnapshot } from "../../src/data/catalogue";
+import type { Place } from "../../src/domain/types";
 import {
   AI_CATEGORIES_STORAGE_KEY,
   AI_INDEX_JOB_STORAGE_KEY,
@@ -29,6 +32,21 @@ import { useAiIndexStore } from "../../src/features/categorise/store";
 import type { Backup } from "../../src/domain/types";
 
 const time = "2026-11-25T10:00:00.000Z";
+
+// The catalogue the import's completion-migration trigger needs
+// (v0.32 step 3: importAtlasBackup runs ensureCompletionMigration
+// after visited/explored land). Injected so the test never fetches
+// — the node test environment has no same-origin snapshot to fetch.
+const catalogueSnapshot = JSON.parse(
+  readFileSync(
+    new URL(
+      "../../public/assets/street-leonida/maps/gtadb-landmarks-2e9e194.json",
+      import.meta.url,
+    ),
+    "utf8",
+  ),
+);
+const places: Place[] = catalogueFromSnapshot(catalogueSnapshot);
 
 function record(
   overrides: Partial<AiCategoryRecord> & Pick<AiCategoryRecord, "placeId">,
@@ -402,7 +420,10 @@ describe("AI index — backup import (v0.30.0)", () => {
   });
 
   it("a successful import lands both halves and the store reloads from the database", async () => {
-    const imported = await importAtlasBackup(backupWithAi());
+    const imported = await importAtlasBackup(backupWithAi(), {
+      places,
+      storage: memoryStorage(),
+    });
     expect(imported.added).toBe(1);
     expect(imported.addedAttempted).toBe(1);
     const snapshot = await loadAiIndex(aiDb);

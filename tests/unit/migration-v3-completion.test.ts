@@ -56,17 +56,21 @@ function memoryStorage(initial: Record<string, string> = {}): StorageLike {
  * A v0.31.5-format backup: every section the design's §5 table
  * migrates or preserves. ...
  *
- * NOTE on the two unimportable rows: `parseBackup` (backup.ts,
- * step 3's file) rejects a marker with kind 'breakable' — it only
- * accepts 'workout' — even though `PersonalMarker.kind` allows both;
- * and it rejects any visited row referencing a `custom:*` id with no
+ * NOTE on the two rows this fixture keeps that the v3 validator used
+ * to reject: `parseBackup` (backup.ts) accepted only markers with
+ * kind 'workout' — a 'breakable' marker failed the whole import —
+ * and it rejected any visited row referencing a `custom:*` id with no
  * marker in the file, so the `custom:gone` row (a visited mark whose
- * marker is gone — the audit-trail case) can never appear in a valid
- * backup file either. Both are pre-existing backup-validator gaps,
- * NOT fixed here: backup.ts is step 3's scope. The legacy Dexie seed
- * path writes rows directly, so the headline test keeps both; the
- * importBackup path uses the fixture WITHOUT them
- * (`{ importable: true }`) and asserts the adjusted counts.
+ * marker is gone — the audit-trail case) could never appear in a
+ * valid backup file either. Both were pre-existing backup-validator
+ * gaps, FIXED in step 3 (backup v4): breakable markers parse, and
+ * visited/explored rows are exempt from the missing-marker check —
+ * the migration keeps them as `discovered` records on the id string.
+ * The legacy Dexie seed path writes rows directly, so the headline
+ * test keeps both; the importBackup path uses the fixture WITHOUT
+ * them (`{ importable: true }`) and asserts the adjusted counts.
+ * (The full fixture, including both rows, now imports cleanly —
+ * see tests/unit/backup-v4.test.ts.)
  */
 function v3Fixture(options: { importable?: boolean } = {}): Backup {
   const importable = options.importable ?? false;
@@ -377,9 +381,10 @@ describe('v3 → v4 completion migration (DESIGN §5, headline)', () => {
 
   it('restores a v3 backup into v4, including the AI index', async () => {
     // The importable variant drops the breakable marker and the
-    // custom:gone visited row (pre-existing validator gaps, see
-    // v3Fixture) — so this path carries 11 visited rows, 4 looted,
-    // 14 records total.
+    // custom:gone visited row — the two validator gaps step 3 fixed,
+    // kept here as the pre-fix shape so this test still pins the
+    // adjusted counts (11 visited rows, 4 looted, 14 records total).
+    // The full fixture now imports too — see backup-v4.test.ts.
     const fixture = v3Fixture({ importable: true });
     const storage = talliesStorage();
     // parseBackup is the v3 gate: the fixture must be a valid v3 file.

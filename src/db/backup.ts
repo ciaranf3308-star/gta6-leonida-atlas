@@ -20,6 +20,13 @@ import {
   type AiCategoryStatus,
   type ResolutionSource,
 } from '../features/categorise/categories';
+import type { CompletionRecord, ReconciliationEntry } from '../domain/game-db';
+import type { Correction, Enrichment, EnrichmentFieldKind } from '../domain/enrichment';
+import type {
+  PersonalItemState,
+  ResearchRequest,
+  UserScreenshot,
+} from '../domain/album';
 import {
   EMPTY_INDEX_JOB,
   RESOLVER_VERSION,
@@ -177,7 +184,13 @@ export function parsePersonalMarker(
   );
   const color = parseMarkerColor(item.color);
   const kind = item.kind === undefined ? undefined : item.kind;
-  if (kind !== undefined && kind !== 'workout') invalid(`${path}.kind`, 'is unsupported');
+  // v0.32 step 3: 'breakable' is a legal marker kind
+  // (PersonalMarker.kind is 'workout' | 'breakable') — the old check
+  // accepted only 'workout', so a v3 backup carrying a breakable
+  // marker could not be imported at all, and exportBackup would
+  // throw for such a user. Both kinds now parse.
+  if (kind !== undefined && kind !== 'workout' && kind !== 'breakable')
+    invalid(`${path}.kind`, 'is unsupported');
   return {
     id: parseId(item.id, `${path}.id`, true),
     title: parseText(item.title, `${path}.title`, BACKUP_LIMITS.title, true),
@@ -445,8 +458,13 @@ export function parseBackup(input: unknown): Backup {
   for (const item of notes) checkReference(item.placeId);
   for (const item of placeTags) checkReference(item.placeId);
   for (const item of collections) for (const id of item.placeIds) checkReference(id);
-  for (const item of visited) checkReference(item.placeId);
-  for (const item of explored) checkReference(item.placeId);
+  // v0.32 step 3: visited/explored are NOT reference-checked. A row
+  // pointing at a deleted custom:* marker is a completion input, not
+  // a dangling link — the v3→v4 migration keeps it as a `discovered`
+  // record on the id string (DESIGN §5), never silently dropped. A
+  // v3 backup carrying such a row used to fail the whole import.
+  // Favorites, notes, tags and collections still reject a missing
+  // marker: those are live references to a thing that must exist.
   const result: Backup = {
     format: 'leonida-atlas',
     version: 3,
@@ -477,4 +495,426 @@ export function parseBackup(input: unknown): Backup {
   if (new TextEncoder().encode(JSON.stringify(result)).byteLength > MAX_BACKUP_BYTES)
     invalid('backup', 'exceeds the 10 MiB data limit');
   return result;
+}
+
+// ---------------------------------------------------------------------------
+// Backup format v4 (v0.32 step 3 — DESIGN §11 + DESIGN-ADDENDUM §6 step 3)
+// ---------------------------------------------------------------------------
+
+/**
+ * Why there are TWO parse entry points, and why `parseBackup` above
+ * still rejects version 4:
+ *
+ * `parseBackup` returns the v3-typed `Backup` (`version: 3`, in
+ * `src/domain/types.ts` — step 3 may not touch `src/domain/*`), and
+ * `AtlasDatabase.exportBackup` / `importBackup` in `repository.ts`
+ * (also untouched in this step) are typed around it. A v4 object is
+ * not a `Backup`, so `parseBackup` cannot honestly return one — and
+ * changing its return type would break `exportBackup`'s declared
+ * `Promise<Backup>`. So:
+ *
+ * - `parseBackup` stays the v3 validator (versions 1–3 only). The
+ *   repository's internal gates keep using it, and the existing
+ *   "version 4 is unsupported" test still holds — for `parseBackup`.
+ * - `parseBackupV4` below is the v4 validator. It reuses `parseBackup`
+ *   for the v3 sections (called with `version: 3` — the sections do
+ *   not depend on the version except for the v1 legacy path) and adds
+ *   the new sections. The store layer (`exportWorkspaceBackup` /
+ *   `importWorkspaceBackup`) and the backup dialog use `parseBackupV4`
+ *   / `parseBackupFile` for v4 files.
+ * - `importAtlasBackup` hands the repository a version-3 view of a v4
+ *   file (`{ ...backup, version: 3 }`) so the repository's v3 import
+ *   runs unchanged, then writes the v4 sections itself.
+ *
+ * A v4 file is a strict superset of v3: every v3 section, plus the
+ * completion log, reconciliation, and the five addendum tables.
+ * Screenshots and research requests ride along as ROWS — the
+ * screenshot blob bytes do NOT (addendum §6 step 3: device-local
+ * blobs, 10 MiB JSON cap). A restored `UserScreenshot` row references
+ * a blob id that may not exist on the new device; the row is kept
+ * (it is the audit trail of what was matched) and the missing blob
+ * is the caller's honest empty state, not a silent drop.
+ */
+
+export type BackupV4 = Omit<Backup, 'version'> & {
+  version: 4;
+  completionRecords: CompletionRecord[];
+  reconciliation: ReconciliationEntry[];
+  enrichments: Enrichment[];
+  corrections: Correction[];
+  personalItemState: PersonalItemState[];
+  userScreenshots: UserScreenshot[];
+  researchRequests: ResearchRequest[];
+};
+
+/** The completion sources a v4 file may carry (DESIGN §11 says only
+ * `user`/`ask`/`import` — but the addendum §3.4 adds `'screenshot'`
+ * and `recordCompletion` already writes it, so a v4 backup carrying
+ * screenshot records must validate, or screenshot records fail v4
+ * validation. See the design-conflicts note in the step-3 report. */
+export const COMPLETION_RECORD_SOURCES = ['user', 'ask', 'import', 'screenshot'] as const;
+
+function parseCount(input: unknown, path: string, min: number, max: number): number {
+  if (typeof input !== 'number' || !Number.isInteger(input) || input < min || input > max)
+    invalid(path, `must be a whole number between ${min} and ${max}`);
+  return input;
+}
+
+/**
+ * One completion record, whitelisted like every other backup entry.
+ * Invalid records fail the whole import (the same fail-fast contract
+ * as every other section) — DESIGN §11's drop-and-count rule needs a
+ * log channel the import path does not have yet; failing loudly with
+ * the record index and reason never silently fixes or loses a record.
+ * See the design-conflicts note in the step-3 report.
+ */
+export function parseCompletionRecord(input: unknown, path = 'completionRecord'): CompletionRecord {
+  const item = record(input, path);
+  const target = record(item.target, `${path}.target`);
+  const targetType = target.type;
+  if (targetType !== 'item' && targetType !== 'opportunity' && targetType !== 'location')
+    invalid(`${path}.target.type`, 'is unsupported');
+  const verb = item.verb;
+  if (verb !== 'looted' && verb !== 'collected' && verb !== 'discovered' && verb !== 'explored')
+    invalid(`${path}.verb`, 'is unsupported');
+  // The write path's own rules (record.ts): one-time verbs are always
+  // count 1; only a looted undo may be -1; looted tops out at 99.
+  const count = parseCount(item.count, `${path}.count`, -1, 99);
+  if (verb !== 'looted' && count !== 1)
+    invalid(`${path}.count`, 'must be 1 for a one-time record');
+  if (verb === 'looted' && count === 0) invalid(`${path}.count`, 'must not be 0');
+  const source = item.source;
+  if (
+    typeof source !== 'string' ||
+    !(COMPLETION_RECORD_SOURCES as readonly string[]).includes(source)
+  )
+    invalid(`${path}.source`, 'is unsupported');
+  return {
+    id: parseId(item.id, `${path}.id`),
+    target: { type: targetType, id: parseId(target.id, `${path}.target.id`) },
+    verb,
+    count,
+    at: timestamp(item.at, `${path}.at`),
+    source: source as CompletionRecord['source'],
+    ...(item.note === undefined
+      ? {}
+      : { note: parseText(item.note, `${path}.note`, 500) }),
+  };
+}
+
+/** One manual tally, typed from the in-game Progress screen. `basis`
+ * is the only basis a manual tally may have (DESIGN §3.1). A
+ * `superseded` flag in the file is dropped, never stored — it is set
+ * by the Progress selector at read time (DESIGN §3.1). */
+export function parseReconciliationEntry(
+  input: unknown,
+  path = 'reconciliationEntry',
+): ReconciliationEntry {
+  const item = record(input, path);
+  if (item.basis !== 'game-stat') invalid(`${path}.basis`, 'must be game-stat');
+  return {
+    categoryId: parseId(item.categoryId, `${path}.categoryId`),
+    count: parseCount(item.count, `${path}.count`, 0, 100_000),
+    basis: 'game-stat',
+    at: timestamp(item.at, `${path}.at`),
+  };
+}
+
+const ENRICHMENT_FIELD_KINDS: readonly EnrichmentFieldKind[] = [
+  'identity',
+  'purpose',
+  'shop-category',
+  'accessibility',
+  'interior',
+  'loot',
+  'vehicle-loot',
+  'opportunities',
+];
+
+function parseEnrichmentSource(input: unknown, path: string): { title: string; url: string; quote: string } {
+  const item = record(input, path);
+  return {
+    title: parseText(item.title, `${path}.title`, 200, true),
+    url: parseText(item.url, `${path}.url`, 2000, true),
+    quote: parseText(item.quote, `${path}.quote`, 1000, true),
+  };
+}
+
+/**
+ * One enrichment field. A field with no citation is dropped at write
+ * time (addendum §2.4) — the backup import is a write, so a
+ * source-less field is dropped here too and the rest of the row
+ * survives. Returns null when the field is dropped.
+ */
+function parseEnrichmentField(
+  input: unknown,
+  path: string,
+): Enrichment['fields'][number] | null {
+  const item = record(input, path);
+  const kind = item.kind;
+  if (typeof kind !== 'string' || !(ENRICHMENT_FIELD_KINDS as readonly string[]).includes(kind))
+    invalid(`${path}.kind`, 'is unsupported');
+  const sources = list(item.sources, `${path}.sources`).map((source, index) =>
+    parseEnrichmentSource(source, `${path}.sources[${index}]`),
+  );
+  if (sources.length === 0) return null;
+  const confidence = item.confidence;
+  if (typeof confidence !== 'number' || !Number.isFinite(confidence) || confidence < 0 || confidence > 1)
+    invalid(`${path}.confidence`, 'must be a number between 0 and 1');
+  const status = item.status;
+  if (
+    typeof status !== 'string' ||
+    !['ai-suggested', 'corroborated', 'personal', 'conflicted'].includes(status)
+  )
+    invalid(`${path}.status`, 'is unsupported');
+  return {
+    kind: kind as EnrichmentFieldKind,
+    text: parseText(item.text, `${path}.text`, 280, true),
+    confidence,
+    sources,
+    status: status as Enrichment['fields'][number]['status'],
+    ...(item.conflictWith === undefined
+      ? {}
+      : { conflictWith: parseId(item.conflictWith, `${path}.conflictWith`) }),
+    ...(item.corroboratedBy === undefined
+      ? {}
+      : { corroboratedBy: parseText(item.corroboratedBy, `${path}.corroboratedBy`, 200) }),
+  };
+}
+
+export function parseEnrichment(input: unknown, path = 'enrichment'): Enrichment {
+  const item = record(input, path);
+  const fields = list(item.fields, `${path}.fields`)
+    .map((field, index) => parseEnrichmentField(field, `${path}.fields[${index}]`))
+    .filter((field): field is NonNullable<typeof field> => field !== null);
+  const imagery = list(item.imagery, `${path}.imagery`).map((value, index) => {
+    const imagePath = `${path}.imagery[${index}]`;
+    const image = record(value, imagePath);
+    if (image.kind !== 'screenshot' && image.kind !== 'ai-illustration')
+      invalid(`${imagePath}.kind`, 'is unsupported');
+    return {
+      kind: image.kind as Enrichment['imagery'][number]['kind'],
+      url: parseText(image.url, `${imagePath}.url`, 2000, true),
+      sourceTitle: parseText(image.sourceTitle, `${imagePath}.sourceTitle`, 200, true),
+      sourceUrl: parseText(image.sourceUrl, `${imagePath}.sourceUrl`, 2000, true),
+      ...(image.generatedPrompt === undefined
+        ? {}
+        : { generatedPrompt: parseText(image.generatedPrompt, `${imagePath}.generatedPrompt`, 1000) }),
+    };
+  });
+  const usage =
+    item.usage === undefined
+      ? undefined
+      : {
+          promptTokens: parseCount(
+            record(item.usage, `${path}.usage`).promptTokens,
+            `${path}.usage.promptTokens`,
+            0,
+            10_000_000,
+          ),
+          completionTokens: parseCount(
+            record(item.usage, `${path}.usage`).completionTokens,
+            `${path}.usage.completionTokens`,
+            0,
+            10_000_000,
+          ),
+        };
+  return {
+    id: parseId(item.id, `${path}.id`),
+    locationId: parseId(item.locationId, `${path}.locationId`),
+    schemaVersion: parseCount(item.schemaVersion, `${path}.schemaVersion`, 1, 99),
+    researchedAt: timestamp(item.researchedAt, `${path}.researchedAt`),
+    researchedBy: parseText(item.researchedBy, `${path}.researchedBy`, 128, true),
+    fields,
+    imagery,
+    question:
+      item.question === undefined || item.question === null
+        ? null
+        : parseText(item.question, `${path}.question`, 500),
+    ...(usage ? { usage } : {}),
+  };
+}
+
+/** A player correction: the old value is kept, the new value wins on
+ * the card. `source` is always 'user' — a correction is the player's
+ * word, never the AI's (addendum §2.6). */
+export function parseCorrection(input: unknown, path = 'correction'): Correction {
+  const item = record(input, path);
+  if (item.source !== 'user') invalid(`${path}.source`, 'must be user');
+  return {
+    id: parseId(item.id, `${path}.id`),
+    locationId: parseId(item.locationId, `${path}.locationId`),
+    field: parseText(item.field, `${path}.field`, 200, true),
+    oldText:
+      item.oldText === undefined || item.oldText === null
+        ? null
+        : parseText(item.oldText, `${path}.oldText`, 2000),
+    newText: parseText(item.newText, `${path}.newText`, 2000, true),
+    at: timestamp(item.at, `${path}.at`),
+    source: 'user',
+  };
+}
+
+/** Sold state for one item. `soldAt: null` is a sale that was undone
+ * — the row is the audit trail, not a missing row (addendum §3.4). */
+export function parsePersonalItemState(
+  input: unknown,
+  path = 'personalItemState',
+): PersonalItemState {
+  const item = record(input, path);
+  const soldAt =
+    item.soldAt === undefined || item.soldAt === null
+      ? null
+      : timestamp(item.soldAt, `${path}.soldAt`);
+  const soldPrice = item.soldPrice;
+  if (
+    soldPrice !== undefined &&
+    (typeof soldPrice !== 'number' || !Number.isFinite(soldPrice) || soldPrice < 0)
+  )
+    invalid(`${path}.soldPrice`, 'must be a number of 0 or more');
+  return {
+    itemId: parseId(item.itemId, `${path}.itemId`),
+    soldAt,
+    ...(soldPrice === undefined ? {} : { soldPrice }),
+  };
+}
+
+/**
+ * A screenshot upload's metadata. The blob itself is NOT in the file
+ * (device-local, addendum §6 step 3) — `blobId` references a blob
+ * that may not exist on the restoring device. The row restores as
+ * the audit trail of what was matched; a missing blob is the
+ * caller's honest empty state.
+ */
+export function parseUserScreenshot(input: unknown, path = 'userScreenshot'): UserScreenshot {
+  const item = record(input, path);
+  const kind = item.kind;
+  if (kind !== 'card-front' && kind !== 'collection-screen')
+    invalid(`${path}.kind`, 'is unsupported');
+  return {
+    id: parseId(item.id, `${path}.id`),
+    at: timestamp(item.at, `${path}.at`),
+    kind,
+    ...(item.setId === undefined || item.setId === null
+      ? {}
+      : { setId: parseId(item.setId, `${path}.setId`) }),
+    blobId: parseText(item.blobId, `${path}.blobId`, 200, true),
+  };
+}
+
+/** A research-when-missing queue entry. Fulfilment is developer-side
+ * (addendum §5.3); the queue itself is user data and rides along. */
+export function parseResearchRequest(input: unknown, path = 'researchRequest'): ResearchRequest {
+  const item = record(input, path);
+  const targetType = item.targetType;
+  if (targetType !== 'item' && targetType !== 'opportunity' && targetType !== 'location')
+    invalid(`${path}.targetType`, 'is unsupported');
+  const status = item.status;
+  if (status !== 'queued' && status !== 'answered' && status !== 'unanswerable')
+    invalid(`${path}.status`, 'is unsupported');
+  return {
+    id: parseId(item.id, `${path}.id`),
+    targetType,
+    targetId: parseId(item.targetId, `${path}.targetId`),
+    question: parseText(item.question, `${path}.question`, 200, true),
+    ...(item.sourceUrl === undefined
+      ? {}
+      : { sourceUrl: parseText(item.sourceUrl, `${path}.sourceUrl`, 2000) }),
+    requestedAt: timestamp(item.requestedAt, `${path}.requestedAt`),
+    status,
+    ...(item.resolutionNote === undefined
+      ? {}
+      : { resolutionNote: parseText(item.resolutionNote, `${path}.resolutionNote`, 1000) }),
+  };
+}
+
+/** Returns a new, whitelisted v4 value. Never mutates input or touches browser storage. */
+export function parseBackupV4(input: unknown): BackupV4 {
+  const data = record(input, 'backup');
+  if (data.format !== 'leonida-atlas') invalid('format', 'must be leonida-atlas');
+  if (data.version !== 4) invalid('version', 'is unsupported (this parser expects version 4)');
+  // The v3 sections validate through parseBackup (version downgraded
+  // for the call only — the sections themselves do not depend on the
+  // version except for the v1 legacy path). Unknown keys — including
+  // the v4 sections — are dropped from that view.
+  const v3 = parseBackup({ ...data, version: 3 });
+  const completionRecords = unique(
+    list(data.completionRecords === undefined ? [] : data.completionRecords, 'completionRecords').map(
+      (item, index) => parseCompletionRecord(item, `completionRecords[${index}]`),
+    ),
+    (item) => item.id,
+    'completionRecords',
+  );
+  const reconciliation = unique(
+    list(data.reconciliation === undefined ? [] : data.reconciliation, 'reconciliation').map(
+      (item, index) => parseReconciliationEntry(item, `reconciliation[${index}]`),
+    ),
+    (item) => item.categoryId,
+    'reconciliation',
+  );
+  const enrichments = unique(
+    list(data.enrichments === undefined ? [] : data.enrichments, 'enrichments').map((item, index) =>
+      parseEnrichment(item, `enrichments[${index}]`),
+    ),
+    (item) => item.id,
+    'enrichments',
+  );
+  const corrections = unique(
+    list(data.corrections === undefined ? [] : data.corrections, 'corrections').map((item, index) =>
+      parseCorrection(item, `corrections[${index}]`),
+    ),
+    (item) => item.id,
+    'corrections',
+  );
+  const personalItemState = unique(
+    list(
+      data.personalItemState === undefined ? [] : data.personalItemState,
+      'personalItemState',
+    ).map((item, index) => parsePersonalItemState(item, `personalItemState[${index}]`)),
+    (item) => item.itemId,
+    'personalItemState',
+  );
+  const userScreenshots = unique(
+    list(data.userScreenshots === undefined ? [] : data.userScreenshots, 'userScreenshots').map(
+      (item, index) => parseUserScreenshot(item, `userScreenshots[${index}]`),
+    ),
+    (item) => item.id,
+    'userScreenshots',
+  );
+  const researchRequests = unique(
+    list(data.researchRequests === undefined ? [] : data.researchRequests, 'researchRequests').map(
+      (item, index) => parseResearchRequest(item, `researchRequests[${index}]`),
+    ),
+    (item) => item.id,
+    'researchRequests',
+  );
+  const result: BackupV4 = {
+    ...v3,
+    version: 4,
+    completionRecords,
+    reconciliation,
+    enrichments,
+    corrections,
+    personalItemState,
+    userScreenshots,
+    researchRequests,
+  };
+  // Count only whitelisted data: the 10 MiB cap applies to the whole
+  // v4 file, new sections included.
+  if (new TextEncoder().encode(JSON.stringify(result)).byteLength > MAX_BACKUP_BYTES)
+    invalid('backup', 'exceeds the 10 MiB data limit');
+  return result;
+}
+
+/**
+ * The version-aware entry point for files of unknown version: v4
+ * files parse as v4, everything else goes through `parseBackup`
+ * (which still rejects version 4 when called directly — see the note
+ * at the top of the v4 section). Use this in the store layer and the
+ * backup dialog; use `parseBackup` only where a v3 value is required.
+ */
+export function parseBackupFile(input: unknown): Backup | BackupV4 {
+  const data = record(input, 'backup');
+  if (data.version === 4) return parseBackupV4(data);
+  return parseBackup(data);
 }

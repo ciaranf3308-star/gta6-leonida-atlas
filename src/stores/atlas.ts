@@ -11,7 +11,7 @@ import {
   workspaceDatabaseName,
 } from '../db/repository';
 import { atlasRegistry } from '../plugins/registry';
-import { parseBackup } from '../db/backup';
+import { parseBackupFile, parseBackupV4 } from '../db/backup';
 import { exportAiIndex } from '../db/ai-index';
 import { importAtlasBackup } from '../db/backup-import';
 import { useAiIndexStore } from '../features/categorise/store';
@@ -299,10 +299,33 @@ export async function exportWorkspaceBackup(workspaceId: string | null) {
   // validated before it is handed to the download, so a half-written
   // batch can never produce a corrupt backup.
   const ai = await exportAiIndex();
-  return parseBackup({
+  // v0.32 step 3 (backup v4): the completion log, reconciliation,
+  // enrichments, corrections, sold state, screenshot metadata and
+  // research queue ride along with the v3 sections. The repository's
+  // export stays v3 (repository.ts is step 2's file); the store
+  // assembles v4 from it. Screenshot blobs stay device-local — only
+  // the metadata rows are in the file (addendum §6 step 3).
+  const { records, reconciliation } = await atlasRepository.loadCompletion();
+  const personalItemState = await atlasRepository.loadPersonalItemStates();
+  const [enrichments, corrections, userScreenshots, researchRequests] = await Promise.all([
+    atlasRepository.enrichments.toArray(),
+    atlasRepository.corrections.toArray(),
+    atlasRepository.userScreenshots.toArray(),
+    atlasRepository.researchRequests.toArray(),
+  ]);
+  assertWorkspace(workspaceId, expectedGeneration);
+  return parseBackupV4({
     ...backup,
+    version: 4,
     aiCategories: ai.aiCategories,
     aiIndexJob: ai.aiIndexJob,
+    completionRecords: records,
+    reconciliation,
+    enrichments,
+    corrections,
+    personalItemState,
+    userScreenshots,
+    researchRequests,
   });
 }
 
@@ -312,7 +335,11 @@ export async function importWorkspaceBackup(
 ): Promise<void> {
   const expectedGeneration = generation;
   assertWorkspace(workspaceId, expectedGeneration);
-  const backup = parseBackup(value);
+  // v4 files parse as v4 (completion log, reconciliation, the five
+  // addendum tables); v1–v3 files parse as before and migrate on
+  // import (importAtlasBackup triggers the completion migration after
+  // visited/explored land).
+  const backup = parseBackupFile(value);
   // The import is one honest operation across both stores: the AI
   // half merges first, then the user-data half imports, and if the
   // user-data half fails the AI half is rolled back to its

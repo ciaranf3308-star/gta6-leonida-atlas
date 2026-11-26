@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Download, Upload } from 'lucide-react';
 import type { Backup } from '../../domain/types';
-import { MAX_BACKUP_BYTES, parseBackup } from '../../db/backup';
+import type { BackupV4 } from '../../db/backup';
+import { MAX_BACKUP_BYTES, parseBackupFile } from '../../db/backup';
 import { saveLocal, usePersistenceStore, useWorkspaceStore } from '../../stores/atlas';
 import { useAiIndexStore } from '../categorise/store';
 import { importAtlasBackup } from '../../db/backup-import';
@@ -17,7 +18,7 @@ function count(n: number, singular: string, plural = `${singular}s`): string {
 export default function BackupDialog({ onClose }: { onClose: () => void }) {
   const ready = usePersistenceStore((s) => s.ready);
   const workspaceId = useWorkspaceStore((s) => s.workspaceId);
-  const [preview, setPreview] = useState<Backup | null>(null);
+  const [preview, setPreview] = useState<Backup | BackupV4 | null>(null);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
@@ -29,7 +30,8 @@ export default function BackupDialog({ onClose }: { onClose: () => void }) {
       setMessage(
         `Backup downloaded — ${count(result.aiCategories, 'AI-sorted place')}, ` +
           `${count(result.markers, 'marker')}, ${count(result.notes, 'note')}, ` +
-          `${count(result.favorites, 'saved place')}. Store it somewhere safe — ` +
+          `${count(result.favorites, 'saved place')}, ` +
+          `${count(result.completionRecords, 'completion record')}. Store it somewhere safe — ` +
           `your OpenAI key is never in the file.`,
       );
     } catch {
@@ -46,7 +48,9 @@ export default function BackupDialog({ onClose }: { onClose: () => void }) {
       return;
     }
     try {
-      setPreview(parseBackup(JSON.parse(await file.text())));
+      // v4 files parse as v4, v1–v3 as before; a v4 preview carries
+      // the completion log, so the counts below can show it.
+      setPreview(parseBackupFile(JSON.parse(await file.text())));
     } catch (error) {
       setError(
         error instanceof Error ? error.message : 'Invalid backup file. No data was changed.',
@@ -88,8 +92,11 @@ export default function BackupDialog({ onClose }: { onClose: () => void }) {
           `${ai.keptLocal.toLocaleString()} kept as yours. ` +
           `${count(preview.markers.length, 'marker')}, ` +
           `${count(preview.notes.length, 'note')}, ` +
-          `${count(preview.favorites.length, 'saved place')}. ` +
-          `Your local data is saved.`,
+          `${count(preview.favorites.length, 'saved place')}` +
+          (preview.version === 4
+            ? `, ${count(preview.completionRecords.length, 'completion record')}`
+            : '') +
+          `. Your local data is saved.`,
       );
     } else {
       setBusy(false);
@@ -106,10 +113,12 @@ export default function BackupDialog({ onClose }: { onClose: () => void }) {
   return (
     <Modal title="Your local backup" onClose={onClose}>
       <p className="panel-intro">
-        Export everything yours — favorites, collections, notes, markers and the AI index (the
-        sorted &ldquo;?&rdquo; places and how far the job got). No account is needed, and your
-        OpenAI key is never in the file. The job saves after every batch on this phone — back
-        up to keep it forever, past a wipe, a browser-data clear, a PWA uninstall or a new phone.
+        Export everything yours — favorites, collections, notes, markers, the completion log
+        (every place you marked found, looted or explored, with the dates) and the AI index
+        (the sorted &ldquo;?&rdquo; places and how far the job got). No account is needed, and
+        your OpenAI key is never in the file. The job saves after every batch on this phone —
+        back up to keep it forever, past a wipe, a browser-data clear, a PWA uninstall or a
+        new phone.
       </p>
       <button className="button primary" disabled={!ready} onClick={() => void exportData()}>
         <Download size={18} />
@@ -141,6 +150,13 @@ export default function BackupDialog({ onClose }: { onClose: () => void }) {
             been through · {count(preview.favorites.length, 'favorite')} ·{' '}
             {count(preview.collections.length, 'collection')} ·{' '}
             {count(preview.notes.length, 'note')} · {count(preview.markers.length, 'marker')}
+            {preview.version === 4 && (
+              <>
+                {' · '}
+                {count(preview.completionRecords.length, 'completion record')} ·{' '}
+                {count(preview.reconciliation.length, 'tally')}
+              </>
+            )}
           </p>
           <p className="help-text">
             Imported display preferences will replace current preferences. Your corrections
