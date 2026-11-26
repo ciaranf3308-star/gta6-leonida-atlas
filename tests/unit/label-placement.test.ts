@@ -41,7 +41,7 @@ describe('computeLabelPlacements (v0.30.0)', () => {
       [{ x: 100, y: 400 }],
       OPEN,
     );
-    expect(placed.get(0)).toBe('right');
+    expect(placed.get(0)).toEqual({ side: 'right', width: 70 });
   });
 
   it('skips a later label that would land on an earlier one (first wins)', () => {
@@ -58,7 +58,7 @@ describe('computeLabelPlacements (v0.30.0)', () => {
       ],
       OPEN,
     );
-    expect(placed.get(0)).toBe('right');
+    expect(placed.get(0)).toEqual({ side: 'right', width: 94 });
     expect(placed.has(1)).toBe(false);
   });
 
@@ -74,8 +74,8 @@ describe('computeLabelPlacements (v0.30.0)', () => {
       ],
       OPEN,
     );
-    expect(placed.get(0)).toBe('right');
-    expect(placed.get(1)).toBe('right');
+    expect(placed.get(0)).toEqual({ side: 'right', width: 94 });
+    expect(placed.get(1)).toEqual({ side: 'right', width: 82 });
   });
 
   it('flips a label left when another pin sits just to its right', () => {
@@ -90,7 +90,7 @@ describe('computeLabelPlacements (v0.30.0)', () => {
       ],
       OPEN,
     );
-    expect(placed.get(0)).toBe('left');
+    expect(placed.get(0)).toEqual({ side: 'left', width: 88 });
   });
 
   it('considers only the first 65 eligible pins', () => {
@@ -130,13 +130,13 @@ describe('labelOffsetForPin — the selected pin’s label clears the ring (v0.3
       [{ x: 860, y: 400 }],
       OPEN,
     );
-    expect(plain.get(0)).toBe('right');
+    expect(plain.get(0)).toEqual({ side: 'right', width: 100 });
     const ringed = computeLabelPlacements(
       [{ ...candidate(0, 'Gellhorn Motel', 860, 400), ringed: true }],
       [{ x: 860, y: 400 }],
       OPEN,
     );
-    expect(ringed.get(0)).toBe('left');
+    expect(ringed.get(0)).toEqual({ side: 'left', width: 100 });
   });
 
   it('a ringed label with no room on the left is skipped, where a plain one fits', () => {
@@ -153,12 +153,51 @@ describe('labelOffsetForPin — the selected pin’s label clears the ring (v0.3
       points,
       OPEN,
     );
-    expect(plain.get(0)).toBe('left');
+    expect(plain.get(0)).toEqual({ side: 'left', width: 46 });
     const ringed = computeLabelPlacements(
       [{ ...candidate(0, 'Motel', 88, 400), ringed: true }],
       points,
       OPEN,
     );
     expect(ringed.has(0)).toBe(false);
+  });
+});
+
+describe('ringed labels shrink to fit instead of vanishing (v0.32 step-9)', () => {
+  // Phone geometry: the fly-to centres the selected pin, so at
+  // 390px a full-width label fits on neither side.
+  const PHONE: ChromeGeometry = { ...OPEN, width: 390 };
+  const LONG_TITLE = 'Easy Inn Motel, Moonstone Hwy, Port Gellhorn'; // 41 chars → 210px
+
+  it('a centred ringed label is placed fitted, not skipped', () => {
+    // Pin at x 195 (centred): left room 195 − 36 − 8 = 151, right
+    // room 390 − 8 − 195 − 36 = 151 — a 210px label fits nowhere
+    // at full width, so it truncates to 151px on the right (tie).
+    const placed = computeLabelPlacements(
+      [{ ...candidate(0, LONG_TITLE, 195, 400), ringed: true }],
+      [{ x: 195, y: 400 }],
+      PHONE,
+    );
+    expect(placed.get(0)).toEqual({ side: 'right', width: 151 });
+  });
+
+  it('a plain centred label is still skipped — the fit is ringed-only', () => {
+    const placed = computeLabelPlacements(
+      [candidate(0, LONG_TITLE, 195, 400)],
+      [{ x: 195, y: 400 }],
+      PHONE,
+    );
+    expect(placed.has(0)).toBe(false);
+  });
+
+  it('a ringed label with under 80px on both sides stays skipped', () => {
+    // 200px-wide canvas, pin at x 100: 56px of room each way.
+    const narrow: ChromeGeometry = { ...OPEN, width: 200 };
+    const placed = computeLabelPlacements(
+      [{ ...candidate(0, LONG_TITLE, 100, 400), ringed: true }],
+      [{ x: 100, y: 400 }],
+      narrow,
+    );
+    expect(placed.has(0)).toBe(false);
   });
 });

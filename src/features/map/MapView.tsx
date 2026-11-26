@@ -633,12 +633,16 @@ export default function MapView(props: MapViewProps) {
         groupPoints,
         geometry,
       );
-      for (const [si, side] of placements) {
+      for (const [si, placement] of placements) {
         const marker = markers[si];
         const candidate = labelCandidates.find((c) => c.index === si);
         if (!marker || !candidate) continue;
         const label = document.createElement('span');
         label.textContent = candidate.title;
+        // The placement carries the rendered width: a ringed label
+        // shrunk to fit (v0.32 step-9) truncates at exactly the
+        // width placement measured, never wider.
+        label.style.maxWidth = `${placement.width}px`;
         const placed = shown[si]!.group.places[0]!;
         const isSelected =
           shown[si]!.group.places.length === 1 && placed.id === props.selectedId;
@@ -651,8 +655,9 @@ export default function MapView(props: MapViewProps) {
         const clearance = labelOffsetForPin(isSelected || isHighlighted);
         marker.bindTooltip(label, {
           permanent: true,
-          direction: side,
-          offset: side === 'left' ? [-clearance, 0] : [clearance, 0],
+          direction: placement.side,
+          offset:
+            placement.side === 'left' ? [-clearance, 0] : [clearance, 0],
           className: `atlas-place-label ${isSelected ? 'is-selected' : ''}`,
         });
       }

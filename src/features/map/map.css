@@ -286,6 +286,10 @@
   max-width: 210px;
   overflow: hidden;
   text-overflow: ellipsis;
+  /* Single line, always: the placement rect math is a 20px-tall box
+   * and the fitted width for a shrunk ringed label is exact only if
+   * the text truncates instead of wrapping onto a second line. */
+  white-space: nowrap;
 }
 .atlas-map-canvas .atlas-place-label:before {
   display: none;
