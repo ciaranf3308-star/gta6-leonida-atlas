@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 import type { LayerDefinition, Place } from '../../src/domain/types';
 import { DEFAULT_LAYERS } from '../../src/features/map/layers';
 import { GANG_OPERATIONS, GANG_OP_PLACES } from '../../src/data/gang-operations';
+import { BREAKABLE_HOME_PLACES } from '../../src/data/breakable-homes';
+import { EQUIPMENT_PLACES, GYM_PLACES } from '../../src/data/gyms';
 import { shortVerdict } from '../../src/features/ask/cards';
 import {
   asksForGangOps,
@@ -949,6 +951,189 @@ describe('Ask Nylah — area-known answers (v0.32 gang-op follow-up, lane 2)', (
     const result = ask("what's around here?", GANG_OP_PLACES, layersWithGangOp());
     expect(result.records).toHaveLength(0);
     expect(result.emptyAdvice).toBeNull();
+  });
+});
+
+describe('Ask Nylah — position-null audit (v0.32 gang-op follow-up, lane 2)', () => {
+  // Every catalogue Place with position: null (139 at GTADB 2e9e194,
+  // enumerated by script — see the lane notes), tested by class. The
+  // general rule: an area-known Place answers with its area + likely
+  // area, never "Nothing in the map data". No position is invented
+  // anywhere in this block.
+  const ask = (question: string, places: readonly Place[]) =>
+    retrieveForAsk({
+      question,
+      places,
+      layers: layers(),
+      filters: { hideFound: false, remainingOnly: false, countyId: null },
+    });
+
+  it('the 5 breakable guide examples answer by bare name, with area + loot where known', () => {
+    for (const example of BREAKABLE_HOME_PLACES) {
+      const result = ask(`where is ${example.title}?`, BREAKABLE_HOME_PLACES);
+      expect(result.records[0]?.id).toBe(example.id);
+      expect(result.proximitySummary).toContain(example.region);
+      expect(result.proximitySummary).toMatch(/no verified position/);
+      expect(result.proximitySummary).not.toMatch(/nearest .* map units away/i);
+    }
+    // Parlor Apartments also names its San4San gang-op record, and
+    // the dark-blue rule rides with a breakable answer.
+    const parlor = ask('where is Parlor Apartments?', BREAKABLE_HOME_PLACES);
+    expect(parlor.proximitySummary).toMatch(/San4San/);
+    expect(parlor.proximitySummary).toMatch(/Rockridge, Vice City/);
+    expect(parlor.ruleNote).toMatch(/dark blue has an interior/i);
+    // The Ambrosia houses name their guide loot.
+    const ambrosia = ask('where is Ambrosia houses?', BREAKABLE_HOME_PLACES);
+    expect(ambrosia.proximitySummary).toMatch(/\$1,000/);
+  });
+
+  it('the 2 unpositioned member gyms and the Starlet Motel bench answer by bare name', () => {
+    const places = [...GYM_PLACES, ...EQUIPMENT_PLACES];
+    for (const [question, id, region] of [
+      ['where is Vice Seven Condominiums Gym?', 'gym:vice-seven', 'Tequesta, Vice City'],
+      ['where is Venus Fitness?', 'gym:venus', 'Ocean Beach, Vice Beach'],
+      [
+        'where is the Starlet Motel bench?',
+        'gym:starlet-motel-bench',
+        'Port Gellhorn, Kelly County',
+      ],
+    ] as const) {
+      const result = ask(question, places);
+      expect(result.records[0]?.id).toBe(id);
+      expect(result.proximitySummary).toContain(region);
+      expect(result.proximitySummary).toMatch(/no verified position/);
+      expect(result.proximitySummary).not.toMatch(/nearest .* map units away/i);
+    }
+  });
+
+  it('the other area-known classes answer by bare name — shops-food, interiors, community', () => {
+    const places = [
+      place({
+        id: 'L1437',
+        title: "Dale's Shopwell, Leonida",
+        layerId: 'shops-food',
+        position: null,
+        region: 'Leonida',
+        tags: ['events', 'retail'],
+      }),
+      place({
+        id: 'L1493',
+        title: "One-Eyed Willie's, Leonida",
+        layerId: 'shops-food',
+        position: null,
+        region: 'Leonida',
+        tags: ['retail'],
+      }),
+      place({
+        id: 'L1494',
+        title: "Wyman's World Auto Salvage Co., Ambrosia",
+        layerId: 'shops-food',
+        position: null,
+        region: 'Ambrosia',
+        tags: ['@wyman', 'retail'],
+      }),
+      place({
+        id: 'L2980',
+        title: 'Shore Court Garage, Shore Ct, Ocean Beach, Vice Beach',
+        layerId: 'interiors',
+        position: null,
+        region: 'Shore Ct, Ocean Beach, Vice Beach',
+        tags: ['enterable'],
+      }),
+      place({
+        id: 'L1453',
+        title: 'VYB, Vice Beach',
+        layerId: 'community',
+        position: null,
+        region: 'Vice Beach',
+        tags: [],
+      }),
+      place({
+        id: 'L833',
+        title: 'Abandoned Observatory, Leonida',
+        layerId: 'community',
+        position: null,
+        region: 'Leonida',
+        tags: ['events', 'unconfirmed'],
+      }),
+      place({
+        id: 'L981',
+        title: 'La Cascara Motel, Port Gellhorn',
+        layerId: 'community',
+        position: null,
+        region: 'Port Gellhorn',
+        tags: ['events', 'hotel'],
+      }),
+      place({
+        id: 'L1080',
+        title: 'SERA, Leonida',
+        layerId: 'community',
+        position: null,
+        region: 'Leonida',
+        tags: ['events', 'unconfirmed'],
+      }),
+    ];
+    for (const [question, id, region] of [
+      ["where is Dale's Shopwell?", 'L1437', 'Leonida'],
+      ["where is One-Eyed Willie's?", 'L1493', 'Leonida'],
+      ["where is Wyman's World Auto Salvage Co.?", 'L1494', 'Ambrosia'],
+      ['where is Shore Court Garage?', 'L2980', 'Shore Ct, Ocean Beach, Vice Beach'],
+      ['where is VYB, Vice Beach?', 'L1453', 'Vice Beach'],
+      ['where is the Abandoned Observatory?', 'L833', 'Leonida'],
+      ['where is La Cascara Motel?', 'L981', 'Port Gellhorn'],
+      ['where is SERA?', 'L1080', 'Leonida'],
+    ] as const) {
+      const result = ask(question, places);
+      expect(result.records[0]?.id).toBe(id);
+      expect(result.proximitySummary).toContain(region);
+      expect(result.proximitySummary).toMatch(/no verified position/);
+      expect(result.proximitySummary).not.toMatch(/nearest .* map units away/i);
+    }
+  });
+
+  it('a 3-letter bare name anchors too — "VYB" alone answers, whole-word only', () => {
+    // The anchor rule needed ≥4 letters, so the 3-letter short name
+    // never matched. The only length-3 short names in the catalogue
+    // are "84", "Mio" and "VYB", so the whole-word guard closes the
+    // gap without letting a common word anchor by accident.
+    const places = [
+      place({
+        id: 'L1453',
+        title: 'VYB, Vice Beach',
+        layerId: 'community',
+        position: null,
+        region: 'Vice Beach',
+        tags: [],
+      }),
+    ];
+    const result = ask('where is VYB?', places);
+    expect(result.records[0]?.id).toBe('L1453');
+    expect(result.proximitySummary).toMatch(/VYB, Vice Beach is in Vice Beach/);
+    expect(result.proximitySummary).toMatch(/no verified position/);
+  });
+
+  it('an unnamed unpositioned place still answers a kind question — by its tags, never by name', () => {
+    // A "?" record has no name to be asked about, so it can never be
+    // the anchor — but its tags still answer a kind question, even
+    // with no position. The gas-station "?" below is the L777 shape,
+    // unpositioned.
+    const places = [
+      place({
+        id: 'L777',
+        title: '?, Capri',
+        layerId: 'uncertain',
+        position: null,
+        region: 'Capri',
+        evidence: 'uncertain',
+        tags: ['enterable', '#gas'],
+      }),
+    ];
+    const result = ask('Can I rob a shop in Capri tonight?', places);
+    expect(result.records.map((p) => p.id)).toContain('L777');
+    // No distance is claimed for it: the area has no position to
+    // measure from, so the summary says so instead of calling it near.
+    expect(result.proximitySummary).toMatch(/no verified position for capri/i);
+    expect(result.proximitySummary).not.toMatch(/nearest .* map units away/i);
   });
 });
 

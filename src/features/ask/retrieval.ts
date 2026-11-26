@@ -625,9 +625,17 @@ export function anchorForQuestion(question: string, places: readonly Place[]): P
       (place.title.split(' — ')[0] ?? place.title).split(',')[0] ?? '',
     );
     if (
-      short.length >= 4 &&
+      short.length >= 3 &&
       short.length > bestLength &&
       q.includes(short) &&
+      // A 3-letter short name must be a whole word in the question:
+      // a 3-letter sequence inside another word is not a name, and
+      // the ≥4 rule below it exists for exactly that reason. The
+      // only length-3 short names in the catalogue are "84", "Mio"
+      // and "VYB" — a number, a name and an acronym — so the
+      // whole-word guard closes the VYB gap (v0.32 gang-op follow-up,
+      // lane 2) without letting a common word anchor by accident.
+      (short.length >= 4 || q.split(' ').includes(short)) &&
       // The short name must be the whole question (or the question's
       // head) — a question that merely MENTIONS the place in passing
       // ("shops near Starlet Motel") anchors on it for distances, but
