@@ -25,9 +25,31 @@ export interface LabelCandidate {
   index: number;
   title: string;
   point: { x: number; y: number };
+  /** True when this pin wears a ring (selected, or an Ask
+   * highlight) — its label starts further out, clear of the ring. */
+  ringed?: boolean;
 }
 
 export type LabelPlacement = 'left' | 'right';
+
+/**
+ * How far a label's near edge sits from its pin's centre
+ * (v0.32 step-9, Demo A shot a08: the selected pin's label was
+ * partly obscured by the pin icon itself).
+ *
+ * The pin face is 32px (38px at hero zoom) with a 2px border, so
+ * its outer edge is 18px (21px hero) from the centre — a label
+ * starting at the old 10px began underneath the face. A ringed pin
+ * adds a 3px outline + 3px offset + 8px glow, so its outer edge
+ * is 32px (35px hero) from the centre — the gold ring covered the
+ * middle of the label ("GELLHORN MOTEL"). The clearance clears
+ * both, with a couple of px to spare, at either zoom; the caller
+ * uses the same number for the tooltip offset, and the rect math
+ * below uses it too, so placement and rendering agree.
+ */
+export function labelOffsetForPin(ringed: boolean): number {
+  return ringed ? 36 : 22;
+}
 
 export function labelWidthFor(title: string): number {
   return Math.min(210, title.length * 6 + 16);
@@ -60,17 +82,22 @@ export function computeLabelPlacements(
       labelWidth,
       geometry,
       hasPinToTheRight,
+      labelOffsetForPin(candidate.ringed ?? false),
     );
     if (side === 'none') continue;
+    // The rect is the label box as rendered: its near edge sits
+    // one clearance from the pin centre (labelOffsetForPin), never
+    // underneath the face or the ring.
+    const clearance = labelOffsetForPin(candidate.ringed ?? false);
     const rect = {
       left:
         side === 'left'
-          ? candidate.point.x - 10 - labelWidth
-          : candidate.point.x + 10,
+          ? candidate.point.x - clearance - labelWidth
+          : candidate.point.x + clearance,
       right:
         side === 'left'
-          ? candidate.point.x - 10
-          : candidate.point.x + 10 + labelWidth,
+          ? candidate.point.x - clearance
+          : candidate.point.x + clearance + labelWidth,
       top: candidate.point.y - 10,
       bottom: candidate.point.y + 10,
     };

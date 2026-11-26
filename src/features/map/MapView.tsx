@@ -31,7 +31,11 @@ import {
   type ChromeGeometry,
 } from './chrome-geometry';
 import { markerColor, markerIcon } from './marker-icon';
-import { computeLabelPlacements, type LabelCandidate } from './label-placement';
+import {
+  computeLabelPlacements,
+  labelOffsetForPin,
+  type LabelCandidate,
+} from './label-placement';
 import { addIsolationLayers } from './isolation-layer';
 import { geoLabelsForView } from '../../domain/geography';
 import type { AreaNode } from '../../domain/geography';
@@ -609,7 +613,15 @@ export default function MapView(props: MapViewProps) {
           // v0.30.0: placement (which side, or skipped) is decided
           // after the loop by label-placement.ts — the 65-label
           // budget and first-wins overlap rule live there.
-          labelCandidates.push({ index: si, title: place.title, point: pinPoint });
+          // v0.32 step-9: the candidate carries whether its pin
+          // wears a ring (selected / Ask highlight), so placement
+          // uses the same clearance the tooltip offset uses.
+          labelCandidates.push({
+            index: si,
+            title: place.title,
+            point: pinPoint,
+            ringed: selected || (props.highlightIds?.has(place.id) ?? false),
+          });
         }
       }
       // v0.30.0: labels are placed (and bound) after all markers
@@ -630,10 +642,17 @@ export default function MapView(props: MapViewProps) {
         const placed = shown[si]!.group.places[0]!;
         const isSelected =
           shown[si]!.group.places.length === 1 && placed.id === props.selectedId;
+        // v0.32 step-9: the label starts clear of the pin — a ringed
+        // pin (selected / Ask highlight) gets the ring clearance,
+        // so the gold ring no longer covers the label's middle.
+        const isHighlighted =
+          shown[si]!.group.places.length === 1 &&
+          (props.highlightIds?.has(placed.id) ?? false);
+        const clearance = labelOffsetForPin(isSelected || isHighlighted);
         marker.bindTooltip(label, {
           permanent: true,
           direction: side,
-          offset: side === 'left' ? [-10, 0] : [10, 0],
+          offset: side === 'left' ? [-clearance, 0] : [clearance, 0],
           className: `atlas-place-label ${isSelected ? 'is-selected' : ''}`,
         });
       }

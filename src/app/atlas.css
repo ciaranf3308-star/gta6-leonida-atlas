@@ -637,7 +637,26 @@ h3 {
   right: 12px;
 }
 /* ---- Area search + area page (§6.3/§6.5, step 4): bottom sheets
- * over the map. One at a time — opening one closes the other. ---- */
+ * over the map. One at a time — opening one closes the other.
+ * v0.32 step-9 (Demo B Bug #3 — DECISION: shrink the sheet, not
+ * raise the hero): the sheet's top edge must stay below the map
+ * hero, or it covers the hero's breadcrumb row ("Go to Leonida")
+ * and "Search for an area" button — verified by elementFromPoint
+ * at 390×780, where the area page's top was 219px against the
+ * hero's bottom at 242px. Raising the hero above the sheet was
+ * rejected: the hero's rows would paint over the sheet's own
+ * header and intercept taps meant for the sheet. The sheet is the
+ * focused surface; it yields the height instead — its content
+ * scrolls, so nothing is lost, only shorter on short screens.
+ * A bare 52dvh cap cannot promise the clearance: the sheet's top
+ * is viewport height minus its bottom offset minus its height,
+ * and at short heights 52dvh still reaches into the hero (the
+ * overlap appears below ~827px viewport height). The cap below
+ * pins the top edge instead: with the "everything is off" prompt
+ * up (the default state, bottom offset 155px) the top sits at
+ * 280px — below the 242px hero at phone width, with room for a
+ * third chip row on very narrow screens (~272px hero at 320px);
+ * with the prompt dismissed the top sits lower still. ---- */
 .area-search-panel,
 .area-page {
   position: absolute;
@@ -645,7 +664,7 @@ h3 {
   left: 12px;
   right: 12px;
   bottom: calc(var(--nav-height) + 10px);
-  max-height: 52dvh;
+  max-height: calc(100dvh - 435px);
   overflow-y: auto;
   background: #0b1018f2;
   backdrop-filter: blur(12px);
@@ -662,6 +681,9 @@ h3 {
     right: 24px;
     width: 420px;
     bottom: 24px;
+    /* Desktop hero is ~200px (chips on one row): same rule, same
+     * clearance — the top sits at 210px. */
+    max-height: calc(100dvh - 234px);
   }
 }
 .area-search-field {

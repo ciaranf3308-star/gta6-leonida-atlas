@@ -285,8 +285,13 @@ export function decideLabelSide(
   labelWidth: number,
   geometry: ChromeGeometry,
   hasPinToTheRight: boolean,
+  /** Distance from the pin centre to the label's near edge
+   * (labelOffsetForPin) — the edge checks must use the rendered
+   * clearance, or a ringed label is judged to fit where it is
+   * actually cut off. Defaults to the old 10px for direct callers. */
+  clearance = 10,
 ): LabelSide {
-  const rightEdge = pin.x + 10 + labelWidth;
+  const rightEdge = pin.x + clearance + labelWidth;
   const rightChrome = [geometry.edgeStack, geometry.zoomControls].filter(
     (rect): rect is ChromeRect => rect !== null,
   );
@@ -297,7 +302,7 @@ export function decideLabelSide(
   const labelLeft =
     hasPinToTheRight || rightEdge > geometry.width - 8 || rightHitsChrome;
   if (!labelLeft) return 'right';
-  if (pin.x - 10 - labelWidth < 8) return 'none';
+  if (pin.x - clearance - labelWidth < 8) return 'none';
   return 'left';
 }
 

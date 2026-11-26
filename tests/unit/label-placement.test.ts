@@ -6,6 +6,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   computeLabelPlacements,
+  labelOffsetForPin,
   labelWidthFor,
   type LabelCandidate,
 } from '../../src/features/map/label-placement';
@@ -108,5 +109,56 @@ describe('computeLabelPlacements (v0.30.0)', () => {
   it('measures label width from the title, capped at 210', () => {
     expect(labelWidthFor('Vice City')).toBe(9 * 6 + 16);
     expect(labelWidthFor('A'.repeat(100))).toBe(210);
+  });
+});
+
+describe('labelOffsetForPin — the selected pin’s label clears the ring (v0.32 step-9, Demo A a08)', () => {
+  it('clears the pin face (18px, 21px at hero zoom) and the ring (32px, 35px hero)', () => {
+    // Base: past the 21px hero face, with a px to spare.
+    expect(labelOffsetForPin(false)).toBeGreaterThanOrEqual(22);
+    // Ringed: past the 35px hero ring, with a px to spare.
+    expect(labelOffsetForPin(true)).toBeGreaterThanOrEqual(36);
+  });
+
+  it('a ringed label near the right edge flips left where a plain label still fits right', () => {
+    // "Gellhorn Motel" is 100px wide. At x 860 the plain label fits
+    // right (860 + 22 + 100 = 982 ≤ 992); the ringed one does not
+    // (860 + 36 + 100 = 996 > 992) and flips left
+    // (860 − 36 − 100 = 724 ≥ 8, room on the left).
+    const plain = computeLabelPlacements(
+      [candidate(0, 'Gellhorn Motel', 860, 400)],
+      [{ x: 860, y: 400 }],
+      OPEN,
+    );
+    expect(plain.get(0)).toBe('right');
+    const ringed = computeLabelPlacements(
+      [{ ...candidate(0, 'Gellhorn Motel', 860, 400), ringed: true }],
+      [{ x: 860, y: 400 }],
+      OPEN,
+    );
+    expect(ringed.get(0)).toBe('left');
+  });
+
+  it('a ringed label with no room on the left is skipped, where a plain one fits', () => {
+    // Forced left by a pin just to the right. "Motel" is 46px wide
+    // (5 chars × 6 + 16). At x 88 the plain label fits left
+    // (88 − 22 − 46 = 20 ≥ 8); the ringed one does not
+    // (88 − 36 − 46 = 6 < 8) and is skipped rather than cut off.
+    const points = [
+      { x: 88, y: 400 },
+      { x: 138, y: 405 },
+    ];
+    const plain = computeLabelPlacements(
+      [candidate(0, 'Motel', 88, 400)],
+      points,
+      OPEN,
+    );
+    expect(plain.get(0)).toBe('left');
+    const ringed = computeLabelPlacements(
+      [{ ...candidate(0, 'Motel', 88, 400), ringed: true }],
+      points,
+      OPEN,
+    );
+    expect(ringed.has(0)).toBe(false);
   });
 });
