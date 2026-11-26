@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Car,
   ChevronRight,
@@ -110,26 +110,39 @@ function PoiResults({
   const clearPoi = useSearchSplitStore((s) => s.clearPoi);
   const revealRecord = useSearchSplitStore((s) => s.revealRecord);
   const outcome = useMemo(() => searchPoi(db, poiQuery), [db, poiQuery]);
+  const resultsRef = useRef<HTMLDivElement>(null);
+  // A search is the point of Find: when the rows (or the no-match
+  // message) appear, bring them into view. The category browser above
+  // them fills the viewport at 390px, so without this the player must
+  // scroll past it to see the results — "Brooks Boatworks" showed "2
+  // places showing" with the rows below the fold (2026-11-26). The
+  // search field sits outside the scrolling content, so it stays put.
+  useEffect(() => {
+    if (poiQuery.trim() === '') return;
+    resultsRef.current?.scrollIntoView({ block: 'start' });
+  }, [poiQuery]);
   if (outcome.totalMatching === 0) {
     return (
-      <div className="poi-empty" role="status">
-        <p>{poiNoMatchMessage(poiQuery, outcome.suggestion)}</p>
-        {outcome.suggestion && (
-          <button
-            type="button"
-            className="button"
-            onClick={() =>
-              useSearchSplitStore.getState().setPoiQuery(outcome.suggestion!)
-            }
-          >
-            Search for {outcome.suggestion}
-          </button>
-        )}
+      <div className="poi-results" ref={resultsRef}>
+        <div className="poi-empty" role="status">
+          <p>{poiNoMatchMessage(poiQuery, outcome.suggestion)}</p>
+          {outcome.suggestion && (
+            <button
+              type="button"
+              className="button"
+              onClick={() =>
+                useSearchSplitStore.getState().setPoiQuery(outcome.suggestion!)
+              }
+            >
+              Search for {outcome.suggestion}
+            </button>
+          )}
+        </div>
       </div>
     );
   }
   return (
-    <>
+    <div className="poi-results" ref={resultsRef}>
       <div className="results-count">
         <span>
           {outcome.totalMatching.toLocaleString()} result
@@ -162,7 +175,7 @@ function PoiResults({
           </button>
         ))}
       </div>
-    </>
+    </div>
   );
 }
 
