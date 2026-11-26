@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { catalogueFromSnapshot } from '../../src/data/catalogue';
-import { GANG_OP_PLACES } from '../../src/data/gang-operations';
+import { GANG_OPERATIONS, GANG_OP_PLACES } from '../../src/data/gang-operations';
+import { retrieveForAsk } from '../../src/features/ask/retrieval';
 import { buildGameDatabase, type GameDatabase } from '../../src/domain/game-db';
 import { BASEMAP_BOUNDS } from '../../src/features/map/coordinates';
 import {
@@ -50,13 +51,13 @@ describe('gang-op likely-area measurement (v0.32 lane 1)', () => {
     expect(description).toContain(`${measured.none} have no extent to draw`);
   });
 
-  it('measures all 39 ops: 2 hosted, 22 own-bounds, 12 county-fallback, 3 no-extent, 34 drawn', () => {
+  it('measures all 39 ops: 2 hosted, 27 own-bounds, 7 county-fallback, 3 no-extent, 34 drawn', () => {
     const db = buildFullDb();
     const measured = measureGangOpBounds(db.areas);
     expect(measured.total).toBe(39);
     expect(measured.hosted).toBe(2);
-    expect(measured.own).toBe(22);
-    expect(measured.county).toBe(12);
+    expect(measured.own).toBe(27);
+    expect(measured.county).toBe(7);
     expect(measured.none).toBe(3);
     expect(measured.drawn).toBe(34);
     expect(measured.hosted + measured.own + measured.county + measured.none).toBe(39);
@@ -77,6 +78,24 @@ describe('gang-op likely-area measurement (v0.32 lane 1)', () => {
     const db = buildFullDb();
     expect(areaIdForGangOpRegion('Port Gellhorn, Kelly County', db.areas)).toBe(
       'area:port-gellhorn',
+    );
+    expect(areaIdForGangOpRegion('Hamlet, Mariana County', db.areas)).toBe(
+      'area:hamlet',
+    );
+    expect(areaIdForGangOpRegion('Watson Bay, Mariana County', db.areas)).toBe(
+      'area:watson-bay',
+    );
+    expect(areaIdForGangOpRegion('Emerald Springs, Kelly County', db.areas)).toBe(
+      'area:emerald-springs',
+    );
+    // Grassrivers is deliberately NOT redirected (lane 4b sanity
+    // check — the bare node's extent is a 2-point sliver), and
+    // Frogswater has no bare node at all: both stay qualified.
+    expect(areaIdForGangOpRegion('Grassrivers, Mariana County', db.areas)).toBe(
+      'area:grassrivers--mariana-county',
+    );
+    expect(areaIdForGangOpRegion('Frogswater, Kelly County', db.areas)).toBe(
+      'area:frogswater--kelly-county',
     );
     expect(areaIdForGangOpRegion('Mariana County', db.areas)).toBe('county:mariana');
     expect(areaIdForGangOpRegion('Ambrosia', db.areas)).toBe('area:ambrosia');
@@ -115,31 +134,219 @@ describe('gang-op likely-area measurement (v0.32 lane 1)', () => {
     expect(region?.reason).toBe('The area’s own extent.');
   });
 
-  it('the merge is scoped to Port Gellhorn: the other qualified-vs-bare towns still fall back to their county', () => {
+  it('the merge is generalised to Hamlet, Watson Bay and Emerald Springs — but NOT Grassrivers, Starlet Motel or La Perle (v0.32 regions-fix, lane 4b)', () => {
     const db = buildFullDb();
-    // Same qualified-vs-bare shape (Grassrivers, Hamlet, Watson
-    // Bay, Emerald Springs) — left for the coordinator to rule on;
-    // this lane merges Port Gellhorn only.
+    // The same qualified-vs-bare shape as Port Gellhorn, merged
+    // by the coordinator's generalisation decision: the three
+    // towns' ops now resolve to their town extents (own-bounds).
+    for (const [region, townId] of [
+      ['Hamlet, Mariana County', 'area:hamlet'],
+      ['Watson Bay, Mariana County', 'area:watson-bay'],
+      ['Emerald Springs, Kelly County', 'area:emerald-springs'],
+    ] as const) {
+      expect(areaIdForGangOpRegion(region, db.areas)).toBe(townId);
+    }
+    // Grassrivers is the deliberate exception: the bare node has
+    // only 2 positioned members — L2943 ("?, Grassrivers",
+    // UNKNOWN confidence) and L3389 ("Bridge, Grassrivers") —
+    // 21 map units apart horizontally, 1,088 apart vertically,
+    // so its padded bbox is a 421 × 1,488 sliver whose width is
+    // 95% padding. That is not a town extent: Manatee Motel
+    // keeps the Mariana County fallback.
     expect(areaIdForGangOpRegion('Grassrivers, Mariana County', db.areas)).toBe(
       'area:grassrivers--mariana-county',
     );
-    expect(areaIdForGangOpRegion('Emerald Springs, Kelly County', db.areas)).toBe(
+    const manatee = GANG_OP_PLACES.find((p) => p.id === 'gang-op:manatee-motel')!;
+    const manateeRegion = likelyAreaForPlace(db.areas, manatee);
+    expect(manateeRegion?.kind).toBe('county');
+    expect(manateeRegion?.countyName).toBe('Mariana County');
+    expect(manateeRegion?.areaId).toBe('area:grassrivers--mariana-county');
+    expect(manateeRegion?.label).toBe(
+      'Manatee Motel · likely area — Mariana County extent (estimate)',
+    );
+    // Frogswater has no bare node: Walker Farm stays county.
+    const walker = GANG_OP_PLACES.find((p) => p.id === 'gang-op:walker-farm')!;
+    const walkerRegion = likelyAreaForPlace(db.areas, walker);
+    expect(walkerRegion?.kind).toBe('county');
+    expect(walkerRegion?.countyName).toBe('Kelly County');
+    expect(walkerRegion?.areaId).toBe('area:frogswater--kelly-county');
+    // Scope guards: the qualified form is genuinely a different
+    // place here, so no redirect fires — Starlet Motel is a real
+    // sub-area (its own positioned member L1159, its own bounds),
+    // and "La Perle, Vice City" and bare area:la-perle have
+    // different bounds.
+    expect(areaIdForGangOpRegion('Starlet Motel, Kelly County', db.areas)).toBe(
+      'area:starlet-motel--kelly-county',
+    );
+    expect(areaIdForGangOpRegion('La Perle, Vice City', db.areas)).toBe(
+      'area:la-perle--vice-city',
+    );
+    const laPerle = GANG_OP_PLACES.find(
+      (p) => p.id === 'gang-op:la-perle-trap-house',
+    )!;
+    expect(likelyAreaForPlace(db.areas, laPerle)?.areaId).toBe(
+      'area:la-perle--vice-city',
+    );
+    expect(likelyAreaForPlace(db.areas, laPerle)?.bounds).toEqual(
+      db.areas.get('area:la-perle--vice-city')?.bounds,
+    );
+    expect(likelyAreaForPlace(db.areas, laPerle)?.bounds).not.toEqual(
+      db.areas.get('area:la-perle')?.bounds,
+    );
+  });
+
+  it('without the town node in the map, each qualified id is returned unchanged (no invented node)', () => {
+    const empty = new Map();
+    expect(areaIdForGangOpRegion('Port Gellhorn, Kelly County', empty)).toBe(
+      'area:port-gellhorn--kelly-county',
+    );
+    expect(areaIdForGangOpRegion('Hamlet, Mariana County', empty)).toBe(
+      'area:hamlet--mariana-county',
+    );
+    expect(areaIdForGangOpRegion('Watson Bay, Mariana County', empty)).toBe(
+      'area:watson-bay--mariana-county',
+    );
+    expect(areaIdForGangOpRegion('Emerald Springs, Kelly County', empty)).toBe(
       'area:emerald-springs--kelly-county',
     );
-    const manatee = GANG_OP_PLACES.find((p) => p.id === 'gang-op:manatee-motel')!;
-    expect(likelyAreaForPlace(db.areas, manatee)?.kind).toBe('county');
+    expect(areaIdForGangOpRegion('Grassrivers, Mariana County', empty)).toBe(
+      'area:grassrivers--mariana-county',
+    );
+  });
+
+  it('the three newly-merged towns draw their own extents, with exact bounds', () => {
+    const db = buildFullDb();
+    // Hamlet — M7 Compound. The town node: 175 direct members,
+    // all positioned, parent county:mariana (plus a Prison,
+    // Hamlet child node whose 10 members sit inside the bounds).
+    const m7 = GANG_OP_PLACES.find((p) => p.id === 'gang-op:m7-compound')!;
+    const m7Region = likelyAreaForPlace(db.areas, m7);
+    expect(m7?.region).toBe('Hamlet, Mariana County');
+    expect(m7Region?.kind).toBe('own');
+    expect(m7Region?.countyName).toBeNull();
+    expect(m7Region?.areaId).toBe('area:hamlet');
+    expect(m7Region?.areaName).toBe('Hamlet');
+    expect(m7Region?.bounds).toEqual(db.areas.get('area:hamlet')?.bounds);
+    expect(m7Region?.bounds).toEqual({
+      west: -3480.072948296937,
+      east: -2005.38102213178,
+      south: -4026.5847781958873,
+      north: -2440.581,
+    });
+    expect(m7Region?.label).toBe('M7 Compound · likely area');
+    expect(m7Region?.reason).toBe('The area’s own extent.');
+    // Watson Bay — all three ops, one extent. The town node: 78
+    // members, all positioned, parent county:mariana.
+    const watsonBayBounds = {
+      west: -6123.6121437835245,
+      east: -3869.8948198560356,
+      south: -3954.0969653242105,
+      north: -2224.2386352058174,
+    };
+    for (const id of [
+      'gang-op:palmer-fishing-warehouse',
+      'gang-op:watson-bay-safehouse',
+      'gang-op:mill-station-radar-base',
+    ]) {
+      const place = GANG_OP_PLACES.find((p) => p.id === id)!;
+      const region = likelyAreaForPlace(db.areas, place);
+      expect(place.region).toBe('Watson Bay, Mariana County');
+      expect(region?.kind).toBe('own');
+      expect(region?.countyName).toBeNull();
+      expect(region?.areaId).toBe('area:watson-bay');
+      expect(region?.areaName).toBe('Watson Bay');
+      expect(region?.bounds).toEqual(watsonBayBounds);
+      expect(region?.bounds).toEqual(db.areas.get('area:watson-bay')?.bounds);
+      expect(region?.label).toBe(`${place.title} · likely area`);
+      expect(region?.reason).toBe('The area’s own extent.');
+    }
+    // Emerald Springs — Gas Station Meth Front. The town node: 7
+    // members, all positioned (L1111, L1627, L1778, L1779, L2889,
+    // L2899, L3812), parent county:kelly.
     const gasStation = GANG_OP_PLACES.find(
       (p) => p.id === 'gang-op:gas-station-meth-front',
     )!;
     const gasRegion = likelyAreaForPlace(db.areas, gasStation);
-    expect(gasRegion?.kind).toBe('county');
-    expect(gasRegion?.countyName).toBe('Kelly County');
+    expect(gasStation.region).toBe('Emerald Springs, Kelly County');
+    expect(gasRegion?.kind).toBe('own');
+    expect(gasRegion?.countyName).toBeNull();
+    expect(gasRegion?.areaId).toBe('area:emerald-springs');
+    expect(gasRegion?.areaName).toBe('Emerald Springs');
+    expect(gasRegion?.bounds).toEqual(
+      db.areas.get('area:emerald-springs')?.bounds,
+    );
+    expect(gasRegion?.bounds).toEqual({
+      west: -4729.169114876321,
+      east: -3133.603410203587,
+      south: 1235.362396286126,
+      north: 2952.7691507797717,
+    });
+    expect(gasRegion?.label).toBe('Gas Station Meth Front · likely area');
+    expect(gasRegion?.reason).toBe('The area’s own extent.');
+    // The places still file under their qualified nodes — the
+    // merge is gang-op resolution only.
+    expect(db.locations.get('gang-op:m7-compound')?.areaId).toBe(
+      'area:hamlet--mariana-county',
+    );
+    expect(db.locations.get('gang-op:palmer-fishing-warehouse')?.areaId).toBe(
+      'area:watson-bay--mariana-county',
+    );
+    expect(db.locations.get('gang-op:gas-station-meth-front')?.areaId).toBe(
+      'area:emerald-springs--kelly-county',
+    );
   });
 
-  it('without the town node in the map, the qualified id is returned unchanged (no invented node)', () => {
-    expect(
-      areaIdForGangOpRegion('Port Gellhorn, Kelly County', new Map()),
-    ).toBe('area:port-gellhorn--kelly-county');
+  it('the merge changes no Ask answer: every merged op still answers from its region + area lead, never from the resolved area id', () => {
+    const ask = (question: string) =>
+      retrieveForAsk({
+        question,
+        places: GANG_OP_PLACES,
+        layers: DEFAULT_LAYERS,
+        filters: { hideFound: false, remainingOnly: false, countyId: null },
+      });
+    // Brooks (lane 4) plus the five newly-merged ops: the answer
+    // is built from record.region + record.areaLead, so the
+    // resolution change must not move a word of it. The builder
+    // (areaKnownSummaryFor) trims a leading "{town}, " from the
+    // lead when the region already names it — assert the trimmed
+    // detail, exactly as the builder computes it.
+    for (const name of [
+      'Brooks Boatworks',
+      'M7 Compound',
+      'Palmer Fishing Warehouse',
+      'Watson Bay Safehouse',
+      'Mill Station Radar Base',
+      'Gas Station Meth Front',
+    ]) {
+      const record = GANG_OPERATIONS.find((op) => op.name === name)!;
+      const result = ask(`where is ${name}?`);
+      expect(result.records[0]?.id).toBe(record.id);
+      expect(result.proximitySummary).toContain(record.region);
+      const regionFirst = record.region.split(',')[0] ?? '';
+      let detail = record.areaLead;
+      if (detail.startsWith(`${regionFirst}, `)) {
+        detail = detail.slice(regionFirst.length + 2);
+      } else if (detail.endsWith(`, ${record.region}`)) {
+        detail = detail.slice(0, -record.region.length - 2);
+      } else if (detail === record.region) {
+        detail = '';
+      }
+      if (detail) expect(result.proximitySummary).toContain(detail);
+      expect(result.proximitySummary).toMatch(/no verified position/);
+    }
+    // And the two county stayers answer the same way.
+    for (const name of ['Manatee Motel', 'Walker Farm']) {
+      const record = GANG_OPERATIONS.find((op) => op.name === name)!;
+      const result = ask(`where is ${name}?`);
+      expect(result.records[0]?.id).toBe(record.id);
+      expect(result.proximitySummary).toContain(record.region);
+      const regionFirst = record.region.split(',')[0] ?? '';
+      let detail = record.areaLead;
+      if (detail.startsWith(`${regionFirst}, `)) {
+        detail = detail.slice(regionFirst.length + 2);
+      }
+      if (detail) expect(result.proximitySummary).toContain(detail);
+    }
   });
 
   it('an own-bounds op draws its named area: Hog Stars Garage → Ambrosia extent', () => {
@@ -209,20 +416,75 @@ describe('gang-op likely-area measurement (v0.32 lane 1)', () => {
     }
   });
 
-  it('regions sharing one extent draw once: 34 regions group into 14 rects, Kelly County carrying 2 ops, Port Gellhorn town carrying 6', () => {
+  it('regions sharing one extent draw once: 34 regions group into 17 rects, Kelly County carrying Walker Farm alone, Mariana County carrying 2', () => {
     const db = buildFullDb();
     const regions = gangOpLikelyAreas(db.areas, GANG_OP_PLACES, gangOpLayersOn());
     const groups = groupLikelyAreas(regions);
-    expect(groups).toHaveLength(14);
+    expect(groups).toHaveLength(17);
+    // Kelly County: Gas Station Meth Front merged to its town
+    // extent, so Walker Farm sits alone on the county rect.
     const kelly = groups.find((group) => group.countyName === 'Kelly County');
-    expect(kelly?.areas).toHaveLength(2);
-    expect(kelly?.areas.map((area) => area.name).sort()).toEqual([
-      'Gas Station Meth Front',
-      'Walker Farm',
+    expect(kelly?.areas).toHaveLength(1);
+    expect(kelly?.areas.map((area) => area.name)).toEqual(['Walker Farm']);
+    expect(kelly?.bounds).toEqual({ west: -9382, east: -3023, south: 596, north: 5626 });
+    expect(kelly?.label).toBe(
+      'Walker Farm · likely area — Kelly County extent (estimate)',
+    );
+    // Mariana County: Hamlet + Watson Bay merged out, so only
+    // Manatee Motel (Grassrivers, no town extent) and the
+    // county-named Industrial Weed Grow remain.
+    const mariana = groups.find((group) => group.countyName === 'Mariana County');
+    expect(mariana?.areas).toHaveLength(2);
+    expect(mariana?.areas.map((area) => area.name).sort()).toEqual([
+      'Industrial Weed Grow',
+      'Manatee Motel',
     ]);
-    expect(kelly?.label).toContain('likely area — Kelly County extent (estimate)');
-    for (const name of kelly?.areas.map((area) => area.name) ?? []) {
-      expect(kelly?.label).toContain(name);
+    expect(mariana?.label).toContain('likely area — Mariana County extent (estimate)');
+    for (const name of mariana?.areas.map((area) => area.name) ?? []) {
+      expect(mariana?.label).toContain(name);
+    }
+    // The three newly-merged town rects.
+    const hamlet = groups.find((group) =>
+      group.areas.some((area) => area.areaId === 'area:hamlet'),
+    );
+    expect(hamlet).toBeDefined();
+    expect(hamlet?.kind).toBe('own');
+    expect(hamlet?.areas.map((area) => area.name)).toEqual(['M7 Compound']);
+    expect(hamlet?.bounds).toEqual(db.areas.get('area:hamlet')?.bounds);
+    const watsonBay = groups.find((group) =>
+      group.areas.some((area) => area.areaId === 'area:watson-bay'),
+    );
+    expect(watsonBay).toBeDefined();
+    expect(watsonBay?.kind).toBe('own');
+    expect(watsonBay?.areas).toHaveLength(3);
+    expect(watsonBay?.areas.map((area) => area.name).sort()).toEqual([
+      'Mill Station Radar Base',
+      'Palmer Fishing Warehouse',
+      'Watson Bay Safehouse',
+    ]);
+    expect(watsonBay?.bounds).toEqual(db.areas.get('area:watson-bay')?.bounds);
+    const emeraldSprings = groups.find((group) =>
+      group.areas.some((area) => area.areaId === 'area:emerald-springs'),
+    );
+    expect(emeraldSprings).toBeDefined();
+    expect(emeraldSprings?.kind).toBe('own');
+    expect(emeraldSprings?.areas.map((area) => area.name)).toEqual([
+      'Gas Station Meth Front',
+    ]);
+    expect(emeraldSprings?.bounds).toEqual(
+      db.areas.get('area:emerald-springs')?.bounds,
+    );
+    // No op still resolves to a merged qualified id.
+    for (const qualifiedId of [
+      'area:hamlet--mariana-county',
+      'area:watson-bay--mariana-county',
+      'area:emerald-springs--kelly-county',
+    ]) {
+      expect(
+        groups.filter((group) =>
+          group.areas.some((area) => area.areaId === qualifiedId),
+        ),
+      ).toHaveLength(0);
     }
     // The six Port Gellhorn ops draw the town extent as one rect,
     // not six — and no longer share the Kelly County rect.
