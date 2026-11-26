@@ -73,9 +73,11 @@ describe('geography — §6.1 hierarchy (step 4)', () => {
     expect(counts.exactlyOne).toBe(47);
   });
 
-  it('derives 126 area nodes: 1 state + 5 counties + 120 areas', () => {
+  it('derives 133 area nodes: 1 state + 5 counties + 127 areas', () => {
     const db = buildFullDb();
-    expect(db.areas.size).toBe(126);
+    // 126 + 7 from the v0.32 gang-op import (Demo C): six new towns +
+    // one new district, all area-known with no positioned members.
+    expect(db.areas.size).toBe(133);
     const byLevel = new Map<string, number>();
     for (const node of db.areas.values()) {
       byLevel.set(node.level, (byLevel.get(node.level) ?? 0) + 1);
@@ -86,9 +88,9 @@ describe('geography — §6.1 hierarchy (step 4)', () => {
     // is a TOWN, so both Port Gellhorn nodes are towns — the
     // 1-member path node "Port Gellhorn, Kelly County" included.
     expect(byLevel.get('city')).toBe(2);
-    expect(byLevel.get('town')).toBe(89);
+    expect(byLevel.get('town')).toBe(95);
     expect(byLevel.get('neighbourhood')).toBe(22);
-    expect(byLevel.get('district')).toBe(7);
+    expect(byLevel.get('district')).toBe(8);
   });
 
   it('parses region paths: streets drop, the last segment never does', () => {
@@ -187,7 +189,8 @@ describe('geography — §6.1 hierarchy (step 4)', () => {
   it('membership is the hierarchy: Vice City holds its neighbourhoods too', () => {
     const db = buildFullDb();
     const viceCity = db.areas.get('area:vice-city')!;
-    expect(viceCity.locationIds.length).toBe(1157);
+    // 1157 + 13 gang-op places under Vice City (Demo C import).
+    expect(viceCity.locationIds.length).toBe(1170);
     const downtown = db.areas.get('area:downtown--vice-city')!;
     expect(downtown.locationIds.length).toBe(141);
     for (const memberId of downtown.locationIds) {
@@ -195,11 +198,13 @@ describe('geography — §6.1 hierarchy (step 4)', () => {
     }
     // Direct members are the exact-path places only.
     expect(directLocationIds(db.areas, 'area:downtown--vice-city')).toHaveLength(141);
-    expect(directLocationIds(db.areas, 'area:vice-city')).toHaveLength(62);
+    // 62 + 4 gang-op places whose exact path is Vice City itself.
+    expect(directLocationIds(db.areas, 'area:vice-city')).toHaveLength(66);
     // The state counts each place once, even Ambrosia's (listed
     // under both counties).
-    expect(db.areas.get(STATE_NODE_ID)!.locationIds.length).toBe(4266);
-    expect(new Set(db.areas.get(STATE_NODE_ID)!.locationIds).size).toBe(4266);
+    // 4266 + 37 gang-op places (Demo C import — every one is a state member).
+    expect(db.areas.get(STATE_NODE_ID)!.locationIds.length).toBe(4303);
+    expect(new Set(db.areas.get(STATE_NODE_ID)!.locationIds).size).toBe(4303);
   });
 
   it('Ambrosia is county-disputed: no single parent, both claims, listed under both', () => {
@@ -289,12 +294,21 @@ describe('geography — §6.1 extents (step 4)', () => {
       .map((node) => node.id)
       .sort();
     expect(nullBounds).toEqual([
+      // 6 + 7 new areas from the v0.32 gang-op import (Demo C) — all
+      // seven are area-known with no positioned members.
+      'area:emerald-springs--kelly-county',
+      'area:frogswater--kelly-county',
       'area:grassrivers--mariana-county',
+      'area:hamlet--mariana-county',
       'area:lost-vista',
       'area:port-gellhorn--kelly-county',
       'area:scattered-pines',
       'area:st-joseph--leonida',
       'area:sundown--leonida',
+      'area:vespucci-island',
+      'area:watson-bay--mariana-county',
+      'area:waxman-island',
+      'area:wetman-bay--grassrivers',
     ]);
     const lostVista = db.areas.get('area:lost-vista')!;
     expect(lostVista.locationIds.length).toBe(1);

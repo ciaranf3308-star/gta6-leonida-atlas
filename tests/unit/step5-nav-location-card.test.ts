@@ -299,11 +299,14 @@ describe('location-card actions per opportunity kind (step 5)', () => {
       expect(only.label).toBe('Mark as looted');
       expect(only.verb).toBe('looted');
       expect(only.target.type).toBe('opportunity');
-      expect(only.detail).toBe('Bank job');
+      // Looted rows show the opportunity's specific detail, not the
+      // kind label (Demo C): this job is the Small bank, and the kind
+      // is already the row's context.
+      expect(only.detail).toBe('Small bank');
     }
   });
 
-  it('a break-in gets Mark as looted plus Mark as discovered plus Mark as explored', () => {
+  it('Parlor Apartments gets two loot rows (break-in + San4San gang-op) plus discovered + explored', () => {
     const db = buildFullDb();
     const actions = locationCardActions(
       locationCard(db, 'breakable:parlor-apartments')!,
@@ -311,7 +314,26 @@ describe('location-card actions per opportunity kind (step 5)', () => {
     );
     expect(
       actions.map((action) => (action.kind === 'collect' ? 'collect' : action.label)),
-    ).toEqual(['Mark as looted', 'Mark as discovered', 'Mark as explored']);
+    ).toEqual([
+      'Mark as looted',
+      'Mark as looted',
+      'Mark as discovered',
+      'Mark as explored',
+    ]);
+    // One building, many opportunities (§3.1): Parlor is BOTH the
+    // breakable-home example AND the San4San gang-op host (Demo C
+    // host-match), so the two loot rows must be distinguishable by
+    // their detail — the break-in's loot line vs the gang name.
+    const looted = actions.filter(
+      (action) => action.kind === 'record' && action.verb === 'looted',
+    );
+    expect(looted).toHaveLength(2);
+    const details = looted.map((action) =>
+      action.kind === 'record' ? action.detail : '',
+    );
+    expect(details).toContain('San4San');
+    expect(details.some((detail) => /shotgun/i.test(detail))).toBe(true);
+    expect(new Set(details).size).toBe(2);
   });
 
   it('a gym-only location gets the discovered fallback — one honest action, no invented verb', () => {

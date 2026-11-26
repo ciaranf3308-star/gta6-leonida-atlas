@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import { catalogueFromSnapshot } from "../../src/data/catalogue";
 import { BREAKABLE_HOME_PLACES } from "../../src/data/breakable-homes";
 import { COLLECTABLE_CARD_PLACES } from "../../src/data/collectables";
+import { GANG_OP_PLACES } from "../../src/data/gang-operations";
 import { GYM_PLACES, EQUIPMENT_PLACES } from "../../src/data/gyms";
 import { LOOT_MAP_PLACES } from "../../src/data/loot-map";
 import { filterPlaces } from "../../src/domain/filter";
@@ -95,7 +96,10 @@ describe("regional source discoveries", () => {
         EQUIPMENT_PLACES.length +
         BREAKABLE_HOME_PLACES.length +
         COLLECTABLE_CARD_PLACES.length +
-        LOOT_MAP_PLACES.length,
+        LOOT_MAP_PLACES.length +
+        // 37 gang operations (v0.32 Demo C import — area-known, no pins;
+        // 2 host-matched onto existing records, so +37 not +39).
+        GANG_OP_PLACES.length,
     );
     const raw = snapshot.landmarks.find(
       (place: { id: string }) => place.id === "L399",
