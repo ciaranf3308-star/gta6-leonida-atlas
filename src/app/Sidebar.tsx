@@ -732,9 +732,12 @@ export function FindPanel({
 export function CollectionsPanel({
   db,
   onSelect,
+  onShowSetOnMap,
 }: {
   db?: GameDatabase | null;
   onSelect?: (id: string) => void;
+  /** v0.33 Lane C: Collections → a set → "Show on map" starts a set drive. */
+  onShowSetOnMap?: (setId: string) => void;
 }) {
   // Demo F: the album is the Collections view over the same items and
   // the same completion log as the journal — List is the journal rows,
@@ -792,9 +795,14 @@ export function CollectionsPanel({
           onSelectPlace={onSelect}
           onAddFromScreenshot={openScreenshotMatch}
           photosRefresh={photosRefresh}
+          onShowSetOnMap={onShowSetOnMap}
         />
       ) : (
-        <Journal db={db ?? null} onSelectPlace={onSelect} />
+        <Journal
+          db={db ?? null}
+          onSelectPlace={onSelect}
+          onShowSetOnMap={onShowSetOnMap}
+        />
       )}
       <AddToMapSection />
     </div>
@@ -809,6 +817,7 @@ export function Sidebar({
   anyPublicLayerVisible,
   showingCount,
   onSelect,
+  onShowSetOnMap,
 }: {
   places: Place[];
   allPlaces: Place[];
@@ -817,6 +826,7 @@ export function Sidebar({
   anyPublicLayerVisible: boolean;
   showingCount: number;
   onSelect: (id: string) => void;
+  onShowSetOnMap?: (setId: string) => void;
 }) {
   const navTab = useUiStore((s) => s.navTab);
   const findOpen = useUiStore((s) => s.findOpen);
@@ -872,7 +882,7 @@ export function Sidebar({
           onSelect={onSelect}
         />
       ) : navTab === 'collections' ? (
-        <CollectionsPanel db={db} onSelect={onSelect} />
+        <CollectionsPanel db={db} onSelect={onSelect} onShowSetOnMap={onShowSetOnMap} />
       ) : (
         <div className="sidebar-content">
           <ProgressPanel progress={progress} db={db} />

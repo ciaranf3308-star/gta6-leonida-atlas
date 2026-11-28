@@ -249,6 +249,7 @@ export function Album({
   db,
   onSelectPlace,
   onAddFromScreenshot,
+  onShowSetOnMap,
   photosRefresh = 0,
   initialFilter = 'all',
   initialOpenSetId,
@@ -256,6 +257,8 @@ export function Album({
   db: GameDatabase | null;
   onSelectPlace?: (locationId: string) => void;
   onAddFromScreenshot?: (preset: AlbumScreenshotPreset) => void;
+  /** v0.33 Lane C: Collections → a set → "Show on map" starts a set drive. */
+  onShowSetOnMap?: (setId: string) => void;
   /** Bump after a screenshot is attached so card photos reload. */
   photosRefresh?: number;
   initialFilter?: AlbumFilter;
@@ -399,6 +402,16 @@ export function Album({
               </span>
             </summary>
             <div className="album-set-actions">
+              {onShowSetOnMap && (
+                <button
+                  type="button"
+                  className="text-button"
+                  onClick={() => onShowSetOnMap(set.id)}
+                  aria-label={`Show only the ${set.name} cards on the map`}
+                >
+                  Show on map
+                </button>
+              )}
               {onAddFromScreenshot && (
                 <button
                   type="button"

@@ -26,6 +26,7 @@ import {
 import { Journal } from '../../src/features/completion/Journal';
 import { Album } from '../../src/features/album/Album';
 import { CompletionPanel } from '../../src/features/completion/CompletionPanel';
+import { SetDriveBanner } from '../../src/features/map/SetDriveBanner';
 import type { Place } from '../../src/domain/types';
 
 const snapshot = JSON.parse(
@@ -95,6 +96,42 @@ describe('v0.33 Lane C — D-5 count hygiene (one shared selector)', () => {
     expect(() => setDriveMembers(db, places, 'no-such-set')).toThrow(
       'Unknown collectible set',
     );
+  });
+
+  it('the drive banner + pill carry the same string as journal / album / progress', () => {
+    const db = dbWithCollected(VICKI);
+    const banner = renderToStaticMarkup(
+      createElement(SetDriveBanner, {
+        db,
+        places,
+        setId: 'delights-dancers',
+        hideFound: false,
+        onToggleHideFound: () => {},
+        onExit: () => {},
+      }),
+    );
+    // The banner count AND the pill both read "1 / 18 found" — the
+    // identical string the journal, album and Progress rows carry.
+    const occurrences = banner.split('1 / 18 found').length - 1;
+    expect(occurrences).toBe(2);
+    expect(banner).toContain('Delights Dancers');
+    // The pinned count is the separate number, labelled "pinned".
+    expect(banner).toContain('5 pinned of 18');
+    expect(banner).not.toContain('5 / 18 found');
+    // Per-county breakdown counts PINNED cards by county.
+    expect(banner).toContain('Kelly County 3');
+    expect(banner).toContain('Vice-Dale County 2');
+    expect(banner).toContain('Hide found');
+    expect(banner).toContain('Show all');
+  });
+
+  it('the journal set offers "Show on map" with its pinned count', () => {
+    const db = buildGameDatabase({ places });
+    const journal = renderToStaticMarkup(
+      createElement(Journal, { db, onShowSetOnMap: () => {} }),
+    );
+    expect(journal).toContain('Show on map');
+    expect(journal).toContain('5 pinned of 18');
   });
 });
 

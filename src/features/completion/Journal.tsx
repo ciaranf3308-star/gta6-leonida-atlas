@@ -48,6 +48,7 @@ import {
 import { collectedRecordFor } from './place-ids';
 import { recordCompletion, undoCompletion } from './record';
 import { useCompletionLogStore } from './log-store';
+import { setPinnedCount } from '../map/set-drive';
 import { FindCardButton } from '../ask/FindCardButton';
 import { vchLeadForSlot, vchLeadLabel } from '../ask/vch-links';
 
@@ -254,11 +255,14 @@ function JournalRow({
 export function Journal({
   db,
   onSelectPlace,
+  onShowSetOnMap,
   initialFilter = 'all',
   initialRevealedIds = [],
 }: {
   db: GameDatabase | null;
   onSelectPlace?: (locationId: string) => void;
+  /** v0.33 Lane C: Collections → a set → "Show on map" starts a set drive. */
+  onShowSetOnMap?: (setId: string) => void;
   initialFilter?: JournalFilter;
   initialRevealedIds?: readonly string[];
 }) {
@@ -375,6 +379,25 @@ export function Journal({
                 ? ` · size disputed ${set.sizeDisputed.low} vs ${set.sizeDisputed.high}`
                 : ''}
             </summary>
+            {/* v0.33 Lane C (D-3): the set-drive entry — only this
+              * set's pins, island-wide. The pinned count is the
+              * separate number, always labelled "pinned". */}
+            {onShowSetOnMap && (
+              <div className="journal-set-drive">
+                <span>
+                  {setPinnedCount(db, set.id).pinned} pinned of {set.size} — drive
+                  this set on the map
+                </span>
+                <button
+                  type="button"
+                  className="button"
+                  onClick={() => onShowSetOnMap(set.id)}
+                  aria-label={`Show only the ${set.name} cards on the map`}
+                >
+                  Show on map
+                </button>
+              </div>
+            )}
             {items.length === 0 && extras.length === 0 ? (
               <p className="empty-state">Nothing in this set matches this filter.</p>
             ) : (

@@ -465,6 +465,12 @@
   text-transform: uppercase;
   color: #e8e2d4;
 }
+/* v0.33 Lane C: while a set drive is active its bar sits at the
+ * county title's slot (top: 202px / 240px), so the title drops
+ * below the bar instead of hiding under it. */
+.atlas-map-view.has-drive .county-map-title {
+  top: 280px;
+}
 .isolation-pill {
   position: absolute;
   left: 12px;
@@ -747,6 +753,11 @@
    * Step 4: the hero gained the area-selector row (+44px). */
   .county-map-title {
     top: 240px;
+  }
+  /* v0.33 Lane C: the drive bar ends ~310px down on phones, so
+   * the county title drops below it while a drive is active. */
+  .atlas-map-view.has-drive .county-map-title {
+    top: 322px;
   }
   .atlas-edge-stack {
     top: 240px;

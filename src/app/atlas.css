@@ -513,6 +513,137 @@ h3 {
 .map-chip.is-active svg {
   color: var(--pink-soft);
 }
+/* ---- Set-drive bar (v0.33 Lane C, D-3 + D-5): the drive header
+ * + pill row below the hero while a set is being driven. Same
+ * chrome slot as the county title (top: 202px desktop, 240px
+ * phones — the hero's rows above it), so the measured chrome
+ * (chrome-geometry.ts) already keeps pins and the fit framing
+ * clear of it. On phones the right edge clears the Layers/recenter
+ * stack (right: 72px); the county title drops below the bar while
+ * a drive is active (map.css, .has-drive). ---- */
+.set-drive-bar {
+  position: absolute;
+  z-index: 460;
+  top: 202px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  pointer-events: none;
+}
+.set-drive-bar > * {
+  pointer-events: auto;
+}
+.set-drive-banner {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 12px;
+  border: 1px solid #f6f0e52e;
+  border-radius: 14px;
+  background: #0b1018d9;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 16px #0009;
+  color: var(--text, #f6f0e5);
+}
+.set-drive-main {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.set-drive-name {
+  font-family: var(--condensed, 'Oswald', sans-serif);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.set-drive-count {
+  font-size: 13px;
+  font-weight: 700;
+  color: #6fb7e8;
+}
+.set-drive-pinned {
+  font-size: 12px;
+  color: #b9c4d0;
+}
+.set-drive-exit {
+  margin-left: auto;
+  min-height: 28px;
+  padding: 0 12px;
+  border: 1px solid #f6f0e52e;
+  border-radius: 999px;
+  background: var(--surface-raised, #202e40);
+  color: var(--text, #f6f0e5);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.set-drive-exit:hover {
+  background: var(--coral, #ff527f);
+  color: #fff;
+}
+.set-drive-sub {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+  font-size: 12px;
+  color: #b9c4d0;
+}
+.set-drive-hide-found {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  color: var(--text, #f6f0e5);
+  font-weight: 600;
+  cursor: pointer;
+}
+.set-drive-hide-found input {
+  width: 16px;
+  height: 16px;
+  accent-color: #6fb7e8;
+}
+.set-drive-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: #6fb7e8;
+  color: #0b1018;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 4px 16px #0009;
+  white-space: nowrap;
+}
+@media (max-width: 599px) {
+  .set-drive-bar {
+    top: 240px;
+    right: 72px;
+  }
+}
+/* v0.33 Lane C: the set-drive entry inside a journal set — the
+ * pinned count (labelled "pinned") beside the Show on map button. */
+.journal-set-drive {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-muted, #b9c4d0);
+}
+.journal-set-drive .button {
+  margin-left: auto;
+}
 .map-search-pill {
   display: flex;
   align-items: center;

@@ -9,6 +9,8 @@ import { revealSet } from '../features/spoiler/visibility';
 import MapView from '../features/map/MapView';
 import BottomNav from './BottomNav';
 import MapFilterSheet from '../features/map/MapFilterSheet';
+import { SetDriveBanner } from '../features/map/SetDriveBanner';
+import { setDriveLayerIds, setDriveMembers } from '../features/map/set-drive';
 import {
   layersForLaunch,
   loadSavedMapView,
@@ -101,6 +103,7 @@ export default function App() {
   const editorOpen = useUiStore((s) => s.editorOpen);
   const askOpen = useUiStore((s) => s.askOpen);
   const selectedId = useMapStore((s) => s.selectedId);
+  const setDrive = useMapStore((s) => s.setDrive);
   const layers = useMapStore((s) => s.layers);
   const highlightIds = useMapStore((s) => s.highlightIds);
   const highlightSet = useMemo(() => new Set(highlightIds), [highlightIds]);
@@ -254,14 +257,35 @@ export default function App() {
     () => revealSet(highlightIds, selectedId),
     [highlightIds, selectedId],
   );
+  /** Set drive (v0.33 Lane C, D-3): the member place ids — every
+   * layer the set rides on, measured from the data. The map pins
+   * narrow to exactly these; the hero exemption in MapView keys on
+   * the same set, so a loot-collectibles member (Harley) is exempt
+   * without exempting its whole layer. */
+  const setDriveMemberIds = useMemo(() => {
+    if (!setDrive || !gameDb) return null;
+    return new Set(setDriveMembers(gameDb, allPlaces, setDrive.setId).placeIds);
+  }, [setDrive, gameDb, allPlaces]);
   const mapPlaces = useMemo(() => {
-    if (mapHighlightSet.size === 0) return filtered;
-    const seen = new Set(filtered.map((place) => place.id));
+    // A set drive narrows the MAP pins to the set's members only.
+    // The reveal set still appends: a host whose sheet is open
+    // renders while it is selected / highlighted (that is the
+    // reveal-trap path — Mark found clears the highlight, so the
+    // host drops off and the card stands alone with its tick).
+    // The Find list (`filtered`) and the region feed keep their own
+    // pipelines: narrowing them too would empty the gang-op regions
+    // (they read the geo-unfiltered feed) and the drive's scope is
+    // the map, not Find.
+    const base = setDriveMemberIds
+      ? filtered.filter((place) => setDriveMemberIds.has(place.id))
+      : filtered;
+    if (mapHighlightSet.size === 0) return base;
+    const seen = new Set(base.map((place) => place.id));
     return [
-      ...filtered,
+      ...base,
       ...allPlaces.filter((place) => mapHighlightSet.has(place.id) && !seen.has(place.id)),
     ];
-  }, [filtered, allPlaces, mapHighlightSet]);
+  }, [filtered, allPlaces, mapHighlightSet, setDriveMemberIds]);
   const selected = useMemo(
     () => allPlaces.find((p) => p.id === selectedId),
     [allPlaces, selectedId],
@@ -459,6 +483,67 @@ export default function App() {
     }
     return null;
   }, [layers]);
+  /** Set drive (v0.33 Lane C, D-3): Collections → a set → "Show on
+   * map" solos that set's pins island-wide. The set picker IS the
+   * scope — "Only this layer" is not a separate gesture. The drive
+   * turns on every layer the set rides on (its cards:* layer AND
+   * loot-collectibles for its loot-joined members) and every other
+   * public layer off; my-markers is untouched. The replaced layer
+   * state and Hide found are remembered on the drive, so exiting
+   * returns to exactly what was showing before. Hide found starts
+   * OFF — the drive shows the set whole, found pins included, so
+   * the player sees the ticks. The camera fits all of Leonida: the
+   * drive is island-wide. */
+  const startSetDrive = useCallback(
+    (setId: string) => {
+      if (!gameDb) return;
+      const driveLayers = setDriveLayerIds(gameDb, allPlaces, setId);
+      const mapStore = useMapStore.getState();
+      mapStore.setSetDrive({
+        setId,
+        previousVisibleLayerIds: mapStore.layers
+          .filter((layer) => layer.visible)
+          .map((layer) => layer.id),
+        previousHideFound: useUiStore.getState().filters.hideFound,
+      });
+      dismissFirstOpen();
+      mapStore.setLayers(
+        mapStore.layers.map((layer) =>
+          layer.id === 'my-markers'
+            ? layer
+            : driveLayers.includes(layer.id)
+              ? { ...layer, visible: true }
+              : { ...layer, visible: false },
+        ),
+      );
+      useUiStore.getState().setFilters({ hideFound: false });
+      mapStore.select(null);
+      useUiStore.getState().setAskOpen(false);
+      useUiStore.getState().setFindOpen(false);
+      useUiStore.getState().setFilterSheetOpen(false);
+      useUiStore.getState().setNavTab('map');
+      mapStore.setBoundsFocus(INITIAL_BOUNDS);
+    },
+    [gameDb, allPlaces, dismissFirstOpen],
+  );
+  /** Exit the drive ("Show all" on the banner): the remembered layer
+   * state and Hide found come back exactly as they were. */
+  const exitSetDrive = useCallback(() => {
+    const drive = useMapStore.getState().setDrive;
+    if (!drive) return;
+    const previousVisible = new Set(drive.previousVisibleLayerIds);
+    useMapStore.getState().setLayers(
+      useMapStore
+        .getState()
+        .layers.map((layer) =>
+          layer.id === 'my-markers'
+            ? layer
+            : { ...layer, visible: previousVisible.has(layer.id) },
+        ),
+    );
+    useUiStore.getState().setFilters({ hideFound: drive.previousHideFound });
+    useMapStore.getState().setSetDrive(null);
+  }, []);
   const goToTab = useCallback((tab: 'map' | 'collections' | 'progress' | 'ask') => {
     if (tab === 'ask') {
       useMapStore.getState().select(null);
@@ -741,6 +826,7 @@ export default function App() {
         anyPublicLayerVisible={anyPublicLayerVisible}
         showingCount={showingCount}
         onSelect={select}
+        onShowSetOnMap={startSetDrive}
       />
       <section className="map-workspace" id="atlas-map-region" aria-label="Interactive Leonida map">
         <MapView
@@ -762,6 +848,8 @@ export default function App() {
           foundIds={gameDb ? completedPlaceIds(gameDb) : new Set<string>()}
           exploredIds={gameDb ? exploredPlaceIds(gameDb) : new Set<string>()}
           highlightIds={mapHighlightSet}
+          setDriveActive={setDrive !== null}
+          setDriveMemberIds={setDriveMemberIds ?? undefined}
           aiCategories={aiCategories}
           onSelect={select}
           onPlacePosition={placePosition}
@@ -869,6 +957,18 @@ export default function App() {
             nodes={areas}
             onSelectArea={selectArea}
             onClose={() => useSearchSplitStore.getState().setGeoOpen(false)}
+          />
+        )}
+        {setDrive && gameDb && (
+          <SetDriveBanner
+            db={gameDb}
+            places={allPlaces}
+            setId={setDrive.setId}
+            hideFound={filters.hideFound}
+            onToggleHideFound={() =>
+              useUiStore.getState().setFilters({ hideFound: !filters.hideFound })
+            }
+            onExit={exitSetDrive}
           />
         )}
         {areaPageOpen && selectedAreaNode && gameDb && (
