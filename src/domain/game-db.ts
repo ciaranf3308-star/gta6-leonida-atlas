@@ -503,6 +503,11 @@ function lootItemKind(place: Place): ItemKind {
  * 4. No host id + a `loot-collectibles` pin: the loot record IS the
  *    location (Marquise Bernard — "outside Kenton's shop", no GTADB
  *    host); the item's location id is the loot record's own id.
+ * 5. No host id + an fbrito candidate pin (tag `fbrito-import`): the
+ *    pin IS the location — it has no host building and its position is
+ *    the converted fbrito coordinate, evidence "approximate". The pin
+ *    must already be a location (the locations loop keeps fbrito pins);
+ *    anything else with no host id is a build-time error.
  * Anything else is a build-time error — never a silent drop.
  */
 function resolvePinnedSlotLocationId(
@@ -544,6 +549,9 @@ function resolvePinnedSlotLocationId(
       `Card slot ${slot.id} joins to missing catalogue pin ${slot.catalogueId}.`,
     );
   }
+  // Rule 5: an fbrito candidate pin has no host building — the pin IS
+  // the location (like a loot-collectibles card with no host).
+  if (pin.tags.includes('fbrito-import')) return pin.id;
   if (pin.layerId.startsWith('cards:')) {
     try {
       return parseCardHostId(pin);
@@ -764,7 +772,12 @@ export function buildGameDatabase(input: BuildGameDatabaseInput): GameDatabase {
   const locations = new Map<string, GameLocation>();
   for (const place of allPlaces) {
     if (place.layerId === 'regions') continue; // → AreaNode, not a location
-    if (place.layerId.startsWith('cards:')) continue; // → CollectibleItem
+    // Card pins are CollectibleItems on their host, not locations —
+    // EXCEPT fbrito candidate pins (tag 'fbrito-import'), which have no
+    // host building: the pin IS the location (same pattern as a
+    // loot-collectibles card with no host). Their slot resolves to the
+    // pin's own id in resolvePinnedSlotLocationId (rule 5).
+    if (place.layerId.startsWith('cards:') && !place.tags.includes('fbrito-import')) continue; // → CollectibleItem
     const lootCardHost = lootCardHostIds.get(place.id);
     if (
       place.layerId === 'loot-collectibles' &&

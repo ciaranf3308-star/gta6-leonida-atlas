@@ -1,5 +1,6 @@
 import type { Place } from '../domain/types';
 import { GENERATED_CARD_PLACES } from './card-checklist-pins.generated';
+import { GENERATED_FBRITO_CARD_PLACES } from './card-fbrito-pins.generated';
 
 /**
  * Collectible trading cards — all 18 sets, 480 cards in total (PowerPyx's
@@ -8,7 +9,8 @@ import { GENERATED_CARD_PLACES } from './card-checklist-pins.generated';
  *
  * Honest state of the data, 26 Nov 2026: 37 cards have a published
  * location precise enough to pin (plus 3 Loot Map dancer cards in
- * loot-map.ts, so 40 cards in the catalogue). A card is only pinned
+ * loot-map.ts, so 40 host-pinned cards in the catalogue — 386 pinned in
+ * total since 28 Nov 2026, see below). A card is only pinned
  * here when the guide names a host building that exists in the GTADB
  * catalogue, and the pin sits on that host building's verified GTADB
  * position with the exact spot described in the pin — the pin is the
@@ -26,6 +28,17 @@ import { GENERATED_CARD_PLACES } from './card-checklist-pins.generated';
  * src/data/card-checklist.generated.ts, built over a six.mics.dev
  * identity backbone (596 game-text tiers, 230 people). No printed
  * card text (© Rockstar) or artwork (no licence) is bundled.
+ *
+ * 28 Nov 2026: 346 more pins from the Open GTA 6 Map
+ * (fbritoferreira/gta6, CC BY 4.0, pinned commit 77cd5024) — candidate
+ * positions converted from the fbrito file and cross-referenced against
+ * gtatown's public Sources citations (see
+ * src/data/card-fbrito-pins.generated.ts and
+ * scripts/fbrito-import-manifest.json). These are NOT host pins: the pin
+ * sits on the converted coordinate, evidence "approximate", and the
+ * host rule above is unchanged — the 40 host-pinned slots keep their
+ * GTADB positions and were never moved to match one. Full provenance +
+ * takedown procedure: hidden_files/v032-gtatown/IMPORT-OVERRIDE.md.
  *
  * Sources: gtadb.net's Collectible Cards guide (148 named leads,
  * updated 22 Nov 2026) and GTA6Info's Collectible Cards page (Push
@@ -355,4 +368,8 @@ export const COLLECTABLE_CARD_PLACES: Place[] = [
   // 26 Nov 2026: 17 more cards from lorenzone.fr's written directions,
   // hand-matched to GTADB host buildings (see the generated file).
   ...GENERATED_CARD_PLACES,
+  // 28 Nov 2026: 346 candidate pins from the Open GTA 6 Map
+  // (fbritoferreira/gta6, CC BY 4.0) — converted coordinates, evidence
+  // "approximate", no host building (see the generated file).
+  ...GENERATED_FBRITO_CARD_PLACES,
 ];

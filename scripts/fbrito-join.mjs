@@ -26,7 +26,7 @@
  */
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import {
-  norm, normPerson, parseFbrito, convert, dist, variantMatches,
+  normPerson, parseFbrito, convert, dist, variantMatches,
   isTierVariant, parseGtName, normArea, tokens, descScore,
 } from './fbrito-join-lib.mjs';
 

@@ -336,6 +336,43 @@ function Credits() {
           poster prints county names but no boundary lines.
         </p>
       </Section>
+      <Section title="Open GTA 6 Map (fbritoferreira)">
+        <p>
+          346 collectible-card candidate pins come from the{" "}
+          <a href="https://github.com/fbritoferreira/gta6" target="_blank" rel="noreferrer">
+            Open GTA 6 Map
+          </a>{" "}
+          (fbritoferreira), pinned at commit{" "}
+          <code className="project-revision">77cd5024</code> (28 Nov 2026),
+          licensed under{" "}
+          <a
+            href="https://creativecommons.org/licenses/by/4.0/"
+            rel="license noreferrer"
+            target="_blank"
+          >
+            Creative Commons Attribution 4.0 International
+          </a>
+          . Positions are converted from that file&apos;s map coordinates and
+          cross-referenced against gtatown&apos;s public Sources citations;
+          the coordinates always come from the Open GTA 6 Map file, never
+          from gtatown&apos;s compilation. The 83 cards gtatown shows with no
+          matching Open GTA 6 Map record stay unmapped.
+        </p>
+        <p>
+          These pins are candidates, not verified building positions: each
+          pin sits on the converted coordinate and carries evidence
+          &ldquo;approximate&rdquo;, with its own source link on the card
+          sheet. The 40 host-pinned cards keep their verified GTADB
+          positions and were never moved to match one; where the Open GTA 6
+          Map position disagrees with a host pin, the disagreement is
+          recorded as a conflict note on the card, never resolved silently.
+          No screenshots, printed card text or artwork from any source are
+          bundled. If a position here was copied from a closed map, the CC
+          BY grant does not cover it — see the takedown procedure in the
+          import provenance note (scripts/fbrito-import-manifest.json in
+          the repository).
+        </p>
+      </Section>
       <Section title="Rockstar Games references">
         <p>
           Official Rockstar trailers, screenshots and webpages inform visual

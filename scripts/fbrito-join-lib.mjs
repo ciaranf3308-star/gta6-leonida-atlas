@@ -134,7 +134,7 @@ export const KNOWN_VARIANTS = new Set(['standard', 'bronze', 'silver', 'gold', '
  * Yamada (Rialto Islands)") — only accept the paren content as a
  * variant if it is a known tier/colour word.
  */
-export function parseGtName(gtName, setId) {
+export function parseGtName(gtName, _setId) {
   let m = gtName.match(/card\s*#\d+:\s*(.+?)\s*\(([^)]+)\)\s*$/i) || gtName.match(/card:\s*(.+?)\s*\(([^)]+)\)\s*$/i);
   if (m) {
     const v = norm(m[2].trim());
