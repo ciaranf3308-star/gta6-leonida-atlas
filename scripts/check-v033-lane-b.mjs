@@ -33,8 +33,7 @@
 //
 // Output: hidden_files/v033-demos/ (lane-b-*.png + lane-b-checks.json).
 // Screenshots must be LOOKED AT, not just logged.
-/* global document */
-/* global document, localStorage, location, window */
+/* global document, localStorage */
 import { chromium } from 'playwright';
 import http from 'node:http';
 import { createReadStream, existsSync, mkdirSync, writeFileSync } from 'node:fs';

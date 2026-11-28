@@ -44,7 +44,6 @@ const places = catalogueFromSnapshot(snapshot);
 console.log(`catalogue: ${places.length} places`);
 
 const aiCategories = {};
-const layersById = new Map(DEFAULT_LAYERS.map((l) => [l.id, l]));
 
 function visibleSet(visibleLayerIds) {
   const layers = DEFAULT_LAYERS.map((l) => ({
