@@ -246,7 +246,7 @@ export const DEFAULT_LAYERS: LayerDefinition[] = [
     id: 'loot-collectibles',
     name: 'Collectibles · Loot Map',
     description:
-      'Meditations, magazines, cards and watches from the GTA 6 Loot Map community dataset — 20 places. Community-sourced guide positions, not in-game verified. Trading-card sets live in their own Cards layers.',
+      'Meditations, magazines, cards and watches from the GTA 6 Loot Map community dataset — 20 places. Community-sourced guide positions, not in-game verified. Trading-card sets live in their own Cards layers. Each pin wears its own kind: meditations green/moon (10), magazines blue/book (5), cards light blue/gem (3), watch grey/watch (1), sculpture scan brown/camera (1).',
     category: 'collectible',
     mapIndex: 'collectibles',
     visible: false,
@@ -320,8 +320,12 @@ export const DEFAULT_LAYERS: LayerDefinition[] = [
     visible: false,
     order: 1 + index,
     source: 'GTA6Info / PowerPyx · approximate',
-    style: { color: '#d98cb3', radius: 6 },
-    icon: 'pin',
+    // v0.33 D-2: colour codes by KIND, never by set or tier — all 18
+    // sets share one light-blue card pin (#6FB7E8, gem). The old pink
+    // (#d98cb3, pin) made every card indistinguishable from the
+    // rest of the pink map. Tier stays text in the name only.
+    style: { color: '#6FB7E8', radius: 6 },
+    icon: 'gem',
     interactive: true,
   })),
 ];

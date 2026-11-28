@@ -27,10 +27,20 @@ export interface ClusterOptions {
  * they cover the map instead of bunching in Vice City. Everything else
  * waits for a zoom-in — the data is still there, it just does not pay
  * a DOM node until the player is close enough to read it.
+ *
+ * v0.33 D-6: `exemptLayerIds` is the set-drive exemption — when a
+ * single set's layer is soloed (the state Lane C drives; MapView
+ * derives it from "only this set's layer visible"), that set's pins
+ * bypass the cell collapse AND the maxHero cap, and all of them show.
+ * A set's pins are sparse — Delights 5 island-wide; a 32-pin set is
+ * still readable. Exempt pins still mark their cells used, so the
+ * non-exempt fill never piles onto an exempt pin's cell. Outside a
+ * set drive the hero rule stands.
  */
 export function selectHeroPlaces(
   places: readonly Place[],
   maxHero = 24,
+  exemptLayerIds: ReadonlySet<string> = new Set(),
 ): PositionedPlace[] {
   const positioned = places.filter((place): place is PositionedPlace =>
     isValidPosition(place.position),
@@ -66,6 +76,20 @@ export function selectHeroPlaces(
     usedCells.add(
       `${Math.floor(place.position.x / cell)}:${Math.floor(place.position.y / cell)}`,
     );
+  }
+  // v0.33 D-6: the set-drive exemption — every exempt pin shows, no
+  // cell collapse, no maxHero cap. Their cells are marked used so the
+  // fill below never stacks a second hero pin onto an exempt pin.
+  if (exemptLayerIds.size > 0) {
+    for (const place of positioned) {
+      if (pickedIds.has(place.id)) continue;
+      if (!exemptLayerIds.has(place.layerId) || !named(place)) continue;
+      picked.push(place);
+      pickedIds.add(place.id);
+      usedCells.add(
+        `${Math.floor(place.position.x / cell)}:${Math.floor(place.position.y / cell)}`,
+      );
+    }
   }
   const candidates = positioned
     .filter((place) => !pickedIds.has(place.id) && named(place))

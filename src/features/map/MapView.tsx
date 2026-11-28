@@ -30,7 +30,7 @@ import {
   observeChromeGeometry,
   type ChromeGeometry,
 } from './chrome-geometry';
-import { markerColor, markerIcon } from './marker-icon';
+import { markerIcon } from './marker-icon';
 import { isPlacePinnable } from './pin-visibility';
 import {
   computeLabelPlacements,
@@ -47,7 +47,11 @@ import type { AreaNode } from '../../domain/geography';
 import {
   iconKeyForAiRecord,
   iconKeyForPlace,
+  isPlainResidential,
+  pinFormForPlace,
+  pinStyleForPlace,
   placeIconSvg,
+  STREET_PIN_ZOOM_MIN,
 } from './place-icons';
 import type { AiCategoryRecord } from '../categorise/categories';
 import type { Isolation } from './isolation';
@@ -434,6 +438,20 @@ export default function MapView(props: MapViewProps) {
       // — a layer toggle at a stationary camera reuses the groups
       // instead of re-sorting / re-clustering the same visible set.
       const heroMode = currentZoom <= -2.5;
+      // v0.33 D-6: a set drive is a single cards:* layer soloed — the
+      // only visible public layer. My markers don't count: they are
+      // the player's own notes, always on, never a set layer. Lane C
+      // will drive this state; the exemption keys on the visible
+      // layers as they stand, so it works from any route that solos
+      // the layer (a set's "Show on map", or a restored saved view).
+      const visiblePublicLayerIds = props.layers
+        .filter((layer) => layer.visible && layer.id !== 'my-markers')
+        .map((layer) => layer.id);
+      const soloedSetLayerId =
+        visiblePublicLayerIds.length === 1 &&
+        visiblePublicLayerIds[0]!.startsWith('cards:')
+          ? visiblePublicLayerIds[0]!
+          : null;
       const groupKey = [
         currentZoom.toFixed(2),
         Math.floor(bounds.getWest() / index.cellSize),
@@ -457,7 +475,11 @@ export default function MapView(props: MapViewProps) {
         groupCache.current.set(groupKey, cachedGroups);
       } else {
         groups = heroMode
-          ? selectHeroPlaces(visible).map((place) => ({
+          ? selectHeroPlaces(
+              visible,
+              24,
+              soloedSetLayerId ? new Set([soloedSetLayerId]) : undefined,
+            ).map((place) => ({
               id: place.id,
               position: place.position,
               places: [place],
@@ -514,21 +536,34 @@ export default function MapView(props: MapViewProps) {
         // then an enterable one, so the pin still says what it is.
         const representative =
           group.places.find((member) => member.title !== '?') ?? group.places[0]!;
+        // v0.33 D-2/D-6: the pin's colour + glyph come from its KIND
+        // (pinStyleForPlace) — the kind colour wins over the layer
+        // colour — and its form (full pin vs dot) from the zoom. A
+        // cluster of only plain-residential places, below street zoom,
+        // is a dot with its count.
+        const aiRecord = props.aiCategories?.[place.id];
+        const pinStyle = pinStyleForPlace(
+          place,
+          layer,
+          iconKeyForAiRecord(aiRecord),
+        );
+        const dot = isCluster
+          ? currentZoom < STREET_PIN_ZOOM_MIN &&
+            group.places.every((member) =>
+              isPlainResidential(member, props.aiCategories?.[member.id]),
+            )
+          : pinFormForPlace(place, currentZoom, aiRecord) === 'dot';
         const marker = L.marker(toMapCoordinate(group.position), {
           icon: markerIcon(
             group,
             layer,
             selected,
-            markerColor(place),
+            pinStyle.color,
             props.foundIds.has(place.id),
             group.places.some((member) => props.highlightIds?.has(member.id)),
-            isCluster
+            isCluster || dot
               ? undefined
-              : placeIconSvg(
-                  iconKeyForAiRecord(props.aiCategories?.[place.id]) ??
-                    iconKeyForPlace(place),
-                  17,
-                ),
+              : placeIconSvg(pinStyle.icon, 17),
             isCluster
               ? placeIconSvg(
                   iconKeyForAiRecord(props.aiCategories?.[representative.id]) ??
@@ -537,6 +572,7 @@ export default function MapView(props: MapViewProps) {
                 )
               : undefined,
             props.exploredIds?.has(place.id),
+            dot,
           ),
           title,
           alt: title,
