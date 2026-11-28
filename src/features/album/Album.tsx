@@ -25,6 +25,7 @@
 import { useEffect, useState } from 'react';
 import './album.css';
 import {
+  setFoundLabel,
   setProgress,
   type CollectibleItem,
   type GameDatabase,
@@ -383,7 +384,7 @@ export function Album({
               <span className="album-cover">
                 <span className="album-cover-name">{set.name}</span>
                 <span className="album-cover-count">
-                  {progress.found} / {progress.total} found
+                  {setFoundLabel(db, set.id)}
                   {complete ? ' · Complete ✓' : ''}
                   {set.sizeDisputed
                     ? ` · size disputed ${set.sizeDisputed.low} vs ${set.sizeDisputed.high}`

@@ -41,7 +41,7 @@
  */
 import { useMemo, useState } from 'react';
 import {
-  setProgress,
+  setFoundLabel,
   type CollectibleItem,
   type GameDatabase,
 } from '../../domain/game-db';
@@ -361,7 +361,6 @@ export function Journal({
         ))}
       </div>
       {sets.map((set) => {
-        const progress = setProgress(db, set.id);
         const items = set.itemIds
           .map((id) => db.items.get(id)!)
           .filter((item) => itemMatchesFilter(item, db.completedItemIds.has(item.id), filter));
@@ -371,7 +370,7 @@ export function Journal({
         return (
           <details className="layer-group journal-set" key={set.id}>
             <summary>
-              {set.name} · {progress.found} / {progress.total} found
+              {set.name} · {setFoundLabel(db, set.id)}
               {set.sizeDisputed
                 ? ` · size disputed ${set.sizeDisputed.low} vs ${set.sizeDisputed.high}`
                 : ''}

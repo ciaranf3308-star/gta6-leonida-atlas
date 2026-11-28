@@ -975,6 +975,20 @@ export function setProgress(
 }
 
 /**
+ * v0.33 D-5 (Lane C, item 8) — the ONE producer of the "x/y found"
+ * string for a set, from the completion log + set size. Every surface
+ * that shows a set's found count renders THIS string, never its own
+ * formatting: the set-drive header, the drive pill, the pin dialog
+ * footer, the journal row, the album cover, and Progress by set.
+ * Any two of those disagreeing is a defect. The PINNED count is a
+ * separate number (see set-drive.ts) — never conflated with this.
+ */
+export function setFoundLabel(db: GameDatabase, setId: string): string {
+  const { found, total } = setProgress(db, setId);
+  return `${found} / ${total} found`;
+}
+
+/**
  * Category derivation table (§4.2). Each category has ONE authoritative
  * source at a time (§4.3): derived from completion records where
  * record-level coverage exists, or a `ReconciliationEntry` (game-stat

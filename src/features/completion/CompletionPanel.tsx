@@ -45,6 +45,7 @@ import {
 import {
   categoryProgress,
   overallProgress,
+  setFoundLabel,
   setProgress,
   type GameDatabase,
 } from '../../domain/game-db';
@@ -285,7 +286,7 @@ export function CompletionPanel({ db }: { db: GameDatabase | null }) {
                 <div className="completion-row-head">
                   <span className="completion-row-name">{set.name}</span>
                   <span className="completion-row-count">
-                    {progress.found} / {progress.total} cards
+                    {setFoundLabel(db, set.id)}
                   </span>
                 </div>
                 <div

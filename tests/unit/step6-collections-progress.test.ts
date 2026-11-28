@@ -236,7 +236,10 @@ describe('Progress dashboard (DESIGN §4)', () => {
     // One card moves the set row, not the overall total (card sets
     // count complete sets toward the 15-set requirement).
     expect(html).toContain('Delights Dancers');
-    expect(html).toContain('1 / 18 cards');
+    // v0.33 D-5: Progress by set reads the shared selector now, so
+    // the row says "found" like every other set surface — same
+    // numbers, one wording.
+    expect(html).toContain('1 / 18 found');
     expect(html).toContain('41 / 91');
   });
 
