@@ -1,4 +1,5 @@
 import type { Place, Position } from '../../domain/types';
+import { isUnnamedPlace } from '../../domain/types';
 import { BASEMAP_BOUNDS, containsPosition, isValidPosition, type MapBounds } from './coordinates';
 
 type PositionedPlace = Place & { position: Position };
@@ -35,7 +36,12 @@ export function selectHeroPlaces(
     isValidPosition(place.position),
   );
   const named = (place: PositionedPlace) =>
-    place.title !== '?' &&
+    // §A9.3 / v0.33 D-1: unnamed is isUnnamedPlace, not `title !== '?'`
+    // — the old check let "?, Downtown, Vice City" through as a hero
+    // pin (its title is not exactly "?"). A typed "?" is still
+    // unnamed, so it never draws as a hero pin either; it pins at
+    // closer zooms once the index job has typed it (pin-visibility).
+    !isUnnamedPlace(place) &&
     // v0.31.1: the Loot Map places are named guide positions, only
     // their verification is pending — unlike the unnamed "?" places
     // they belong on the island overview. Tentative GTADB names

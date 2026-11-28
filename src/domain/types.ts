@@ -263,10 +263,12 @@ export const DEFAULT_PREFERENCES: Preferences = {
  * "?, Washington Beach, Vice Beach". 3,316 of the 4,380 records at GTADB
  * revision 2e9e194 have no confirmed name (1,064 do); 3,280 of the 3,316 are
  * still "?" and the other 36 show a tentative name with a "?" ("Parsons
- * Hotel?"). They stay on
- * the map, in the unverified layer: no name is ever invented for them, and
- * the only way back in is a verified name from GTADB or another trusted
- * source. What a "?" record DOES often already carry is tags saying what
+ * Hotel?"). They draw NO map pin until typed (§A9.3 / v0.33 D-1 — see
+ * isPlacePinnable): the AI index job stores a type for them, or a player
+ * correction/jot names them. A typed record pins with its type glyph; an
+ * untyped one renders as nothing on the map — it stays searchable in
+ * Find and listed in the index job's queue, and no name is ever invented
+ * for it. What a "?" record DOES often already carry is tags saying what
  * kind of place it is — see src/domain/tags.ts. A tag is halfway to a name.
  */
 export function isUnnamedPlace(place: Pick<Place, 'title'>): boolean {

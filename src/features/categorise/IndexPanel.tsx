@@ -521,9 +521,10 @@ export default function IndexPanel(props: IndexPanelProps) {
         batch — so you can stop any time and pick up where you left off.
         Places the map data, a same-spot match, a guide pin or the analogue
         address already resolve never reach the AI at all, so those cost
-        nothing. Turn on Unverified places to see the “?” places on the map,
-        with their suggested type. Saved after every batch on this phone — back
-        up in Settings to keep it forever, past a wipe or a new phone.
+        nothing. Once a “?” place has a type, it shows on the map with that
+        type when its layer is on — until then it draws no pin at all.
+        Saved after every batch on this phone — back up in Settings to keep
+        it forever, past a wipe or a new phone.
       </p>
     </section>
   );

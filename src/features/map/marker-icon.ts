@@ -4,8 +4,10 @@
 // alongside 1,000+ lines of map lifecycle). No behaviour change:
 // a cluster is a small icon pin with a count badge, a single place
 // is a GTA blip (white pictogram in the layer-coloured roundel),
-// unnamed "?" pins wear is-unnamed, and every pin's hit area is
-// 48px with the visible face centred inside it.
+// a TYPED unnamed "?" pin wears is-unnamed (an untyped one never
+// reaches marker creation — §A9.3 / v0.33 D-1, pin-visibility.ts),
+// and every pin's hit area is 48px with the visible face centred
+// inside it.
 import L from 'leaflet';
 import type { LayerDefinition, Place } from '../../domain/types';
 import type { PlaceCluster } from './spatial';
@@ -28,7 +30,10 @@ export function markerIcon(
   content.setAttribute('aria-hidden', 'true');
   // Unnamed "?" pins wear the is-unnamed class: small, quiet, never
   // labelled — the street-zoom noise was dozens of full-size black
-  // roundels with long "?, Downtown, Vice City" pills.
+  // roundels with long "?, Downtown, Vice City" pills. Only a TYPED
+  // "?" ever wears it now: an untyped one draws no pin at all
+  // (§A9.3 / v0.33 D-1 — the gate is pin-visibility.ts, upstream of
+  // marker creation), so is-unnamed here means "typed, still unnamed".
   const unnamed = group.places[0]?.title?.startsWith('?') ?? false;
   if (cluster) {
     // v0.16.0: a cluster is a small icon pin, not a giant pink number.

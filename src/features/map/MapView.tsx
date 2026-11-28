@@ -31,6 +31,7 @@ import {
   type ChromeGeometry,
 } from './chrome-geometry';
 import { markerColor, markerIcon } from './marker-icon';
+import { isPlacePinnable } from './pin-visibility';
 import {
   computeLabelPlacements,
   labelOffsetForPin,
@@ -411,8 +412,16 @@ export default function MapView(props: MapViewProps) {
         // renders when its layer is on, it is the user's own marker,
         // or it is in the current reveal set (Ask highlights / the
         // selected place). Nothing else gets a pin.
+        // §A9.3 / v0.33 D-1, on top of that: an untyped "?" record
+        // draws no pin at all — not from its layer, not from a
+        // reveal, not as a cluster member, not as a hero pin. This
+        // filter runs before hero selection and clustering, so it is
+        // the single choke point for every render path. A typed "?"
+        // (usable index-job category) pins with its type glyph; a
+        // named place pins as before.
         return (
           isPlaceVisible(place, props.layers, props.highlightIds) &&
+          isPlacePinnable(place, props.aiCategories) &&
           (layer?.minZoom === undefined || currentZoom >= layer.minZoom) &&
           (layer?.maxZoom === undefined || currentZoom <= layer.maxZoom)
         );

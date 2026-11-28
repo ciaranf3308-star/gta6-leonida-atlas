@@ -288,7 +288,7 @@ export const DEFAULT_LAYERS: LayerDefinition[] = [
     id: 'uncertain',
     name: 'Unverified places',
     description:
-      'Places with no confirmed name or use yet — kept off so they don’t fill the map. Turn on only if you want to see them. Breakable houses with an enterable or residential tag moved to Breakable homes, even when unnamed.',
+      'Places with no confirmed name or use yet — kept off so they don’t fill the map. An unnamed “?” place draws no pin at all until the index job gives it a type (Settings → Sort the unnamed places); turning this layer on shows the named ones. Breakable houses with an enterable or residential tag live in Breakable homes instead, under the same rule.',
     category: 'community',
     mapIndex: 'unverified',
     visible: false,

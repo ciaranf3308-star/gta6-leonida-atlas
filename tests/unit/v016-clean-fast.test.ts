@@ -58,6 +58,10 @@ describe('v0.16.0 hero pins at full-map zoom', () => {
       place('region-capri', -6000, 0, 'regions', 'Capri'),
       place('unnamed-1', 0, 0, 'community', '?', 'uncertain'),
       place('unnamed-2', 3000, 3000, 'uncertain', '?', 'uncertain'),
+      // §A9.3 / v0.33 D-1: the old hero check was `title !== '?'`,
+      // which let a full "?, Downtown, Vice City" address through as
+      // a hero pin — unnamed is isUnnamedPlace, not an exact match.
+      place('unnamed-3', 6000, 6000, 'community', '?, Downtown, Vice City', 'uncertain'),
       ...Array.from({ length: 60 }, (_, i) =>
         place(`named-${i}`, -8000 + i * 300, -4000 + i * 200, 'interiors'),
       ),
@@ -67,6 +71,7 @@ describe('v0.16.0 hero pins at full-map zoom', () => {
     expect(hero[0]?.layerId).toBe('regions');
     expect(hero[1]?.layerId).toBe('regions');
     expect(hero.some((p) => p.title === '?')).toBe(false);
+    expect(hero.some((p) => p.id === 'unnamed-3')).toBe(false);
   });
 
   it('spreads one hero pin per grid cell instead of bunching', () => {
