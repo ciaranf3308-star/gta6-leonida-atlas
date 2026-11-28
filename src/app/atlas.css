@@ -514,13 +514,23 @@ h3 {
   color: var(--pink-soft);
 }
 /* ---- Set-drive bar (v0.33 Lane C, D-3 + D-5): the drive header
- * + pill row below the hero while a set is being driven. Same
- * chrome slot as the county title (top: 202px desktop, 240px
- * phones — the hero's rows above it), so the measured chrome
+ * + pill below the hero while a set is being driven. Same chrome
+ * slot as the county title (top: 202px desktop, 240px phones —
+ * the hero's rows above it), so the measured chrome
  * (chrome-geometry.ts) already keeps pins and the fit framing
  * clear of it. On phones the right edge clears the Layers/recenter
  * stack (right: 72px); the county title drops below the bar while
- * a drive is active (map.css, .has-drive). ---- */
+ * a drive is active (map.css, .has-drive).
+ *
+ * The bar is COMPACT by design: the banner takes the full width
+ * and the pill rides at the right end of its first row (two rows
+ * on a phone, ~110px). Its bottom edge sets the pin clamp's top
+ * band (chrome-geometry: topBand = driveBar.bottom + 12), so every
+ * extra row eats pins at the island fit — the first bar put the
+ * pill BESIDE the banner, squeezing it to ~190px wide and wrapping
+ * it to five rows (207px): the Delights trio in Kelly County fell
+ * under the band outright, and every focused pin parked behind
+ * the bar. A taller bar is not a cosmetic choice: it eats pins. ---- */
 .set-drive-bar {
   position: absolute;
   z-index: 460;
@@ -528,17 +538,9 @@ h3 {
   left: 12px;
   right: 12px;
   display: flex;
-  gap: 8px;
-  align-items: flex-start;
-  pointer-events: none;
-}
-.set-drive-bar > * {
-  pointer-events: auto;
-}
-.set-drive-banner {
-  flex: 1;
-  min-width: 0;
-  padding: 8px 12px;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
   border: 1px solid #f6f0e52e;
   border-radius: 14px;
   background: #0b1018d9;
@@ -546,30 +548,73 @@ h3 {
   box-shadow: 0 4px 16px #0009;
   color: var(--text, #f6f0e5);
 }
-.set-drive-main {
+.set-drive-top {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
 }
-.set-drive-name {
-  font-family: var(--condensed, 'Oswald', sans-serif);
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 1px;
-  text-transform: uppercase;
+.set-drive-title {
+  min-width: 0;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .set-drive-count {
-  font-size: 13px;
   font-weight: 700;
   color: #6fb7e8;
 }
-.set-drive-pinned {
+.set-drive-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-left: auto;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #6fb7e8;
+  color: #0b1018;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 4px 16px #0009;
+  white-space: nowrap;
+}
+.set-drive-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
   font-size: 12px;
   color: #b9c4d0;
 }
-.set-drive-exit {
+.set-drive-pinned {
+  white-space: nowrap;
+}
+.set-drive-counties {
+  white-space: nowrap;
+}
+.set-drive-controls {
   margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.set-drive-hide-found {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text, #f6f0e5);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.set-drive-hide-found input {
+  width: 16px;
+  height: 16px;
+  accent-color: #6fb7e8;
+}
+.set-drive-exit {
   min-height: 28px;
   padding: 0 12px;
   border: 1px solid #f6f0e52e;
@@ -580,48 +625,11 @@ h3 {
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
+  white-space: nowrap;
 }
 .set-drive-exit:hover {
   background: var(--coral, #ff527f);
   color: #fff;
-}
-.set-drive-sub {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 2px;
-  font-size: 12px;
-  color: #b9c4d0;
-}
-.set-drive-hide-found {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: auto;
-  color: var(--text, #f6f0e5);
-  font-weight: 600;
-  cursor: pointer;
-}
-.set-drive-hide-found input {
-  width: 16px;
-  height: 16px;
-  accent-color: #6fb7e8;
-}
-.set-drive-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-  min-height: 36px;
-  padding: 0 12px;
-  border-radius: 999px;
-  background: #6fb7e8;
-  color: #0b1018;
-  font-size: 13px;
-  font-weight: 700;
-  box-shadow: 0 4px 16px #0009;
-  white-space: nowrap;
 }
 @media (max-width: 599px) {
   .set-drive-bar {
@@ -2376,6 +2384,15 @@ h3 {
 }
 .place-card-photo {
   position: relative;
+  /* v0.33 Lane C: isolate the photo's stacking context. The map
+   * crop is a Leaflet map whose panes carry z-index 200–1000, and
+   * without a context of its own those panes escape the photo and
+   * paint OVER the FOUND stamp (z-index 2, a sibling of the photo)
+   * and the layer badge (z-index 2, inside the photo) — the stamp
+   * was in the DOM, measured visible, and invisible on screen.
+   * isolation contains Leaflet's z-indexes inside the photo, so
+   * the stamp and the badge paint above the crop. */
+  isolation: isolate;
   width: 96px;
   height: 96px;
   border-radius: 14px;
@@ -2436,7 +2453,12 @@ h3 {
   color: #fff;
   border: 2px solid #0b1018e6;
   box-shadow: 0 2px 8px #000a;
-  z-index: 2;
+  /* z-index 1000, not 2: the badge sits INSIDE the photo, so it
+   * competes with Leaflet's panes (tile 200, marker 600, tooltip
+   * 650) in the photo's stacking context — at 2 the map crop
+   * painted over it, same root cause as the FOUND stamp (which
+   * lives outside the photo, so isolation alone fixed it). */
+  z-index: 1000;
 }
 .place-card-text {
   min-width: 0;

@@ -478,8 +478,8 @@ export default function PlaceDetails({
   /** Mark found / unmark, on the card's own dialog. The unmark is
    * the completion log's compensating record, as the existing undo
    * does (undoCompletion deletes the collected record). After the
-   * write the highlight clears — the reveal-trap fix, see
-   * recordAction below. */
+   * write the highlight is asked to clear on sheet-close — the
+   * reveal-trap fix, deferred, see recordAction below. */
   async function toggleCardFound() {
     if (!activeDb || !isSetCard || !cardItem || completionBusy) return;
     setCompletionBusy('mark-found');
@@ -498,7 +498,10 @@ export default function PlaceDetails({
       if (result.ok && result.db) {
         setCompletionDb(result.db);
         useCompletionLogStore.getState().applyDb(result.db);
-        useMapStore.getState().clearHighlights();
+        // The highlight holds the PLACE id (place.id), not the
+        // checklist item id (cardItem.id) — the flag must name the
+        // place, or App's deselect effect will not match it.
+        useMapStore.getState().setHighlightClearOnClose(place.id);
       } else {
         setCompletionError(result.error ?? 'Could not save that — try again.');
       }
@@ -512,7 +515,7 @@ export default function PlaceDetails({
     if (result.ok && result.db) {
       setCompletionDb(result.db);
       useCompletionLogStore.getState().applyDb(result.db);
-      useMapStore.getState().clearHighlights();
+      useMapStore.getState().setHighlightClearOnClose(place.id);
     } else {
       setCompletionError(result.error ?? 'Could not save that — try again.');
     }
@@ -539,25 +542,37 @@ export default function PlaceDetails({
       setCompletionDb(result.db);
       useCompletionLogStore.getState().applyDb(result.db);
       // v0.33 Lane C (D-3) — REVEAL-TRAP FIX, on the Mark-found
-      // path only: opening a host sheet sets highlightIds=[host],
-      // which survives sheet-close, so a card at the host's exact
-      // coordinates stays in a ×2 cluster with its host at every
-      // zoom and its tick is unreachable. After a card is marked
-      // collected the highlight clears, so the host drops off (its
-      // layer is off in a set drive) and the card stands alone with
-      // its tick visible immediately — no manual "Clear highlights".
-      // Looted / discovered writes do NOT clear: their target is
-      // the place itself, and the reveal is what keeps it on the
-      // map. A broader sheet-close-clears-highlight change is NOT
-      // safe and is deliberately not made here: v0.30's reveal
-      // persistence is the designed behaviour — a deep link, an Ask
-      // answer or a Find tap keeps its pin on screen after the
-      // sheet closes (the v0.30 fix + probe prove it), and Ask's
-      // "Clear highlights (N)" counts the same set. Clearing on
-      // every sheet close would reintroduce the v0.30 bug (the pin
-      // vanishing the moment its sheet closes) and break that
-      // accounting. The targeted clear-on-collect is the whole fix.
-      if (action.kind === 'collect') useMapStore.getState().clearHighlights();
+      // path only, DEFERRED to sheet-close: opening a host sheet
+      // sets highlightIds=[host], which survives sheet-close, so a
+      // card at the host's exact coordinates stays in a ×2 cluster
+      // with its host at every zoom and its tick is unreachable.
+      // After a card is marked collected the highlight is asked to
+      // clear — but NOT at mark time. Clearing immediately starved
+      // App's sheet-close recenter gate (v0.30.0): it recentres the
+      // camera onto a place only while the place stays visible
+      // (still revealed, or its layer on), and with the reveal
+      // already gone the camera stayed parked at the focus offset —
+      // ~480 units south of the place — so the card's pin slid
+      // off-screen at street zoom (the Lane B (e) regression).
+      // Instead the clear is held in highlightClearOnClose and
+      // consumed by App's deselect effect AFTER the recenter gate
+      // has read the reveal: the camera glides onto the place, then
+      // the host drops off (its layer is off in a set drive) and the
+      // card stands alone with its tick visible immediately — no
+      // manual "Clear highlights". Looted / discovered writes do NOT
+      // ask: their target is the place itself, and the reveal is
+      // what keeps it on the map. A broader sheet-close-clears-
+      // highlight change is NOT safe and is deliberately not made
+      // here: v0.30's reveal persistence is the designed behaviour
+      // — a deep link, an Ask answer or a Find tap keeps its pin on
+      // screen after the sheet closes (the v0.30 fix + probe prove
+      // it), and Ask's "Clear highlights (N)" counts the same set.
+      // Clearing on every sheet close would reintroduce the v0.30
+      // bug (the pin vanishing the moment its sheet closes) and
+      // break that accounting. The targeted deferred clear-on-
+      // collect is the whole fix.
+      if (action.kind === 'collect')
+        useMapStore.getState().setHighlightClearOnClose(place.id);
     } else {
       setCompletionError(result.error ?? 'Could not save that — try again.');
     }

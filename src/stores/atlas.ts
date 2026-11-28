@@ -101,6 +101,18 @@ export const useMapStore = create<{
   setIsolation: (isolation: Isolation | null) => void;
   setHighlights: (ids: string[]) => void;
   clearHighlights: () => void;
+  /** Deferred highlight clear (v0.33 Lane C, D-3): a collect on a
+   * sheet asks for that sheet's highlight to clear, but the clear is
+   * held until the sheet closes — App's sheet-close recenter gate
+   * reads highlightIds to decide whether the place stays visible,
+   * and clearing at mark time starved it, so the camera stayed
+   * parked at the focus offset and the card's pin slid off-screen at
+   * street zoom (the Lane B (e) regression). The id is the place
+   * whose highlight should clear (the host on a host sheet, the card
+   * on its own dialog). Consumed and reset by App's deselect effect;
+   * a stale id is reset without clearing. Null = nothing pending. */
+  highlightClearOnClose: string | null;
+  setHighlightClearOnClose: (id: string | null) => void;
   setMapCenter: (center: Position) => void;
 }>((set) => ({
   selectedId: null,
@@ -112,6 +124,7 @@ export const useMapStore = create<{
   draftPosition: null,
   markerKindPreset: null,
   highlightIds: [],
+  highlightClearOnClose: null,
   setDrive: null,
   setSetDrive: (setDrive) => set({ setDrive }),
   mapCenter: null,
@@ -144,6 +157,8 @@ export const useMapStore = create<{
   setIsolation: (isolation) => set({ isolation }),
   setHighlights: (highlightIds) => set({ highlightIds }),
   clearHighlights: () => set({ highlightIds: [] }),
+  setHighlightClearOnClose: (highlightClearOnClose) =>
+    set({ highlightClearOnClose }),
   setMapCenter: (mapCenter) => set({ mapCenter }),
 }));
 /**
@@ -271,7 +286,7 @@ export function switchLocalWorkspace(workspaceId: string | null): Promise<void> 
     findOpen: false,
     filterSheetOpen: false,
   });
-  useMapStore.setState({ selectedId: null, focus: null, boundsFocus: null, isolation: null, editorMode: 'none', draftPosition: null, markerKindPreset: null, highlightIds: [], setDrive: null });
+  useMapStore.setState({ selectedId: null, focus: null, boundsFocus: null, isolation: null, editorMode: 'none', draftPosition: null, markerKindPreset: null, highlightIds: [], highlightClearOnClose: null, setDrive: null });
   const operation = writeQueue.then(async () => {
     const previous = atlasRepository;
     const repository = previous.name === name ? previous : new AtlasDatabase(name);

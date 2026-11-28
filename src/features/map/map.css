@@ -467,9 +467,11 @@
 }
 /* v0.33 Lane C: while a set drive is active its bar sits at the
  * county title's slot (top: 202px / 240px), so the title drops
- * below the bar instead of hiding under it. */
+ * below the bar instead of hiding under it. The compact two-row
+ * bar ends ~292px down on desktop, ~374px on phones (measured
+ * 2026-11-28: driveBar bottom 374) — the title clears it by 12px. */
 .atlas-map-view.has-drive .county-map-title {
-  top: 280px;
+  top: 304px;
 }
 .isolation-pill {
   position: absolute;
@@ -754,10 +756,10 @@
   .county-map-title {
     top: 240px;
   }
-  /* v0.33 Lane C: the drive bar ends ~310px down on phones, so
+  /* v0.33 Lane C: the drive bar ends ~374px down on phones, so
    * the county title drops below it while a drive is active. */
   .atlas-map-view.has-drive .county-map-title {
-    top: 322px;
+    top: 386px;
   }
   .atlas-edge-stack {
     top: 240px;

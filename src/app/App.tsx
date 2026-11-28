@@ -544,6 +544,21 @@ export default function App() {
     useUiStore.getState().setFilters({ hideFound: drive.previousHideFound });
     useMapStore.getState().setSetDrive(null);
   }, []);
+  /** Set drive (v0.33 Lane C): closing a place sheet returns to the
+   * island view. Tapping a pin zooms the camera to it (the focus
+   * effect, −1.5 floor) and parks it ~70px above centre — under the
+   * drive bar's band — so after "Mark found" the tick would sit
+   * behind the bar, invisible, until the player panned. Re-fitting
+   * the island on sheet-close puts the pin back in the clear band
+   * with its tick visible immediately, which is what the acceptance
+   * demo asserts. Next-in-set changes the selection without
+   * closing, so it never triggers this; the drive's own entry
+   * already fits the same bounds (same constant, no double fly). */
+  useEffect(() => {
+    if (selectedId === null && setDrive !== null) {
+      useMapStore.getState().setBoundsFocus(INITIAL_BOUNDS);
+    }
+  }, [selectedId, setDrive]);
   const goToTab = useCallback((tab: 'map' | 'collections' | 'progress' | 'ask') => {
     if (tab === 'ask') {
       useMapStore.getState().select(null);
@@ -784,13 +799,27 @@ export default function App() {
     const prev = previousSelectedForReveal.current;
     previousSelectedForReveal.current = selectedId;
     if (prev === null || selectedId !== null) return;
+    const store = useMapStore.getState();
     const place = allPlaces.find((p) => p.id === prev);
-    if (!place?.position) return;
-    const stillVisible =
-      highlightIds.includes(prev) ||
-      layers.some((l) => l.id === place.layerId && l.visible);
-    if (!stillVisible) return;
-    useMapStore.getState().setFocus(place.position);
+    if (place?.position) {
+      const stillVisible =
+        highlightIds.includes(prev) ||
+        layers.some((l) => l.id === place.layerId && l.visible);
+      if (stillVisible) store.setFocus(place.position);
+    }
+    // Deferred highlight clear (v0.33 Lane C, D-3): a collect on
+    // the sheet that just closed asked for its highlight to clear.
+    // The clear was held until now so the recenter gate above
+    // could still read the reveal — the camera has been re-aimed,
+    // so the host drops off and the card stands alone with its tick
+    // visible. A stale id (the selection moved on via Next-in-set,
+    // which already replaced the highlight) is just reset, never
+    // cleared.
+    const pendingClear = store.highlightClearOnClose;
+    if (pendingClear !== null) {
+      if (pendingClear === prev) store.clearHighlights();
+      store.setHighlightClearOnClose(null);
+    }
   }, [selectedId, highlightIds, allPlaces, layers]);
   useEffect(() => {
     document.documentElement.dataset.reducedMotion = String(preferences.reducedMotion);

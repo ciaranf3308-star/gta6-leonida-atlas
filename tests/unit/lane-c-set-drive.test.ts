@@ -110,11 +110,17 @@ describe('v0.33 Lane C — D-5 count hygiene (one shared selector)', () => {
         onExit: () => {},
       }),
     );
-    // The banner count AND the pill both read "1 / 18 found" — the
-    // identical string the journal, album and Progress rows carry.
+    // The pill carries "1 / 18 found" — the identical string the
+    // journal, album and Progress rows carry. The title is the set
+    // name ONLY: the bar's 280px top row cannot fit name + count
+    // + pill (measured 212px + 94px), so a count in the title
+    // truncated to "0 …" beside the pill showing the same string.
+    // The bar's count IS the pill — header and pill share the one
+    // element, and the selector behind it is still shared.
     const occurrences = banner.split('1 / 18 found').length - 1;
-    expect(occurrences).toBe(2);
+    expect(occurrences).toBe(1);
     expect(banner).toContain('Delights Dancers');
+    expect(banner).not.toContain('Delights Dancers ·');
     // The pinned count is the separate number, labelled "pinned".
     expect(banner).toContain('5 pinned of 18');
     expect(banner).not.toContain('5 / 18 found');
