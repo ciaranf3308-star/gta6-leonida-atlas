@@ -1,0 +1,4194 @@
+{
+  "fetchedAt": "2026-11-28T12:30:43.171Z",
+  "setTotals": [
+    {
+      "setId": "vice-city-flamingos",
+      "apiName": "Vice City Flamingos cards",
+      "total": 24,
+      "pinned": 24,
+      "spots": 24
+    },
+    {
+      "setId": "vice-city-narcos",
+      "apiName": "Vice City Narcos cards",
+      "total": 24,
+      "pinned": 18,
+      "spots": 18
+    },
+    {
+      "setId": "vice-city-manatees",
+      "apiName": "Vice City Manatees cards",
+      "total": 24,
+      "pinned": 20,
+      "spots": 20
+    },
+    {
+      "setId": "vice-city-club-de-futbol",
+      "apiName": "Vice City Club De Fútbol cards",
+      "total": 30,
+      "pinned": 21,
+      "spots": 21
+    },
+    {
+      "setId": "liberty-city-swingers",
+      "apiName": "Liberty City Swingers cards",
+      "total": 24,
+      "pinned": 17,
+      "spots": 17
+    },
+    {
+      "setId": "liberty-city-penetrators",
+      "apiName": "Liberty City Penetrators cards",
+      "total": 24,
+      "pinned": 19,
+      "spots": 19
+    },
+    {
+      "setId": "liberty-city-wrath",
+      "apiName": "Liberty City Wrath cards",
+      "total": 24,
+      "pinned": 19,
+      "spots": 19
+    },
+    {
+      "setId": "los-santos-corkers",
+      "apiName": "Los Santos Corkers cards",
+      "total": 24,
+      "pinned": 21,
+      "spots": 21
+    },
+    {
+      "setId": "los-santos-panic",
+      "apiName": "Los Santos Panic cards",
+      "total": 24,
+      "pinned": 19,
+      "spots": 19
+    },
+    {
+      "setId": "los-santos-pounders",
+      "apiName": "Los Santos Pounders cards",
+      "total": 24,
+      "pinned": 16,
+      "spots": 16
+    },
+    {
+      "setId": "backyard-wrestling",
+      "apiName": "Backyard Wrestling cards",
+      "total": 12,
+      "pinned": 12,
+      "spots": 12
+    },
+    {
+      "setId": "americas-next-top-hooker",
+      "apiName": "America's Next Top Hooker cards",
+      "total": 24,
+      "pinned": 18,
+      "spots": 18
+    },
+    {
+      "setId": "delights-dancers",
+      "apiName": "Delights Dancers cards",
+      "total": 18,
+      "pinned": 18,
+      "spots": 18
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "apiName": "Jack of Hearts Dancers cards",
+      "total": 36,
+      "pinned": 36,
+      "spots": 36
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "apiName": "Nine1Nine Dancers cards",
+      "total": 36,
+      "pinned": 36,
+      "spots": 36
+    },
+    {
+      "setId": "the-legends-of-ratface",
+      "apiName": "The Legends of Ratface cards",
+      "total": 36,
+      "pinned": 24,
+      "spots": 24
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "apiName": "Right Wing: America's Hero cards",
+      "total": 36,
+      "pinned": 33,
+      "spots": 33
+    },
+    {
+      "setId": "ed-comics-universe",
+      "apiName": "Ed Comics Universe cards",
+      "total": 36,
+      "pinned": 29,
+      "spots": 29
+    }
+  ],
+  "citations": [
+    {
+      "setId": "vice-city-flamingos",
+      "gtName": "Vice City Flamingos card: Mateo Caballero (Gold)",
+      "gtPage": "https://gtatown.com/locations/collectible-card-water-tower",
+      "fbritoIds": [
+        "collectible-card-123"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-flamingos",
+      "gtName": "Vice City Flamingos card: Julian Cruz",
+      "gtPage": "https://gtatown.com/locations/julian-cruz",
+      "fbritoIds": [
+        "card-vice-city-flamingos-015"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-flamingos",
+      "gtName": "Vice City Flamingos card: Angel Cienfuegos",
+      "gtPage": "https://gtatown.com/locations/vice-city-flamingos-card-angel-cienfuegos",
+      "fbritoIds": [
+        "card-vice-city-flamingos-002"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-flamingos",
+      "gtName": "Vice City Flamingos card: Angel Cienfuegos (Blue)",
+      "gtPage": "https://gtatown.com/locations/vice-city-flamingos-card-angel-cienfuegos-blue",
+      "fbritoIds": [
+        "card-vice-city-flamingos-025"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-flamingos",
+      "gtName": "Vice City Flamingos card: Angel Cienfuegos",
+      "gtPage": "https://gtatown.com/locations/vice-city-flamingos-card-angel-cienfuegos-card-vice-city-flamingos-020",
+      "fbritoIds": [
+        "card-vice-city-flamingos-020"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-flamingos",
+      "gtName": "Vice City Flamingos card: Bill Norton",
+      "gtPage": "https://gtatown.com/locations/vice-city-flamingos-card-bill-norton",
+      "fbritoIds": [
+        "card-vice-city-flamingos-014",
+        "card-vice-city-flamingos-027",
+        "card-vice-city-flamingos-001"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-flamingos",
+      "gtName": "Vice City Flamingos card: Charlie Spears",
+      "gtPage": "https://gtatown.com/locations/vice-city-flamingos-card-charlie-spears",
+      "fbritoIds": [
+        "card-vice-city-flamingos-023"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-flamingos",
+      "gtName": "Vice City Flamingos card: Elias Delgado",
+      "gtPage": "https://gtatown.com/locations/vice-city-flamingos-card-elias-delgado",
+      "fbritoIds": [
+        "card-vice-city-flamingos-021"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-flamingos",
+      "gtName": "Vice City Flamingos card: Elias Delgado (Pink)",
+      "gtPage": "https://gtatown.com/locations/vice-city-flamingos-card-elias-delgado-pink",
+      "fbritoIds": [
+        "card-vice-city-flamingos-026"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-flamingos",
+      "gtName": "Vice City Flamingos card: Elias Delgado (Silver)",
+      "gtPage": "https://gtatown.com/locations/vice-city-flamingos-card-elias-delgado-silver-watson-bay",
+      "fbritoIds": [
+        "card-vice-city-flamingos-007"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-flamingos",
+      "gtName": "Vice City Flamingos card: Harold Toye",
+      "gtPage": "https://gtatown.com/locations/vice-city-flamingos-card-harold-toye",
+      "fbritoIds": [
+        "card-vice-city-flamingos-018"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-flamingos",
+      "gtName": "Vice City Flamingos card: Harold Toye (Blue)",
+      "gtPage": "https://gtatown.com/locations/vice-city-flamingos-card-harold-toye-blue",
+      "fbritoIds": [
+        "card-vice-city-flamingos-028"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-flamingos",
+      "gtName": "Vice City Flamingos card: Harold Toye (Silver)",
+      "gtPage": "https://gtatown.com/locations/vice-city-flamingos-card-harold-toye-silver",
+      "fbritoIds": [
+        "card-vice-city-flamingos-010"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-flamingos",
+      "gtName": "Vice City Flamingos card: Jude Flores",
+      "gtPage": "https://gtatown.com/locations/vice-city-flamingos-card-jude-flores-card-vice-city-flamingos-022",
+      "fbritoIds": [
+        "card-vice-city-flamingos-022",
+        "card-vice-city-flamingos-003",
+        "card-vice-city-flamingos-009"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-flamingos",
+      "gtName": "Vice City Flamingos card: Julian Cruz (Bronze)",
+      "gtPage": "https://gtatown.com/locations/vice-city-flamingos-card-julian-cruz-bronze-port-gellhorn",
+      "fbritoIds": [
+        "card-vice-city-flamingos-004"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-flamingos",
+      "gtName": "Vice City Flamingos card: Julian Cruz (Silver)",
+      "gtPage": "https://gtatown.com/locations/vice-city-flamingos-card-julian-cruz-silver",
+      "fbritoIds": [
+        "card-vice-city-flamingos-029"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-flamingos",
+      "gtName": "Vice City Flamingos card: Julian Hall",
+      "gtPage": "https://gtatown.com/locations/vice-city-flamingos-card-julian-hall",
+      "fbritoIds": [
+        "card-vice-city-flamingos-017",
+        "card-vice-city-flamingos-006",
+        "card-vice-city-flamingos-012"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-flamingos",
+      "gtName": "Vice City Flamingos card: Mateo Caballero",
+      "gtPage": "https://gtatown.com/locations/vice-city-flamingos-card-mateo-caballero",
+      "fbritoIds": [
+        "card-vice-city-flamingos-016"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-flamingos",
+      "gtName": "Vice City Flamingos card: Mateo Caballero (Bronze)",
+      "gtPage": "https://gtatown.com/locations/vice-city-flamingos-card-mateo-caballero-bronze",
+      "fbritoIds": [
+        "card-vice-city-flamingos-013"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-flamingos",
+      "gtName": "Vice City Flamingos card: Sammy Woodsworth",
+      "gtPage": "https://gtatown.com/locations/vice-city-flamingos-card-sammy-woodsworth-port-gellhorn",
+      "fbritoIds": [
+        "card-vice-city-flamingos-008"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-flamingos",
+      "gtName": "Vice City Flamingos card: Thunder Lee",
+      "gtPage": "https://gtatown.com/locations/vice-city-flamingos-card-thunder-lee",
+      "fbritoIds": [
+        "card-vice-city-flamingos-024"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-flamingos",
+      "gtName": "Vice City Flamingos card: Ulysses Whitlock (Bronze)",
+      "gtPage": "https://gtatown.com/locations/vice-city-flamingos-card-ulysses-whitlock-bronze",
+      "fbritoIds": [
+        "card-vice-city-flamingos-011"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-flamingos",
+      "gtName": "Vice City Flamingos card: Ulysses Whitlock (Gold)",
+      "gtPage": "https://gtatown.com/locations/vice-city-flamingos-card-ulysses-whitlock-gold",
+      "fbritoIds": [
+        "card-vice-city-flamingos-019"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-flamingos",
+      "gtName": "Vice City Flamingos card: Ulysses Whitlock (Silver)",
+      "gtPage": "https://gtatown.com/locations/vice-city-flamingos-card-ulysses-whitlock-silver",
+      "fbritoIds": [
+        "card-vice-city-flamingos-031"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-narcos",
+      "gtName": "Vice City Narcos card: Otis Adams",
+      "gtPage": "https://gtatown.com/locations/otis-adams-vice-city",
+      "fbritoIds": [
+        "card-vice-city-narcos-004"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-narcos",
+      "gtName": "Vice City Narcos card: Andre Stevenson",
+      "gtPage": "https://gtatown.com/locations/vice-city-narcos-card-andre-stevenson",
+      "fbritoIds": [
+        "card-vice-city-narcos-008"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-narcos",
+      "gtName": "Vice City Narcos card: Antoine Bello",
+      "gtPage": "https://gtatown.com/locations/vice-city-narcos-card-antoine-bello",
+      "fbritoIds": [
+        "card-vice-city-narcos-010",
+        "card-vice-city-narcos-007"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-narcos",
+      "gtName": "Vice City Narcos card: Beck R. Heffer",
+      "gtPage": "https://gtatown.com/locations/vice-city-narcos-card-back-r-heffer-hamlet",
+      "fbritoIds": [
+        "card-vice-city-narcos-005"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-narcos",
+      "gtName": "Vice City Narcos card: Beck R. Heffer (Orange)",
+      "gtPage": "https://gtatown.com/locations/vice-city-narcos-card-beck-r-heffer-orange",
+      "fbritoIds": [
+        "card-vice-city-narcos-017"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-narcos",
+      "gtName": "Vice City Narcos card: Branko Roncevic (Standard)",
+      "gtPage": "https://gtatown.com/locations/vice-city-narcos-card-branko-roncevic-standard",
+      "fbritoIds": [
+        "card-vice-city-narcos-019"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-narcos",
+      "gtName": "Vice City Narcos card: Bryson Powers",
+      "gtPage": "https://gtatown.com/locations/vice-city-narcos-card-bryson-powers-port-gellhorn",
+      "fbritoIds": [
+        "card-vice-city-narcos-001"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-narcos",
+      "gtName": "Vice City Narcos card: Carl Kasey",
+      "gtPage": "https://gtatown.com/locations/vice-city-narcos-card-carl-kasey-key-lento",
+      "fbritoIds": [
+        "collectible-card-090"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-narcos",
+      "gtName": "Vice City Narcos card: Christoph Schulz",
+      "gtPage": "https://gtatown.com/locations/vice-city-narcos-card-christoph-schulz",
+      "fbritoIds": [
+        "card-vice-city-narcos-009"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-narcos",
+      "gtName": "Vice City Narcos card: Christoph Schulz",
+      "gtPage": "https://gtatown.com/locations/vice-city-narcos-card-christoph-schulz-card-vice-city-narcos-014",
+      "fbritoIds": [
+        "card-vice-city-narcos-014"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-narcos",
+      "gtName": "Vice City Narcos card: Christoph Schulz",
+      "gtPage": "https://gtatown.com/locations/vice-city-narcos-card-christoph-schulz-card-vice-city-narcos-016",
+      "fbritoIds": [
+        "card-vice-city-narcos-016"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-narcos",
+      "gtName": "Vice City Narcos card: Dylan Ezequiel Mack Jr.",
+      "gtPage": "https://gtatown.com/locations/vice-city-narcos-card-dylan-ezequiel-mack-jr",
+      "fbritoIds": [
+        "card-vice-city-narcos-013"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-narcos",
+      "gtName": "Vice City Narcos card: Kyle Lewicki",
+      "gtPage": "https://gtatown.com/locations/vice-city-narcos-card-kyle-lewicki",
+      "fbritoIds": [
+        "card-vice-city-narcos-011"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-narcos",
+      "gtName": "Vice City Narcos card: Kyle Lewicki",
+      "gtPage": "https://gtatown.com/locations/vice-city-narcos-card-kyle-lewicki-port-gellhorn",
+      "fbritoIds": [
+        "card-vice-city-narcos-003"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-narcos",
+      "gtName": "Vice City Narcos card: Leroy Rook (Gold)",
+      "gtPage": "https://gtatown.com/locations/vice-city-narcos-card-leroy-rook-gold",
+      "fbritoIds": [
+        "card-vice-city-narcos-012"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-narcos",
+      "gtName": "Vice City Narcos card: Leroy Rook",
+      "gtPage": "https://gtatown.com/locations/vice-city-narcos-card-leroy-rook-vice-city",
+      "fbritoIds": [
+        "card-vice-city-narcos-002"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-narcos",
+      "gtName": "Vice City Narcos card: Nicky McVee",
+      "gtPage": "https://gtatown.com/locations/vice-city-narcos-card-nicky-mcvee",
+      "fbritoIds": [
+        "card-vice-city-narcos-015"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-narcos",
+      "gtName": "Vice City Narcos card: Nicky McVee",
+      "gtPage": "https://gtatown.com/locations/vice-city-narcos-card-nicky-mcvee-vice-beach",
+      "fbritoIds": [
+        "card-vice-city-narcos-006"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-manatees",
+      "gtName": "Vice City Manatees card: Tusi Taufua (Silver)",
+      "gtPage": "https://gtatown.com/locations/tusi-taufua-silver",
+      "fbritoIds": [
+        "card-vice-city-manatees-016"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-manatees",
+      "gtName": "Vice City Manatees card: Ali Zeidan",
+      "gtPage": "https://gtatown.com/locations/vice-city-manatees-card-ali-zeidan",
+      "fbritoIds": [
+        "card-vice-city-manatees-012"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-manatees",
+      "gtName": "Vice City Manatees card: Anthony Ross",
+      "gtPage": "https://gtatown.com/locations/vice-city-manatees-card-anthony-ross",
+      "fbritoIds": [
+        "card-vice-city-manatees-001"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-manatees",
+      "gtName": "Vice City Manatees card: Anthony Ross",
+      "gtPage": "https://gtatown.com/locations/vice-city-manatees-card-anthony-ross-card-vice-city-manatees-011",
+      "fbritoIds": [
+        "card-vice-city-manatees-011"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-manatees",
+      "gtName": "Vice City Manatees card: Anthony Ross (Dusty Pink)",
+      "gtPage": "https://gtatown.com/locations/vice-city-manatees-card-anthony-ross-dusty-pink",
+      "fbritoIds": [
+        "card-vice-city-manatees-015"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-manatees",
+      "gtName": "Vice City Manatees card: Delord Nathan Alford",
+      "gtPage": "https://gtatown.com/locations/vice-city-manatees-card-delord-nathan-alford-card-vice-city-manatees-013",
+      "fbritoIds": [
+        "card-vice-city-manatees-013",
+        "card-vice-city-manatees-006"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-manatees",
+      "gtName": "Vice City Manatees card: Dominic Brizzolato",
+      "gtPage": "https://gtatown.com/locations/vice-city-manatees-card-dominic-brizzolato",
+      "fbritoIds": [
+        "card-vice-city-manatees-009"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-manatees",
+      "gtName": "Vice City Manatees card: Georgie Macklerath (Stiltsville)",
+      "gtPage": "https://gtatown.com/locations/vice-city-manatees-card-georgie-macklerath",
+      "fbritoIds": [
+        "card-vice-city-manatees-003"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-manatees",
+      "gtName": "Vice City Manatees card: Georgie Macklerath (Gold)",
+      "gtPage": "https://gtatown.com/locations/vice-city-manatees-card-georgie-macklerath-gold",
+      "fbritoIds": [
+        "card-vice-city-manatees-008"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-manatees",
+      "gtName": "Vice City Manatees card: Georgie Macklerath (Key Lento)",
+      "gtPage": "https://gtatown.com/locations/vice-city-manatees-card-georgie-macklerath-key-lento",
+      "fbritoIds": [
+        "collectible-card-091"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-manatees",
+      "gtName": "Vice City Manatees card: Gouwan Marcus",
+      "gtPage": "https://gtatown.com/locations/vice-city-manatees-card-gouwan-marcus-port-gellhorn",
+      "fbritoIds": [
+        "card-vice-city-manatees-002",
+        "card-vice-city-manatees-007"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-manatees",
+      "gtName": "Vice City Manatees card: Jacob Schneeman",
+      "gtPage": "https://gtatown.com/locations/vice-city-manatees-card-jacob-schneeman",
+      "fbritoIds": [
+        "card-vice-city-manatees-010",
+        "card-vice-city-manatees-017",
+        "card-vice-city-manatees-005"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-manatees",
+      "gtName": "Vice City Manatees card: John Morgan (Green)",
+      "gtPage": "https://gtatown.com/locations/vice-city-manatees-card-john-morgan-green",
+      "fbritoIds": [
+        "card-vice-city-manatees-021"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-manatees",
+      "gtName": "Vice City Manatees card: John Morgan (Silver)",
+      "gtPage": "https://gtatown.com/locations/vice-city-manatees-card-john-morgan-silver",
+      "fbritoIds": [
+        "card-vice-city-manatees-029"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-manatees",
+      "gtName": "Vice City Manatees card: Junior Taufua (Green)",
+      "gtPage": "https://gtatown.com/locations/vice-city-manatees-card-junior-taufua-green",
+      "fbritoIds": [
+        "card-vice-city-manatees-024"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-manatees",
+      "gtName": "Vice City Manatees card: Maleek Rivers",
+      "gtPage": "https://gtatown.com/locations/vice-city-manatees-card-maleek-rivers",
+      "fbritoIds": [
+        "card-vice-city-manatees-019"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-manatees",
+      "gtName": "Vice City Manatees card: Manniken Stills (Standard)",
+      "gtPage": "https://gtatown.com/locations/vice-city-manatees-card-manniken-stills-standard",
+      "fbritoIds": [
+        "card-vice-city-manatees-025"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-manatees",
+      "gtName": "Vice City Manatees card: Reggie Pierce",
+      "gtPage": "https://gtatown.com/locations/vice-city-manatees-card-reggie-pierce",
+      "fbritoIds": [
+        "card-vice-city-manatees-014"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-manatees",
+      "gtName": "Vice City Manatees card: Reggie Pierce",
+      "gtPage": "https://gtatown.com/locations/vice-city-manatees-card-reggie-pierce-card-vice-city-manatees-020",
+      "fbritoIds": [
+        "card-vice-city-manatees-020"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-manatees",
+      "gtName": "Vice City Manatees card: Tusi Taufua",
+      "gtPage": "https://gtatown.com/locations/vice-city-manatees-card-tusi-taufua",
+      "fbritoIds": [
+        "card-vice-city-manatees-018"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-club-de-futbol",
+      "gtName": "Vice City Club De Fútbol card",
+      "gtPage": "https://gtatown.com/locations/vice-city-club-de-f-tbol-card",
+      "fbritoIds": [
+        "hidden-package-007"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-club-de-futbol",
+      "gtName": "Vice City Club De Fútbol card: Anne Florence",
+      "gtPage": "https://gtatown.com/locations/vice-city-club-de-f-tbol-card-anne-florence",
+      "fbritoIds": [
+        "card-vice-city-club-de-futbol-016"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-club-de-futbol",
+      "gtName": "Vice City Club De Fútbol card: Anne Florence (Teal)",
+      "gtPage": "https://gtatown.com/locations/vice-city-club-de-f-tbol-card-anne-florence-teal",
+      "fbritoIds": [
+        "card-vice-city-club-de-futbol-011"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-club-de-futbol",
+      "gtName": "Vice City Club De Fútbol card: Badge",
+      "gtPage": "https://gtatown.com/locations/vice-city-club-de-f-tbol-card-badge",
+      "fbritoIds": [
+        "card-vice-city-club-de-futbol-008"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-club-de-futbol",
+      "gtName": "Vice City Club De Fútbol card",
+      "gtPage": "https://gtatown.com/locations/vice-city-club-de-f-tbol-card-card-vice-city-club-de-futbol-005",
+      "fbritoIds": [
+        "card-vice-city-club-de-futbol-005"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-club-de-futbol",
+      "gtName": "Vice City Club De Fútbol card: Ellie Burke",
+      "gtPage": "https://gtatown.com/locations/vice-city-club-de-f-tbol-card-ellie-burke",
+      "fbritoIds": [
+        "card-vice-city-club-de-futbol-006"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-club-de-futbol",
+      "gtName": "Vice City Club De Fútbol card: Ellie Burke",
+      "gtPage": "https://gtatown.com/locations/vice-city-club-de-f-tbol-card-ellie-burke-ambrosia",
+      "fbritoIds": [
+        "card-vice-city-club-de-futbol-004"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-club-de-futbol",
+      "gtName": "Vice City Club De Fútbol card: Emma Croydon",
+      "gtPage": "https://gtatown.com/locations/vice-city-club-de-f-tbol-card-emma-croydon",
+      "fbritoIds": [
+        "card-vice-city-club-de-futbol-014"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-club-de-futbol",
+      "gtName": "Vice City Club De Fútbol card: Emma Croydon",
+      "gtPage": "https://gtatown.com/locations/vice-city-club-de-f-tbol-card-emma-groydon-vice-beach",
+      "fbritoIds": [
+        "card-vice-city-club-de-futbol-003"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-club-de-futbol",
+      "gtName": "Vice City Club De Fútbol card: Gerry Northgate",
+      "gtPage": "https://gtatown.com/locations/vice-city-club-de-f-tbol-card-gerry-northgate",
+      "fbritoIds": [
+        "card-vice-city-flamingos-005"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-club-de-futbol",
+      "gtName": "Vice City Club De Fútbol card: Ian Harris",
+      "gtPage": "https://gtatown.com/locations/vice-city-club-de-f-tbol-card-ian-harris",
+      "fbritoIds": [
+        "card-vice-city-club-de-futbol-010"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-club-de-futbol",
+      "gtName": "Vice City Club De Fútbol card: Ian Harris (Gold)",
+      "gtPage": "https://gtatown.com/locations/vice-city-club-de-f-tbol-card-ian-harris-gold",
+      "fbritoIds": [
+        "card-vice-city-club-de-futbol-012"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-club-de-futbol",
+      "gtName": "Vice City Club De Fútbol card: Leon Correo",
+      "gtPage": "https://gtatown.com/locations/vice-city-club-de-f-tbol-card-leon-correo",
+      "fbritoIds": [
+        "card-vice-city-club-de-futbol-013"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-club-de-futbol",
+      "gtName": "Vice City Club De Fútbol card: Leon Correo (Gold)",
+      "gtPage": "https://gtatown.com/locations/vice-city-club-de-f-tbol-card-leon-correo-gold",
+      "fbritoIds": [
+        "card-vice-city-club-de-futbol-015"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-club-de-futbol",
+      "gtName": "Vice City Club De Fútbol card: Lupin de Juarez",
+      "gtPage": "https://gtatown.com/locations/vice-city-club-de-f-tbol-card-lupin-de-juarez-key-lento",
+      "fbritoIds": [
+        "collectible-card-105"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-club-de-futbol",
+      "gtName": "Vice City Club De Fútbol card: Oskar Wolff (Dusty Pink)",
+      "gtPage": "https://gtatown.com/locations/vice-city-club-de-f-tbol-card-oskar-wolff-dusty-pink",
+      "fbritoIds": [
+        "card-vice-city-club-de-futbol-020"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-club-de-futbol",
+      "gtName": "Vice City Club De Fútbol card: Oskar Wolff (Silver)",
+      "gtPage": "https://gtatown.com/locations/vice-city-club-de-f-tbol-card-oskar-wolff-silver",
+      "fbritoIds": [
+        "card-vice-city-club-de-futbol-027"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-club-de-futbol",
+      "gtName": "Vice City Club De Fútbol card: Oskar Wolff (Teal)",
+      "gtPage": "https://gtatown.com/locations/vice-city-club-de-f-tbol-card-oskar-wolff-teal",
+      "fbritoIds": [
+        "card-vice-city-club-de-futbol-029"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-club-de-futbol",
+      "gtName": "Vice City Club De Fútbol card: Sue Prettyman",
+      "gtPage": "https://gtatown.com/locations/vice-city-club-de-f-tbol-card-sue-prettyman-key-lento",
+      "fbritoIds": [
+        "card-vice-city-club-de-futbol-002",
+        "card-vice-city-club-de-futbol-009"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-club-de-futbol",
+      "gtName": "Vice City Club De Fútbol card: The Whizz-Kid",
+      "gtPage": "https://gtatown.com/locations/vice-city-club-de-f-tbol-card-the-whizz-kid-port-gellhorn",
+      "fbritoIds": [
+        "card-vice-city-club-de-futbol-001"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "vice-city-club-de-futbol",
+      "gtName": "Vice City Club De Fútbol card: Renata Vasquez (Dusty Pink)",
+      "gtPage": "https://gtatown.com/locations/vice-city-club-de-futbol-card-renata-vasquez-dusty-pink",
+      "fbritoIds": [
+        "card-vice-city-club-de-futbol-007"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-swingers",
+      "gtName": "Liberty City Swingers card: Garth Buxton (Belville)",
+      "gtPage": "https://gtatown.com/locations/garth-buxton",
+      "fbritoIds": [
+        "card-liberty-city-swingers-006"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-swingers",
+      "gtName": "Liberty City Swingers card: Ichiro Yamada (Port Vice City)",
+      "gtPage": "https://gtatown.com/locations/ichiro-yamada",
+      "fbritoIds": [
+        "card-liberty-city-swingers-013"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-swingers",
+      "gtName": "Liberty City Swingers card: Garth Buxton (Watson Bay)",
+      "gtPage": "https://gtatown.com/locations/liberty-city-swingers-card",
+      "fbritoIds": [
+        "card-liberty-city-swingers-007"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-swingers",
+      "gtName": "Liberty City Swingers card: Blake Balls",
+      "gtPage": "https://gtatown.com/locations/liberty-city-swingers-card-blake-balls",
+      "fbritoIds": [
+        "card-liberty-city-swingers-009"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-swingers",
+      "gtName": "Liberty City Swingers card: Blake Balls (Purple)",
+      "gtPage": "https://gtatown.com/locations/liberty-city-swingers-card-blake-balls-purple",
+      "fbritoIds": [
+        "card-liberty-city-swingers-012"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-swingers",
+      "gtName": "Liberty City Swingers card: Christian Delgado",
+      "gtPage": "https://gtatown.com/locations/liberty-city-swingers-card-christian-delgado",
+      "fbritoIds": [
+        "card-liberty-city-swingers-004"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-swingers",
+      "gtName": "Liberty City Swingers card: Christian Freeman",
+      "gtPage": "https://gtatown.com/locations/liberty-city-swingers-card-christian-freeman",
+      "fbritoIds": [
+        "card-liberty-city-swingers-017"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-swingers",
+      "gtName": "Liberty City Swingers card: Duke King",
+      "gtPage": "https://gtatown.com/locations/liberty-city-swingers-card-duke-king",
+      "fbritoIds": [
+        "card-liberty-city-swingers-010"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-swingers",
+      "gtName": "Liberty City Swingers card: Garth Buxton",
+      "gtPage": "https://gtatown.com/locations/liberty-city-swingers-card-garth-buxton-card-liberty-city-swingers-019",
+      "fbritoIds": [
+        "card-liberty-city-swingers-019"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-swingers",
+      "gtName": "Liberty City Swingers card: Ichiro Yamada (Rialto Islands)",
+      "gtPage": "https://gtatown.com/locations/liberty-city-swingers-card-ichiro-yamada",
+      "fbritoIds": [
+        "card-liberty-city-swingers-011"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-swingers",
+      "gtName": "Liberty City Swingers card: Juan Carlos Garcia (Standard)",
+      "gtPage": "https://gtatown.com/locations/liberty-city-swingers-card-juan-carlos-garcia-standard",
+      "fbritoIds": [
+        "card-liberty-city-swingers-023"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-swingers",
+      "gtName": "Liberty City Swingers card: Lalo Velasco",
+      "gtPage": "https://gtatown.com/locations/liberty-city-swingers-card-lalo-velasco",
+      "fbritoIds": [
+        "card-liberty-city-swingers-015"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-swingers",
+      "gtName": "Liberty City Swingers card: Lalo Velasco (Gold)",
+      "gtPage": "https://gtatown.com/locations/liberty-city-swingers-card-lalo-velasco-gold",
+      "fbritoIds": [
+        "card-liberty-city-swingers-014"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-swingers",
+      "gtName": "Liberty City Swingers card: Mario Rugama",
+      "gtPage": "https://gtatown.com/locations/liberty-city-swingers-card-mario-rugama",
+      "fbritoIds": [
+        "card-liberty-city-swingers-018"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-swingers",
+      "gtName": "Liberty City Swingers card: Ricardo Zamudio",
+      "gtPage": "https://gtatown.com/locations/liberty-city-swingers-card-ricardo-zamudio",
+      "fbritoIds": [
+        "card-liberty-city-swingers-008"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-swingers",
+      "gtName": "Liberty City Swingers card: Seo-Jun Kim",
+      "gtPage": "https://gtatown.com/locations/liberty-city-swingers-card-seo-jun-kim-capri",
+      "fbritoIds": [
+        "collectible-card-096"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-swingers",
+      "gtName": "Liberty City Swingers card: Steven Kendricks",
+      "gtPage": "https://gtatown.com/locations/liberty-city-swingers-card-steven-kendricks-card-liberty-city-swingers-016",
+      "fbritoIds": [
+        "card-liberty-city-swingers-016"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-penetrators",
+      "gtName": "Liberty City Penetrators card: Demario Richardson (Gold)",
+      "gtPage": "https://gtatown.com/locations/demario-richardson-signed-card-port-gellhorn",
+      "fbritoIds": [
+        "collectible-card-112"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-penetrators",
+      "gtName": "Liberty City Penetrators card: Alexander Avain (Crosstown)",
+      "gtPage": "https://gtatown.com/locations/liberty-city-penetrators-card-alexander-avain",
+      "fbritoIds": [
+        "card-liberty-city-penetrators-016"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-penetrators",
+      "gtName": "Liberty City Penetrators card: Alexander Avain (Hamlet)",
+      "gtPage": "https://gtatown.com/locations/liberty-city-penetrators-card-alexander-avain-hamlet",
+      "fbritoIds": [
+        "card-liberty-city-penetrators-001"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-penetrators",
+      "gtName": "Liberty City Penetrators card: Asher Rodriguez (Standard)",
+      "gtPage": "https://gtatown.com/locations/liberty-city-penetrators-card-asher-rodriguez-standard",
+      "fbritoIds": [
+        "card-liberty-city-penetrators-028"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-penetrators",
+      "gtName": "Liberty City Penetrators card: D'Angelou Miles (Standard)",
+      "gtPage": "https://gtatown.com/locations/liberty-city-penetrators-card-dangelou-miles-standard",
+      "fbritoIds": [
+        "card-liberty-city-penetrators-022"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-penetrators",
+      "gtName": "Liberty City Penetrators card: Dimitri Petrov",
+      "gtPage": "https://gtatown.com/locations/liberty-city-penetrators-card-dimitri-petrov-card-liberty-city-penetrators-014",
+      "fbritoIds": [
+        "card-liberty-city-penetrators-014",
+        "card-liberty-city-penetrators-018",
+        "card-liberty-city-penetrators-011"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-penetrators",
+      "gtName": "Liberty City Penetrators card: Lamont Berry",
+      "gtPage": "https://gtatown.com/locations/liberty-city-penetrators-card-lamont-berry",
+      "fbritoIds": [
+        "card-liberty-city-penetrators-002"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-penetrators",
+      "gtName": "Liberty City Penetrators card: Lev Volkov",
+      "gtPage": "https://gtatown.com/locations/liberty-city-penetrators-card-lev-volkov",
+      "fbritoIds": [
+        "card-liberty-city-penetrators-012"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-penetrators",
+      "gtName": "Liberty City Penetrators card: Lev Volkov",
+      "gtPage": "https://gtatown.com/locations/liberty-city-penetrators-card-lev-volkov-card-liberty-city-penetrators-020",
+      "fbritoIds": [
+        "card-liberty-city-penetrators-020"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-penetrators",
+      "gtName": "Liberty City Penetrators card: Lev Volkov (Gold)",
+      "gtPage": "https://gtatown.com/locations/liberty-city-penetrators-card-lev-volkov-gold",
+      "fbritoIds": [
+        "card-liberty-city-penetrators-017"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-penetrators",
+      "gtName": "Liberty City Penetrators card: Noah Marcus",
+      "gtPage": "https://gtatown.com/locations/liberty-city-penetrators-card-noah-marcus",
+      "fbritoIds": [
+        "collectible-card-106"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-penetrators",
+      "gtName": "Liberty City Penetrators card: Noah Marcus",
+      "gtPage": "https://gtatown.com/locations/liberty-city-penetrators-card-noah-marcus-card-liberty-city-penetrators-009",
+      "fbritoIds": [
+        "card-liberty-city-penetrators-009"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-penetrators",
+      "gtName": "Liberty City Penetrators card: Noah Marcus",
+      "gtPage": "https://gtatown.com/locations/liberty-city-penetrators-card-noah-marcus-card-liberty-city-penetrators-013",
+      "fbritoIds": [
+        "card-liberty-city-penetrators-013"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-penetrators",
+      "gtName": "Liberty City Penetrators card: Remy Herbert",
+      "gtPage": "https://gtatown.com/locations/liberty-city-penetrators-card-remy-herbert-key-lento",
+      "fbritoIds": [
+        "collectible-card-101"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-penetrators",
+      "gtName": "Liberty City Penetrators card: Remy Herbert (Silver)",
+      "gtPage": "https://gtatown.com/locations/liberty-city-penetrators-card-remy-herbert-silver",
+      "fbritoIds": [
+        "card-liberty-city-penetrators-019"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-penetrators",
+      "gtName": "Liberty City Penetrators card: Remy Herbert (Navy Blue)",
+      "gtPage": "https://gtatown.com/locations/liberty-city-penetrators-card-remy-herbert-standard",
+      "fbritoIds": [
+        "card-liberty-city-penetrators-010"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-penetrators",
+      "gtName": "Liberty City Penetrators card: Rion Yapa",
+      "gtPage": "https://gtatown.com/locations/liberty-city-penetrators-card-rion-yapa",
+      "fbritoIds": [
+        "card-liberty-city-penetrators-015"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-penetrators",
+      "gtName": "Liberty City Penetrators card: Taylor Blanc",
+      "gtPage": "https://gtatown.com/locations/liberty-city-penetrators-card-taylor-blanc-card-liberty-city-penetrators-008",
+      "fbritoIds": [
+        "card-liberty-city-penetrators-008",
+        "card-liberty-city-penetrators-007"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-penetrators",
+      "gtName": "Liberty City Penetrators card: Wenyen Deng (Standard)",
+      "gtPage": "https://gtatown.com/locations/liberty-city-penetrators-card-wenyen-deng-standard",
+      "fbritoIds": [
+        "card-liberty-city-penetrators-021"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-wrath",
+      "gtName": "Liberty City Wrath card",
+      "gtPage": "https://gtatown.com/locations/liberty-city-wrath-card",
+      "fbritoIds": [
+        "card-liberty-city-wrath-010"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-wrath",
+      "gtName": "Liberty City Wrath card: Alvin Orlowski",
+      "gtPage": "https://gtatown.com/locations/liberty-city-wrath-card-alvin-orlowski",
+      "fbritoIds": [
+        "card-liberty-city-wrath-012"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-wrath",
+      "gtName": "Liberty City Wrath card: Anthony Poke II",
+      "gtPage": "https://gtatown.com/locations/liberty-city-wrath-card-anthony-poke-ii",
+      "fbritoIds": [
+        "card-liberty-city-wrath-009"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-wrath",
+      "gtName": "Liberty City Wrath card: Armando Ibarra Jr.",
+      "gtPage": "https://gtatown.com/locations/liberty-city-wrath-card-armando-ibarra-jr-gloriana-key",
+      "fbritoIds": [
+        "card-liberty-city-wrath-003",
+        "card-liberty-city-wrath-007"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-wrath",
+      "gtName": "Liberty City Wrath card: Atonga Alaalatoa (Standard)",
+      "gtPage": "https://gtatown.com/locations/liberty-city-wrath-card-atonga-alaalatoa-standard",
+      "fbritoIds": [
+        "card-liberty-city-wrath-015"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-wrath",
+      "gtName": "Liberty City Wrath card: Bruce Goosen",
+      "gtPage": "https://gtatown.com/locations/liberty-city-wrath-card-bruce-goosen",
+      "fbritoIds": [
+        "card-liberty-city-wrath-006"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-wrath",
+      "gtName": "Liberty City Wrath card: B'ryan Barnett (Bronze)",
+      "gtPage": "https://gtatown.com/locations/liberty-city-wrath-card-bryan-barnett-bronze",
+      "fbritoIds": [
+        "card-liberty-city-wrath-022"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-wrath",
+      "gtName": "Liberty City Wrath card: B'ryan Barnett (Gold)",
+      "gtPage": "https://gtatown.com/locations/liberty-city-wrath-card-bryan-barnett-gold",
+      "fbritoIds": [
+        "card-liberty-city-wrath-020"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-wrath",
+      "gtName": "Liberty City Wrath card: B'ryan Barnett (Silver)",
+      "gtPage": "https://gtatown.com/locations/liberty-city-wrath-card-bryan-barnett-silver",
+      "fbritoIds": [
+        "card-liberty-city-wrath-026"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-wrath",
+      "gtName": "Liberty City Wrath card: Christian Yee",
+      "gtPage": "https://gtatown.com/locations/liberty-city-wrath-card-christian-yee",
+      "fbritoIds": [
+        "card-liberty-city-wrath-011"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-wrath",
+      "gtName": "Liberty City Wrath card: Dartanyon Pearson",
+      "gtPage": "https://gtatown.com/locations/liberty-city-wrath-card-dartanyon-pearson-key-lento",
+      "fbritoIds": [
+        "collectible-card-103"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-wrath",
+      "gtName": "Liberty City Wrath card: James Bowery (Deep Red)",
+      "gtPage": "https://gtatown.com/locations/liberty-city-wrath-card-james-bowery-deep-red",
+      "fbritoIds": [
+        "card-liberty-city-wrath-021"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-wrath",
+      "gtName": "Liberty City Wrath card: James Bowery (Navy Blue)",
+      "gtPage": "https://gtatown.com/locations/liberty-city-wrath-card-james-bowery-navy-blue",
+      "fbritoIds": [
+        "card-liberty-city-wrath-024"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-wrath",
+      "gtName": "Liberty City Wrath card: James Bowery (Silver)",
+      "gtPage": "https://gtatown.com/locations/liberty-city-wrath-card-james-bowery-silver",
+      "fbritoIds": [
+        "card-liberty-city-wrath-019"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-wrath",
+      "gtName": "Liberty City Wrath card: Robbie Stine",
+      "gtPage": "https://gtatown.com/locations/liberty-city-wrath-card-robbie-stine",
+      "fbritoIds": [
+        "card-liberty-city-wrath-013"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-wrath",
+      "gtName": "Liberty City Wrath card: Robbie Stine",
+      "gtPage": "https://gtatown.com/locations/liberty-city-wrath-card-robbie-stine-vice-city",
+      "fbritoIds": [
+        "card-liberty-city-wrath-001"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-wrath",
+      "gtName": "Liberty City Wrath card: Tayson Briggs (Standard)",
+      "gtPage": "https://gtatown.com/locations/liberty-city-wrath-card-tayson-briggs-standard",
+      "fbritoIds": [
+        "card-liberty-city-wrath-028"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-wrath",
+      "gtName": "Liberty City Wrath card: Thien Trinh (Silver)",
+      "gtPage": "https://gtatown.com/locations/liberty-city-wrath-card-thien-trinh-silver",
+      "fbritoIds": [
+        "card-liberty-city-wrath-005"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "liberty-city-wrath",
+      "gtName": "Liberty City Wrath card: Robbie Stine (Silver)",
+      "gtPage": "https://gtatown.com/locations/robbie-stine-silver",
+      "fbritoIds": [
+        "card-liberty-city-wrath-014"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-corkers",
+      "gtName": "Collectible card",
+      "gtPage": "https://gtatown.com/locations/collectible-card",
+      "fbritoIds": [
+        "collectible-card-093"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-corkers",
+      "gtName": "Los Santos Corkers card: Anthony Herndon",
+      "gtPage": "https://gtatown.com/locations/los-santos-corkers-card-anthony-herndon",
+      "fbritoIds": [
+        "card-los-santos-corkers-014"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-corkers",
+      "gtName": "Los Santos Corkers card: Aoi Watanabe (Hotshot Rookie)",
+      "gtPage": "https://gtatown.com/locations/los-santos-corkers-card-aoi-watanabe-hotshot-rookie",
+      "fbritoIds": [
+        "card-los-santos-corkers-016"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-corkers",
+      "gtName": "Los Santos Corkers card: Carlos Larios",
+      "gtPage": "https://gtatown.com/locations/los-santos-corkers-card-carlos-larios",
+      "fbritoIds": [
+        "card-los-santos-corkers-020"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-corkers",
+      "gtName": "Los Santos Corkers card: Carlos Larios (Gold)",
+      "gtPage": "https://gtatown.com/locations/los-santos-corkers-card-carlos-larios-gold-vice-city",
+      "fbritoIds": [
+        "card-los-santos-corkers-005"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-corkers",
+      "gtName": "Los Santos Corkers card: Franklin Turner",
+      "gtPage": "https://gtatown.com/locations/los-santos-corkers-card-franklin-turner",
+      "fbritoIds": [
+        "card-los-santos-corkers-017"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-corkers",
+      "gtName": "Los Santos Corkers card: Franklin Turner",
+      "gtPage": "https://gtatown.com/locations/los-santos-corkers-card-franklin-turner-card-los-santos-corkers-018",
+      "fbritoIds": [
+        "card-los-santos-corkers-018"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-corkers",
+      "gtName": "Los Santos Corkers card: Franklin Turner (Gold)",
+      "gtPage": "https://gtatown.com/locations/los-santos-corkers-card-franklin-turner-gold",
+      "fbritoIds": [
+        "card-los-santos-corkers-015"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-corkers",
+      "gtName": "Los Santos Corkers card: Jesus De Fuente",
+      "gtPage": "https://gtatown.com/locations/los-santos-corkers-card-jesus-de-fuente-port-gellhorn",
+      "fbritoIds": [
+        "card-los-santos-corkers-002"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-corkers",
+      "gtName": "Los Santos Corkers card: Jonah Clemmons (Deep Red)",
+      "gtPage": "https://gtatown.com/locations/los-santos-corkers-card-jonah-clemmons-deep-red",
+      "fbritoIds": [
+        "card-los-santos-corkers-023"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-corkers",
+      "gtName": "Los Santos Corkers card: Jonah Clemmons (Navy Blue)",
+      "gtPage": "https://gtatown.com/locations/los-santos-corkers-card-jonah-clemmons-navy-blue",
+      "fbritoIds": [
+        "card-los-santos-corkers-031"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-corkers",
+      "gtName": "Los Santos Corkers card: Jonah Clemmons (Silver)",
+      "gtPage": "https://gtatown.com/locations/los-santos-corkers-card-jonah-clemmons-silver",
+      "fbritoIds": [
+        "card-los-santos-corkers-024"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-corkers",
+      "gtName": "Los Santos Corkers card: Miguel Ayala (Standard)",
+      "gtPage": "https://gtatown.com/locations/los-santos-corkers-card-miguel-ayala-standard",
+      "fbritoIds": [
+        "card-los-santos-corkers-032"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-corkers",
+      "gtName": "Los Santos Corkers card: Samuel Buono",
+      "gtPage": "https://gtatown.com/locations/los-santos-corkers-card-samuel-buono",
+      "fbritoIds": [
+        "card-los-santos-corkers-019"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-corkers",
+      "gtName": "Los Santos Corkers card: Si-Woo Choo",
+      "gtPage": "https://gtatown.com/locations/los-santos-corkers-card-si-woo-choo",
+      "fbritoIds": [
+        "card-los-santos-corkers-011"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-corkers",
+      "gtName": "Los Santos Corkers card: Terrence Jackson (Deep Red)",
+      "gtPage": "https://gtatown.com/locations/los-santos-corkers-card-terrence-jackson-deep-red",
+      "fbritoIds": [
+        "card-los-santos-corkers-029"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-corkers",
+      "gtName": "Los Santos Corkers card: Terrence Jackson (Navy Blue)",
+      "gtPage": "https://gtatown.com/locations/los-santos-corkers-card-terrence-jackson-navy-blue",
+      "fbritoIds": [
+        "card-los-santos-corkers-021"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-corkers",
+      "gtName": "Los Santos Corkers card: Terrence Jackson (Silver)",
+      "gtPage": "https://gtatown.com/locations/los-santos-corkers-card-terrence-jackson-silver",
+      "fbritoIds": [
+        "card-los-santos-corkers-025"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-corkers",
+      "gtName": "Los Santos Corkers card: Victor Maravilla (Port Gellhorn)",
+      "gtPage": "https://gtatown.com/locations/los-santos-corkers-card-victor-maravilla",
+      "fbritoIds": [
+        "card-los-santos-corkers-012",
+        "card-los-santos-corkers-004",
+        "collectible-card-092"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-corkers",
+      "gtName": "Los Santos Corkers card: Victor Maravilla (Ambrosia)",
+      "gtPage": "https://gtatown.com/locations/los-santos-corkers-card-victor-maravilla-card-los-santos-corkers-013",
+      "fbritoIds": [
+        "card-los-santos-corkers-013"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-corkers",
+      "gtName": "Los Santos Corkers card: Xavier Gomez",
+      "gtPage": "https://gtatown.com/locations/los-santos-corkers-card-xavier-gomez",
+      "fbritoIds": [
+        "card-los-santos-corkers-008",
+        "card-los-santos-corkers-010"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-panic",
+      "gtName": "Dunks Exclusive card: Quinton",
+      "gtPage": "https://gtatown.com/locations/dunks-exclusive-card-quinton",
+      "fbritoIds": [
+        "collectible-card-113"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-panic",
+      "gtName": "Los Santos Panic card: Terrance Ericks (Silver)",
+      "gtPage": "https://gtatown.com/locations/liberty-city-wrath-card-atonga-alaatatoa-standard",
+      "fbritoIds": [
+        "card-liberty-city-wrath-008"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-panic",
+      "gtName": "Los Santos Panic card: Carl Camp (Standard)",
+      "gtPage": "https://gtatown.com/locations/los-santos-panic-card-carl-camp-standard",
+      "fbritoIds": [
+        "card-los-santos-panic-020"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-panic",
+      "gtName": "Los Santos Panic card: Chibuike Bello",
+      "gtPage": "https://gtatown.com/locations/los-santos-panic-card-chibuike-bello",
+      "fbritoIds": [
+        "card-los-santos-panic-007"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-panic",
+      "gtName": "Los Santos Panic card: Damarion Carter (Purple)",
+      "gtPage": "https://gtatown.com/locations/los-santos-panic-card-damarion-carter-purple",
+      "fbritoIds": [
+        "card-los-santos-panic-021"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-panic",
+      "gtName": "Los Santos Panic card: Damarion Carter (Silver)",
+      "gtPage": "https://gtatown.com/locations/los-santos-panic-card-damarion-carter-silver",
+      "fbritoIds": [
+        "card-los-santos-panic-023"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-panic",
+      "gtName": "Los Santos Panic card: Damarion Carter (Yellow)",
+      "gtPage": "https://gtatown.com/locations/los-santos-panic-card-damarion-carter-yellow",
+      "fbritoIds": [
+        "card-los-santos-panic-026"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-panic",
+      "gtName": "Los Santos Panic card (Gold)",
+      "gtPage": "https://gtatown.com/locations/los-santos-panic-card-gold",
+      "fbritoIds": [
+        "card-los-santos-panic-012"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-panic",
+      "gtName": "Los Santos Panic card: Jackson Belton",
+      "gtPage": "https://gtatown.com/locations/los-santos-panic-card-jackson-belton-card-los-santos-panic-014",
+      "fbritoIds": [
+        "card-los-santos-panic-014",
+        "card-los-santos-panic-005"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-panic",
+      "gtName": "Los Santos Panic card: Jakob Markic (Yellow)",
+      "gtPage": "https://gtatown.com/locations/los-santos-panic-card-jakob-markic-yellow",
+      "fbritoIds": [
+        "card-los-santos-panic-015"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-panic",
+      "gtName": "Los Santos Panic card: Lloyd Robinson",
+      "gtPage": "https://gtatown.com/locations/los-santos-panic-card-lloyd-robinson-hamlet",
+      "fbritoIds": [
+        "card-los-santos-panic-003",
+        "card-los-santos-panic-009"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-panic",
+      "gtName": "Los Santos Panic card: Marquise Bernard",
+      "gtPage": "https://gtatown.com/locations/los-santos-panic-card-marquise-bernard-key-lento",
+      "fbritoIds": [
+        "hidden-package-001",
+        "card-los-santos-panic-004"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-panic",
+      "gtName": "Los Santos Panic card: Nikkander Orlov (Purple)",
+      "gtPage": "https://gtatown.com/locations/los-santos-panic-card-nikkander-orlov-purple",
+      "fbritoIds": [
+        "card-los-santos-panic-016"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-panic",
+      "gtName": "Los Santos Panic card: Nikkander Orlov (Silver)",
+      "gtPage": "https://gtatown.com/locations/los-santos-panic-card-nikkander-orlov-silver",
+      "fbritoIds": [
+        "card-los-santos-panic-002"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-panic",
+      "gtName": "Los Santos Panic card: Oluwa Mohammed",
+      "gtPage": "https://gtatown.com/locations/los-santos-panic-card-oluwa-mohammed",
+      "fbritoIds": [
+        "card-los-santos-panic-006"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-panic",
+      "gtName": "Los Santos Panic card: Quinton Allen",
+      "gtPage": "https://gtatown.com/locations/los-santos-panic-card-quinton-allen",
+      "fbritoIds": [
+        "card-los-santos-panic-011"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-panic",
+      "gtName": "Los Santos Panic card: Quinton Allen (Silver)",
+      "gtPage": "https://gtatown.com/locations/los-santos-panic-card-quinton-allen-silver",
+      "fbritoIds": [
+        "card-los-santos-panic-013"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-panic",
+      "gtName": "Los Santos Panic card: Santiago Lopez (Standard)",
+      "gtPage": "https://gtatown.com/locations/los-santos-panic-card-santiago-lopez-standard-key-lento",
+      "fbritoIds": [
+        "card-los-santos-panic-001"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-panic",
+      "gtName": "Los Santos Panic card: Terrance Ericks",
+      "gtPage": "https://gtatown.com/locations/los-santos-panic-card-terrance-ericks",
+      "fbritoIds": [
+        "card-los-santos-panic-008"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-pounders",
+      "gtName": "Los Santos Pounders card: Benjamin Guintana",
+      "gtPage": "https://gtatown.com/locations/los-santos-pounders-card-benjamin-guintana",
+      "fbritoIds": [
+        "card-los-santos-pounders-002"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-pounders",
+      "gtName": "Los Santos Pounders card: Benjamin Quintana (Standard)",
+      "gtPage": "https://gtatown.com/locations/los-santos-pounders-card-benjamin-quintana-standard",
+      "fbritoIds": [
+        "card-los-santos-pounders-021"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-pounders",
+      "gtName": "Los Santos Pounders card: Bingo Johnson",
+      "gtPage": "https://gtatown.com/locations/los-santos-pounders-card-bingo-johnson",
+      "fbritoIds": [
+        "card-los-santos-pounders-006",
+        "collectible-card-116"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-pounders",
+      "gtName": "Los Santos Pounders card: Dravy Mease",
+      "gtPage": "https://gtatown.com/locations/los-santos-pounders-card-dravy-mease-hamlet",
+      "fbritoIds": [
+        "card-los-santos-pounders-004"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-pounders",
+      "gtName": "Los Santos Pounders card: Laki Maivia",
+      "gtPage": "https://gtatown.com/locations/los-santos-pounders-card-laki-maivia",
+      "fbritoIds": [
+        "card-los-santos-pounders-001",
+        "card-los-santos-pounders-009"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-pounders",
+      "gtName": "Los Santos Pounders card: Laki Maivia",
+      "gtPage": "https://gtatown.com/locations/los-santos-pounders-card-laki-maivia-card-los-santos-pounders-014",
+      "fbritoIds": [
+        "card-los-santos-pounders-014"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-pounders",
+      "gtName": "Los Santos Pounders card: Lionel Taber",
+      "gtPage": "https://gtatown.com/locations/los-santos-pounders-card-lionel-taber",
+      "fbritoIds": [
+        "card-los-santos-pounders-007"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-pounders",
+      "gtName": "Los Santos Pounders card: Maximus Goldbart",
+      "gtPage": "https://gtatown.com/locations/los-santos-pounders-card-maximus-goldbart",
+      "fbritoIds": [
+        "card-los-santos-pounders-013"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-pounders",
+      "gtName": "Los Santos Pounders card: Maximus Goldbart (Yellow)",
+      "gtPage": "https://gtatown.com/locations/los-santos-pounders-card-maximus-goldbart-primo",
+      "fbritoIds": [
+        "card-los-santos-pounders-011"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-pounders",
+      "gtName": "Los Santos Pounders card: Randolph Topolski",
+      "gtPage": "https://gtatown.com/locations/los-santos-pounders-card-randolph-topolski",
+      "fbritoIds": [
+        "card-los-santos-pounders-005"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-pounders",
+      "gtName": "Los Santos Pounders card: Rider Butler (Bronze)",
+      "gtPage": "https://gtatown.com/locations/los-santos-pounders-card-rider-butler-bronze",
+      "fbritoIds": [
+        "card-los-santos-pounders-026"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-pounders",
+      "gtName": "Los Santos Pounders card: Rider Butler (Gold)",
+      "gtPage": "https://gtatown.com/locations/los-santos-pounders-card-rider-butler-gold",
+      "fbritoIds": [
+        "card-los-santos-pounders-022"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-pounders",
+      "gtName": "Los Santos Pounders card: Rider Butler (Silver)",
+      "gtPage": "https://gtatown.com/locations/los-santos-pounders-card-rider-butler-silver",
+      "fbritoIds": [
+        "card-los-santos-pounders-020"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-pounders",
+      "gtName": "Los Santos Pounders card: Sione Apa",
+      "gtPage": "https://gtatown.com/locations/los-santos-pounders-card-sione-apa",
+      "fbritoIds": [
+        "card-los-santos-pounders-008"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-pounders",
+      "gtName": "Los Santos Pounders card: Tyson Brooks (Standard)",
+      "gtPage": "https://gtatown.com/locations/los-santos-pounders-card-tyson-brooks-standard",
+      "fbritoIds": [
+        "card-los-santos-pounders-025"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "los-santos-pounders",
+      "gtName": "Los Santos Pounders card: Zander Paton",
+      "gtPage": "https://gtatown.com/locations/los-santos-pounders-card-zander-paton",
+      "fbritoIds": [
+        "card-los-santos-pounders-010"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "backyard-wrestling",
+      "gtName": "Backyard Wrestling card: Axel Hughes (Standard)",
+      "gtPage": "https://gtatown.com/locations/backyard-wrestling-card-axel-hughes-standard",
+      "fbritoIds": [
+        "card-backyard-wrestling-017",
+        "card-backyard-wrestling-002"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "backyard-wrestling",
+      "gtName": "Backyard Wrestling card: BAM Shovel",
+      "gtPage": "https://gtatown.com/locations/backyard-wrestling-card-bam-shovel",
+      "fbritoIds": [
+        "card-backyard-wrestling-003",
+        "card-backyard-wrestling-005"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "backyard-wrestling",
+      "gtName": "Backyard Wrestling card: Blood Smith (Standard)",
+      "gtPage": "https://gtatown.com/locations/backyard-wrestling-card-blood-smith-standard",
+      "fbritoIds": [
+        "card-backyard-wrestling-018",
+        "card-backyard-wrestling-011"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "backyard-wrestling",
+      "gtName": "Backyard Wrestling card: Cherry O'Glade (Standard)",
+      "gtPage": "https://gtatown.com/locations/backyard-wrestling-card-cherry-oglade-standard",
+      "fbritoIds": [
+        "card-backyard-wrestling-019"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "backyard-wrestling",
+      "gtName": "Backyard Wrestling card: Chico Bonez",
+      "gtPage": "https://gtatown.com/locations/backyard-wrestling-card-chico-bonez-hamlet",
+      "fbritoIds": [
+        "card-backyard-wrestling-001"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "backyard-wrestling",
+      "gtName": "Backyard Wrestling card: Chrissy Deangelo (Standard)",
+      "gtPage": "https://gtatown.com/locations/backyard-wrestling-card-chrissy-deangelo-standard",
+      "fbritoIds": [
+        "card-backyard-wrestling-020",
+        "card-backyard-wrestling-007"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "backyard-wrestling",
+      "gtName": "Backyard Wrestling card: Danny McLean",
+      "gtPage": "https://gtatown.com/locations/backyard-wrestling-card-danny-mclean",
+      "fbritoIds": [
+        "card-backyard-wrestling-013",
+        "card-backyard-wrestling-016",
+        "card-backyard-wrestling-004"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "backyard-wrestling",
+      "gtName": "Backyard Wrestling card: J.D. Wild",
+      "gtPage": "https://gtatown.com/locations/backyard-wrestling-card-j-d-wild",
+      "fbritoIds": [
+        "hidden-package-008",
+        "collectible-card-094"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "backyard-wrestling",
+      "gtName": "Backyard Wrestling card: Judas Sterling",
+      "gtPage": "https://gtatown.com/locations/backyard-wrestling-card-judas-sterling",
+      "fbritoIds": [
+        "card-backyard-wrestling-012",
+        "card-backyard-wrestling-008"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "backyard-wrestling",
+      "gtName": "Backyard Wrestling card: Katie K (Standard)",
+      "gtPage": "https://gtatown.com/locations/backyard-wrestling-card-katie-k-standard",
+      "fbritoIds": [
+        "card-backyard-wrestling-021",
+        "card-backyard-wrestling-006",
+        "card-backyard-wrestling-015",
+        "card-backyard-wrestling-009",
+        "card-backyard-wrestling-010"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "backyard-wrestling",
+      "gtName": "Backyard Wrestling card: L. Heavy",
+      "gtPage": "https://gtatown.com/locations/backyard-wrestling-card-l-heavy",
+      "fbritoIds": [
+        "card-backyard-wrestling-022"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "backyard-wrestling",
+      "gtName": "Backyard Wrestling card: Luke X",
+      "gtPage": "https://gtatown.com/locations/backyard-wrestling-card-luke-x",
+      "fbritoIds": [
+        "card-backyard-wrestling-014"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "americas-next-top-hooker",
+      "gtName": "America's Next Top Hooker card",
+      "gtPage": "https://gtatown.com/locations/americas-next-top-hooker-card",
+      "fbritoIds": [
+        "card-americas-next-top-hooker-017"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "americas-next-top-hooker",
+      "gtName": "America's Next Top Hooker card: Angel",
+      "gtPage": "https://gtatown.com/locations/americas-next-top-hooker-card-angel",
+      "fbritoIds": [
+        "card-americas-next-top-hooker-014"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "americas-next-top-hooker",
+      "gtName": "America's Next Top Hooker card: Bambi",
+      "gtPage": "https://gtatown.com/locations/americas-next-top-hooker-card-bambi-hamlet",
+      "fbritoIds": [
+        "card-americas-next-top-hooker-001"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "americas-next-top-hooker",
+      "gtName": "America's Next Top Hooker card: Beverly",
+      "gtPage": "https://gtatown.com/locations/americas-next-top-hooker-card-beverly",
+      "fbritoIds": [
+        "card-americas-next-top-hooker-013"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "americas-next-top-hooker",
+      "gtName": "America's Next Top Hooker card: Beverly",
+      "gtPage": "https://gtatown.com/locations/americas-next-top-hooker-card-beverly-card-americas-next-top-hooker-020",
+      "fbritoIds": [
+        "card-americas-next-top-hooker-020"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "americas-next-top-hooker",
+      "gtName": "America's Next Top Hooker card: Boris (Gold)",
+      "gtPage": "https://gtatown.com/locations/americas-next-top-hooker-card-boris-gold",
+      "fbritoIds": [
+        "card-americas-next-top-hooker-031"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "americas-next-top-hooker",
+      "gtName": "America's Next Top Hooker card: Crystal",
+      "gtPage": "https://gtatown.com/locations/americas-next-top-hooker-card-crystal",
+      "fbritoIds": [
+        "card-americas-next-top-hooker-016",
+        "card-americas-next-top-hooker-022",
+        "card-americas-next-top-hooker-005"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "americas-next-top-hooker",
+      "gtName": "America's Next Top Hooker card: Drake (Bronze)",
+      "gtPage": "https://gtatown.com/locations/americas-next-top-hooker-card-drake-bronze",
+      "fbritoIds": [
+        "card-americas-next-top-hooker-007"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "americas-next-top-hooker",
+      "gtName": "America's Next Top Hooker card: Drake",
+      "gtPage": "https://gtatown.com/locations/americas-next-top-hooker-card-drake-key-lento",
+      "fbritoIds": [
+        "card-americas-next-top-hooker-002"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "americas-next-top-hooker",
+      "gtName": "America's Next Top Hooker card: Kalisha (Bronze)",
+      "gtPage": "https://gtatown.com/locations/americas-next-top-hooker-card-kalisha-bronze",
+      "fbritoIds": [
+        "card-americas-next-top-hooker-008"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "americas-next-top-hooker",
+      "gtName": "America's Next Top Hooker card: Kalvyn (Standard)",
+      "gtPage": "https://gtatown.com/locations/americas-next-top-hooker-card-kalvyn-standard-vice-beach",
+      "fbritoIds": [
+        "card-americas-next-top-hooker-009"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "americas-next-top-hooker",
+      "gtName": "America's Next Top Hooker card: Kalvyn (Underdog)",
+      "gtPage": "https://gtatown.com/locations/americas-next-top-hooker-card-kalvyn-underdog",
+      "fbritoIds": [
+        "card-americas-next-top-hooker-024"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "americas-next-top-hooker",
+      "gtName": "America's Next Top Hooker card: Sapphire",
+      "gtPage": "https://gtatown.com/locations/americas-next-top-hooker-card-sapphire",
+      "fbritoIds": [
+        "card-americas-next-top-hooker-019"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "americas-next-top-hooker",
+      "gtName": "America's Next Top Hooker card: Sapphire",
+      "gtPage": "https://gtatown.com/locations/americas-next-top-hooker-card-sapphire-ambrosia",
+      "fbritoIds": [
+        "card-americas-next-top-hooker-006"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "americas-next-top-hooker",
+      "gtName": "America's Next Top Hooker card: Sapphire (Gold)",
+      "gtPage": "https://gtatown.com/locations/americas-next-top-hooker-card-sapphire-gold",
+      "fbritoIds": [
+        "card-americas-next-top-hooker-023"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "americas-next-top-hooker",
+      "gtName": "America's Next Top Hooker card: Skyla",
+      "gtPage": "https://gtatown.com/locations/americas-next-top-hooker-card-skyla",
+      "fbritoIds": [
+        "card-americas-next-top-hooker-018",
+        "card-americas-next-top-hooker-003"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "americas-next-top-hooker",
+      "gtName": "America's Next Top Hooker card: Chastity",
+      "gtPage": "https://gtatown.com/locations/chastity",
+      "fbritoIds": [
+        "card-americas-next-top-hooker-011",
+        "card-americas-next-top-hooker-021",
+        "card-americas-next-top-hooker-010",
+        "card-americas-next-top-hooker-012"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "americas-next-top-hooker",
+      "gtName": "America's Next Top Hooker card: Drake (Gold)",
+      "gtPage": "https://gtatown.com/locations/players-player-of-the-year-card-drake",
+      "fbritoIds": [
+        "collectible-card-119"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "delights-dancers",
+      "gtName": "Delights Dancers card #1: Crystal (Standard)",
+      "gtPage": "https://gtatown.com/locations/delights-dancers-01-crystal-downtown",
+      "fbritoIds": [
+        "collectible-card-060"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "delights-dancers",
+      "gtName": "Delights Dancers card #2: Cyrus (Standard)",
+      "gtPage": "https://gtatown.com/locations/delights-dancers-02-cyrus-vcia",
+      "fbritoIds": [
+        "collectible-card-065"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "delights-dancers",
+      "gtName": "Delights Dancers card #3: Daisy (Standard)",
+      "gtPage": "https://gtatown.com/locations/delights-dancers-03-daisy-la-perle",
+      "fbritoIds": [
+        "collectible-card-032",
+        "card-delights-018"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "delights-dancers",
+      "gtName": "Delights Dancers card #4: Kandi (Standard)",
+      "gtPage": "https://gtatown.com/locations/delights-dancers-04-kandi-little-cuba",
+      "fbritoIds": [
+        "collectible-card-059",
+        "card-delights-001",
+        "card-delights-007"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "delights-dancers",
+      "gtName": "Delights Dancers card #5: Lance (Standard)",
+      "gtPage": "https://gtatown.com/locations/delights-dancers-05-lance-ocean-beach",
+      "fbritoIds": [
+        "collectible-card-064"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "delights-dancers",
+      "gtName": "Delights Dancers card #6: Lucky (Standard)",
+      "gtPage": "https://gtatown.com/locations/delights-dancers-06-lucky-la-perle",
+      "fbritoIds": [
+        "collectible-card-035",
+        "card-delights-019"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "delights-dancers",
+      "gtName": "Delights Dancers card #7: Mario (Standard)",
+      "gtPage": "https://gtatown.com/locations/delights-dancers-07-mario-southside",
+      "fbritoIds": [
+        "collectible-card-074",
+        "card-delights-012",
+        "card-delights-016"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "delights-dancers",
+      "gtName": "Delights Dancers card #9: Perla (Standard)",
+      "gtPage": "https://gtatown.com/locations/delights-dancers-09-perla-balsero",
+      "fbritoIds": [
+        "collectible-card-038",
+        "card-delights-010",
+        "card-delights-011"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "delights-dancers",
+      "gtName": "Delights Dancers card #12: Chip (Standard)",
+      "gtPage": "https://gtatown.com/locations/delights-dancers-12-chip-watson-bay",
+      "fbritoIds": [
+        "collectible-card-078"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "delights-dancers",
+      "gtName": "Delights Dancers card #13: Thelma (Standard)",
+      "gtPage": "https://gtatown.com/locations/delights-dancers-13-thelma-key-lento",
+      "fbritoIds": [
+        "collectible-card-085",
+        "card-delights-009",
+        "card-delights-004"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "delights-dancers",
+      "gtName": "Delights Dancers card #14: Amber (Standard)",
+      "gtPage": "https://gtatown.com/locations/delights-dancers-14-amber-south-leonard-county",
+      "fbritoIds": [
+        "collectible-card-036",
+        "card-delights-008"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "delights-dancers",
+      "gtName": "Delights Dancers card #15: Harley (Standard)",
+      "gtPage": "https://gtatown.com/locations/delights-dancers-15-harley-port-gellhorn",
+      "fbritoIds": [
+        "collectible-card-024",
+        "card-delights-020"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "delights-dancers",
+      "gtName": "Delights Dancers card #16: Jason (Standard)",
+      "gtPage": "https://gtatown.com/locations/delights-dancers-16-jason-port-gellhorn",
+      "fbritoIds": [
+        "collectible-card-023"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "delights-dancers",
+      "gtName": "Delights Dancers card: Cleo (Standard)",
+      "gtPage": "https://gtatown.com/locations/delights-card-cleo-standard",
+      "fbritoIds": [
+        "hidden-package-010",
+        "card-delights-006",
+        "card-delights-017"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "delights-dancers",
+      "gtName": "Delights Dancers card: Nevaeh (Standard)",
+      "gtPage": "https://gtatown.com/locations/delights-card-nevaeh-standard",
+      "fbritoIds": [
+        "collectible-card-001",
+        "card-delights-014"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "delights-dancers",
+      "gtName": "Delights Dancers card: Nicole (Standard)",
+      "gtPage": "https://gtatown.com/locations/delights-card-nicole-standard-hamlet",
+      "fbritoIds": [
+        "collectible-card-080"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "delights-dancers",
+      "gtName": "Delights Dancers card: Tracy (Standard)",
+      "gtPage": "https://gtatown.com/locations/delights-card-tracy-standard-vice-city",
+      "fbritoIds": [
+        "collectible-card-063",
+        "card-delights-015"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "delights-dancers",
+      "gtName": "Delights Dancers card: Vicki (Standard)",
+      "gtPage": "https://gtatown.com/locations/delights-card-vicki-standard-vice-city",
+      "fbritoIds": [
+        "collectible-card-076",
+        "card-delights-005"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card #1: Kadisha (Deep Red)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-dancers-15-kadisha-breakwater-quarry",
+      "fbritoIds": [
+        "collectible-card-072"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card #2: Kadisha (Purple)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-dancers-25-kadisha-gellhorn",
+      "fbritoIds": [
+        "collectible-card-028"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card #6: Kelly (Pink)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-dancers-19-kelly-belville",
+      "fbritoIds": [
+        "collectible-card-031"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card #8: Christel (Purple)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-dancers-03-christel-ocean-beach",
+      "fbritoIds": [
+        "collectible-card-056"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card #9: Christel (Pink)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-dancers-02-christel-salton",
+      "fbritoIds": [
+        "collectible-card-058"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card #12: Brianna Blue (Pink)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-dancers-32-brianna-blue-macalister-gold-mine",
+      "fbritoIds": [
+        "collectible-card-002"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card #14: Malena (Purple)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-dancers-29-malena-emerald-springs",
+      "fbritoIds": [
+        "collectible-card-033"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card #15: Malena (Pink)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-dancers-34-malena-dawson-dam",
+      "fbritoIds": [
+        "collectible-card-007"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card #16: Jemila (Deep Red)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-dancers-04-jemila-rockridge",
+      "fbritoIds": [
+        "collectible-card-047"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card #17: Jemila (Purple)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-dancers-06-jemila-ocean-beach",
+      "fbritoIds": [
+        "collectible-card-048"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card #18: Jemila (Pink)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-dancers-05-jemila-peacock-bay",
+      "fbritoIds": [
+        "collectible-card-075"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card #19: Zaria \"RiRi\" Luckett (Bronze)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-dancers-11-zaria-ri-ri-luckett-balsero",
+      "fbritoIds": [
+        "collectible-card-050"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card #20: Zaria \"RiRi\" Luckett (Silver)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-dancers-31-zaria-ri-ri-luckett-port-gellhorn",
+      "fbritoIds": [
+        "collectible-card-025"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card #22: Monali$a (Bronze)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-dancers-30-monali-a-south-kelly-county",
+      "fbritoIds": [
+        "collectible-card-057"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card #23: Monali$a (Silver)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-dancers-35-monali-a-featherstone-islands",
+      "fbritoIds": [
+        "collectible-card-003"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card #25: Lexi Campbell (Bronze)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-dancers-33-lexi-campbell-kalaga-national-park",
+      "fbritoIds": [
+        "collectible-card-012"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card #26: Lexi Campbell (Silver)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-dancers-28-lexi-campbell-buckskin-swamp",
+      "fbritoIds": [
+        "collectible-card-049"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card #28: Vanessa (Bronze)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-dancers-21-vanessa-north-leonard-county",
+      "fbritoIds": [
+        "collectible-card-013"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card #29: Vanessa (Silver)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-dancers-10-vanessa-salton",
+      "fbritoIds": [
+        "collectible-card-070"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card #30: Vanessa (Gold)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-dancers-09-vanessa-bayside",
+      "fbritoIds": [
+        "collectible-card-042"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card #31: Pricilla Pace (Bronze)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-dancers-36-pricilla-pace-kalaga-national-park",
+      "fbritoIds": [
+        "collectible-card-005"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card #33: Pricilla Pace (Gold)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-dancers-17-pricilla-pace-capri",
+      "fbritoIds": [
+        "collectible-card-054"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card #34: Jada Watts (Bronze)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-dancers-23-jada-watts-port-gellhorn",
+      "fbritoIds": [
+        "collectible-card-022"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card #35: Jada Watts (Silver)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-dancers-14-jada-watts-bobcat-key",
+      "fbritoIds": [
+        "collectible-card-079"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card #36: Jada Watts (Gold)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-dancers-24-jada-watts-gellhorn",
+      "fbritoIds": [
+        "collectible-card-029"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card: Brianna Blue (Deep Red)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-card-brianna-blue-deep-red",
+      "fbritoIds": [
+        "collectible-card-081"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card: Brianna Blue (Purple)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-card-brianna-blue-purple-capri",
+      "fbritoIds": [
+        "collectible-card-061"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card: Christel (Deep Red)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-card-christel-deep-red-vice-city",
+      "fbritoIds": [
+        "collectible-card-040"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card: Kadisha (Pink)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-card-kadisha-pink-vice-city",
+      "fbritoIds": [
+        "collectible-card-067"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card: Kelly (Deep Red)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-card-kelly-deep-red-port-gellhorn",
+      "fbritoIds": [
+        "collectible-card-018"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card: Kelly (Purple)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-card-kelly-purple-vice-city",
+      "fbritoIds": [
+        "collectible-card-069"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card: Lexi Campbell (Gold)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-card-lexi-campbell-gold-port-gellhorn",
+      "fbritoIds": [
+        "collectible-card-020"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card: Malena (Deep Red)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-card-malena-deep-red",
+      "fbritoIds": [
+        "collectible-card-030"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card: MonaLi$a (Gold)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-card-monali-a-gold",
+      "fbritoIds": [
+        "collectible-card-087"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card: Pricilla Pace (Silver)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-card-pricilla-pace-silver",
+      "fbritoIds": [
+        "collectible-card-086"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "jack-of-hearts-dancers",
+      "gtName": "Jack of Hearts Dancers card: Zaria \"RiRi\" Luckett (Gold)",
+      "gtPage": "https://gtatown.com/locations/jack-of-hearts-card-zaria-ri-ri-luckett-gold",
+      "fbritoIds": [
+        "collectible-card-014"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card #1: Clarissa (Bronze)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-dancers-01-clarissa-little-cuba",
+      "fbritoIds": [
+        "collectible-card-062"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card #3: Jesenia (Bronze)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-dancers-03-jesenia-balsero",
+      "fbritoIds": [
+        "collectible-card-037"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card #4: Jesenia (Gold)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-dancers-04-jesenia-vespucci-island",
+      "fbritoIds": [
+        "collectible-card-039"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card #5: Julia (Gold)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-dancers-05-julia-ocean-beach",
+      "fbritoIds": [
+        "collectible-card-053"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card #6: Julia (Silver)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-dancers-06-julia-peacock-bay",
+      "fbritoIds": [
+        "collectible-card-073"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card #10: Louise (Bronze)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-dancers-10-louise-salton",
+      "fbritoIds": [
+        "collectible-card-066"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card #11: Louise (Gold)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-dancers-11-louise-balsero",
+      "fbritoIds": [
+        "collectible-card-055"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card #12: Meghan (Bronze)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-dancers-12-meghan-crosstown",
+      "fbritoIds": [
+        "collectible-card-045"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card #16: Clarissa (Gold)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-dancers-16-clarissa-breakwater-quarry",
+      "fbritoIds": [
+        "collectible-card-071"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card #19: Jesenia (Silver)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-dancers-19-jesenia-permit-keys",
+      "fbritoIds": [
+        "collectible-card-083"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card #20: Louise (Silver)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-dancers-20-louise-belville",
+      "fbritoIds": [
+        "collectible-card-019"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card #21: Meghan (Silver)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-dancers-21-meghan-vinewood-beach",
+      "fbritoIds": [
+        "collectible-card-027"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card #27: Julia (Bronze)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-dancers-27-julia-wild-hog-point",
+      "fbritoIds": [
+        "collectible-card-026",
+        "card-nine1nine-001"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card #29: Meghan (Gold)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-dancers-29-meghan-south-kelly-county",
+      "fbritoIds": [
+        "collectible-card-044"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card #35: Serena (Bronze)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-dancers-35-serena-kalaga-national-park",
+      "fbritoIds": [
+        "collectible-card-009"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card #36: Serena (Silver)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-dancers-36-serena-grayson",
+      "fbritoIds": [
+        "hidden-package-005"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card: Amie (Deep Red)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-card-amie-deep-red",
+      "fbritoIds": [
+        "collectible-card-043"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card: Amie (Pink)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-card-amie-pink-key-lento",
+      "fbritoIds": [
+        "collectible-card-082"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card: Amie (Purple)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-card-amie-purple-capri",
+      "fbritoIds": [
+        "collectible-card-052"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card: Braelynn (Deep Red)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-card-braelynn-deep-red",
+      "fbritoIds": [
+        "collectible-card-016"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card: Braelynn (Pink)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-card-braelynn-pink",
+      "fbritoIds": [
+        "collectible-card-034"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card: Braelynn (Purple)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-card-braelynn-purple",
+      "fbritoIds": [
+        "collectible-card-008"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card: Chrissie (Deep Red)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-card-chrissie-deep-red",
+      "fbritoIds": [
+        "collectible-card-004"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card: Chrissie (Pink)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-card-chrissie-pink-port-gellhorn",
+      "fbritoIds": [
+        "collectible-card-021"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card: Chrissie (Purple)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-card-chrissie-purple",
+      "fbritoIds": [
+        "collectible-card-017"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card: Clarissa (Silver)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-card-clarissa-silver-capri",
+      "fbritoIds": [
+        "collectible-card-051"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card: Georgia (Deep Red)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-card-georgia-deep-red",
+      "fbritoIds": [
+        "collectible-card-011"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card: Georgia (Pink)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-card-georgia-pink-vice-city",
+      "fbritoIds": [
+        "collectible-card-041"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card: Georgia (Purple)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-card-georgia-purple-key-lento",
+      "fbritoIds": [
+        "collectible-card-084"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card: Lavinia (Deep Red)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-card-lavinia-deep-red-port-gellhorn",
+      "fbritoIds": [
+        "collectible-card-015"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card: Lavinia (Pink)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-card-lavinia-pink",
+      "fbritoIds": [
+        "collectible-card-010"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card: Lavinia (Purple)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-card-lavinia-purple",
+      "fbritoIds": [
+        "collectible-card-006"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card: Lenora (Deep Red)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-card-lenora-deep-red-vice-city",
+      "fbritoIds": [
+        "hidden-package-006"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card: Lenora (Pink)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-card-lenora-pink-vice-city",
+      "fbritoIds": [
+        "collectible-card-046"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card: Lenora (Purple)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-card-lenora-purple-vice-city",
+      "fbritoIds": [
+        "collectible-card-068"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "nine1nine-dancers",
+      "gtName": "Nine1Nine Dancers card: Serena (Gold)",
+      "gtPage": "https://gtatown.com/locations/nine1nine-card-serena-gold-vice-city",
+      "fbritoIds": [
+        "collectible-card-077"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "the-legends-of-ratface",
+      "gtName": "Legends of Ratface card: Captain Kreuks (Blue)",
+      "gtPage": "https://gtatown.com/locations/legends-of-ratface-card-captain-kreuks-blue",
+      "fbritoIds": [
+        "card-legends-of-ratface-009"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "the-legends-of-ratface",
+      "gtName": "Legends of Ratface card: Death of Swallow",
+      "gtPage": "https://gtatown.com/locations/legends-of-ratface-card-death-of-swallow",
+      "fbritoIds": [
+        "card-legends-of-ratface-017"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "the-legends-of-ratface",
+      "gtName": "Legends of Ratface card: Disastrous Duo",
+      "gtPage": "https://gtatown.com/locations/legends-of-ratface-card-disastrous-duo",
+      "fbritoIds": [
+        "card-legends-of-ratface-014"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "the-legends-of-ratface",
+      "gtName": "Legends of Ratface card: Disastrous Duo",
+      "gtPage": "https://gtatown.com/locations/legends-of-ratface-card-disastrous-duo-card-legends-of-ratface-018",
+      "fbritoIds": [
+        "card-legends-of-ratface-018"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "the-legends-of-ratface",
+      "gtName": "Legends of Ratface card: Ifred",
+      "gtPage": "https://gtatown.com/locations/legends-of-ratface-card-ifred",
+      "fbritoIds": [
+        "card-legends-of-ratface-015"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "the-legends-of-ratface",
+      "gtName": "Legends of Ratface card: Illuminaughty (Purple)",
+      "gtPage": "https://gtatown.com/locations/legends-of-ratface-card-illuminaughty",
+      "fbritoIds": [
+        "card-legends-of-ratface-010"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "the-legends-of-ratface",
+      "gtName": "Legends of Ratface card: The Ratster (Purple)",
+      "gtPage": "https://gtatown.com/locations/legends-of-ratface-card-ratster",
+      "fbritoIds": [
+        "card-legends-of-ratface-004"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "the-legends-of-ratface",
+      "gtName": "Legends of Ratface card: Ratster (Blue)",
+      "gtPage": "https://gtatown.com/locations/legends-of-ratface-card-ratster-blue-capri",
+      "fbritoIds": [
+        "card-legends-of-ratface-006"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "the-legends-of-ratface",
+      "gtName": "Legends of Ratface card: Ratster",
+      "gtPage": "https://gtatown.com/locations/legends-of-ratface-card-ratster-card-legends-of-ratface-008",
+      "fbritoIds": [
+        "card-legends-of-ratface-008"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "the-legends-of-ratface",
+      "gtName": "Legends of Ratface card: Ratster",
+      "gtPage": "https://gtatown.com/locations/legends-of-ratface-card-ratster-card-legends-of-ratface-013",
+      "fbritoIds": [
+        "card-legends-of-ratface-013"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "the-legends-of-ratface",
+      "gtName": "Legends of Ratface card: Silver Age Betrayal",
+      "gtPage": "https://gtatown.com/locations/legends-of-ratface-card-silver-age-betrayal",
+      "fbritoIds": [
+        "card-legends-of-ratface-021"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "the-legends-of-ratface",
+      "gtName": "Legends of Ratface card: Silver Age Betrayal (Purple)",
+      "gtPage": "https://gtatown.com/locations/legends-of-ratface-card-silver-age-betrayal-purple",
+      "fbritoIds": [
+        "card-legends-of-ratface-012"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "the-legends-of-ratface",
+      "gtName": "Legends of Ratface card: The Diddler",
+      "gtPage": "https://gtatown.com/locations/legends-of-ratface-card-the-diddler-gloriana-key",
+      "fbritoIds": [
+        "card-legends-of-ratface-007"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "the-legends-of-ratface",
+      "gtName": "Legends of Ratface card: Ratface (Maroon)",
+      "gtPage": "https://gtatown.com/locations/legends-of-ratface-card-the-vermin-vigilante",
+      "fbritoIds": [
+        "card-legends-of-ratface-022"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "the-legends-of-ratface",
+      "gtName": "Legends of Ratface card: Todd Lang",
+      "gtPage": "https://gtatown.com/locations/legends-of-ratface-card-todd-lang",
+      "fbritoIds": [
+        "card-legends-of-ratface-016"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "the-legends-of-ratface",
+      "gtName": "Legends of Ratface card: Todd Lang",
+      "gtPage": "https://gtatown.com/locations/legends-of-ratface-card-todd-lang-card-legends-of-ratface-020",
+      "fbritoIds": [
+        "card-legends-of-ratface-020"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "the-legends-of-ratface",
+      "gtName": "Legends of Ratface card: Wokester (Purple)",
+      "gtPage": "https://gtatown.com/locations/legends-of-ratface-card-wokester-purple",
+      "fbritoIds": [
+        "card-legends-of-ratface-019",
+        "card-legends-of-ratface-011"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "the-legends-of-ratface",
+      "gtName": "Legends of Ratface card: Captain Kreuks (Maroon)",
+      "gtPage": "https://gtatown.com/locations/the-legends-of-ratface-card-captain-kreuks",
+      "fbritoIds": [
+        "card-legends-of-ratface-001"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "the-legends-of-ratface",
+      "gtName": "Legends of Ratface card: Captain Krueks (Purple)",
+      "gtPage": "https://gtatown.com/locations/the-legends-of-ratface-card-captain-krueks-purple",
+      "fbritoIds": [
+        "card-legends-of-ratface-031"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "the-legends-of-ratface",
+      "gtName": "Legends of Ratface card: Death of Swallow (Blue)",
+      "gtPage": "https://gtatown.com/locations/the-legends-of-ratface-card-death-of-swallow-key-lento",
+      "fbritoIds": [
+        "card-legends-of-ratface-005"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "the-legends-of-ratface",
+      "gtName": "Legends of Ratface card: Ratface (Blue)",
+      "gtPage": "https://gtatown.com/locations/the-legends-of-ratface-card-hamlet",
+      "fbritoIds": [
+        "collectible-card-108"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "the-legends-of-ratface",
+      "gtName": "Legends of Ratface card: Illuminaughty (Blue)",
+      "gtPage": "https://gtatown.com/locations/the-legends-of-ratface-card-illuminaughty-hamlet",
+      "fbritoIds": [
+        "card-legends-of-ratface-002"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "the-legends-of-ratface",
+      "gtName": "Legends of Ratface card: Swallow (Purple)",
+      "gtPage": "https://gtatown.com/locations/the-legends-of-ratface-card-swallow-port-gellhorn",
+      "fbritoIds": [
+        "card-legends-of-ratface-003"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "the-legends-of-ratface",
+      "gtName": "Legends of Ratface card: Wokester (Blue)",
+      "gtPage": "https://gtatown.com/locations/the-legends-of-ratface-card-wokester-blue-key-lento",
+      "fbritoIds": [
+        "hidden-package-013"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: Burning Desire",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-burning-desire",
+      "fbritoIds": [
+        "card-right-wing-016"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: Burning Desire",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-burning-desire-card-right-wing-021",
+      "fbritoIds": [
+        "card-right-wing-021"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: Burning Desire",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-burning-desire-card-right-wing-022",
+      "fbritoIds": [
+        "card-right-wing-022"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: Flamer",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-flamer",
+      "fbritoIds": [
+        "card-right-wing-013"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: Flamer",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-flamer-card-right-wing-010",
+      "fbritoIds": [
+        "card-right-wing-010"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: Great Uncle Sam (Red)",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-great-uncle-sam-red",
+      "fbritoIds": [
+        "card-right-wing-029"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: Immigrantasma",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-immigrantasma",
+      "fbritoIds": [
+        "card-right-wing-017"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: Immigrantasma (Blue)",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-immigrantasma-blue-ambrosia",
+      "fbritoIds": [
+        "card-right-wing-009"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: Immigrantasma (Red)",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-immigrantasma-red",
+      "fbritoIds": [
+        "card-right-wing-002"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: President Blunt",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-president-blunt",
+      "fbritoIds": [
+        "card-right-wing-011"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: President Blunt",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-president-blunt-card-right-wing-023",
+      "fbritoIds": [
+        "card-right-wing-023"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: President Quinn",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-president-quinn",
+      "fbritoIds": [
+        "card-right-wing-015"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: President Quinn",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-president-quinn-card-right-wing-024",
+      "fbritoIds": [
+        "card-right-wing-024"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: President Quinn",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-president-quinn-hamlet",
+      "fbritoIds": [
+        "card-right-wing-007"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: Red White & Boom",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-red-white-boom",
+      "fbritoIds": [
+        "card-right-wing-019"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: Red White Boom",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-red-white-boom-card-right-wing-020",
+      "fbritoIds": [
+        "card-right-wing-020"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: Red White & Boom",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-red-white-boom-port-gellhorn",
+      "fbritoIds": [
+        "card-right-wing-005"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: Right Wing",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-right-wing",
+      "fbritoIds": [
+        "card-right-wing-001"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: Right Wing (Bronze)",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-right-wing-bronze-key-lento",
+      "fbritoIds": [
+        "card-right-wing-008"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: Right Wing (Red)",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-right-wing-red",
+      "fbritoIds": [
+        "card-right-wing-014"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: Right Wing (Red)",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-right-wing-red-watson-bay",
+      "fbritoIds": [
+        "card-right-wing-004"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: Right Wing vs Left Wing",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-right-wing-vs-left-wing",
+      "fbritoIds": [
+        "card-right-wing-018"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: Right Wing vs Left Wing (Blue)",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-right-wing-vs-left-wing-blue-watson-bay",
+      "fbritoIds": [
+        "collectible-card-107"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: Right Wing vs Left Wing",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-right-wing-vs-left-wing-port-gellhorn",
+      "fbritoIds": [
+        "card-right-wing-006"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: Right Wing (White)",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-right-wing-white",
+      "fbritoIds": [
+        "card-right-wing-012"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: Right Wing's Truck (Blue)",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-right-wings-truck-blue",
+      "fbritoIds": [
+        "card-right-wing-033"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: Right Wing's Truck (Red)",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-right-wings-truck-red",
+      "fbritoIds": [
+        "card-right-wing-028"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: Right Wing's Truck (White)",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-right-wings-truck-white",
+      "fbritoIds": [
+        "card-right-wing-031"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: The Educated Woman",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-the-educated-woman",
+      "fbritoIds": [
+        "collectible-card-121"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: The Educated Woman",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-the-educated-woman-key-lento",
+      "fbritoIds": [
+        "card-right-wing-003"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: They (Blue)",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-they-blue",
+      "fbritoIds": [
+        "card-right-wing-032"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: They (Red)",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-they-red",
+      "fbritoIds": [
+        "card-right-wing-034"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "right-wing-americas-hero",
+      "gtName": "Right Wing: America's Hero card: They (White)",
+      "gtPage": "https://gtatown.com/locations/right-wing-americas-hero-card-they-white",
+      "fbritoIds": [
+        "card-right-wing-026"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "ed-comics-universe",
+      "gtName": "Ed Comics Universe card: Capsule",
+      "gtPage": "https://gtatown.com/locations/ed-comics-universe-card-capsule",
+      "fbritoIds": [
+        "card-ed-comics-009"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "ed-comics-universe",
+      "gtName": "Ed Comics Universe card: Capsule",
+      "gtPage": "https://gtatown.com/locations/ed-comics-universe-card-capsule-card-ed-comics-021",
+      "fbritoIds": [
+        "card-ed-comics-021"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "ed-comics-universe",
+      "gtName": "Ed Comics Universe card: Capsule (Light Blue)",
+      "gtPage": "https://gtatown.com/locations/ed-comics-universe-card-capsule-light-blue",
+      "fbritoIds": [
+        "card-ed-comics-016"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "ed-comics-universe",
+      "gtName": "Ed Comics Universe card: Diagnosis",
+      "gtPage": "https://gtatown.com/locations/ed-comics-universe-card-diagnosis",
+      "fbritoIds": [
+        "card-ed-comics-014"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "ed-comics-universe",
+      "gtName": "Ed Comics Universe card: Dr. Placebo",
+      "gtPage": "https://gtatown.com/locations/ed-comics-universe-card-dr-placebo",
+      "fbritoIds": [
+        "card-ed-comics-018"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "ed-comics-universe",
+      "gtName": "Ed Comics Universe card: Dr. Placebo",
+      "gtPage": "https://gtatown.com/locations/ed-comics-universe-card-dr-placebo-card-ed-comics-019",
+      "fbritoIds": [
+        "card-ed-comics-019"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "ed-comics-universe",
+      "gtName": "Ed Comics Universe card: Dr. Placebo",
+      "gtPage": "https://gtatown.com/locations/ed-comics-universe-card-dr-placebo-vice-city",
+      "fbritoIds": [
+        "card-ed-comics-006"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "ed-comics-universe",
+      "gtName": "Ed Comics Universe card: Femi-Nemesis (Bronze)",
+      "gtPage": "https://gtatown.com/locations/ed-comics-universe-card-femi-nemesis",
+      "fbritoIds": [
+        "collectible-card-100"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "ed-comics-universe",
+      "gtName": "Ed Comics Universe card: Femi-Nemesis",
+      "gtPage": "https://gtatown.com/locations/ed-comics-universe-card-femi-nemesis-card-ed-comics-010",
+      "fbritoIds": [
+        "card-ed-comics-010"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "ed-comics-universe",
+      "gtName": "Ed Comics Universe card: Funny Bones (Orange)",
+      "gtPage": "https://gtatown.com/locations/ed-comics-universe-card-funny-bones-port-gellhorn",
+      "fbritoIds": [
+        "card-ed-comics-001"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "ed-comics-universe",
+      "gtName": "Ed Comics Universe card: General Surgeon",
+      "gtPage": "https://gtatown.com/locations/ed-comics-universe-card-general-surgeon",
+      "fbritoIds": [
+        "card-ed-comics-013"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "ed-comics-universe",
+      "gtName": "Ed Comics Universe card: General Surgeon",
+      "gtPage": "https://gtatown.com/locations/ed-comics-universe-card-general-surgeon-hamlet",
+      "fbritoIds": [
+        "card-ed-comics-002"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "ed-comics-universe",
+      "gtName": "Ed Comics Universe card: General Surgeon",
+      "gtPage": "https://gtatown.com/locations/ed-comics-universe-card-general-surgeon-port-gellhorn",
+      "fbritoIds": [
+        "collectible-card-104"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "ed-comics-universe",
+      "gtName": "Ed Comics Universe card: Great Uncle Sam",
+      "gtPage": "https://gtatown.com/locations/ed-comics-universe-card-great-uncle-sam",
+      "fbritoIds": [
+        "card-ed-comics-005"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "ed-comics-universe",
+      "gtName": "Ed Comics Universe card: Great Uncle Sam",
+      "gtPage": "https://gtatown.com/locations/ed-comics-universe-card-great-uncle-sam-card-ed-comics-015",
+      "fbritoIds": [
+        "card-ed-comics-015"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "ed-comics-universe",
+      "gtName": "Ed Comics Universe card: Mr. I",
+      "gtPage": "https://gtatown.com/locations/ed-comics-universe-card-mr-i",
+      "fbritoIds": [
+        "card-ed-comics-008"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "ed-comics-universe",
+      "gtName": "Ed Comics Universe card: MR.I (Light Blue)",
+      "gtPage": "https://gtatown.com/locations/ed-comics-universe-card-mr-i-light-blue",
+      "fbritoIds": [
+        "card-ed-comics-030"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "ed-comics-universe",
+      "gtName": "Ed Comics Universe card: MR.I (Orange)",
+      "gtPage": "https://gtatown.com/locations/ed-comics-universe-card-mr-i-orange",
+      "fbritoIds": [
+        "card-ed-comics-028"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "ed-comics-universe",
+      "gtName": "Ed Comics Universe card: RatFace (Bronze)",
+      "gtPage": "https://gtatown.com/locations/ed-comics-universe-card-ratface-bronze",
+      "fbritoIds": [
+        "card-ed-comics-012"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "ed-comics-universe",
+      "gtName": "Ed Comics Universe card: RatFace (Silver)",
+      "gtPage": "https://gtatown.com/locations/ed-comics-universe-card-ratface-silver-hamlet",
+      "fbritoIds": [
+        "card-ed-comics-003"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "ed-comics-universe",
+      "gtName": "Ed Comics Universe card: Rightwing (Gold)",
+      "gtPage": "https://gtatown.com/locations/ed-comics-universe-card-rightwing-gold",
+      "fbritoIds": [
+        "card-ed-comics-032"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "ed-comics-universe",
+      "gtName": "Ed Comics Universe card: Rightwing (Silver)",
+      "gtPage": "https://gtatown.com/locations/ed-comics-universe-card-rightwing-silver",
+      "fbritoIds": [
+        "card-ed-comics-029"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "ed-comics-universe",
+      "gtName": "Ed Comics Universe card: Side Effect",
+      "gtPage": "https://gtatown.com/locations/ed-comics-universe-card-side-effect",
+      "fbritoIds": [
+        "card-ed-comics-011"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "ed-comics-universe",
+      "gtName": "Ed Comics Universe card: Side Effect",
+      "gtPage": "https://gtatown.com/locations/ed-comics-universe-card-side-effect-port-gellhorn",
+      "fbritoIds": [
+        "card-ed-comics-004"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "ed-comics-universe",
+      "gtName": "Ed Comics Universe card: The Fornicator",
+      "gtPage": "https://gtatown.com/locations/ed-comics-universe-card-the-fornicator",
+      "fbritoIds": [
+        "comics-001"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "ed-comics-universe",
+      "gtName": "Ed Comics Universe card: The Fornicator",
+      "gtPage": "https://gtatown.com/locations/ed-comics-universe-card-the-fornicator-card-ed-comics-017",
+      "fbritoIds": [
+        "card-ed-comics-017"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "ed-comics-universe",
+      "gtName": "Ed Comics Universe card: The Fornicator",
+      "gtPage": "https://gtatown.com/locations/ed-comics-universe-card-the-fornicator-card-ed-comics-020",
+      "fbritoIds": [
+        "card-ed-comics-020"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "ed-comics-universe",
+      "gtName": "Ed Comics Universe card: Vaccerine",
+      "gtPage": "https://gtatown.com/locations/ed-comics-universe-card-vaccerine",
+      "fbritoIds": [
+        "card-ed-comics-007"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    },
+    {
+      "setId": "ed-comics-universe",
+      "gtName": "Vaccerine card",
+      "gtPage": "https://gtatown.com/locations/vaccerine-card-hamlet",
+      "fbritoIds": [
+        "collectible-card-111"
+      ],
+      "fbritoCommit": null,
+      "hasSources": true
+    }
+  ]
+}
