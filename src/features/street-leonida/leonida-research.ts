@@ -1,8 +1,4 @@
-import type { Place } from "../../domain/types";
-import {
-  REVIEWED_GTADB_ANCHORS,
-  type StreetLeonidaRegionSlug,
-} from "./leonida-evidence";
+import { type StreetLeonidaRegionSlug } from "./leonida-evidence";
 
 export interface ResearchSource {
   readonly id: string;
@@ -304,22 +300,4 @@ export function getRegionDiscoveries(
   slug: StreetLeonidaRegionSlug,
 ): readonly RegionDiscovery[] {
   return REGION_DISCOVERIES.filter((discovery) => discovery.region === slug);
-}
-
-export function getResearchForPlace(place: Pick<Place, "id" | "evidence">) {
-  if (place.evidence !== "approximate") return null;
-  const directRegion = RESEARCH_REGIONS.find(
-    (region) => place.id === `region:${region.slug}`,
-  );
-  const anchor = Object.hasOwn(REVIEWED_GTADB_ANCHORS, place.id)
-    ? REVIEWED_GTADB_ANCHORS[place.id as keyof typeof REVIEWED_GTADB_ANCHORS]
-    : null;
-  const region =
-    directRegion ??
-    (anchor?.confidence === "SUPPORTED"
-      ? RESEARCH_REGIONS.find((region) => region.slug === anchor.region)
-      : undefined);
-  return region
-    ? { region, discoveries: getRegionDiscoveries(region.slug) }
-    : null;
 }

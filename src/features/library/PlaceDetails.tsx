@@ -54,10 +54,8 @@ import {
   useUserStore,
 } from '../../stores/atlas';
 import { finishNoteSave, reconcileNoteDraft, type NoteDraft } from './note-draft';
-import { getResearchForPlace } from '../street-leonida/leonida-research';
 import { getLocalStreetPlaces } from '../street-leonida/page-data';
 import type { StreetPlaceCategory } from '../street-leonida/types';
-import RegionalResearch from './RegionalResearch';
 import PlaceResearch from './PlaceResearch';
 import { COUNTIES } from '../../data/counties';
 import { countyIsolation } from '../map/isolation';
@@ -196,7 +194,6 @@ export default function PlaceDetails({
   }, [savedNote, savedRevision]);
   const [copied, setCopied] = useState(false);
   const isPersonal = place.evidence === 'personal';
-  const research = getResearchForPlace(place);
   // AI-suggested type for this place (on-device only). Never a verified
   // fact — the sheet says so, with the confidence, and one tap confirms
   // it or picks the right type instead.
@@ -1323,7 +1320,11 @@ export default function PlaceDetails({
             <ExternalLink size={13} />
           </a>
         )}
-        {research && <RegionalResearch region={research.region.slug} />}
+        {/* v0.33 D-4 (focus cut): "Discover Leonida" lived here — regional
+          context from official sources, no exact locations, no
+          collectible to find or verify. Collecting + tracking only, so
+          the section is gone; the place card keeps "Research this
+          building" (PlaceResearch below), which serves collecting. */}
         <PlaceResearch place={place} db={db} />
         <section className="detail-section">
           <label htmlFor="place-note">Notes</label>

@@ -1,6 +1,4 @@
 import { readFileSync } from "node:fs";
-import { createElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { catalogueFromSnapshot } from "../../src/data/catalogue";
 import { BREAKABLE_HOME_PLACES } from "../../src/data/breakable-homes";
@@ -9,12 +7,6 @@ import { GANG_OP_PLACES } from "../../src/data/gang-operations";
 import { GYM_PLACES, EQUIPMENT_PLACES } from "../../src/data/gyms";
 import { LOOT_MAP_PLACES } from "../../src/data/loot-map";
 import { filterPlaces } from "../../src/domain/filter";
-import RegionalResearch from "../../src/features/library/RegionalResearch";
-import {
-  getResearchForPlace,
-  getRegionDiscoveries,
-  RESEARCH_SOURCES,
-} from "../../src/features/street-leonida/leonida-research";
 
 const snapshot = JSON.parse(
   readFileSync(
@@ -26,67 +18,14 @@ const snapshot = JSON.parse(
   ),
 );
 
-// A nearby or similarly named marker must never inherit official identity from regional research.
-describe("regional source discoveries", () => {
-  it("associates region IDs and reviewed landmarks without guessing from names or coordinates", () => {
-    expect(
-      getResearchForPlace({ id: "region:ambrosia", evidence: "approximate" })
-        ?.region.slug,
-    ).toBe("ambrosia");
-    expect(
-      getResearchForPlace({ id: "L399", evidence: "approximate" })?.region.slug,
-    ).toBe("ambrosia");
-    expect(
-      getResearchForPlace({ id: "L530", evidence: "approximate" })?.region.slug,
-    ).toBe("mount-kalaga-national-park");
-    expect(
-      getResearchForPlace({
-        id: "custom:region:ambrosia",
-        evidence: "personal",
-      }),
-    ).toBeNull();
-    expect(
-      getResearchForPlace({ id: "region:ambrosia", evidence: "personal" }),
-    ).toBeNull();
-    expect(
-      getResearchForPlace({
-        id: "unreviewed-ambrosia",
-        evidence: "approximate",
-      }),
-    ).toBeNull();
-    expect(
-      getResearchForPlace({ id: "region:toString", evidence: "approximate" }),
-    ).toBeNull();
-    expect(
-      getResearchForPlace({ id: "L407", evidence: "uncertain" }),
-    ).toBeNull();
-  });
-
-  it("renders primary citations and keeps observations separate from unknown precise positions", () => {
-    const html = renderToStaticMarkup(
-      createElement(RegionalResearch, { region: "leonida-keys" }),
-    );
-    expect(html).toContain("Leonida Keys");
-    expect(html).toContain("Exact locations are not established");
-    expect(html).toContain("Official image");
-    expect(html).toContain(
-      "https://www.rockstargames.com/VI/_next/static/media/Leonida_Keys_06.0eapr3hbeyewx.jpg",
-    );
-    expect(html).not.toContain("<img");
-    expect(html).not.toContain("<iframe");
-    for (const discovery of getRegionDiscoveries("leonida-keys")) {
-      expect(discovery.placement).toBe("UNPOSITIONED");
-      expect(discovery.travelRegion).toBe("leonida-keys");
-      for (const sourceId of discovery.sourceIds) {
-        const source = RESEARCH_SOURCES[sourceId];
-        expect(source).toBeDefined();
-        expect(new URL(source!.url).hostname).toBe("www.rockstargames.com");
-        if (source!.evidence === "official-image")
-          expect(source!.publishedAt).toBeNull();
-      }
-    }
-  });
-
+// v0.33 D-4 (focus cut): the "Discover Leonida" surface is gone —
+// RegionalResearch.tsx and getResearchForPlace were deleted with it,
+// and the two tests that covered them (place→region association,
+// component render with citations) went with them, behaviour gone by
+// design. What REMAINS is the research data itself: page-data.ts still
+// feeds region descriptions from RESEARCH_REGIONS, so the catalogue
+// test below stays — it guards live code, not the cut surface.
+describe("regional research data still feeds place descriptions", () => {
   it("adds source context without changing any source coordinate or introducing discovery pins", () => {
     const catalogue = catalogueFromSnapshot(snapshot);
     expect(catalogue.length).toBe(
@@ -136,14 +75,14 @@ describe("regional source discoveries", () => {
           enterableOnly: false,
           lootableOnly: false,
           interiorHouseOnly: false,
-          venueType: 'all',
+          venueType: "all",
           sortNearest: false,
         },
         [],
         [],
         [],
       )
-        .filter((place) => place.layerId === 'regions')
+        .filter((place) => place.layerId === "regions")
         .map((place) => place.id);
     expect(search("Little Cuba")).toEqual(["region:vice-city"]);
     expect(search("Final Chapter")).toEqual(["region:ambrosia"]);
