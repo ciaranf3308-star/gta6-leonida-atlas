@@ -1104,6 +1104,7 @@ export default function App() {
             place={selected}
             allPlaces={allPlaces}
             db={gameDb}
+            onSelectPlace={select}
             onAddMarkerHere={beginMarkerAt}
             onMarkWorkout={markWorkoutAt}
             onMarkBreakable={markBreakableAt}

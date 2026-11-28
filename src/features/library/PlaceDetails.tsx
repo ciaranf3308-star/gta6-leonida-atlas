@@ -3,7 +3,12 @@ import { Banknote, Bookmark, Camera, Check, Dumbbell, ExternalLink, Home, MapPin
 import type { Place, Position } from '../../domain/types';
 import { displayTitleFor, isUnnamedPlace } from '../../domain/types';
 import { resolveViewArea } from './view-area';
-import { locationCard, type GameDatabase } from '../../domain/game-db';
+import { locationCard, setFoundLabel, type GameDatabase } from '../../domain/game-db';
+import {
+  itemForPlace,
+  nextInSet,
+  noNextInSetLabel,
+} from '../map/set-drive';
 import {
   locationCardActions,
   type LocationCardAction,
@@ -14,7 +19,7 @@ import {
   recordCompletion,
   undoCompletion,
 } from '../completion/record';
-import { latestLootedRecordFor } from '../completion/place-ids';
+import { collectedRecordFor, latestLootedRecordFor } from '../completion/place-ids';
 import { useCompletionLogStore } from '../completion/log-store';
 import { topCategoriesNear } from '../../domain/nearby-categories';
 import { categoryLabel } from '../../app/categories';
@@ -68,6 +73,7 @@ export default function PlaceDetails({
   onAddMarkerHere,
   onMarkWorkout,
   onMarkBreakable,
+  onSelectPlace,
 }: {
   place: Place;
   /** Every place, for the "Hidden collectables" row: verified card pins
@@ -91,6 +97,8 @@ export default function PlaceDetails({
    * found a house / apartment / trailer he can break into, and most
    * breakable homes have no tag in the public data at all. */
   onMarkBreakable?: (place: Place) => void;
+  /** v0.33 Lane C: jump to another place's sheet (Next in set). */
+  onSelectPlace?: (placeId: string) => void;
 }) {
   const favorite = useUserStore((s) => s.favorites.some((f) => f.placeId === place.id));
   // Select the raw store array (a stable reference) and derive the
@@ -445,6 +453,70 @@ export default function PlaceDetails({
   );
   const [completionBusy, setCompletionBusy] = useState<string | null>(null);
   const [completionError, setCompletionError] = useState('');
+  // --- The card's OWN sheet (v0.33 Lane C, D-3) ---
+  // A card is an ITEM, not a location: locationCard returns null
+  // for it, so the sheet above has no collect control at all — the
+  // only way to mark it was the host's checkbox. A set card's own
+  // dialog now carries the ONE "Mark found" button (the same
+  // completion record the host checkbox and the journal write), and
+  // the Next-in-set footer below. Non-set items (a meditation loot
+  // pin) are not gated here: their place IS a location, so the
+  // host card above already offers the collect checkbox.
+  const cardItem = useMemo(
+    () => (activeDb ? itemForPlace(activeDb, place.id) : null),
+    [activeDb, place.id],
+  );
+  const isSetCard =
+    cardItem !== null && cardItem.kind === 'trading-card' && cardItem.setId !== null;
+  const cardFound = isSetCard && activeDb
+    ? activeDb.completedItemIds.has(cardItem!.id)
+    : false;
+  const nextCard = useMemo(() => {
+    if (!isSetCard || !activeDb || !cardItem?.setId) return null;
+    return nextInSet(activeDb, allPlaces, cardItem.setId, cardItem.id);
+  }, [isSetCard, activeDb, cardItem, allPlaces]);
+  /** Mark found / unmark, on the card's own dialog. The unmark is
+   * the completion log's compensating record, as the existing undo
+   * does (undoCompletion deletes the collected record). After the
+   * write the highlight clears — the reveal-trap fix, see
+   * recordAction below. */
+  async function toggleCardFound() {
+    if (!activeDb || !isSetCard || !cardItem || completionBusy) return;
+    setCompletionBusy('mark-found');
+    setCompletionError('');
+    if (cardFound) {
+      const record = collectedRecordFor(activeDb, cardItem.id);
+      if (!record) {
+        setCompletionBusy(null);
+        setCompletionError(
+          `Could not unmark "${cardItem.name}" — its record is missing. Nothing was changed.`,
+        );
+        return;
+      }
+      const result = await undoCompletion(record.id);
+      setCompletionBusy(null);
+      if (result.ok && result.db) {
+        setCompletionDb(result.db);
+        useCompletionLogStore.getState().applyDb(result.db);
+        useMapStore.getState().clearHighlights();
+      } else {
+        setCompletionError(result.error ?? 'Could not save that — try again.');
+      }
+      return;
+    }
+    const result = await recordCompletion({
+      target: { type: 'item', id: cardItem.id },
+      verb: 'collected',
+    });
+    setCompletionBusy(null);
+    if (result.ok && result.db) {
+      setCompletionDb(result.db);
+      useCompletionLogStore.getState().applyDb(result.db);
+      useMapStore.getState().clearHighlights();
+    } else {
+      setCompletionError(result.error ?? 'Could not save that — try again.');
+    }
+  }
   /** The one write path (step 2's recordCompletion — called, never
    * changed). On success the returned db becomes the card's db, so
    * the struck-through state and the counts update immediately — and
@@ -466,6 +538,26 @@ export default function PlaceDetails({
     if (result.ok && result.db) {
       setCompletionDb(result.db);
       useCompletionLogStore.getState().applyDb(result.db);
+      // v0.33 Lane C (D-3) — REVEAL-TRAP FIX, on the Mark-found
+      // path only: opening a host sheet sets highlightIds=[host],
+      // which survives sheet-close, so a card at the host's exact
+      // coordinates stays in a ×2 cluster with its host at every
+      // zoom and its tick is unreachable. After a card is marked
+      // collected the highlight clears, so the host drops off (its
+      // layer is off in a set drive) and the card stands alone with
+      // its tick visible immediately — no manual "Clear highlights".
+      // Looted / discovered writes do NOT clear: their target is
+      // the place itself, and the reveal is what keeps it on the
+      // map. A broader sheet-close-clears-highlight change is NOT
+      // safe and is deliberately not made here: v0.30's reveal
+      // persistence is the designed behaviour — a deep link, an Ask
+      // answer or a Find tap keeps its pin on screen after the
+      // sheet closes (the v0.30 fix + probe prove it), and Ask's
+      // "Clear highlights (N)" counts the same set. Clearing on
+      // every sheet close would reintroduce the v0.30 bug (the pin
+      // vanishing the moment its sheet closes) and break that
+      // accounting. The targeted clear-on-collect is the whole fix.
+      if (action.kind === 'collect') useMapStore.getState().clearHighlights();
     } else {
       setCompletionError(result.error ?? 'Could not save that — try again.');
     }
@@ -568,6 +660,15 @@ export default function PlaceDetails({
           * (no height rule) — only its caption showed.
           */}
         <div className="place-card-head">
+          {/* v0.33 Lane C (D-3): the FOUND stamp — a collected set
+            * card carries its state on the dialog itself, as
+            * gtatown does. It renders only when the card is found,
+            * so the sheet's state is visible at a glance. */}
+          {cardFound && (
+            <span className="mark-found-stamp" aria-hidden="true">
+              Found
+            </span>
+          )}
           <div className="place-card-photo">
             {photoUrl ? (
               <div className="place-photo">
@@ -721,6 +822,51 @@ export default function PlaceDetails({
           <p className="view-area-note" role="status">
             {viewAreaNote}
           </p>
+        )}
+        {/* v0.33 Lane C (D-3): the ONE "Mark found" button, on the
+          * card's own dialog. A card is an ITEM, so the location
+          * card above has no collect control for it — this button
+          * writes the same completion record the host's checkbox
+          * and the journal write. When the dialog was opened from
+          * a set drive it is the primary action: full-width, first
+          * in the sheet body. Tap again to unmark (the compensating
+          * record, as the existing undo does). */}
+        {isSetCard && cardItem && activeDb && (
+          <section
+            className="detail-section mark-found-section"
+            aria-label={`Mark ${cardItem.name} as found`}
+          >
+            <button
+              type="button"
+              className={`button primary mark-found-button ${
+                cardFound ? 'is-found' : ''
+              }`}
+              disabled={completionBusy !== null || !ready}
+              onClick={() => void toggleCardFound()}
+              aria-label={
+                cardFound
+                  ? `Unmark ${cardItem.name} as found`
+                  : `Mark ${cardItem.name} as found`
+              }
+            >
+              {completionBusy === 'mark-found'
+                ? 'Saving…'
+                : cardFound
+                  ? '✓ Found — tap to unmark'
+                  : 'Mark found'}
+            </button>
+            {cardFound && (
+              <p className="mark-found-note">
+                Collected — every counter in the app moves with this one
+                write.
+              </p>
+            )}
+            {completionError && (
+              <p className="inline-error" role="alert">
+                {completionError}
+              </p>
+            )}
+          </section>
         )}
         <p className="place-badges" aria-label="What this place is">
           {interior.breakable && <span>Breakable home</span>}
@@ -1445,6 +1591,36 @@ export default function PlaceDetails({
           <button className="text-button" onClick={() => void share()}>
             {copied ? 'Link copied' : 'Copy place link'}
           </button>
+        )}
+        {/* v0.33 Lane C (D-3): the Next-in-set footer — the pin
+          * dialog's way onward through the set. The string carries
+          * the shared setFoundLabel, so the footer is one of the
+          * five surfaces the D-5 count-identity demo asserts on.
+          * It jumps to the next UNCOLLECTED PINNED card in set
+          * order (wrapping), centring the map and opening that
+          * card's own dialog via onSelectPlace. When nothing is
+          * left to find it reads "Set complete" (or the still-to-
+          * find count, for unpinned cards only the journal can
+          * reach) and there is no button to tap. */}
+        {isSetCard && cardItem?.setId && activeDb && (
+          <footer className="set-next-footer">
+            {nextCard ? (
+              <button
+                type="button"
+                className="set-next-button"
+                disabled={!onSelectPlace}
+                onClick={() => onSelectPlace?.(nextCard.pinPlaceId)}
+                aria-label={`Next in ${activeDb.sets.get(cardItem.setId)?.name ?? 'this set'}: ${nextCard.item.name}`}
+              >
+                Next in {activeDb.sets.get(cardItem.setId)?.name ?? 'this set'} ·{' '}
+                {setFoundLabel(activeDb, cardItem.setId)} — {nextCard.item.name} {'>'}
+              </button>
+            ) : (
+              <span className="set-next-done">
+                {noNextInSetLabel(activeDb, cardItem.setId)}
+              </span>
+            )}
+          </footer>
         )}
       </div>
     </aside>

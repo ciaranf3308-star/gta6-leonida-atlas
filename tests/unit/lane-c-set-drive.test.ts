@@ -135,6 +135,18 @@ describe('v0.33 Lane C — D-5 count hygiene (one shared selector)', () => {
   });
 });
 
+// NOTE (v0.33 Lane C): the card dialog's own render — Mark found
+// button, FOUND stamp, Next-in-set footer — is NOT unit-tested
+// here. PlaceDetails pulls Leaflet at module load, which needs
+// `window`; the unit suite runs in the node environment and this
+// repo carries no jsdom / happy-dom devDependency, so importing it
+// in a unit test fails at load. The dialog behaviour is instead
+// asserted end-to-end by the Playwright probe
+// (scripts/check-v033-lane-c.mjs, demo b/c/d): click Mark found on
+// the card's own dialog, tick visible, footer jumps, unmark works.
+// The pure logic underneath (itemForPlace, nextInSet, setFoundLabel)
+// is covered above.
+
 describe('v0.33 Lane C — D-3 set drive members (measured from the data)', () => {
   it('Delights Dancers is 5 pinned of 18 — counted, never hard-coded', () => {
     const db = buildGameDatabase({ places });
