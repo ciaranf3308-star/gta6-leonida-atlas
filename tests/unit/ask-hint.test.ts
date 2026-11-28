@@ -31,9 +31,10 @@ describe('hintItemForQuestion — the "Bigger hint" button target (Demo G)', () 
 
   it('resolves an unpinned card too — the ladder works past level 2 honestly', () => {
     const db = buildDb();
-    const amber = hintItemForQuestion('give me a hint for the Amber card', db);
-    expect(amber?.name).toBe('Amber');
-    expect(amber?.locationId).toBeNull();
+    // Jude Flores is still unpinned (gap — no fbrito record matched).
+    const jude = hintItemForQuestion('give me a hint for the Jude Flores card', db);
+    expect(jude?.name).toBe('Jude Flores');
+    expect(jude?.locationId).toBeNull();
   });
 
   it('returns null when the question names no item — the button never guesses', () => {

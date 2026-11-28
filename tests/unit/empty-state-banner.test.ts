@@ -34,10 +34,10 @@ function gangOpLayersOn(): typeof DEFAULT_LAYERS {
 }
 
 describe('empty-state banner showing computation (v0.32 lane 3, Finding 3)', () => {
-  it('regions drawn: the gang-op layer on draws 34 regions, so nothing is "not showing"', () => {
+  it('regions drawn: the gang-op layer on draws 35 regions, so nothing is "not showing"', () => {
     const db = buildFullDb();
     const regions = regionsDrawnCount(db.areas, GANG_OP_PLACES, gangOpLayersOn());
-    expect(regions).toBe(34);
+    expect(regions).toBe(35);
     expect(regions).toBe(
       gangOpLikelyAreas(db.areas, GANG_OP_PLACES, gangOpLayersOn()).length,
     );
@@ -66,12 +66,12 @@ describe('empty-state banner showing computation (v0.32 lane 3, Finding 3)', () 
     expect(nothingShowing(0, 0)).toBe(true);
   });
 
-  it('nothing drawn: the 3 no-extent ops on their own draw nothing and must not count as showing', () => {
+  it('nothing drawn: the 2 no-extent ops on their own draw nothing and must not count as showing', () => {
     const db = buildFullDb();
     const noExtent = GANG_OP_PLACES.filter((p) =>
-      ['gang-op:fishing-shacks', 'gang-op:chatfield-storage-logistics', 'gang-op:vespucci-mansion'].includes(p.id),
+      ['gang-op:fishing-shacks', 'gang-op:chatfield-storage-logistics'].includes(p.id),
     );
-    expect(noExtent).toHaveLength(3);
+    expect(noExtent).toHaveLength(2);
     expect(regionsDrawnCount(db.areas, noExtent, gangOpLayersOn())).toBe(0);
     expect(nothingShowing(0, 0)).toBe(true);
   });
@@ -178,7 +178,7 @@ describe('"Show everything" clears the narrow filters (v0.32.1, Finding 4)', () 
       [],
       [],
     );
-    expect(regionsDrawnCount(db.areas, after, gangOpLayersOn())).toBe(34);
-    expect(nothingShowing(0, 34)).toBe(false);
+    expect(regionsDrawnCount(db.areas, after, gangOpLayersOn())).toBe(35);
+    expect(nothingShowing(0, 35)).toBe(false);
   });
 });

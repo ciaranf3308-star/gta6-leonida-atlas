@@ -290,7 +290,9 @@ describe('Ask intent — router → tools → narration (DESIGN §7.3)', () => {
     expect(result.proposals[0]?.kind).toBe('completion');
     if (result.proposals[0]?.kind === 'completion') {
       expect(result.proposals[0].confirmLabel).toMatch(/Mark Tracy .* as collected\?/);
-      expect(result.proposals[0].jotOffer).toMatch(/no spot in the map data yet/);
+      // Tracy is pinned now (fbrito candidate pin), so there is a spot
+      // in the map data and no jot offer.
+      expect(result.proposals[0].jotOffer).toBeNull();
     }
     // The proposal did not write: Tracy is still uncollected.
     const tracy = [...db.items.values()].find((item) => item.name === 'Tracy')!;

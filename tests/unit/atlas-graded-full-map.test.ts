@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { gtadbTileUrl, leafletTileToGtadb } from '../../src/features/map/gtadb-tiles';
 import { COUNTIES, countyForPlace, countyIdFromText } from '../../src/data/counties';
@@ -147,14 +148,26 @@ describe('Collectable card sets', () => {
     }
   });
 
-  it('pins only cards whose host building is verified, never by guess', () => {
-    expect(COLLECTABLE_CARD_PLACES).toHaveLength(37);
+  it('pins only cards whose host building is verified, never by guess — plus the 346 fbrito candidate pins, kept separate', () => {
+    // The 37 host pins are exactly the verified-host pins (20
+    // hand-written + 17 generated); the fbrito import never adds, moves
+    // or renames one. The 346 candidate pins are a separate class:
+    // converted fbrito coordinates, evidence "approximate", no host.
+    const hostPins = COLLECTABLE_CARD_PLACES.filter(
+      (c) => !c.tags.includes('fbrito-import'),
+    );
+    const fbritoPins = COLLECTABLE_CARD_PLACES.filter((c) =>
+      c.tags.includes('fbrito-import'),
+    );
+    expect(COLLECTABLE_CARD_PLACES).toHaveLength(383);
+    expect(hostPins).toHaveLength(37);
+    expect(fbritoPins).toHaveLength(346);
     for (const card of COLLECTABLE_CARD_PLACES) {
       expect(card.position).not.toBeNull();
       expect(card.evidence).toBe('approximate');
       expect(card.source.url).toMatch(/^https:\/\//);
     }
-    expect(COLLECTABLE_CARD_PLACES.map((c) => c.id).sort()).toEqual([
+    expect(hostPins.map((c) => c.id).sort()).toEqual([
       'card:alexander-avain-navy-blue',
       'card:anthony-poke-ii',
       'card:braelynn-pink',
@@ -193,5 +206,31 @@ describe('Collectable card sets', () => {
       'card:victor-maravilla',
       'card:wokester-blue',
     ]);
+    // Every host pin sits on a GTADB host — except the one pre-existing
+    // Kyle Lewicki pin, whose host is a GTA6 GPS approximate pin
+    // (Dynamix Fitness, Vice City). Every fbrito pin carries its own
+    // per-record source URL and no host claim.
+    for (const pin of hostPins) {
+      if (pin.id === 'card:kyle-lewicky') {
+        expect(pin.region).toBe('Dynamix Fitness, Vice City (GTA6 GPS approximate pin)');
+      } else {
+        expect(pin.region).toMatch(/GTADB L\d+/);
+      }
+    }
+    for (const pin of fbritoPins) {
+      expect(pin.id).toMatch(/^card:fbrito-/);
+      expect(pin.source.title).toMatch(/Open GTA 6 Map.*CC BY 4\.0/);
+      expect(pin.source.url).toBe(
+        `https://fbritoferreira.github.io/gta6/?id=${pin.id.slice('card:fbrito-'.length)}`,
+      );
+      expect(pin.region).not.toMatch(/GTADB L\d+/);
+    }
+    // The fbrito pins are exactly the manifest's resolved records.
+    const manifest = JSON.parse(
+      readFileSync(new URL('../../scripts/fbrito-import-manifest.json', import.meta.url), 'utf8'),
+    );
+    expect(fbritoPins.map((p) => p.id.slice('card:fbrito-'.length)).sort()).toEqual(
+      manifest.resolved.map((r: { fbritoId: string }) => r.fbritoId).sort(),
+    );
   });
 });

@@ -81,7 +81,7 @@ describe('Album — the 480 slots, as a view over the same log (addendum §3.2)'
   it('counts found/remaining/unpositioned/sold from the completion log + sold join', () => {
     const db = dbWithCollected(VICKI);
     const counts = albumCounts(db, new Set());
-    expect(counts).toEqual({ all: 480, found: 1, remaining: 479, unpositioned: 440, sold: 0 });
+    expect(counts).toEqual({ all: 480, found: 1, remaining: 479, unpositioned: 94, sold: 0 });
     const sold = soldIdsFromStates([{ itemId: VICKI, soldAt: '2026-11-26T10:00:00.000Z' }]);
     expect(albumCounts(db, sold).sold).toBe(1);
     // An undone sale (soldAt null) is the audit trail, not a sold card.

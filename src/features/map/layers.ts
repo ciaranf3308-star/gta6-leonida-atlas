@@ -230,8 +230,8 @@ export const DEFAULT_LAYERS: LayerDefinition[] = [
       `${GANG_OP_HOSTED_COUNT} ride on an existing building (${GANG_OP_HOSTED_NAMES}) and show there; ` +
       `the other ${GANG_OP_AREA_KNOWN_COUNT} are known by area only — no verified position exists for any of them, ` +
       `so the map shows each one's likely area, a dashed region over the area the guides name, never a pin. ` +
-      `27 draw their own area's extent, 7 draw a county extent instead — a whole-county region for a single ` +
-      `building, labelled as the county extent, because its named area has no extent of its own — and 3 have no ` +
+      `28 draw their own area's extent, 7 draw a county extent instead — a whole-county region for a single ` +
+      `building, labelled as the county extent, because its named area has no extent of its own — and 2 have no ` +
       `extent to draw and are listed by area only. Licence: ${GANG_OP_LICENSE}.`,
     category: 'activity',
     mapIndex: 'robberies',

@@ -51,19 +51,21 @@ const DOMINIC_SILVER = 'card-checklist:vice-city-manatees:dominic-brizzolato:sil
 const ARMANDO_LIFEGUARD = 'card-checklist:liberty-city-wrath:armando-ibarra-jr:standard';
 
 describe('card matcher — deterministic yield on the real data', () => {
-  it('proposes exactly one slot deterministically: Dominic Brizzolato → Nehrling River (D1)', () => {
+  it('the fbrito import resolved the one deterministic slot — the real pool now proposes nothing', () => {
+    // 28 Nov 2026: Dominic Brizzolato (silver) was the pool's only
+    // deterministic D1 proposal (Nehrling River, L3442). The fbrito
+    // import pinned him at card:fbrito-card-vice-city-manatees-023,
+    // so the matcher — which only runs over area-known slots — has
+    // nothing left to propose. D1 keeps coverage from the synthetic
+    // test below ('D1 proposes the only named host in the area').
     const proposed = unmatched
       .map((slot) => resolveSlotDeterministically(fullDb, slot))
       .filter((result) => result.proposal);
-    expect(proposed).toHaveLength(1);
-    const result = resolveSlotDeterministically(fullDb, slotById(DOMINIC_SILVER));
-    expect(result.status).toBe('proposed');
-    expect(result.proposal?.hostId).toBe('L3442');
-    expect(result.proposal?.hostName).toBe('Nehrling River, Mariana County');
-    expect(result.proposal?.candidate.pass).toBe('D1');
-    expect(result.proposal?.confidence).toBe(0.95);
-    expect(result.proposal?.proposedBy).toBe('deterministic');
-    expect(result.proposal?.candidate.areaAgrees).toBe(true);
+    expect(unmatched).toHaveLength(94);
+    expect(proposed).toHaveLength(0);
+    const dominic = fullDb.items.get(DOMINIC_SILVER)!;
+    expect(dominic.placement).toBe('pinned');
+    expect(dominic.locationId).toBe('card:fbrito-card-vice-city-manatees-023');
   });
 
   it('D2 and D3 propose nothing today — the AI index is 32/3,280 typed and only 19 residential records are named, none on any direction street', () => {
@@ -81,7 +83,7 @@ describe('card matcher — deterministic yield on the real data', () => {
     expect(byPass.get('D3') ?? 0).toBe(0);
   });
 
-  it('counts the LLM-eligible pool: 1 proposed, 7 ambiguous, 5 more with candidates, 427 with none', () => {
+  it('counts the LLM-eligible pool: 0 proposed, 1 ambiguous, 0 more with candidates, 93 with none', () => {
     let proposed = 0;
     let ambiguous = 0;
     let noneWith = 0;
@@ -93,29 +95,33 @@ describe('card matcher — deterministic yield on the real data', () => {
       else if (result.candidates.length > 0) noneWith += 1;
       else noneWithout += 1;
     }
-    expect(proposed).toBe(1);
-    expect(ambiguous).toBe(7);
-    expect(noneWith).toBe(5);
-    expect(noneWithout).toBe(427);
-    expect(proposed + ambiguous + noneWith + noneWithout).toBe(440);
+    expect(proposed).toBe(0);
+    expect(ambiguous).toBe(1);
+    expect(noneWith).toBe(0);
+    expect(noneWithout).toBe(93);
+    expect(proposed + ambiguous + noneWith + noneWithout).toBe(94);
+    // The one ambiguous slot is Armando Ibarra Jr (two lifeguard
+    // towers in his area — the LLM's call, never a coin flip).
+    const ambiguousSlots = unmatched.filter(
+      (slot) => resolveSlotDeterministically(fullDb, slot).status === 'ambiguous',
+    );
+    expect(ambiguousSlots.map((slot) => slot.id)).toEqual([ARMANDO_LIFEGUARD]);
   });
 
-  it('the Sahara Arena conflict is never a deterministic proposal — the area-disagreeing host stays visible for the LLM', () => {
-    const slot = unmatched.find((item) =>
+  it('the Sahara Arena slot is resolved by the import — the area-disagreeing host is no longer a matcher case', () => {
+    // Christoph Schulz (Vice City Narcos) was the pool's Sahara Arena
+    // case: the guide names Downtown, the arena sits in Shoreline.
+    // The fbrito import pinned him, so the matcher never sees him —
+    // the conflict is moot, not hidden. The area-disagreement
+    // mechanism itself keeps coverage in the synthetic test below
+    // ('an area-disagreeing host is never a deterministic proposal').
+    const slot = [...fullDb.items.values()].find((item) =>
       (item.pickups[0]?.direction ?? '').includes('Sahara Arena'),
-    );
-    expect(slot).toBeDefined();
-    const candidates = candidateHostsForSlot(fullDb, slot!);
-    const arena = candidates.find((candidate) => candidate.hostId === 'L187');
-    expect(arena).toBeDefined();
-    expect(arena?.pass).toBe('llm');
-    expect(arena?.areaAgrees).toBe(false);
-    expect(arena?.hostName).toContain('Sahara Arena');
-    const result = resolveSlotDeterministically(fullDb, slot!);
-    expect(result.proposal).toBeNull();
-    expect(result.status).toBe('none');
-    // The conflict note is on the slot and survives to the review screen.
-    expect(slotConflictNote(slot!)).toContain('Sahara Arena');
+    )!;
+    expect(slot.id).toBe('card-checklist:vice-city-narcos:christoph-schulz:standard');
+    expect(slot.placement).toBe('pinned');
+    expect(slot.locationId?.startsWith('card:fbrito-')).toBe(true);
+    expect(unmatched.some((item) => item.id === slot.id)).toBe(false);
   });
 
   it('a lifeguard direction is a chain question even though the type word is in the second segment', () => {
@@ -228,13 +234,69 @@ function syntheticDb(): GameDatabase {
   return buildGameDatabase({ places: SYNTHETIC_PLACES, checklistItems: SYNTHETIC_SLOTS });
 }
 
+// A second synthetic db carrying the two cases the real pool no
+// longer has: a D1 named host in the same area, and an
+// area-disagreeing host (the Sahara Arena shape). Kept separate
+// from SYNTHETIC_* so the job tests' batch counts do not move.
+const EXTRA_PLACES: Place[] = [
+  ...SYNTHETIC_PLACES,
+  place({ id: 'L9010', title: 'The Old Mill, Test Town', layerId: 'shops-food', tags: [] }),
+  place({ id: 'L9011', title: 'Sahara Arena, Other Town', layerId: 'shops-food', region: 'Other Town', tags: [] }),
+];
+const EXTRA_SLOTS: CardChecklistItem[] = [
+  ...SYNTHETIC_SLOTS,
+  slot({
+    id: 'slot:mill',
+    person: 'Mill Person',
+    areaLead: 'Test Town',
+    pickups: [{ areaLead: 'Test Town', direction: '· The Old Mill · back room', sourceTitle: 'lorenzone.fr', sourceUrl: '', evidence: 'approximate', hostId: null, hostName: null }],
+  }),
+  slot({
+    id: 'slot:sahara',
+    person: 'Sahara Person',
+    areaLead: 'Test Town',
+    conflict: 'Guide names Downtown; the Sahara Arena sits in Shoreline.',
+    pickups: [{ areaLead: 'Test Town', direction: '· Sahara Arena · lobby', sourceTitle: 'lorenzone.fr', sourceUrl: '', evidence: 'approximate', hostId: null, hostName: null }],
+  }),
+];
+function extraDb(): GameDatabase {
+  return buildGameDatabase({ places: EXTRA_PLACES, checklistItems: EXTRA_SLOTS });
+}
+
 function syntheticSlot(db: GameDatabase, id: string): CollectibleItem {
   const item = db.items.get(id);
   if (!item) throw new Error(`no synthetic slot ${id}`);
   return item;
 }
 
-describe('card matcher — D2/D3 on synthetic ground truth', () => {
+describe('card matcher — D1/D2/D3 on synthetic ground truth', () => {
+  it('D1 proposes the only named host in the area (0.95)', () => {
+    const db = extraDb();
+    const result = resolveSlotDeterministically(db, syntheticSlot(db, 'slot:mill'));
+    expect(result.status).toBe('proposed');
+    expect(result.proposal?.hostId).toBe('L9010');
+    expect(result.proposal?.candidate.pass).toBe('D1');
+    expect(result.proposal?.candidate.areaAgrees).toBe(true);
+    expect(result.proposal?.confidence).toBe(0.95);
+    expect(result.proposal?.proposedBy).toBe('deterministic');
+  });
+
+  it('an area-disagreeing host is never a deterministic proposal — it stays visible for the LLM', () => {
+    const db = extraDb();
+    const item = syntheticSlot(db, 'slot:sahara');
+    const candidates = candidateHostsForSlot(db, item);
+    const arena = candidates.find((candidate) => candidate.hostId === 'L9011');
+    expect(arena).toBeDefined();
+    expect(arena?.pass).toBe('llm');
+    expect(arena?.areaAgrees).toBe(false);
+    expect(arena?.hostName).toContain('Sahara Arena');
+    const result = resolveSlotDeterministically(db, item);
+    expect(result.proposal).toBeNull();
+    expect(result.status).toBe('none');
+    // The conflict note is on the slot and survives to the review screen.
+    expect(slotConflictNote(item)).toContain('Sahara Arena');
+  });
+
   it('D2 proposes the only Xero in the area (tag-typed, 0.8), never the one in the other town', () => {
     const db = syntheticDb();
     const result = resolveSlotDeterministically(db, syntheticSlot(db, 'slot:xero'));
@@ -303,22 +365,24 @@ function llmFetch(content: string): typeof fetch {
 
 describe('card matcher — LLM pass and fingerprints', () => {
   it('the LLM can propose the area-disagreeing Sahara Arena, capped at 0.7 with the area check on the proposal', async () => {
-    const slot = unmatched.find((item) =>
-      (item.pickups[0]?.direction ?? '').includes('Sahara Arena'),
-    )!;
-    const candidates = candidateHostsForSlot(fullDb, slot);
+    // Synthetic: the real Sahara slot was resolved by the fbrito
+    // import, so the 0.7 cap now demonstrates on the synthetic
+    // area-disagreeing arena (slot:sahara in the extra db).
+    const db = extraDb();
+    const slot = syntheticSlot(db, 'slot:sahara');
+    const candidates = candidateHostsForSlot(db, slot);
     const fetchImpl = llmFetch(
-      JSON.stringify({ choice: 'L187', confidence: 0.95, reasoning: 'The guide names the arena.' }),
+      JSON.stringify({ choice: 'L9011', confidence: 0.95, reasoning: 'The guide names the arena.' }),
     );
     const result = await matchSlotWithLlm({
-      db: fullDb,
+      db,
       slot,
       candidates,
       apiKey: 'test-key',
       fetchImpl,
     });
     expect(result.status).toBe('proposed');
-    expect(result.proposal?.hostId).toBe('L187');
+    expect(result.proposal?.hostId).toBe('L9011');
     expect(result.proposal?.confidence).toBe(0.7);
     expect(result.proposal?.proposedBy).toBe('llm');
     expect(result.proposal?.candidate.areaAgrees).toBe(false);
@@ -404,10 +468,13 @@ describe('card matcher — LLM pass and fingerprints', () => {
   });
 
   it('a deterministic proposal needs no key at all', async () => {
-    const item = slotById(DOMINIC_SILVER);
-    const result = await matchSlot(fullDb, item, {});
+    // Synthetic Xero (D2): the real deterministic slot (Dominic
+    // silver) was resolved by the fbrito import.
+    const db = syntheticDb();
+    const item = syntheticSlot(db, 'slot:xero');
+    const result = await matchSlot(db, item, {});
     if (result.status !== 'proposed') throw new Error(`expected a proposal, got ${result.status}`);
-    expect(result.proposal.hostId).toBe('L3442');
+    expect(result.proposal.hostId).toBe('L9001');
   });
 
   it('the job proposes the deterministic slot and saves one batch', async () => {

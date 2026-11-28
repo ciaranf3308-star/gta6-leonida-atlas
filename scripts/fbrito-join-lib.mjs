@@ -84,6 +84,13 @@ export function parseFbrito(rec) {
   if (m) return { id: rec.id, setId, person: m[2].trim(), variant: m[3].trim(), x: rec.x, y: rec.y, parsed: 'named-variant', description: desc };
   m = name.match(/^(.+?)\s+card:\s*(.+?)\s*$/i);
   if (m) return { id: rec.id, setId, person: m[2].trim(), variant: null, x: rec.x, y: rec.y, parsed: 'named-novariant', description: desc };
+  // Generic "Collectible Card" — person in description (a bare name, no
+  // sentence). This must come BEFORE the "Person card" branch below:
+  // "Collectible Card" ends in "card" and would otherwise parse as the
+  // person "Collectible" and the branch would never be reached.
+  if (/^collectible card$/i.test(name) && desc && /^[\p{L} .'\-$]{1,40}$/u.test(desc) && !/[.!?,;:]$/.test(desc) && desc.split(' ').length <= 4) {
+    return { id: rec.id, setId, person: desc, variant: null, x: rec.x, y: rec.y, parsed: 'generic-desc-person', description: desc };
+  }
   // "Person card (Variant)" / "Person card" — no colon (e.g. "Sue Prettyman card (Standard)", "Malik Rivers card")
   m = name.match(/^(.+?)\s+card\s*\(([^)]+)\)\s*$/i);
   if (m) return { id: rec.id, setId, person: m[1].trim().replace(/\s+Signed\s*$/i, ''), variant: m[2].trim(), x: rec.x, y: rec.y, parsed: 'person-card-variant', description: desc };
@@ -103,10 +110,6 @@ export function parseFbrito(rec) {
       return { id: rec.id, setId, person, variant: null, x: rec.x, y: rec.y, parsed: 'bare-person', description: desc };
     }
   }
-  // Generic "Collectible Card" — person in description (a bare name, no sentence)
-  if (/^collectible card$/i.test(name) && desc && /^[\p{L} .'\-$]{1,40}$/u.test(desc) && !/[.!?,;:]$/.test(desc) && desc.split(' ').length <= 4) {
-    return { id: rec.id, setId, person: desc, variant: null, x: rec.x, y: rec.y, parsed: 'generic-desc-person', description: desc };
-  }
   return { id: rec.id, setId, person: null, variant: null, x: rec.x, y: rec.y, parsed: 'unparseable', rawName: name, rawDesc: desc.slice(0, 80), description: desc };
 }
 
@@ -117,7 +120,7 @@ export const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 export const variantMatches = (slot, variant) => {
   if (variant == null) return false;
   const v = norm(variant);
-  return v === norm(slot.variant) || (slot.variantAlias && v === norm(slot.variantAlias));
+  return v === norm(slot.variant) || (slot.variantAlias != null && v === norm(slot.variantAlias));
 };
 
 // Tier/colour labels are variants; anything else in the parens (a title

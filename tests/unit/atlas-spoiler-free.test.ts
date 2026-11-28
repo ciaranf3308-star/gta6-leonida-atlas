@@ -173,7 +173,7 @@ describe("Gyms and Workout equipment layers", () => {
 
   it("merges the gyms into the catalogue alongside the community records", () => {
     const places = catalogueFromSnapshot(snapshot);
-    expect(places).toHaveLength(4525);
+    expect(places).toHaveLength(4871);
     expect(places.filter((p) => p.position === null)).toHaveLength(139);
     expect(places.filter((p) => p.layerId === "gyms")).toHaveLength(8);
     expect(places.filter((p) => p.layerId === "equipment")).toHaveLength(3);
@@ -193,10 +193,10 @@ describe("Gyms and Workout equipment layers", () => {
     expect(places.filter((p) => p.layerId === "lootable")).toHaveLength(47);
     expect(
       places.filter((p) => p.layerId.startsWith("cards:")),
-    ).toHaveLength(37);
+    ).toHaveLength(383); // 37 host + 346 fbrito candidate pins
     expect(places.filter((p) => p.layerId === "loot-heists")).toHaveLength(29);
     expect(places.filter((p) => p.layerId === "loot-collectibles")).toHaveLength(20);
-    expect(new Set(places.map((p) => p.id)).size).toBe(4525);
+    expect(new Set(places.map((p) => p.id)).size).toBe(4871);
   });
 });
 
@@ -246,7 +246,7 @@ describe("Map Index categories (v0.21.0) — the game's own filters, not the dat
       expect(counts.get(dead) ?? 0).toBe(0);
     }
     expect(counts.get('activities')).toBe(12);
-    expect(counts.get('collectibles')).toBe(57);
+    expect(counts.get('collectibles')).toBe(403); // 37 host + 346 fbrito + 3 loot + 17 other
     expect(counts.get('exploration')).toBe(737);
     expect(counts.get('food-drink')).toBe(30);
     // 123 + 37 gang operations (v0.32 Demo C import — all 37 area-known

@@ -39,9 +39,9 @@ describe('onboarding audit — the places really are mapped', () => {
   const places = catalogueFromSnapshot(snapshot);
   const counts = new Map(layerCounts(places, DEFAULT_LAYERS).map((c) => [c.layerId, c]));
 
-  it('has 4,525 places in the catalogue', () => {
-    expect(places.length).toBe(4525);
-    expect(totalMappedPlaces(places)).toBe(4525);
+  it('has 4,871 places in the catalogue', () => {
+    expect(places.length).toBe(4871);
+    expect(totalMappedPlaces(places)).toBe(4871);
   });
 
   it('matches the counts the UI claims per layer', () => {
@@ -63,11 +63,11 @@ describe('onboarding audit — the places really are mapped', () => {
     expect(counts.get('regions')).toMatchObject({ total: 6, positioned: 6 });
   });
 
-  it('has only 37 verified card pins across the 18 card sets', () => {
+  it('has 383 card pins across the 18 card sets — 37 host-verified + 346 fbrito candidate pins', () => {
     const cards = [...counts.values()].filter((c) => c.layerId.startsWith('cards:'));
     expect(cards).toHaveLength(18);
-    expect(cards.reduce((sum, c) => sum + c.positioned, 0)).toBe(37);
-    expect(cards.reduce((sum, c) => sum + c.total, 0)).toBe(37);
+    expect(cards.reduce((sum, c) => sum + c.positioned, 0)).toBe(383);
+    expect(cards.reduce((sum, c) => sum + c.total, 0)).toBe(383);
   });
 
   it('quick starts only name layers that exist and start off', () => {

@@ -90,7 +90,7 @@ describe('game-db ingest — the 480-slot checklist becomes 597 items (26 Nov 20
     for (const set of otherSets) expect(set.sizeDisputed).toBeUndefined();
   });
 
-  it('tracks every slot regardless of position: 40 pinned, 440 area-known, 0 unmapped, 490 pickups', () => {
+  it('tracks every slot regardless of position: 386 pinned, 94 area-known, 0 unmapped, 490 pickups', () => {
     const db = buildFullDb();
     const slots = [...db.items.values()].filter(
       (item) => item.kind === 'trading-card' && item.checklistSlot,
@@ -99,8 +99,10 @@ describe('game-db ingest — the 480-slot checklist becomes 597 items (26 Nov 20
     for (const slot of slots) {
       byPlacement.set(slot.placement, (byPlacement.get(slot.placement) ?? 0) + 1);
     }
-    expect(byPlacement.get('pinned')).toBe(40);
-    expect(byPlacement.get('area-known')).toBe(440);
+    // 386 = 40 host-pinned + 346 fbrito candidate pins (28 Nov 2026
+    // import); 94 area-known = the 83 gap + 11 non-host held.
+    expect(byPlacement.get('pinned')).toBe(386);
+    expect(byPlacement.get('area-known')).toBe(94);
     expect(byPlacement.get('unmapped') ?? 0).toBe(0);
     const pickups = slots.flatMap((item) => item.pickups);
     expect(pickups).toHaveLength(490);
@@ -136,27 +138,30 @@ describe('game-db ingest — the 480-slot checklist becomes 597 items (26 Nov 20
     }
   });
 
-  it('per-set pinned counts match the checklist release notes (40 pinned of 480)', () => {
+  it('per-set pinned counts match the checklist release notes (386 pinned of 480)', () => {
     const db = buildFullDb();
+    // Host + fbrito candidate pins per set (28 Nov 2026 import).
+    // Host counts were 2/2/5/0/0/1/1/2/1/1/2/2/5/3/5/1/5/2 = 40;
+    // the fbrito import adds 21/20/14/20/17/21/21/16/15/15/8/18/13/33/31/20/21/22 = 346.
     const expected: Record<string, number> = {
-      'vice-city-flamingos': 2,
-      'vice-city-narcos': 2,
-      'vice-city-manatees': 5,
-      'vice-city-club-de-futbol': 0,
-      'liberty-city-swingers': 0,
-      'liberty-city-penetrators': 1,
-      'liberty-city-wrath': 1,
-      'los-santos-corkers': 2,
-      'los-santos-panic': 1,
-      'los-santos-pounders': 1,
-      'backyard-wrestling': 2,
-      'americas-next-top-hooker': 2,
-      'delights-dancers': 5,
-      'jack-of-hearts-dancers': 3,
-      'nine1nine-dancers': 5,
-      'the-legends-of-ratface': 1,
-      'right-wing-americas-hero': 5,
-      'ed-comics-universe': 2,
+      'vice-city-flamingos': 23,
+      'vice-city-narcos': 22,
+      'vice-city-manatees': 19,
+      'vice-city-club-de-futbol': 20,
+      'liberty-city-swingers': 17,
+      'liberty-city-penetrators': 22,
+      'liberty-city-wrath': 22,
+      'los-santos-corkers': 18,
+      'los-santos-panic': 16,
+      'los-santos-pounders': 16,
+      'backyard-wrestling': 10,
+      'americas-next-top-hooker': 20,
+      'delights-dancers': 18,
+      'jack-of-hearts-dancers': 36,
+      'nine1nine-dancers': 36,
+      'the-legends-of-ratface': 21,
+      'right-wing-americas-hero': 26,
+      'ed-comics-universe': 24,
     };
     let total = 0;
     for (const [setId, pinned] of Object.entries(expected)) {
@@ -167,7 +172,7 @@ describe('game-db ingest — the 480-slot checklist becomes 597 items (26 Nov 20
       expect(actual).toBe(pinned);
       total += actual;
     }
-    expect(total).toBe(40);
+    expect(total).toBe(386);
   });
 
   it('every pinned slot resolves to a real location; host spot-checks match the checklist lane', () => {
@@ -175,7 +180,7 @@ describe('game-db ingest — the 480-slot checklist becomes 597 items (26 Nov 20
     const pinned = [...db.items.values()].filter(
       (item) => item.kind === 'trading-card' && item.checklistSlot && item.placement === 'pinned',
     );
-    expect(pinned).toHaveLength(40);
+    expect(pinned).toHaveLength(386);
     for (const item of pinned) {
       expect(item.locationId).not.toBeNull();
       expect(db.locations.has(item.locationId!)).toBe(true);
@@ -192,13 +197,15 @@ describe('game-db ingest — the 480-slot checklist becomes 597 items (26 Nov 20
     // The GPS-pinned exception: Kyle Lewicki (teal) resolves by host
     // name to the Dynamix Fitness gym place, not a GTADB record.
     expect(hostOf('Kyle Lewicki', 'teal')).toBe('gym:dynamix');
-    // Vanessa gold stays unpinned: lorenzone says Bayside, the only
-    // Uncle Jack's Liquor (L313) is in Port Gellhorn.
+    // Vanessa gold is pinned now — not by a host (lorenzone says
+    // Bayside, the only Uncle Jack's Liquor (L313) is in Port
+    // Gellhorn, so no host pin was ever possible) but by the fbrito
+    // import's A-match (collectible-card-042), a candidate pin.
     const vanessa = [...db.items.values()].find(
       (item) => item.name === 'Vanessa' && item.variant === 'gold',
     )!;
-    expect(vanessa.placement).toBe('area-known');
-    expect(vanessa.locationId).toBeNull();
+    expect(vanessa.placement).toBe('pinned');
+    expect(vanessa.locationId).toBe('card:fbrito-collectible-card-042');
   });
 
   it('bundles no printed text and no artwork anywhere', () => {

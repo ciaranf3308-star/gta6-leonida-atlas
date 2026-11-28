@@ -111,7 +111,7 @@ describe("Capri gym hunting — honest, from the real data", () => {
     // Capri (region "Capri, Mariana County") — the one Loot Map place
     // in Capri — plus the three Capri cards (Brianna Blue purple,
     // Pricilla Pace gold, Gouwan Marcus), whose host regions name Capri.
-    expect(capri.length).toBe(230);
+    expect(capri.length).toBe(246); // 230 + 16 fbrito candidate pins in Capri
     expect(capri.filter((p) => p.tags.includes("enterable")).length).toBe(12);
     expect(capri.filter((p) => p.tags.includes("residential")).length).toBe(3);
     expect(capri.filter((p) => p.tags.some((t) => /^#?(gym|fitness|workout)$/.test(t)))).toHaveLength(0);

@@ -176,8 +176,8 @@ export function computeChanges(manifest, items) {
   if (pinned + areaKnown + unmapped !== 480) {
     throw new Error(`counts do not reconcile: pinned ${pinned} + area-known ${areaKnown} + unmapped ${unmapped} != 480`);
   }
-  if (pins.length + manifest.gap.length + manifest.held.filter((h) => !h.reason.startsWith('host-pinned')).length !== 440) {
-    throw new Error('counts do not reconcile: imported + gap + non-host held != 440');
+  if (pins.length + manifest.gap.length + manifest.held.filter((h) => !h.reason.startsWith('host-pinned')).length + (manifest.removed ?? []).length !== 440) {
+    throw new Error('counts do not reconcile: imported + gap + non-host held + removed != 440');
   }
   return { updates, pins, stats };
 }

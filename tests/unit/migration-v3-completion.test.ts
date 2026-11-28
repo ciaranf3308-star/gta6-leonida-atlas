@@ -352,11 +352,11 @@ describe('v3 → v4 completion migration (DESIGN §5, headline)', () => {
     expect(storage.getItem(COMPLETION_STORAGE_KEY)).toBeNull();
     expect(parseCompletionCounts(storage.getItem(COMPLETION_STORAGE_KEY))).toEqual({});
 
-    // --- The migrated database builds without error, and the 40
+    // --- The migrated database builds without error, and the 386
     // pinned cards keep the same host ids (DESIGN §5 said 23 — the
-    // real count is 40: 37 cards:* + 3 loot).
+    // real count is 386: 37 cards:* + 346 fbrito + 3 loot).
     const migratedDb = buildDbFromStorage(records, reconciliation, after);
-    expect(migratedDb.legacyItemIds.size).toBe(40);
+    expect(migratedDb.legacyItemIds.size).toBe(386);
     const preMigrationDb = buildGameDatabase({ places, user: before });
     for (const [legacyId, itemId] of preMigrationDb.legacyItemIds) {
       const item = migratedDb.items.get(itemId);
@@ -410,7 +410,7 @@ describe('v3 → v4 completion migration (DESIGN §5, headline)', () => {
     expect(exported.version).toBe(3);
     expect(exported.visited).toHaveLength(11);
     const migratedDb = buildDbFromStorage(records, reconciliation, await db.load());
-    expect(migratedDb.legacyItemIds.size).toBe(40);
+    expect(migratedDb.legacyItemIds.size).toBe(386);
   });
 
   it('fails loudly and leaves old data untouched when the write fails', async () => {

@@ -312,7 +312,7 @@ describe('§4.3 no-double-counting (read-time rule)', () => {
   it('estimated coverage counts pins, never completions', () => {
     const db = buildFullDb();
     const coverage = estimatedCoverage(db);
-    expect(coverage.pinnedItems).toBe(40);
+    expect(coverage.pinnedItems).toBe(386); // 40 host + 346 fbrito candidate pins
     expect(coverage.totalItems).toBe(480);
     expect(coverage.totalSets).toBe(18);
     expect(coverage.foundItems).toBe(0);

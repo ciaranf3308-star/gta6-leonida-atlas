@@ -43,7 +43,7 @@ describe('Journal header vs filter row — the row accounting (v0.32 gang-op fol
       all: 614,
       found: 0,
       remaining: 614,
-      unpositioned: 557,
+      unpositioned: 211,
       slots: 480,
       extras: 117,
       other: 17,
@@ -72,10 +72,10 @@ describe('Journal header vs filter row — the row accounting (v0.32 gang-op fol
       items.filter((i) => !i.checklistSlot && i.kind === 'trading-card' && i.setId === null)
         .length,
     ).toBe(55);
-    // Pinned rows: 40 card slots + all 17 other items = 57; the rest
-    // are unpositioned.
-    expect(items.filter((i) => i.placement === 'pinned').length).toBe(57);
-    expect(counts.unpositioned).toBe(614 - 57);
+    // Pinned rows: 386 card slots (40 host + 346 fbrito) + all 17 other
+    // items = 403; the rest are unpositioned.
+    expect(items.filter((i) => i.placement === 'pinned').length).toBe(403);
+    expect(counts.unpositioned).toBe(614 - 403);
   });
 
   it('found / remaining move together when a card is collected', () => {
@@ -99,7 +99,7 @@ describe('Journal header vs filter row — the row accounting (v0.32 gang-op fol
     expect(html).toContain('All · 614');
     expect(html).toContain('Found · 0');
     expect(html).toContain('Remaining · 614');
-    expect(html).toContain('Unpositioned · 557');
+    expect(html).toContain('Unpositioned · 211');
     // The set-less extras read as what they are, not a raw kind id.
     expect(html).toContain('Extra game-text tiers');
     expect(html).not.toContain('>trading-card ·');

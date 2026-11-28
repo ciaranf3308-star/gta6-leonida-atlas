@@ -81,19 +81,32 @@ describe('Ask tools — §7.4 regression cases (DESIGN §7.2, real data)', () =>
     expect(data.items).toHaveLength(18);
     expect(data.items.map((item) => item.name)).toContain('Harley');
     const pinned = data.items.filter((item) => item.placement === 'pinned');
+    // All 18 are pinned now (5 host + 13 fbrito candidate pins) — the
+    // set is complete, so nothing is unpositioned any more.
     expect(pinned.map((item) => item.name).sort()).toEqual([
+      'Amber',
+      'Chip',
+      'Cleo',
+      'Crystal',
+      'Cyrus',
+      'Daisy',
       'Harley',
       'Jason',
       'Kandi',
+      'Lance',
+      'Lucky',
+      'Mario',
+      'Nevaeh',
+      'Nicole',
       'Perla',
+      'Thelma',
+      'Tracy',
       'Vicki',
     ]);
-    // The 13 unpositioned set members are present as "no position
-    // yet" — never dropped, never hidden.
-    expect(data.items.filter((item) => item.placement !== 'pinned')).toHaveLength(13);
+    expect(data.items.filter((item) => item.placement !== 'pinned')).toHaveLength(0);
   });
 
-  it('case 1b: setId wins over areaId — Delights in Port Gellhorn is 15', async () => {
+  it('case 1b: setId wins over areaId — Delights in Port Gellhorn is 2', async () => {
     const db = buildFullDb();
     const data = unwrap(
       await executeTool(db, {
@@ -101,7 +114,9 @@ describe('Ask tools — §7.4 regression cases (DESIGN §7.2, real data)', () =>
         args: { setId: 'delights-dancers', areaId: 'area:port-gellhorn' },
       }),
     ) as { items: { name: string }[]; total: number };
-    expect(data.total).toBe(15);
+    // The set is fully pinned now, so the area filter uses real
+    // positions: only Harley and Jason's pins sit in Port Gellhorn.
+    expect(data.total).toBe(2);
     expect(data.items.map((item) => item.name)).toContain('Harley');
     expect(data.items.map((item) => item.name)).toContain('Jason');
   });
@@ -122,20 +137,19 @@ describe('Ask tools — §7.4 regression cases (DESIGN §7.2, real data)', () =>
     // All 18, nothing dropped — the area sorted, it did not filter.
     expect(data.total).toBe(18);
     expect(data.items).toHaveLength(18);
-    // The nearest is Harley, in Delights, Port Gellhorn — and it is
-    // NOT near Capri: the honest verdict, never "near" when far.
-    // Harley and Jason share host L629, so they are equidistant
-    // (3,599 units from the Capri centroid); Harley sorts first on
-    // the stable tie. DESIGN §7.4 case 2 names Jason — same host,
-    // same distance — the design text now names both.
-    expect(data.nearest?.name).toBe('Harley');
-    expect(data.nearest?.locationName).toMatch(/Delights/);
-    expect(data.nearest!.distanceUnits).toBe(3599);
-    expect(data.nearCount).toBe(0);
-    // The 13 unpositioned set members trail the positioned ones.
+    // The nearest is Perla, at the Railyard in Balsero — and it IS
+    // near Capri (1,999 units, inside the near threshold): the fbrito
+    // import pinned the set and its pins moved the Capri centroid, so
+    // the honest verdict changed with the data. Harley and Jason share
+    // host L629, 3,599 units from the old centroid.
+    expect(data.nearest?.name).toBe('Perla');
+    expect(data.nearest?.locationName).toMatch(/Railyard, Balsero/);
+    expect(data.nearest!.distanceUnits).toBe(1999);
+    expect(data.nearCount).toBe(1);
+    // All 18 are positioned now — nothing trails as unpositioned.
     const positioned = data.items.filter((item) => item.placement === 'pinned');
-    expect(positioned).toHaveLength(5);
-    expect(data.items.slice(0, 5)).toEqual(positioned);
+    expect(positioned).toHaveLength(18);
+    expect(data.items.slice(0, 18)).toEqual(positioned);
     // areaId (membership) and sortNearAreaId (proximity) never mix.
     const both = await executeTool(db, {
       name: 'remaining_collectibles',
@@ -381,8 +395,9 @@ describe('Ask tools — §7.4 regression cases (DESIGN §7.2, real data)', () =>
     ) as { confirmLabel: string; jotOffer: string | null; kind: string };
     expect(proposal.kind).toBe('completion');
     expect(proposal.confirmLabel).toMatch(/Mark Tracy .* as collected\?/);
-    // Tracy is unpositioned — the proposal carries the jot offer.
-    expect(proposal.jotOffer).toMatch(/no spot in the map data yet/);
+    // Tracy is pinned now (fbrito candidate pin, 28 Nov 2026 import),
+    // so there is a spot in the map data and no jot offer.
+    expect(proposal.jotOffer).toBeNull();
     const stillThere = unwrap(
       await executeTool(db, {
         name: 'remaining_collectibles',
@@ -441,7 +456,10 @@ describe('Ask tools — §7.4 regression cases (DESIGN §7.2, real data)', () =>
         args: { query: 'Delights' },
       }),
     ) as { locations: { id: string; name: string | null }[] };
-    expect(data.locations[0]?.id).toBe('L629');
+    // The fbrito candidate pins match "Delights" in their titles and
+    // sort first (exact-name ordering); L629 is still in the list.
+    expect(data.locations[0]?.id).toBe('card:fbrito-collectible-card-036');
+    expect(data.locations.map((row) => row.id)).toContain('L629');
     const typo = unwrap(
       await executeTool(db, {
         name: 'search_locations',
@@ -626,8 +644,6 @@ describe('Ask tools — get_hint ladder (addendum §5.2, Demo G)', () => {
 
   it('an unpinned card stops at level 3 with the honest no-location message', async () => {
     const db = buildFullDb();
-    const amber = [...db.items.values()].find((item) => item.name === 'Amber')!;
-    expect(amber.locationId).toBeNull();
     // Level 2 works for any unpositioned card whose area lead resolves
     // to a real area — the area is the honest extent of what is known.
     // (Some checklist area leads resolve to area ids that are not in
@@ -649,7 +665,7 @@ describe('Ask tools — get_hint ladder (addendum §5.2, Demo G)', () => {
     expect(l2.hint).toMatch(new RegExp(db.areas.get(areaKnown.areaId!)!.name));
     const l3 = await executeTool(db, {
       name: 'get_hint',
-      args: { targetType: 'item', targetId: amber.id, level: 3 },
+      args: { targetType: 'item', targetId: areaKnown.id, level: 3 },
     });
     // …and level 3 refuses honestly instead of inventing a location.
     expect(l3.ok).toBe(false);
