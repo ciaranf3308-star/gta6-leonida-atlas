@@ -433,7 +433,7 @@ export default function IndexPanel(props: IndexPanelProps) {
         <div className="index-no-key">
           <p>
             Indexing needs your OpenAI key — the same one Ask Nylah uses. Add it
-            in Settings first, then come back here. The key stays only on this
+            above, in Ask Nylah, then come back here. The key stays only on this
             device, and places are sent nowhere except OpenAI while indexing.
           </p>
           <button
@@ -441,7 +441,7 @@ export default function IndexPanel(props: IndexPanelProps) {
             className="button primary"
             onClick={props.onOpenSettings}
           >
-            Add your key in Settings
+            Add your key
           </button>
         </div>
       ) : props.offline ? (

@@ -1016,6 +1016,8 @@ export default function App() {
             onClose={closeDialog}
             onOpenBackup={() => useUiStore.getState().setDialog('backup')}
             onOpenAbout={goAbout}
+            places={allPlaces}
+            offline={offline}
           />
         )}
       </Suspense>

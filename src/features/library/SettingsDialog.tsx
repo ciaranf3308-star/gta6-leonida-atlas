@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { atlasRepository } from '../../db/repository';
 import { saveLocal, usePersistenceStore, useUserStore } from '../../stores/atlas';
 import { Modal } from '../../app/Modal';
+import type { Place } from '../../domain/types';
+import IndexPanel from '../categorise/IndexPanel';
 import {
   DEFAULT_ASK_MODEL,
   getAskApiKey,
@@ -22,6 +24,8 @@ export default function SettingsDialog({
   onClose,
   onOpenBackup,
   onOpenAbout,
+  places,
+  offline,
 }: {
   onClose: () => void;
   /** The panel footer used to carry these on every page — they live
@@ -29,6 +33,9 @@ export default function SettingsDialog({
    * dialog also works standalone (tests, deep links). */
   onOpenBackup?: () => void;
   onOpenAbout?: () => void;
+  /** All catalogue places — the index panel counts the unnamed ones. */
+  places: Place[];
+  offline: boolean;
 }) {
   const preferences = useUserStore((s) => s.preferences);
   const ready = usePersistenceStore((s) => s.ready);
@@ -177,6 +184,22 @@ export default function SettingsDialog({
           </button>
         )}
       </section>
+      {/* v0.33 D-1: "Sort the unnamed places" lives here now — buried
+        in Settings, never advertised (v0.32 open decision 1). v0.32
+        step 5 took it out of the primary experience and no lane ever
+        re-mounted it, so the typing route §A9.3 depends on was
+        unreachable in the app; this is its decided home. It uses the
+        same key as Ask above, so its "add your key" action focuses
+        that field instead of opening Settings again. */}
+      <IndexPanel
+        places={places}
+        offline={offline}
+        onOpenSettings={() => {
+          const keyField = document.getElementById('ask-api-key');
+          keyField?.scrollIntoView({ block: 'center' });
+          keyField?.focus();
+        }}
+      />
       <section className="detail-section">
         <h3>County art</h3>
         <p className="help-text">
