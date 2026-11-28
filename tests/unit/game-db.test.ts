@@ -47,13 +47,13 @@ function findItem(db: GameDatabase, name: string, variant = 'standard') {
 }
 
 describe('game-db — §3.2 derivation from the real catalogue (26 Nov 2026)', () => {
-  it('derives the database at the measured counts: 4,480 locations, 980 opportunities, 614 items, 18 sets, 133 areas', () => {
+  it('derives the database at the measured counts: 4,826 locations, 980 opportunities, 614 items, 18 sets, 198 areas', () => {
     const db = buildFullDb();
-    expect(db.locations.size).toBe(4480);
+    expect(db.locations.size).toBe(4826); // 4,480 + 346 fbrito candidate pins
     expect(db.opportunities.size).toBe(980);
     expect(db.items.size).toBe(614);
     expect(db.sets.size).toBe(18);
-    expect(db.areas.size).toBe(133);
+    expect(db.areas.size).toBe(198); // 133 + 65 new area nodes from fbrito pin regions
     expect(db.missionsEnabled).toBe(false);
     const byKind = new Map<string, number>();
     for (const opp of db.opportunities.values()) {
@@ -223,9 +223,11 @@ describe('game-db — §3.2 derivation from the real catalogue (26 Nov 2026)', (
   });
 
   it('card ids resolve to items, not locations — Vicki and Victor Maravilla are two items on one location (L304)', () => {    const db = buildFullDb();
-    // No location carries a card id.
+    // No location carries a HOST card id. (fbrito candidate pins ARE
+    // locations — the pin is the location, rule 5 in game-db — so
+    // card:fbrito-* ids legitimately appear as location ids.)
     for (const id of db.locations.keys()) {
-      expect(id.startsWith('card:')).toBe(false);
+      expect(id.startsWith('card:') && !id.startsWith('card:fbrito-')).toBe(false);
       expect(id.startsWith('loot:guide-harley-card')).toBe(false);
       expect(id.startsWith('loot:guide-rusty-anchor-card')).toBe(false);
     }
@@ -244,12 +246,12 @@ describe('game-db — §3.2 derivation from the real catalogue (26 Nov 2026)', (
     // The old ids still resolve — through the legacy map, not as items.
     expect(db.legacyItemIds.get('card:vicki')).toBe(vicki.id);
     expect(db.legacyItemIds.get('card:victor-maravilla')).toBe(victor.id);
-    expect(db.legacyItemIds.size).toBe(40);
+    expect(db.legacyItemIds.size).toBe(386); // 37 cards:* + 346 fbrito + 3 loot
   });
 
   it('every cards:* pin joins to exactly one checklist item (no orphan pins, no missing pins)', () => {
     const db = buildFullDb();
-    expect(COLLECTABLE_CARD_PLACES).toHaveLength(37);
+    expect(COLLECTABLE_CARD_PLACES).toHaveLength(383); // 37 host + 346 fbrito candidate pins
     for (const pin of COLLECTABLE_CARD_PLACES) {
       const itemId = db.legacyItemIds.get(pin.id);
       expect(itemId).toBeDefined();
@@ -375,7 +377,7 @@ describe('game-db — §3.2 derivation from the real catalogue (26 Nov 2026)', (
     for (const id of db.locations.keys()) {
       expect(id.startsWith('region:')).toBe(false);
     }
-    expect(db.areas.size).toBe(133);
+    expect(db.areas.size).toBe(198); // 133 + 65 new area nodes from fbrito pin regions
     const portGellhorn = db.areas.get('area:port-gellhorn')!;
     expect(portGellhorn.name).toBe('Port Gellhorn');
     expect(portGellhorn.level).toBe('town');
@@ -435,11 +437,26 @@ describe('game-db — §3.4 selectors', () => {
     expect(remaining).toHaveLength(18);
     expect(remaining.map((item) => item.name).sort()).toContain('Harley');
     const pinned = remaining.filter((item) => item.placement === 'pinned');
+    // All 18 are pinned now (5 host + 13 fbrito candidate pins, 28 Nov
+    // 2026 import) — the set is complete.
     expect(pinned.map((item) => item.name).sort()).toEqual([
+      'Amber',
+      'Chip',
+      'Cleo',
+      'Crystal',
+      'Cyrus',
+      'Daisy',
       'Harley',
       'Jason',
       'Kandi',
+      'Lance',
+      'Lucky',
+      'Mario',
+      'Nevaeh',
+      'Nicole',
       'Perla',
+      'Thelma',
+      'Tracy',
       'Vicki',
     ]);
     // With Vicki collected, she is absent and Harley stays.
@@ -469,15 +486,26 @@ describe('game-db — §3.4 selectors', () => {
 
   it('remaining_items: setId wins over areaId — set members with no location are never dropped', () => {
     const db = buildFullDb();
-    // Delights in Port Gellhorn: the two pinned at L629 (Harley, Jason)
-    // plus the 13 area-known members with no location at all.
+    // Delights in Port Gellhorn: the set is fully pinned now (28 Nov
+    // 2026 fbrito import), so the area filter uses real positions —
+    // only the two pinned at L629 (Harley, Jason) are in Port Gellhorn.
     const inPortGellhorn = remainingItems(db, {
       setId: 'delights-dancers',
       areaId: 'area:port-gellhorn',
     });
     expect(inPortGellhorn.map((item) => item.name)).toContain('Harley');
     expect(inPortGellhorn.map((item) => item.name)).toContain('Jason');
-    expect(inPortGellhorn).toHaveLength(15);
+    expect(inPortGellhorn).toHaveLength(2);
+    // The "never dropped" invariant now demonstrates on Ratface: all
+    // 15 of its area-known members (13 gap + 2 held) carry a Port
+    // Gellhorn lead area and no location, and the area filter keeps
+    // every one of them.
+    const ratface = remainingItems(db, {
+      setId: 'the-legends-of-ratface',
+      areaId: 'area:port-gellhorn',
+    });
+    expect(ratface).toHaveLength(15);
+    expect(ratface.every((item) => item.locationId === null)).toBe(true);
     // Without a set, the area filter matches pinned items by host area
     // and area-known items by lead area — Kandi (Little Cuba) is out.
     const areaOnly = remainingItems(db, { areaId: 'area:port-gellhorn' });

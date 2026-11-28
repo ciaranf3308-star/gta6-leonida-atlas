@@ -507,10 +507,11 @@ describe('backup v4 — headline: a v0.31.5 backup survives import + migration',
     ]);
     expect(reconciliation.every((e) => e.basis === 'game-stat')).toBe(true);
 
-    // --- All 40 legacyItemIds resolve (DESIGN §5's "23" is STALE —
-    // the real count is 40 pinned cards: 37 cards:* + 3 loot).
+    // --- All 386 legacyItemIds resolve (DESIGN §5's "23" is STALE —
+    // the real count is 386 pinned cards: 37 cards:* + 346 fbrito
+    // candidate pins + 3 loot).
     const gameDb = buildGameDatabase({ places, user: after, records, reconciliation });
-    expect(gameDb.legacyItemIds.size).toBe(40);
+    expect(gameDb.legacyItemIds.size).toBe(386);
     for (const [legacyId, itemId] of gameDb.legacyItemIds) {
       expect(legacyId.startsWith('card:') || legacyId.startsWith('loot:')).toBe(true);
       const item = gameDb.items.get(itemId);
@@ -764,7 +765,7 @@ describe('backup v4 — round-trip: export → wipe → import preserves the log
         reconciliation: restored.reconciliation,
       });
       expect(restoredDb.completedItemIds.size).toBe(5);
-      expect(restoredDb.legacyItemIds.size).toBe(40);
+      expect(restoredDb.legacyItemIds.size).toBe(386); // 37 cards:* + 346 fbrito + 3 loot
       // --- The AI index came along.
       const restoredIndex = await loadAiIndex(aiDb2);
       expect(restoredIndex.categories['L1']).toMatchObject({ aiCategory: 'house' });

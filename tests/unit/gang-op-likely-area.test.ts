@@ -51,15 +51,15 @@ describe('gang-op likely-area measurement (v0.32 lane 1)', () => {
     expect(description).toContain(`${measured.none} have no extent to draw`);
   });
 
-  it('measures all 39 ops: 2 hosted, 27 own-bounds, 7 county-fallback, 3 no-extent, 34 drawn', () => {
+  it('measures all 39 ops: 2 hosted, 28 own-bounds, 7 county-fallback, 2 no-extent, 35 drawn', () => {
     const db = buildFullDb();
     const measured = measureGangOpBounds(db.areas);
     expect(measured.total).toBe(39);
     expect(measured.hosted).toBe(2);
-    expect(measured.own).toBe(27);
+    expect(measured.own).toBe(28);
     expect(measured.county).toBe(7);
-    expect(measured.none).toBe(3);
-    expect(measured.drawn).toBe(34);
+    expect(measured.none).toBe(2);
+    expect(measured.drawn).toBe(35);
     expect(measured.hosted + measured.own + measured.county + measured.none).toBe(39);
     expect(measured.rows).toHaveLength(39);
     expect(
@@ -70,7 +70,6 @@ describe('gang-op likely-area measurement (v0.32 lane 1)', () => {
     ).toEqual([
       'Chatfield Storage & Logistics',
       'Fishing Shacks',
-      'Vespucci Mansion',
     ]);
   });
 
@@ -216,7 +215,7 @@ describe('gang-op likely-area measurement (v0.32 lane 1)', () => {
 
   it('the three newly-merged towns draw their own extents, with exact bounds', () => {
     const db = buildFullDb();
-    // Hamlet — M7 Compound. The town node: 175 direct members,
+    // Hamlet — M7 Compound. The town node: 192 direct members,
     // all positioned, parent county:mariana (plus a Prison,
     // Hamlet child node whose 10 members sit inside the bounds).
     const m7 = GANG_OP_PLACES.find((p) => p.id === 'gang-op:m7-compound')!;
@@ -228,20 +227,20 @@ describe('gang-op likely-area measurement (v0.32 lane 1)', () => {
     expect(m7Region?.areaName).toBe('Hamlet');
     expect(m7Region?.bounds).toEqual(db.areas.get('area:hamlet')?.bounds);
     expect(m7Region?.bounds).toEqual({
-      west: -3480.072948296937,
-      east: -2005.38102213178,
-      south: -4026.5847781958873,
-      north: -2440.581,
+      west: -7075.386277344187,
+      east: -1683.5947447875933,
+      south: -4770.382951579394,
+      north: 4982.198173383506,
     });
     expect(m7Region?.label).toBe('M7 Compound · likely area');
     expect(m7Region?.reason).toBe('The area’s own extent.');
-    // Watson Bay — all three ops, one extent. The town node: 78
+    // Watson Bay — all three ops, one extent. The town node: 91
     // members, all positioned, parent county:mariana.
     const watsonBayBounds = {
-      west: -6123.6121437835245,
-      east: -3869.8948198560356,
-      south: -3954.0969653242105,
-      north: -2224.2386352058174,
+      west: -6296.603723347343,
+      east: -2255.30674392707,
+      south: -6461.347363775301,
+      north: -1991.6912714305156,
     };
     for (const id of [
       'gang-op:palmer-fishing-warehouse',
@@ -260,9 +259,9 @@ describe('gang-op likely-area measurement (v0.32 lane 1)', () => {
       expect(region?.label).toBe(`${place.title} · likely area`);
       expect(region?.reason).toBe('The area’s own extent.');
     }
-    // Emerald Springs — Gas Station Meth Front. The town node: 7
+    // Emerald Springs — Gas Station Meth Front. The town node: 9
     // members, all positioned (L1111, L1627, L1778, L1779, L2889,
-    // L2899, L3812), parent county:kelly.
+    // L2899, L3812, plus 2 fbrito candidate pins), parent county:kelly.
     const gasStation = GANG_OP_PLACES.find(
       (p) => p.id === 'gang-op:gas-station-meth-front',
     )!;
@@ -277,7 +276,7 @@ describe('gang-op likely-area measurement (v0.32 lane 1)', () => {
     );
     expect(gasRegion?.bounds).toEqual({
       west: -4729.169114876321,
-      east: -3133.603410203587,
+      east: -2968,
       south: 1235.362396286126,
       north: 2952.7691507797717,
     });
@@ -381,16 +380,22 @@ describe('gang-op likely-area measurement (v0.32 lane 1)', () => {
     expect(countyRegion?.reason).toContain('labelled estimate');
   });
 
-  it('a no-extent op renders nothing: Fishing Shacks, Chatfield, Vespucci Mansion', () => {
+  it('a no-extent op renders nothing: Fishing Shacks, Chatfield — Vespucci Mansion now draws (fbrito pins gave Vespucci Island an extent)', () => {
     const db = buildFullDb();
     for (const id of [
       'gang-op:fishing-shacks',
       'gang-op:chatfield-storage-logistics',
-      'gang-op:vespucci-mansion',
     ]) {
       const place = GANG_OP_PLACES.find((p) => p.id === id)!;
       expect(likelyAreaForPlace(db.areas, place)).toBeNull();
     }
+    // Vespucci Mansion is no longer no-extent: the fbrito import put
+    // candidate pins in Vespucci Island, so its area has bounds now.
+    const vespucci = GANG_OP_PLACES.find((p) => p.id === 'gang-op:vespucci-mansion')!;
+    const vespucciRegion = likelyAreaForPlace(db.areas, vespucci);
+    expect(vespucciRegion).not.toBeNull();
+    expect(vespucciRegion?.kind).toBe('own');
+    expect(vespucciRegion?.areaId).toBe('area:vespucci-island');
     const measured = measureGangOpBounds(db.areas);
     expect(
       measured.rows
@@ -399,15 +404,14 @@ describe('gang-op likely-area measurement (v0.32 lane 1)', () => {
     ).toEqual([
       'No positioned places in Wetman Bay, and no county extent to fall back to.',
       'No positioned places in Waxman Island, and no county extent to fall back to.',
-      'No positioned places in Vespucci Island, and no county extent to fall back to.',
     ]);
   });
 
-  it('layer off → no regions; layer on → 34 regions, matching the measurement', () => {
+  it('layer off → no regions; layer on → 35 regions, matching the measurement', () => {
     const db = buildFullDb();
     expect(gangOpLikelyAreas(db.areas, GANG_OP_PLACES, DEFAULT_LAYERS)).toEqual([]);
     const regions = gangOpLikelyAreas(db.areas, GANG_OP_PLACES, gangOpLayersOn());
-    expect(regions).toHaveLength(34);
+    expect(regions).toHaveLength(35);
     expect(regions).toHaveLength(measureGangOpBounds(db.areas).drawn);
     // Every region is bounds, never a point.
     for (const region of regions) {
@@ -416,11 +420,11 @@ describe('gang-op likely-area measurement (v0.32 lane 1)', () => {
     }
   });
 
-  it('regions sharing one extent draw once: 34 regions group into 17 rects, Kelly County carrying Walker Farm alone, Mariana County carrying 2', () => {
+  it('regions sharing one extent draw once: 35 regions group into 18 rects, Kelly County carrying Walker Farm alone, Mariana County carrying 2', () => {
     const db = buildFullDb();
     const regions = gangOpLikelyAreas(db.areas, GANG_OP_PLACES, gangOpLayersOn());
     const groups = groupLikelyAreas(regions);
-    expect(groups).toHaveLength(17);
+    expect(groups).toHaveLength(18);
     // Kelly County: Gas Station Meth Front merged to its town
     // extent, so Walker Farm sits alone on the county rect.
     const kelly = groups.find((group) => group.countyName === 'Kelly County');

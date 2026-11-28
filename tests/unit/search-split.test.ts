@@ -161,12 +161,26 @@ describe('search — §6.5b explicit POI search (database, not the visible subse
   it('finds Delights the location plus its four opportunities, by name — and the real typo neighbours', () => {
     const db = buildFullDb();
     const outcome = searchPoi(db, 'Delights');
-    // 5 prefix matches (the place + its 4 opportunities) and 3
+    // 5 prefix matches (the place + its 4 opportunities), 13 fbrito
+    // candidate pins whose titles contain "Delights Dancers", and 3
     // typo matches: "Afternoon Delight" (delight, distance 1) and
     // "Bayfront Heights" (heights, distance 2) — the ≤2 rule working.
-    expect(outcome.totalMatching).toBe(8);
+    expect(outcome.totalMatching).toBe(21);
     expect(outcome.results.map((r) => r.id)).toEqual([
+      'card:fbrito-collectible-card-036',
+      'card:fbrito-collectible-card-078',
+      'card:fbrito-hidden-package-010',
+      'card:fbrito-collectible-card-060',
+      'card:fbrito-collectible-card-065',
+      'card:fbrito-collectible-card-032',
       'L629',
+      'card:fbrito-collectible-card-064',
+      'card:fbrito-collectible-card-035',
+      'card:fbrito-collectible-card-074',
+      'card:fbrito-collectible-card-001',
+      'card:fbrito-collectible-card-080',
+      'card:fbrito-collectible-card-085',
+      'card:fbrito-collectible-card-063',
       'opp:L629:activity:1',
       'opp:L629:discovery:1',
       'opp:L629:interior:1',
@@ -175,10 +189,16 @@ describe('search — §6.5b explicit POI search (database, not the visible subse
       'L22',
       'opp:loot:guide-afternoon-delight:bank-job:1',
     ]);
+    // The first result is now a fbrito candidate pin (its title
+    // contains "Delights Dancers"); L629 follows at index 6, still
+    // the Delights location with its four opportunities.
     expect(outcome.results[0]!.recordKind).toBe('location');
-    expect(outcome.results[0]!.id).toBe('L629');
-    expect(outcome.results[0]!.name).toBe('Delights, Interstate 404, Port Gellhorn');
+    expect(outcome.results[0]!.id).toBe('card:fbrito-collectible-card-036');
     expect(outcome.results[0]!.positioned).toBe(true);
+    expect(outcome.results[6]!.recordKind).toBe('location');
+    expect(outcome.results[6]!.id).toBe('L629');
+    expect(outcome.results[6]!.name).toBe('Delights, Interstate 404, Port Gellhorn');
+    expect(outcome.results[6]!.positioned).toBe(true);
     const kinds = outcome.results
       .filter((r) => r.recordKind === 'opportunity' && r.hostLocationId === 'L629')
       .map((r) => r.kind)

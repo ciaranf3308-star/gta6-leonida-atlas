@@ -8,7 +8,8 @@
  * to GTADB host buildings (snapshot rev 2e9e194). No printed card text
  * (© Rockstar) and no artwork (no licence) are bundled — printedText is
  * null and artwork is { front: null, back: null } throughout.
- * Counts: 597 items — 480 slots (40 pinned, 440 area-known, 0 unmapped), 117 extras.
+ * Counts: 597 items — 480 slots (386 pinned, 94 area-known, 0 unmapped), 117 extras.
+ * 28 Nov 2026: fbrito import applied from scripts/fbrito-import-manifest.json (candidate pins in src/data/card-fbrito-pins.generated.ts). Re-apply with: node scripts/apply-fbrito-import.mjs.
  */
 export interface CardChecklistPickup {
   areaLead: string;
@@ -64,7 +65,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "light blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Microwave at Xero on Omega Pkwy, Buckskin Swamp.",
     "areaLead": "Buckskin Swamp",
     "pickups": [
@@ -79,7 +80,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-flamingos-025",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -99,7 +100,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "pink"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Restroom fence on the south beach, Abismo Key.",
     "areaLead": "Abismo Key",
     "pickups": [
@@ -114,7 +115,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-flamingos-002",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -133,7 +134,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Garage of a house on Grace Ave, Belville.",
     "areaLead": "Belville",
     "pickups": [
@@ -148,7 +149,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-flamingos-020",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -167,7 +168,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Balcony on SW 3rd Ave, Southside.",
     "areaLead": "Southside",
     "pickups": [
@@ -182,7 +183,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-flamingos-001",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -201,7 +202,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Refrigerator on Northbrook Dr, Little Cuba; second reported pickup in a box on a wooden porch, Key Lento.",
     "areaLead": "Little Cuba",
     "pickups": [
@@ -216,7 +217,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-flamingos-023",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -236,7 +237,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "light blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Shack beside the bridge on the Emerald River, Emerald Springs.",
     "areaLead": "Emerald Springs",
     "pickups": [
@@ -251,7 +252,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-flamingos-021",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -271,7 +272,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "pink"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Sofa on Spirea Ln, Ocean Beach.",
     "areaLead": "Ocean Beach",
     "pickups": [
@@ -286,7 +287,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-flamingos-026",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -305,7 +306,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Garage of a house on Beaumont Ave, Watson Bay.",
     "areaLead": "Watson Bay",
     "pickups": [
@@ -320,7 +321,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-flamingos-007",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -340,7 +341,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "light blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Chair on SW 8th St, Peacock Bay.",
     "areaLead": "Peacock Bay",
     "pickups": [
@@ -355,7 +356,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-flamingos-028",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -375,7 +376,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "pink"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Garage of a house on Flamingo Pkwy, Waning Sands.",
     "areaLead": "Waning Sands",
     "pickups": [
@@ -390,7 +391,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-flamingos-018",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -409,7 +410,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "House on SR-45, Grayson.",
     "areaLead": "Grayson",
     "pickups": [
@@ -424,7 +425,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-flamingos-010",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -477,7 +478,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Bookshelf on Gellhorn Ave, Port Gellhorn.",
     "areaLead": "Port Gellhorn",
     "pickups": [
@@ -492,7 +493,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-flamingos-004",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -511,7 +512,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Desk with a pinned board in the small office north side of the building south of Yasmani's shop, Northbrook Dr, Little Cuba.",
     "areaLead": "Little Cuba",
     "pickups": [
@@ -526,7 +527,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-flamingos-015",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -545,7 +546,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Shop on Sweetbay Rd, Watson Bay.",
     "areaLead": "Watson Bay",
     "pickups": [
@@ -560,7 +561,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-flamingos-029",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -579,7 +580,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Microwave at RON on Omega Pkwy, Balsero.",
     "areaLead": "Balsero",
     "pickups": [
@@ -594,7 +595,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-flamingos-032",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -613,7 +614,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Batting cage at Dino Golf Challenge, Frogswater.",
     "areaLead": "Frogswater",
     "pickups": [
@@ -628,7 +629,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-flamingos-013",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -681,7 +682,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Bedroom of the house immediately north of Zenon's Pawn Shop, NW 11th Pl, La Perle.",
     "areaLead": "La Perle",
     "pickups": [
@@ -696,7 +697,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-flamingos-016",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -715,7 +716,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Garage of a house on Glenwood Ave, Port Gellhorn.",
     "areaLead": "Port Gellhorn",
     "pickups": [
@@ -730,7 +731,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-flamingos-008",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -749,7 +750,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Baseball field on Grace Ave, Belville.",
     "areaLead": "Belville",
     "pickups": [
@@ -764,7 +765,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-flamingos-024",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -783,7 +784,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Noticeboard between Nola and Oscar's Seafood, Beacon Cir, Capri.",
     "areaLead": "Capri",
     "pickups": [
@@ -798,7 +799,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-flamingos-011",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -817,7 +818,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Radio antenna at the Crystal baseball field, Ambrosia.",
     "areaLead": "Ambrosia",
     "pickups": [
@@ -832,7 +833,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-flamingos-019",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -885,7 +886,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Mannequin at Baller World, Waning Sands.",
     "areaLead": "Waning Sands",
     "pickups": [
@@ -900,7 +901,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-narcos-020",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -919,7 +920,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Basketball court on I-97, Salton.",
     "areaLead": "Salton",
     "pickups": [
@@ -934,7 +935,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-narcos-010",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -954,7 +955,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "orange"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Desk on I-404, Port Gellhorn.",
     "areaLead": "Port Gellhorn",
     "pickups": [
@@ -969,7 +970,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-narcos-017",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -1023,7 +1024,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "teal"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "West bench at Courthouse station, Downtown.",
     "areaLead": "Downtown",
     "pickups": [
@@ -1038,7 +1039,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-narcos-018",
     "conflict": "Area conflict: lorenzone says Downtown, GTADB L551 J.C. Anglin United States Courthouse is in Crosstown — not pinned per the area-agreement rule.",
     "printedText": null,
     "artwork": {
@@ -1057,7 +1058,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Bus stop on NW 9th Ave, La Perle.",
     "areaLead": "La Perle",
     "pickups": [
@@ -1072,7 +1073,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-narcos-019",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -1107,7 +1108,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     ],
     "hostId": "L304",
     "catalogueId": "card:bryson-powers",
-    "conflict": "Conflict: lorenzone's direction for this slot names a lifeguard hut on the south beach, Washington Beach — not the Starlet Motel, which GTADB places in Kelly County (Historic Route 628). Existing pin kept per the already-pinned rule; the mismatch is recorded, not resolved.",
+    "conflict": "Conflict: lorenzone's direction for this slot names a lifeguard hut on the south beach, Washington Beach — not the Starlet Motel, which GTADB places in Kelly County (Historic Route 628). Existing pin kept per the already-pinned rule; the mismatch is recorded, not resolved. Open GTA 6 Map import — Two Open GTA 6 Map records claim this slot (card-vice-city-narcos-028, card-vice-city-narcos-029) — held for arbitration; host position kept.",
     "printedText": null,
     "artwork": {
       "front": null,
@@ -1125,7 +1126,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Basketball court at Key Lento Public Park, by the bench and bag on the ground.",
     "areaLead": "Key Lento",
     "pickups": [
@@ -1140,7 +1141,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-090",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -1159,7 +1160,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Shelf inside Sahara Arena, Downtown.",
     "areaLead": "Downtown",
     "pickups": [
@@ -1174,7 +1175,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-narcos-014",
     "conflict": "Area conflict: lorenzone says Downtown, GTADB L187 Sahara Arena is in Shoreline — not pinned per the area-agreement rule.",
     "printedText": null,
     "artwork": {
@@ -1193,7 +1194,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Basketball hoop inside Sahara Arena, Downtown.",
     "areaLead": "Downtown",
     "pickups": [
@@ -1208,7 +1209,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-narcos-021",
     "conflict": "Area conflict: lorenzone says Downtown, GTADB L187 Sahara Arena is in Shoreline — not pinned per the area-agreement rule.",
     "printedText": null,
     "artwork": {
@@ -1227,7 +1228,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Upper roof of the Amphitrite building, Washington Beach.",
     "areaLead": "Washington Beach",
     "pickups": [
@@ -1242,7 +1243,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-narcos-022",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -1296,7 +1297,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "orange"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Table on West Mariana Ave, Capri.",
     "areaLead": "Capri",
     "pickups": [
@@ -1311,7 +1312,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-narcos-023",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -1330,7 +1331,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Basketball court on Washburn Ave, Port Gellhorn.",
     "areaLead": "Port Gellhorn",
     "pickups": [
@@ -1345,7 +1346,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-narcos-003",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -1399,7 +1400,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Safe at Royal Bay Marina, Watson Bay.",
     "areaLead": "Watson Bay",
     "pickups": [
@@ -1414,7 +1415,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-narcos-024",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -1433,7 +1434,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Safe on Harmony Dr, Belville.",
     "areaLead": "Belville",
     "pickups": [
@@ -1448,7 +1449,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-narcos-012",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -1467,7 +1468,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Safe in the back office of the red warehouse by the three rectangular ponds, Calderone Ave, Southern Vice-Dale County.",
     "areaLead": "Southern Vice-Dale County",
     "pickups": [
@@ -1482,7 +1483,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-narcos-002",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -1501,7 +1502,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Chair on SW 9th St, Peacock Bay.",
     "areaLead": "Peacock Bay",
     "pickups": [
@@ -1516,7 +1517,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-narcos-025",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -1535,7 +1536,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Basketball court on Harborside Ave, Ocean Beach.",
     "areaLead": "Ocean Beach",
     "pickups": [
@@ -1550,7 +1551,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-narcos-006",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -1569,7 +1570,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Refrigerator on Seabell Ave, Watson Bay.",
     "areaLead": "Watson Bay",
     "pickups": [
@@ -1584,7 +1585,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-narcos-015",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -1604,7 +1605,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "orange"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Balcony on Bonita Ct, Washington Beach.",
     "areaLead": "Washington Beach",
     "pickups": [
@@ -1619,7 +1620,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-narcos-026",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -1638,7 +1639,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Locker 13 at the CBA Independent construction site, Downtown.",
     "areaLead": "Downtown",
     "pickups": [
@@ -1653,7 +1654,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-narcos-004",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -1673,7 +1674,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "teal"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Black chair in the central terminal, VCIA.",
     "areaLead": "VCIA",
     "pickups": [
@@ -1688,7 +1689,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-narcos-027",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -1707,7 +1708,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "House on NW 12th St, La Perle.",
     "areaLead": "La Perle",
     "pickups": [
@@ -1722,7 +1723,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-manatees-012",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -1742,7 +1743,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "dusty pink"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Garage of a house on Neptune Cir, Vespucci Island.",
     "areaLead": "Vespucci Island",
     "pickups": [
@@ -1757,7 +1758,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-manatees-015",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -1845,7 +1846,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Shelf on SR-27, Belville.",
     "areaLead": "Belville",
     "pickups": [
@@ -1860,7 +1861,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-manatees-013",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -1879,7 +1880,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Safe on Indigo St, Ocean Beach.",
     "areaLead": "Ocean Beach",
     "pickups": [
@@ -1894,7 +1895,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-manatees-009",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -1913,7 +1914,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Turtle sign at Vice City Oceanarium, Catalan Key.",
     "areaLead": "Catalan Key",
     "pickups": [
@@ -1928,7 +1929,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-manatees-028",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -1947,7 +1948,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Construction office on the Nehrling River, Northern Mariana County.",
     "areaLead": "Northern Mariana County",
     "pickups": [
@@ -1962,7 +1963,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-manatees-023",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -1981,7 +1982,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Deck of the house on the pier, northeastern bay, Corsair Key.",
     "areaLead": "Corsair Key",
     "pickups": [
@@ -1996,7 +1997,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-manatees-003",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -2015,7 +2016,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Garage of the light blue house west of town, Ambrosia.",
     "areaLead": "Ambrosia",
     "pickups": [
@@ -2030,7 +2031,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-manatees-008",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -2049,7 +2050,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Refrigerator on Surfside Dr, Key Lento.",
     "areaLead": "Key Lento",
     "pickups": [
@@ -2064,7 +2065,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-091",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -2133,7 +2134,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     ],
     "hostId": "L196",
     "catalogueId": "card:jacob-schneeman",
-    "conflict": null,
+    "conflict": "Open GTA 6 Map import — Open GTA 6 Map record card-vice-city-manatees-026 sits 186.3u from this host pin — host position kept; the fbrito position was not imported.",
     "printedText": null,
     "artwork": {
       "front": null,
@@ -2152,7 +2153,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "dusty pink"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Garage of a house on Rialto Cswy, Casanova Island.",
     "areaLead": "Casanova Island",
     "pickups": [
@@ -2167,7 +2168,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-manatees-027",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -2187,7 +2188,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "green"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Garage of a house on Rialto Cswy, Casanova Island.",
     "areaLead": "Casanova Island",
     "pickups": [
@@ -2202,7 +2203,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-manatees-021",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -2221,7 +2222,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Terrace on Mamey Cir, Waning Sands.",
     "areaLead": "Waning Sands",
     "pickups": [
@@ -2236,7 +2237,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-manatees-029",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -2341,7 +2342,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     ],
     "hostId": "L240",
     "catalogueId": "card:tusi-taufua",
-    "conflict": "Conflict: lorenzone's direction for this (silver) slot names Overkeel Boatyard & Marina in Eastern Lummox County — not the Grand Majestic in Tequesta. GTADB L2598 'Overkeel, Lummox County' exists as a possible host for that direction, but the slot is already pinned so it was not re-matched; existing pin kept per the already-pinned rule. (The 'Grand Majestic Aparthotel · bookshelf' direction belongs to the dusty-pink Tusi Taufua slot, which is pinned to L240 separately.)",
+    "conflict": "Conflict: lorenzone's direction for this (silver) slot names Overkeel Boatyard & Marina in Eastern Lummox County — not the Grand Majestic in Tequesta. GTADB L2598 'Overkeel, Lummox County' exists as a possible host for that direction, but the slot is already pinned so it was not re-matched; existing pin kept per the already-pinned rule. (The 'Grand Majestic Aparthotel · bookshelf' direction belongs to the dusty-pink Tusi Taufua slot, which is pinned to L240 separately.) Open GTA 6 Map import — host-pinned; cited fbrito record card-vice-city-manatees-016 sits 8936u from the host pin — host wins, disagreement recorded",
     "printedText": null,
     "artwork": {
       "front": null,
@@ -2427,7 +2428,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Antenna on Reservoir St, Ambrosia.",
     "areaLead": "Ambrosia",
     "pickups": [
@@ -2442,7 +2443,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-manatees-022",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -2461,7 +2462,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Pay 'n' Spray construction site on Riverbend Rd, Western Vice-Dale County.",
     "areaLead": "Western Vice-Dale County",
     "pickups": [
@@ -2476,7 +2477,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-manatees-025",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -2511,7 +2512,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     ],
     "hostId": "L3658",
     "catalogueId": "card:reggie-pierce",
-    "conflict": "Conflict: lorenzone's direction for this slot names Fleeca Field (bench) in Rockridge — not the Gellhorn Drive-In Theatre in Port Gellhorn. Existing pin kept per the already-pinned rule; the mismatch is recorded, not resolved.",
+    "conflict": "Conflict: lorenzone's direction for this slot names Fleeca Field (bench) in Rockridge — not the Gellhorn Drive-In Theatre in Port Gellhorn. Existing pin kept per the already-pinned rule; the mismatch is recorded, not resolved. Open GTA 6 Map import — host-pinned; cited fbrito record card-vice-city-manatees-014 sits 5766u from the host pin — host wins, disagreement recorded",
     "printedText": null,
     "artwork": {
       "front": null,
@@ -2530,7 +2531,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "dusty pink"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Boat at Shoreline Market, Downtown.",
     "areaLead": "Downtown",
     "pickups": [
@@ -2545,7 +2546,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-club-de-futbol-025",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -2599,7 +2600,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "teal"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Women's locker room in Zenith gym, Downtown.",
     "areaLead": "Downtown",
     "pickups": [
@@ -2614,7 +2615,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-club-de-futbol-011",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -2658,7 +2659,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     ],
     "hostId": null,
     "catalogueId": null,
-    "conflict": null,
+    "conflict": "Held from the Open GTA 6 Map import: bucket D, gtatown does not show it",
     "printedText": null,
     "artwork": {
       "front": null,
@@ -2676,7 +2677,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Bench at The Place, Tequesta.",
     "areaLead": "Tequesta",
     "pickups": [
@@ -2691,7 +2692,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-club-de-futbol-019",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -2711,7 +2712,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "dusty pink"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Table on NW 25th Pl, Balsero.",
     "areaLead": "Balsero",
     "pickups": [
@@ -2726,7 +2727,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-club-de-futbol-028",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -2745,7 +2746,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Bookcase in a cabin at the campground west of Lake Tallaloko, Tallaloko.",
     "areaLead": "Tallaloko",
     "pickups": [
@@ -2760,7 +2761,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-club-de-futbol-023",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -2849,7 +2850,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "dusty pink"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Terrace on Caledonia Blvd, Belville.",
     "areaLead": "Belville",
     "pickups": [
@@ -2864,7 +2865,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-club-de-futbol-026",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -2987,7 +2988,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Roof on NW 6th St, Downtown.",
     "areaLead": "Downtown",
     "pickups": [
@@ -3002,7 +3003,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-club-de-futbol-022",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -3021,7 +3022,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Garage on Mamey Cir, Waning Sands.",
     "areaLead": "Waning Sands",
     "pickups": [
@@ -3036,7 +3037,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-club-de-futbol-014",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -3055,7 +3056,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Lifeguard station on the south beach, Ocean Beach.",
     "areaLead": "Ocean Beach",
     "pickups": [
@@ -3070,7 +3071,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-club-de-futbol-017",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -3124,7 +3125,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Garage on Delamore Dr, Leaf Links.",
     "areaLead": "Leaf Links",
     "pickups": [
@@ -3139,7 +3140,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-club-de-futbol-012",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -3158,7 +3159,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Shelf at the mid-beach lifeguard station, Ocean Beach.",
     "areaLead": "Ocean Beach",
     "pickups": [
@@ -3173,7 +3174,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-club-de-futbol-018",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -3227,7 +3228,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "TV stand in a villa on Ravella Dr, Capri.",
     "areaLead": "Capri",
     "pickups": [
@@ -3242,7 +3243,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-club-de-futbol-015",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -3261,7 +3262,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Bedroom on Emory Ave, Peacock Bay.",
     "areaLead": "Peacock Bay",
     "pickups": [
@@ -3276,7 +3277,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-club-de-futbol-021",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -3295,7 +3296,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "TV stand in a trailer opposite The Rusty Anchor, Key Lento.",
     "areaLead": "Key Lento",
     "pickups": [
@@ -3310,7 +3311,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-105",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -3330,7 +3331,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "dusty pink"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Noticeboard in the northern waterfront warehouse, Capri.",
     "areaLead": "Capri",
     "pickups": [
@@ -3345,7 +3346,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-club-de-futbol-020",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -3364,7 +3365,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Terrace on Oleander Blvd, Washington Beach (Oldby Island).",
     "areaLead": "Washington Beach (Oldby Island)",
     "pickups": [
@@ -3379,7 +3380,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-club-de-futbol-027",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -3399,7 +3400,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "teal"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Backyard soccer goal on Caravel Ct, Belville.",
     "areaLead": "Belville",
     "pickups": [
@@ -3414,7 +3415,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-club-de-futbol-029",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -3434,7 +3435,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "dusty pink"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Roof on NE 19th St, Decor District.",
     "areaLead": "Decor District",
     "pickups": [
@@ -3449,7 +3450,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-club-de-futbol-007",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -3468,7 +3469,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Grave on Cicada Ave, Bluegrass.",
     "areaLead": "Bluegrass",
     "pickups": [
@@ -3483,7 +3484,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-club-de-futbol-024",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -3503,7 +3504,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "teal"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Chair on Pigeon Plum Rd, Northern Mariana County.",
     "areaLead": "Northern Mariana County",
     "pickups": [
@@ -3518,7 +3519,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-vice-city-club-de-futbol-030",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -3639,7 +3640,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Garage on Clovis Way, Capri.",
     "areaLead": "Capri",
     "pickups": [
@@ -3654,7 +3655,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-swingers-012",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -3673,7 +3674,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Stacked lockers by the recreation area at the docks, Shoeless Keys.",
     "areaLead": "Shoeless Keys",
     "pickups": [
@@ -3688,7 +3689,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-swingers-004",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -3708,7 +3709,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "deep red"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Bench at Vice Civic Center, Downtown.",
     "areaLead": "Downtown",
     "pickups": [
@@ -3723,7 +3724,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-swingers-022",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -3743,7 +3744,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "navy blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Behind the blue building on Longship Dr, Watson Bay.",
     "areaLead": "Watson Bay",
     "pickups": [
@@ -3758,7 +3759,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-swingers-024",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -3812,7 +3813,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "deep red"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Garage on Lakewood Way, Ambrosia.",
     "areaLead": "Ambrosia",
     "pickups": [
@@ -3827,7 +3828,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-swingers-010",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -3847,7 +3848,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "navy blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Roof on Palmetto Ave, Hamlet.",
     "areaLead": "Hamlet",
     "pickups": [
@@ -3862,7 +3863,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-swingers-020",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -3881,7 +3882,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Filing cabinet in the site office at Breakwater quarry, Northern Mariana County.",
     "areaLead": "Northern Mariana County",
     "pickups": [
@@ -3896,7 +3897,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-swingers-026",
     "conflict": "GTADB 'Breakwater' (L1892) is in Capri, not Northern Mariana County - area disagrees; the record is also 'unconfirmed' and no GTADB quarry record exists.",
     "printedText": null,
     "artwork": {
@@ -3915,7 +3916,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Warehouse at Puff Puff Pass, Belville.",
     "areaLead": "Belville",
     "pickups": [
@@ -3939,7 +3940,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-swingers-006",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -4026,7 +4027,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Baggage room at Terminal E, Port of Vice City.",
     "areaLead": "Port of Vice City",
     "pickups": [
@@ -4041,7 +4042,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-swingers-013",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -4060,7 +4061,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Bus stop on North Vice Ave, Downtown.",
     "areaLead": "Downtown",
     "pickups": [
@@ -4075,7 +4076,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-swingers-023",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -4128,7 +4129,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Garage on Ravella Dr, Capri.",
     "areaLead": "Capri",
     "pickups": [
@@ -4143,7 +4144,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-swingers-014",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -4162,7 +4163,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Hallway on Shore Dr, Ocean Beach.",
     "areaLead": "Ocean Beach",
     "pickups": [
@@ -4177,7 +4178,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-swingers-025",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -4197,7 +4198,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "deep red"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Chair on Vineyard Dr, Washington Beach (Oldby Island).",
     "areaLead": "Washington Beach (Oldby Island)",
     "pickups": [
@@ -4212,7 +4213,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-swingers-021",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -4232,7 +4233,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "navy blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Garage on Caravel Ct, Belville.",
     "areaLead": "Belville",
     "pickups": [
@@ -4247,7 +4248,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-swingers-027",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -4300,7 +4301,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Eastern table at Tisha-Wocka flea market, Balsero.",
     "areaLead": "Balsero",
     "pickups": [
@@ -4315,7 +4316,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-swingers-008",
     "conflict": "GTADB 'Tisha-Wocka Flea Market' (L1006) carries area 'Tisha-Wocka', not Balsero - area disagrees; the record also carries a GTADB 'demolished' tag.",
     "printedText": null,
     "artwork": {
@@ -4334,7 +4335,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Bleachers at Hummingbird Park, Ocean Beach.",
     "areaLead": "Ocean Beach",
     "pickups": [
@@ -4349,7 +4350,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-096",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -4368,7 +4369,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Tower on Atlantic Ave, Ocean Beach.",
     "areaLead": "Ocean Beach",
     "pickups": [
@@ -4383,7 +4384,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-swingers-016",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -4403,7 +4404,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "bright orange"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Sofa on Harborside Ave, Ocean Beach.",
     "areaLead": "Ocean Beach",
     "pickups": [
@@ -4418,7 +4419,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-penetrators-027",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -4454,7 +4455,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     ],
     "hostId": "L260",
     "catalogueId": "card:alexander-avain-navy-blue",
-    "conflict": null,
+    "conflict": "Open GTA 6 Map import — host-pinned; cited fbrito record card-liberty-city-penetrators-001 sits 564u from the host pin — host wins, disagreement recorded",
     "printedText": null,
     "artwork": {
       "front": null,
@@ -4472,7 +4473,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Bedroom on Mirimar Dr, Crosstown.",
     "areaLead": "Crosstown",
     "pickups": [
@@ -4487,7 +4488,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-penetrators-016",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -4506,7 +4507,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Parking area on SW 4th St, Tequesta.",
     "areaLead": "Tequesta",
     "pickups": [
@@ -4521,7 +4522,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-penetrators-028",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -4540,7 +4541,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Sofa on Catalan Blvd, Waning Sands.",
     "areaLead": "Waning Sands",
     "pickups": [
@@ -4555,7 +4556,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-penetrators-022",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -4574,7 +4575,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Shelf on SW 7th Ave, Salton.",
     "areaLead": "Salton",
     "pickups": [
@@ -4589,7 +4590,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-penetrators-025",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -4642,7 +4643,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Chair on Thompson Ave, Ocean Beach.",
     "areaLead": "Ocean Beach",
     "pickups": [
@@ -4657,7 +4658,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-penetrators-026",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -4676,7 +4677,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "South basketball bleachers in the northern park, Belville.",
     "areaLead": "Belville",
     "pickups": [
@@ -4691,7 +4692,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-penetrators-018",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -4710,7 +4711,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Refrigerator on Northbrook Dr, Little Cuba.",
     "areaLead": "Little Cuba",
     "pickups": [
@@ -4725,7 +4726,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-penetrators-023",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -4744,7 +4745,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Shelf on NW 9th Ave, La Perle.",
     "areaLead": "La Perle",
     "pickups": [
@@ -4759,7 +4760,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-penetrators-012",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -4778,7 +4779,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Basketball court on Delamore Dr, Leaf Links.",
     "areaLead": "Leaf Links",
     "pickups": [
@@ -4793,7 +4794,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-penetrators-017",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -4812,7 +4813,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Garage with gym in a villa on the northwestern peninsula, Capri.",
     "areaLead": "Capri",
     "pickups": [
@@ -4827,7 +4828,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-penetrators-020",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -4846,7 +4847,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Pool table in the garage of the east coast yellow villa, Vespucci Island.",
     "areaLead": "Vespucci Island",
     "pickups": [
@@ -4861,7 +4862,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-penetrators-009",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -4880,7 +4881,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "West coast tower on the southern island, Riquezas Keys.",
     "areaLead": "Riquezas Keys",
     "pickups": [
@@ -4895,7 +4896,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-106",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -4914,7 +4915,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Terrace on Bayside Dr, Tequesta Retreat.",
     "areaLead": "Tequesta Retreat",
     "pickups": [
@@ -4929,7 +4930,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-penetrators-013",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -4949,7 +4950,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "bright orange"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Basketball court at Crastenburg Key Lento Resort, Key Lento.",
     "areaLead": "Key Lento",
     "pickups": [
@@ -4964,7 +4965,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-101",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -4984,7 +4985,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "navy blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Garage on Clovis Way, Capri.",
     "areaLead": "Capri",
     "pickups": [
@@ -4999,7 +5000,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-penetrators-010",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -5018,7 +5019,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Table on NW 3rd Ave, Little Cuba.",
     "areaLead": "Little Cuba",
     "pickups": [
@@ -5033,7 +5034,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-penetrators-019",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -5053,7 +5054,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "bright orange"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Kiosk at the southern tip of the eastern island, Waning Sands.",
     "areaLead": "Waning Sands",
     "pickups": [
@@ -5068,7 +5069,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-penetrators-024",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -5088,7 +5089,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "navy blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Chair at St. Vitus Medical Center, Penmarch Isle.",
     "areaLead": "Penmarch Isle",
     "pickups": [
@@ -5103,7 +5104,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-penetrators-029",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -5156,7 +5157,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Desk on SW 3rd Ave, Southside.",
     "areaLead": "Southside",
     "pickups": [
@@ -5171,7 +5172,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-penetrators-006",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -5190,7 +5191,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Dispenser on Longship Dr, Watson Bay.",
     "areaLead": "Watson Bay",
     "pickups": [
@@ -5205,7 +5206,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-penetrators-021",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -5224,7 +5225,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Mirimar Dr bookshelf",
     "areaLead": "La Perle",
     "pickups": [
@@ -5239,7 +5240,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-wrath-012",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -5294,7 +5295,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "navy blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Emory Ave steps of villa with U-shaped drive",
     "areaLead": "Peacock Bay",
     "pickups": [
@@ -5309,7 +5310,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-wrath-023",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -5328,7 +5329,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Northeast beach lifeguard station",
     "areaLead": "Washington Beach",
     "pickups": [
@@ -5343,7 +5344,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-wrath-018",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -5396,7 +5397,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Discovery St bleachers",
     "areaLead": "Belville",
     "pickups": [
@@ -5411,7 +5412,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-wrath-015",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -5430,7 +5431,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "NE 4th Ave chair",
     "areaLead": "Crosstown",
     "pickups": [
@@ -5445,7 +5446,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-wrath-022",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -5464,7 +5465,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "NW 9th St billboard",
     "areaLead": "Rockridge",
     "pickups": [
@@ -5479,7 +5480,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-wrath-020",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -5498,7 +5499,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Loggerhead Rd parking area",
     "areaLead": "Bobcat Key",
     "pickups": [
@@ -5513,7 +5514,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-wrath-026",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -5532,7 +5533,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Gulf St fire station",
     "areaLead": "Port of Vice City",
     "pickups": [
@@ -5547,7 +5548,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-wrath-017",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -5567,7 +5568,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "deep red"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Emory Ave 247 store noticeboard",
     "areaLead": "Hamlet",
     "pickups": [
@@ -5582,7 +5583,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-wrath-011",
     "conflict": "lorenzone names a '247 store' on Emory Ave, Hamlet; the only 247 Supermarket record is L1670 in Crosstown — area disagrees, not pinned",
     "printedText": null,
     "artwork": {
@@ -5602,7 +5603,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "navy blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Spirea Ln stairs",
     "areaLead": "Ocean Beach",
     "pickups": [
@@ -5617,7 +5618,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-wrath-027",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -5636,7 +5637,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "US-183 football field",
     "areaLead": "Capri",
     "pickups": [
@@ -5651,7 +5652,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-wrath-025",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -5670,7 +5671,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Shelf / wooden cabinet beside a bookcase in the upstairs room, Sunset Dr, Key Lento",
     "areaLead": "Key Lento",
     "pickups": [
@@ -5685,7 +5686,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-103",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -5705,7 +5706,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "deep red"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "El Joven Blvd bench",
     "areaLead": "Southside",
     "pickups": [
@@ -5720,7 +5721,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-wrath-021",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -5740,7 +5741,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "navy blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Mamey Cir terrace",
     "areaLead": "Waning Sands",
     "pickups": [
@@ -5755,7 +5756,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-wrath-024",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -5774,7 +5775,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Shore Ct chair",
     "areaLead": "Ocean Beach",
     "pickups": [
@@ -5789,7 +5790,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-wrath-019",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -5808,7 +5809,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Ocean Sound Rd garage",
     "areaLead": "Catalan Key",
     "pickups": [
@@ -5823,7 +5824,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-wrath-013",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -5842,7 +5843,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "I-97 safe",
     "areaLead": "Crosstown",
     "pickups": [
@@ -5857,7 +5858,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-wrath-001",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -5876,7 +5877,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Forest Mill Rd desk",
     "areaLead": "Mount Kalaga National Park",
     "pickups": [
@@ -5891,7 +5892,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-wrath-014",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -5910,7 +5911,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "SW 17th St terrace",
     "areaLead": "Salton",
     "pickups": [
@@ -5925,7 +5926,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-wrath-028",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -5978,7 +5979,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Longship Dr restaurant",
     "areaLead": "Watson Bay",
     "pickups": [
@@ -5993,7 +5994,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-wrath-016",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -6012,7 +6013,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "US-183 blue farmhouse porch",
     "areaLead": "Gellhorn",
     "pickups": [
@@ -6027,7 +6028,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-liberty-city-wrath-005",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -6046,7 +6047,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "US-70 garage",
     "areaLead": "Frogswater",
     "pickups": [
@@ -6061,7 +6062,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-corkers-014",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -6114,7 +6115,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Airport terminal lost-and-found",
     "areaLead": "VCIA",
     "pickups": [
@@ -6129,7 +6130,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-corkers-028",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -6148,7 +6149,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Aurora Theaters tower",
     "areaLead": "Peacock Bay",
     "pickups": [
@@ -6163,7 +6164,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-corkers-016",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -6198,7 +6199,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     ],
     "hostId": "L2608",
     "catalogueId": "card:carlos-larios-bronze",
-    "conflict": null,
+    "conflict": "Open GTA 6 Map import — Open GTA 6 Map record card-los-santos-corkers-030 sits 566.3u from this host pin — host position kept; the fbrito position was not imported.",
     "printedText": null,
     "artwork": {
       "front": null,
@@ -6216,7 +6217,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "NW 9th St lounge chair",
     "areaLead": "Rockridge",
     "pickups": [
@@ -6231,7 +6232,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-corkers-005",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -6318,7 +6319,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Coconut Cove Ct stairs",
     "areaLead": "Capri",
     "pickups": [
@@ -6333,7 +6334,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-corkers-015",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -6386,7 +6387,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Galerina St balcony",
     "areaLead": "Hamlet",
     "pickups": [
@@ -6401,7 +6402,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-corkers-002",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -6421,7 +6422,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "deep red"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "SW 4th St chessboard",
     "areaLead": "Salton",
     "pickups": [
@@ -6436,7 +6437,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-corkers-023",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -6456,7 +6457,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "navy blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "SW 10th Ave chair",
     "areaLead": "Southside",
     "pickups": [
@@ -6471,7 +6472,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-corkers-031",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -6490,7 +6491,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Northern island riverside house",
     "areaLead": "Watson Bay",
     "pickups": [
@@ -6505,7 +6506,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-corkers-024",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -6524,7 +6525,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Moreau Pass State Park terrace",
     "areaLead": "Moreau",
     "pickups": [
@@ -6539,7 +6540,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-corkers-032",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -6559,7 +6560,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "deep red"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Station north bench on west side",
     "areaLead": "Tequesta",
     "pickups": [
@@ -6574,7 +6575,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-corkers-027",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -6594,7 +6595,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "navy blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Seabell Ave bench",
     "areaLead": "Watson Bay",
     "pickups": [
@@ -6609,7 +6610,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-corkers-022",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -6662,7 +6663,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Sandy Snacks kiosk",
     "areaLead": "Washington Beach",
     "pickups": [
@@ -6677,7 +6678,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-corkers-026",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -6697,7 +6698,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "deep red"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Eastern pink house pool",
     "areaLead": "Belville",
     "pickups": [
@@ -6712,7 +6713,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-corkers-029",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -6732,7 +6733,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "navy blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Station toward northern Mariana County bench",
     "areaLead": "Grassrivers",
     "pickups": [
@@ -6747,7 +6748,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-corkers-021",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -6766,7 +6767,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Tallaloko Lake Rd container",
     "areaLead": "Eastern Lummox County",
     "pickups": [
@@ -6781,7 +6782,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-corkers-025",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -6877,7 +6878,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Top row of the north bleachers by the Colonel Crystal Recreation Center courts, Willow Ave, Ambrosia",
     "areaLead": "Ambrosia",
     "pickups": [
@@ -6892,7 +6893,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-panic-020",
     "conflict": "lorenzone text also cites a separate PS5 capture placing the card in a box by the roof vents at the Red Snapper in Key Lento, a different area from the Ambrosia bleachers pickup; neither Colonel Crystal Recreation Center nor the Red Snapper has a GTADB record",
     "printedText": null,
     "artwork": {
@@ -6979,7 +6980,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "NW 4th Ave roof",
     "areaLead": "Little Cuba",
     "pickups": [
@@ -6994,7 +6995,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-panic-022",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -7014,7 +7015,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "purple"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Grape St balcony",
     "areaLead": "Ocean Beach",
     "pickups": [
@@ -7029,7 +7030,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-panic-021",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -7048,7 +7049,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Atlantic Ave cabinet",
     "areaLead": "Washington Beach",
     "pickups": [
@@ -7063,7 +7064,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-panic-023",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -7083,7 +7084,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "yellow"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "I-97 billboard",
     "areaLead": "Waning Sands",
     "pickups": [
@@ -7098,7 +7099,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-panic-026",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -7152,7 +7153,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "purple"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "South Vice Ave bench",
     "areaLead": "Tequesta",
     "pickups": [
@@ -7167,7 +7168,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-panic-025",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -7186,7 +7187,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Northbrook Dr stairs",
     "areaLead": "Little Cuba",
     "pickups": [
@@ -7201,7 +7202,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-panic-017",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -7221,7 +7222,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "yellow"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "East of Lake Tallaloko gray house basketball hoop",
     "areaLead": "Eastern Lummox County",
     "pickups": [
@@ -7236,8 +7237,8 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
-    "conflict": null,
+    "catalogueId": "card:fbrito-card-los-santos-panic-015",
+    "conflict": "Open GTA 6 Map import — fbrito also has card-los-santos-panic-019 for this slot — citation picks card-los-santos-panic-015",
     "printedText": null,
     "artwork": {
       "front": null,
@@ -7324,7 +7325,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "purple"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Mamey Cir garage",
     "areaLead": "Waning Sands",
     "pickups": [
@@ -7339,7 +7340,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-panic-016",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -7358,7 +7359,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Seabell Ave shelf",
     "areaLead": "Watson Bay",
     "pickups": [
@@ -7373,7 +7374,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-panic-002",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -7393,7 +7394,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "yellow"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "SW 12th St terrace",
     "areaLead": "Southside",
     "pickups": [
@@ -7408,7 +7409,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-panic-018",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -7427,7 +7428,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "NW 5th St desk",
     "areaLead": "Rockridge",
     "pickups": [
@@ -7442,7 +7443,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-panic-006",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -7529,7 +7530,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "US-35 safe",
     "areaLead": "Ambrosia",
     "pickups": [
@@ -7544,7 +7545,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-panic-013",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -7563,7 +7564,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Table beside the ammunition box in the bedroom of the mobile home, Peach Palm Dr, Key Lento",
     "areaLead": "Key Lento",
     "pickups": [
@@ -7578,7 +7579,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-panic-001",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -7631,7 +7632,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "SW 6th Ave roof",
     "areaLead": "Salton",
     "pickups": [
@@ -7646,7 +7647,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-panic-024",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -7699,7 +7700,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Reservoir St playing field",
     "areaLead": "Ambrosia",
     "pickups": [
@@ -7714,7 +7715,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-pounders-021",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -7733,7 +7734,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Gellhorn Ave refrigerator",
     "areaLead": "Port Gellhorn",
     "pickups": [
@@ -7748,7 +7749,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-pounders-006",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -7802,7 +7803,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Cubera Ln balcony",
     "areaLead": "Washington Beach",
     "pickups": [
@@ -7817,7 +7818,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-pounders-015",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -7887,7 +7888,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     ],
     "hostId": null,
     "catalogueId": null,
-    "conflict": null,
+    "conflict": "Held from the Open GTA 6 Map import: bucket D, gtatown does not show it",
     "printedText": null,
     "artwork": {
       "front": null,
@@ -7905,7 +7906,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Old Fort Rd safe",
     "areaLead": "Cottonmouth Lake",
     "pickups": [
@@ -7920,7 +7921,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-pounders-001",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -8007,7 +8008,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Bathroom in the party house upstairs on Dolphin Drive, Key Lento",
     "areaLead": "Key Lento",
     "pickups": [
@@ -8022,7 +8023,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-pounders-007",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -8042,7 +8043,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "deep red"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "SW 7th Ave chessboard",
     "areaLead": "Salton",
     "pickups": [
@@ -8057,7 +8058,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-pounders-024",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -8111,7 +8112,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "yellow"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Flamingo Pkwy garage",
     "areaLead": "Waning Sands",
     "pickups": [
@@ -8126,7 +8127,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-pounders-011",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -8145,7 +8146,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Farmers Walk chair",
     "areaLead": "Bluegrass",
     "pickups": [
@@ -8160,7 +8161,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-pounders-018",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -8179,7 +8180,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "SE 2nd Ave roof",
     "areaLead": "Tequesta",
     "pickups": [
@@ -8194,7 +8195,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-pounders-016",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -8247,7 +8248,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "NW 22nd Pl bookshelf",
     "areaLead": "Balsero",
     "pickups": [
@@ -8262,7 +8263,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-pounders-026",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -8281,7 +8282,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Hummingbird Park pool",
     "areaLead": "Ocean Beach",
     "pickups": [
@@ -8296,7 +8297,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-pounders-022",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -8350,7 +8351,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "deep red"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Vice Seven Condominiums locker room",
     "areaLead": "Tequesta",
     "pickups": [
@@ -8365,7 +8366,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-pounders-019",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -8419,7 +8420,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "yellow"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "SR-45 terrace",
     "areaLead": "Grayson",
     "pickups": [
@@ -8434,7 +8435,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-pounders-023",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -8453,7 +8454,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "I-297 garage",
     "areaLead": "Waning Sands",
     "pickups": [
@@ -8468,7 +8469,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-pounders-025",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -8487,7 +8488,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Eastern island north shore pavilion railing",
     "areaLead": "Waning Sands",
     "pickups": [
@@ -8502,7 +8503,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-los-santos-pounders-017",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -8521,7 +8522,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Western green-and-white trailer backyard sofa",
     "areaLead": "Ambrosia",
     "pickups": [
@@ -8536,7 +8537,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-backyard-wrestling-017",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -8555,7 +8556,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Southern treehouse red tarp",
     "areaLead": "Manifest Canyon",
     "pickups": [
@@ -8570,7 +8571,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-backyard-wrestling-018",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -8589,7 +8590,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Breakwater quarry southern railcar",
     "areaLead": "Northern Mariana County",
     "pickups": [
@@ -8604,7 +8605,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-backyard-wrestling-019",
     "conflict": "Direction names Breakwater quarry, Northern Mariana County; the only GTADB 'Breakwater' record (L1892) is in Capri — area disagreement, not pinned.",
     "printedText": null,
     "artwork": {
@@ -8623,7 +8624,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Grisette Ave bleachers",
     "areaLead": "Hamlet",
     "pickups": [
@@ -8638,7 +8639,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-backyard-wrestling-001",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -8691,7 +8692,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Red house on northern island punching bag",
     "areaLead": "Watson Bay",
     "pickups": [
@@ -8706,7 +8707,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-backyard-wrestling-004",
     "conflict": "Two sources differ: lorenzone/GTA6.fr place the card in a red house on the northern island, Watson Bay; GTA6Heists/GTA Base place a copy in the yellow phone box on the Badger R&D tower balcony, Key Lento (variant unconfirmed, tracked separately). Badger R&D tower has no GTADB record.",
     "printedText": null,
     "artwork": {
@@ -8768,7 +8769,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Bayside bleachers awning with garden gnome",
     "areaLead": "Gloriana Key",
     "pickups": [
@@ -8783,7 +8784,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-backyard-wrestling-008",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -8802,7 +8803,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Harper Simmons Legal Services roof",
     "areaLead": "Rockridge",
     "pickups": [
@@ -8817,7 +8818,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-backyard-wrestling-021",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -8836,7 +8837,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Northwestern crane waterside ladder",
     "areaLead": "Watson Bay",
     "pickups": [
@@ -8851,7 +8852,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-backyard-wrestling-023",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -8886,7 +8887,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     ],
     "hostId": "L3434",
     "catalogueId": "card:luke-x",
-    "conflict": "lorenzone area is Southwestern Lummox County (SR-73 trailer); existing host Wild Hog Point (L3434) is in Kelly County per GTADB — area disagreement recorded, existing pin kept.",
+    "conflict": "lorenzone area is Southwestern Lummox County (SR-73 trailer); existing host Wild Hog Point (L3434) is in Kelly County per GTADB — area disagreement recorded, existing pin kept. Open GTA 6 Map import — host-pinned; cited fbrito record card-backyard-wrestling-014 sits 3601u from the host pin — host wins, disagreement recorded",
     "printedText": null,
     "artwork": {
       "front": null,
@@ -8920,7 +8921,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     ],
     "hostId": null,
     "catalogueId": null,
-    "conflict": null,
+    "conflict": "Held from the Open GTA 6 Map import: bucket D, gtatown does not show it",
     "printedText": null,
     "artwork": {
       "front": null,
@@ -8972,7 +8973,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Central island villa roof railing",
     "areaLead": "Catalan Key",
     "pickups": [
@@ -8987,7 +8988,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-americas-next-top-hooker-034",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -9006,7 +9007,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Dome Depot chair",
     "areaLead": "Big Pine",
     "pickups": [
@@ -9021,7 +9022,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-americas-next-top-hooker-029",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -9040,7 +9041,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Harborside Ave restaurant",
     "areaLead": "Ocean Beach",
     "pickups": [
@@ -9055,7 +9056,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-americas-next-top-hooker-001",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -9074,7 +9075,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Burning fields to the west cell tower",
     "areaLead": "Belville",
     "pickups": [
@@ -9089,7 +9090,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-americas-next-top-hooker-013",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -9108,7 +9109,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Northern islet chair on sand",
     "areaLead": "Riquezas Keys",
     "pickups": [
@@ -9123,7 +9124,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-americas-next-top-hooker-020",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -9142,7 +9143,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Farmers Walk garage",
     "areaLead": "Bluegrass",
     "pickups": [
@@ -9157,7 +9158,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-americas-next-top-hooker-032",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -9176,7 +9177,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Atlantic Ave mattress",
     "areaLead": "Washington Beach",
     "pickups": [
@@ -9191,7 +9192,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-americas-next-top-hooker-033",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -9210,7 +9211,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "NW 3rd Ave playing field",
     "areaLead": "Northern Mariana County",
     "pickups": [
@@ -9225,7 +9226,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-americas-next-top-hooker-031",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -9244,7 +9245,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Chestnut Dr empty tank",
     "areaLead": "Millport",
     "pickups": [
@@ -9259,7 +9260,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-americas-next-top-hooker-030",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -9278,7 +9279,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Stockyard Speedshop garage",
     "areaLead": "Decor District",
     "pickups": [
@@ -9302,7 +9303,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-americas-next-top-hooker-036",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -9355,7 +9356,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "South Vice Ave tower",
     "areaLead": "Tequesta",
     "pickups": [
@@ -9370,7 +9371,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-americas-next-top-hooker-028",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -9389,7 +9390,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Moonstone Hwy restrooms",
     "areaLead": "Manifest Canyon",
     "pickups": [
@@ -9404,7 +9405,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-americas-next-top-hooker-007",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -9457,7 +9458,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Key Lento chair",
     "areaLead": "Key Lento",
     "pickups": [
@@ -9472,7 +9473,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-americas-next-top-hooker-002",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -9491,7 +9492,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Forest Mill Rd woodland campsite",
     "areaLead": "Mount Kalaga National Park",
     "pickups": [
@@ -9506,7 +9507,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-americas-next-top-hooker-008",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -9559,7 +9560,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "West coast concrete pier mooring cleat",
     "areaLead": "Bonanza",
     "pickups": [
@@ -9574,7 +9575,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-americas-next-top-hooker-035",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -9593,7 +9594,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Big House Storage Inc roof",
     "areaLead": "Crosstown",
     "pickups": [
@@ -9626,7 +9627,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-americas-next-top-hooker-009",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -9645,7 +9646,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Sycamore Ave table",
     "areaLead": "Ambrosia",
     "pickups": [
@@ -9660,7 +9661,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-americas-next-top-hooker-006",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -9679,7 +9680,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Central road stone tower",
     "areaLead": "Grassrivers",
     "pickups": [
@@ -9694,7 +9695,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-americas-next-top-hooker-023",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -9729,7 +9730,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     ],
     "hostId": "L996",
     "catalogueId": "card:sapphire-silver",
-    "conflict": null,
+    "conflict": "Open GTA 6 Map import — host-pinned; cited fbrito record card-americas-next-top-hooker-019 sits 815u from the host pin — host wins, disagreement recorded",
     "printedText": null,
     "artwork": {
       "front": null,
@@ -9781,7 +9782,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Agricore mine tower",
     "areaLead": "Southern Leonard County",
     "pickups": [
@@ -9805,7 +9806,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-036",
     "conflict": "Second pickup: GTA Six Map lists Belville instead of Draper Island (not used).",
     "printedText": null,
     "artwork": {
@@ -9824,7 +9825,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Kingston Rd restrooms",
     "areaLead": "Watson Bay",
     "pickups": [
@@ -9839,7 +9840,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-078",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -9858,7 +9859,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "South end of reservoir battery",
     "areaLead": "Kalaga Reservoir",
     "pickups": [
@@ -9873,7 +9874,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-hidden-package-010",
     "conflict": "GTA Six Map lists Fairyland Forest instead of Kalaga Reservoir (not used).",
     "printedText": null,
     "artwork": {
@@ -9892,7 +9893,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "East Royale St chair",
     "areaLead": "Downtown",
     "pickups": [
@@ -9907,7 +9908,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-060",
     "conflict": "GTA Six Map lists Shoreline instead of Downtown (not used).",
     "printedText": null,
     "artwork": {
@@ -9926,7 +9927,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Park Apartments refrigerator",
     "areaLead": "VCIA",
     "pickups": [
@@ -9941,7 +9942,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-065",
     "conflict": "GTA Six Map lists Little Cuba instead of VCIA (not used).",
     "printedText": null,
     "artwork": {
@@ -9960,7 +9961,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Northern Xero station kitchenette noticeboard",
     "areaLead": "La Perle",
     "pickups": [
@@ -9975,7 +9976,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-032",
     "conflict": "GTA Six Map lists Bohemia instead of La Perle (not used).",
     "printedText": null,
     "artwork": {
@@ -10078,7 +10079,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     ],
     "hostId": "L3078",
     "catalogueId": "card:kandi",
-    "conflict": null,
+    "conflict": "Open GTA 6 Map import — Two Open GTA 6 Map records claim this slot (collectible-card-059, card-delights-001) — held for arbitration; host position kept.",
     "printedText": null,
     "artwork": {
       "front": null,
@@ -10096,7 +10097,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "South coast lifeguard station desk",
     "areaLead": "Vice Beach",
     "pickups": [
@@ -10111,7 +10112,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-064",
     "conflict": "GTA Six Map lists Dalton Island instead of Vice Beach (not used).",
     "printedText": null,
     "artwork": {
@@ -10130,7 +10131,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Caldonia Blvd bedroom",
     "areaLead": "La Perle",
     "pickups": [
@@ -10145,7 +10146,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-035",
     "conflict": "GTA Six Map lists Bohemia instead of La Perle (not used).",
     "printedText": null,
     "artwork": {
@@ -10164,7 +10165,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Vice-Dale County Water and Sewage roof",
     "areaLead": "VCIA",
     "pickups": [
@@ -10179,7 +10180,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-074",
     "conflict": "GTA Six Map lists Peacock Bay instead of VCIA (not used).",
     "printedText": null,
     "artwork": {
@@ -10198,7 +10199,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Hills damaged barn workbench",
     "areaLead": "Bonanza",
     "pickups": [
@@ -10213,7 +10214,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-001",
     "conflict": "GTA Six Map lists Redhill instead of Bonanza (not used).",
     "printedText": null,
     "artwork": {
@@ -10232,7 +10233,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Formosa Ave table",
     "areaLead": "Hamlet",
     "pickups": [
@@ -10247,7 +10248,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-080",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -10282,7 +10283,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     ],
     "hostId": "L1603",
     "catalogueId": "card:perla",
-    "conflict": "GTA Six Map lists Belville instead of Balsero (not used); existing Railyard pin kept.",
+    "conflict": "GTA Six Map lists Belville instead of Balsero (not used); existing Railyard pin kept. Open GTA 6 Map import — host-pinned; cited fbrito record collectible-card-038 sits 781u from the host pin — host wins, disagreement recorded",
     "printedText": null,
     "artwork": {
       "front": null,
@@ -10300,7 +10301,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Desk in the control room of the tower northeast of Donnie's trailer, Key Lento (Badger R&D tower landmark)",
     "areaLead": "Key Lento",
     "pickups": [
@@ -10315,8 +10316,8 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
-    "conflict": null,
+    "catalogueId": "card:fbrito-collectible-card-085",
+    "conflict": "Open GTA 6 Map import — fbrito also has card-delights-009 for this slot — citation picks collectible-card-085",
     "printedText": null,
     "artwork": {
       "front": null,
@@ -10334,7 +10335,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "standard"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Upstairs storeroom at the water department on Westbrook Drive, Salton (outside ladder at the riverside building)",
     "areaLead": "Salton",
     "pickups": [
@@ -10349,7 +10350,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-063",
     "conflict": "GTA Six Map lists Little Cuba instead of Salton (not used).",
     "printedText": null,
     "artwork": {
@@ -10393,7 +10394,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     ],
     "hostId": "L304",
     "catalogueId": "card:vicki",
-    "conflict": "Second pickup (Southside chair): GTA Six Map lists Peacock Bay (not used); primary Starlet Motel pickup kept.",
+    "conflict": "Second pickup (Southside chair): GTA Six Map lists Peacock Bay (not used); primary Starlet Motel pickup kept. Open GTA 6 Map import — host-pinned; cited fbrito record collectible-card-076 sits 6534u from the host pin — host wins, disagreement recorded Open GTA 6 Map import — Two Open GTA 6 Map records claim this slot (collectible-card-076, card-delights-002) — held for arbitration; host position kept.",
     "printedText": null,
     "artwork": {
       "front": null,
@@ -10412,7 +10413,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "deep red"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Northwestern island, shed shelf — Pelican Valley",
     "areaLead": "Pelican Valley",
     "pickups": [
@@ -10427,7 +10428,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-081",
     "conflict": "GTA Six Map lists another area: Grassrivers (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -10447,7 +10448,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "pink"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Rockledge Rd, chair — Moreau",
     "areaLead": "Moreau",
     "pickups": [
@@ -10462,7 +10463,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-002",
     "conflict": "GTA Six Map lists another area: Redhill (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -10498,7 +10499,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     ],
     "hostId": "L1612",
     "catalogueId": "card:brianna-blue-purple",
-    "conflict": null,
+    "conflict": "Open GTA 6 Map import — host-pinned; cited fbrito record collectible-card-061 sits 649u from the host pin — host wins, disagreement recorded",
     "printedText": null,
     "artwork": {
       "front": null,
@@ -10517,7 +10518,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "deep red"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "NW 9th Ave, roof — La Perle",
     "areaLead": "La Perle",
     "pickups": [
@@ -10532,7 +10533,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-040",
     "conflict": "GTA Six Map lists another area: Bohemia (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -10552,7 +10553,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "pink"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "NW 15th Ave, restrooms — Salton",
     "areaLead": "Salton",
     "pickups": [
@@ -10567,7 +10568,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-058",
     "conflict": "GTA Six Map lists another area: Little Cuba (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -10587,7 +10588,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "purple"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Shorefront Ave, chair — Ocean Beach",
     "areaLead": "Ocean Beach",
     "pickups": [
@@ -10602,7 +10603,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-056",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -10621,7 +10622,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Pennwort St, table — Port Gellhorn",
     "areaLead": "Port Gellhorn",
     "pickups": [
@@ -10636,7 +10637,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-022",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -10655,7 +10656,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "CR 62, antenna — Gellhorn",
     "areaLead": "Gellhorn",
     "pickups": [
@@ -10670,7 +10671,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-029",
     "conflict": "GTA Six Map lists another area: Lollipop Ridge (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -10689,7 +10690,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "South coast, fishing garden gnome — Bobcat Key",
     "areaLead": "Bobcat Key",
     "pickups": [
@@ -10704,7 +10705,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-079",
     "conflict": "GTA Six Map lists another area: Watson Bay (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -10724,7 +10725,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "deep red"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "NW 10th Ave, balcony — Rockridge",
     "areaLead": "Rockridge",
     "pickups": [
@@ -10739,7 +10740,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-047",
     "conflict": "GTA Six Map lists another area: Little Cuba (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -10759,7 +10760,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "pink"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "SW 5th Ave, roof — Peacock Bay",
     "areaLead": "Peacock Bay",
     "pickups": [
@@ -10774,7 +10775,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-075",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -10794,7 +10795,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "purple"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Fairbanks pharmacy, back stairs",
     "areaLead": "Fairbanks Pharmacy",
     "pickups": [
@@ -10809,7 +10810,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-048",
     "conflict": "GTA Six Map lists another area: Vice Beach (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -10829,7 +10830,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "deep red"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "South of Breakwater quarry, railcar — Northern Mariana County",
     "areaLead": "Northern Mariana County",
     "pickups": [
@@ -10844,7 +10845,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-072",
     "conflict": "GTA Six Map lists another area: Goliath (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -10864,7 +10865,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "pink"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "SW 19th St, mattress — VCIA",
     "areaLead": "VCIA",
     "pickups": [
@@ -10879,7 +10880,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-067",
     "conflict": "GTA Six Map lists another area: Little Cuba (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -10899,7 +10900,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "purple"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Butternut Rd, garage — Gellhorn",
     "areaLead": "Gellhorn",
     "pickups": [
@@ -10914,7 +10915,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-028",
     "conflict": "GTA Six Map lists another area: Lollipop Ridge (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -10934,7 +10935,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "deep red"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Gellhorn Ave, trailer dresser — Port Gellhorn",
     "areaLead": "Port Gellhorn",
     "pickups": [
@@ -10949,7 +10950,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-018",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -10969,7 +10970,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "pink"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Caledonia Blvd, restrooms — Belville",
     "areaLead": "Belville",
     "pickups": [
@@ -10984,7 +10985,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-031",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -11004,7 +11005,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "purple"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "I-97, chair — Tequesta",
     "areaLead": "Tequesta",
     "pickups": [
@@ -11019,7 +11020,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-069",
     "conflict": "GTA Six Map lists another area: Tequesta Retreat (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -11038,7 +11039,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Mount Kalaga park boundary, bunker mattress — Northern Leonard County",
     "areaLead": "Northern Leonard County",
     "pickups": [
@@ -11053,7 +11054,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-012",
     "conflict": "GTA Six Map lists another area: Fairyland Forest (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -11106,7 +11107,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Cargo Rd, desk — Buckskin Swamp",
     "areaLead": "Buckskin Swamp",
     "pickups": [
@@ -11121,7 +11122,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-049",
     "conflict": "GTA Six Map lists another area: Buckskin (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -11141,7 +11142,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "deep red"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Prosperity St, workbench — Belville",
     "areaLead": "Belville",
     "pickups": [
@@ -11156,7 +11157,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-030",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -11176,7 +11177,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "pink"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Northeastern mountains, fire lookout — Mount Kalaga National Park",
     "areaLead": "Mount Kalaga National Park",
     "pickups": [
@@ -11191,7 +11192,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-007",
     "conflict": "GTA Six Map lists another area: Fairyland Forest (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -11211,7 +11212,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "purple"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Hickory Rd, stairs — Emerald Springs",
     "areaLead": "Emerald Springs",
     "pickups": [
@@ -11226,7 +11227,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-033",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -11245,7 +11246,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Southern hiking trail, men’s restroom — Southern Kelly County",
     "areaLead": "Southern Kelly County",
     "pickups": [
@@ -11260,7 +11261,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-057",
     "conflict": "GTA Six Map lists another area: Buckskin (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -11279,7 +11280,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "At the foot of the striped folding chair near the inflatable dinghy, Abismo Key",
     "areaLead": "Abismo Key",
     "pickups": [
@@ -11294,7 +11295,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-087",
     "conflict": "GTA Six Map lists another area: Leonida Keys (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -11313,7 +11314,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Southeastern island, north shore freighter wreck — Featherstone Islands",
     "areaLead": "Featherstone Islands",
     "pickups": [
@@ -11328,7 +11329,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-003",
     "conflict": "GTA Six Map lists another area: Alligator Point (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -11347,7 +11348,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Sassafrass Rd, house — Mount Kalaga National Park",
     "areaLead": "Mount Kalaga National Park",
     "pickups": [
@@ -11362,7 +11363,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-005",
     "conflict": "GTA Six Map lists another area: Fairyland Forest (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -11415,7 +11416,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Open crate beside the barrels and steps on the north beach, middle island, Permit Keys",
     "areaLead": "Permit Keys",
     "pickups": [
@@ -11430,7 +11431,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-086",
     "conflict": "GTA Six Map lists another area: Leonida Keys (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -11449,7 +11450,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Northern farm, outhouse — Northern Leonard County",
     "areaLead": "Northern Leonard County",
     "pickups": [
@@ -11464,7 +11465,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-013",
     "conflict": "GTA Six Map lists another area: Fairyland Forest (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -11483,7 +11484,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Velo Fino Dr, safe — Bayside",
     "areaLead": "Bayside",
     "pickups": [
@@ -11498,7 +11499,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-042",
     "conflict": "lorenzone says Bayside (Velo Fino Dr), but the only Uncle Jack's Liquor in the GTADB snapshot (L313) is in Port Gellhorn — area disagreement, not pinned; GTA Six Map lists Bohemia (not used).",
     "printedText": null,
     "artwork": {
@@ -11517,7 +11518,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "SW 8th Ave, roof — Salton",
     "areaLead": "Salton",
     "pickups": [
@@ -11532,7 +11533,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-070",
     "conflict": "GTA Six Map lists another area: Peacock Bay (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -11551,7 +11552,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "SR-25, billboard — Balsero",
     "areaLead": "Balsero",
     "pickups": [
@@ -11566,7 +11567,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-050",
     "conflict": "GTA Six Map lists another area: Little Cuba (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -11585,7 +11586,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Southern peninsula, chair on sand — Little Hardin Island",
     "areaLead": "Little Hardin Island",
     "pickups": [
@@ -11600,7 +11601,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-014",
     "conflict": "GTA Six Map lists another area: Peanut Island (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -11619,7 +11620,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "South, abandoned yellow railcar — Port Gellhorn",
     "areaLead": "Port Gellhorn",
     "pickups": [
@@ -11634,7 +11635,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-025",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -11654,7 +11655,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "deep red"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Marsh, picnic area bench — Buckskin Swamp",
     "areaLead": "Buckskin Swamp",
     "pickups": [
@@ -11669,7 +11670,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-043",
     "conflict": "GTA Six Map lists another area: Emerald Springs (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -11724,7 +11725,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "purple"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Vela Rota Dr, house — Capri",
     "areaLead": "Capri",
     "pickups": [
@@ -11739,7 +11740,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-052",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -11759,7 +11760,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "deep red"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Dirt road, observatory top floor — Northern Kelly County",
     "areaLead": "Northern Kelly County",
     "pickups": [
@@ -11774,7 +11775,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-016",
     "conflict": "GTA Six Map lists another area: Mount Kalaga (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -11810,7 +11811,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     ],
     "hostId": "L281",
     "catalogueId": "card:braelynn-pink",
-    "conflict": "GTA Six Map lists another area: Capri (third-party note, not used for placement).",
+    "conflict": "GTA Six Map lists another area: Capri (third-party note, not used for placement). Open GTA 6 Map import — host-pinned; cited fbrito record collectible-card-034 sits 608u from the host pin — host wins, disagreement recorded",
     "printedText": null,
     "artwork": {
       "front": null,
@@ -11829,7 +11830,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "purple"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Bear Hollow Dr, mattress  Joseph. — Millport",
     "areaLead": "Millport",
     "pickups": [
@@ -11844,7 +11845,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-008",
     "conflict": "GTA Six Map lists another area: St (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -11880,7 +11881,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     ],
     "hostId": "L996",
     "catalogueId": "card:chrissie-deep-red",
-    "conflict": "GTA Six Map lists another area: Redhill (third-party note, not used for placement).",
+    "conflict": "GTA Six Map lists another area: Redhill (third-party note, not used for placement). Open GTA 6 Map import — host-pinned; cited fbrito record collectible-card-004 sits 850u from the host pin — host wins, disagreement recorded",
     "printedText": null,
     "artwork": {
       "front": null,
@@ -11899,7 +11900,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "pink"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Baywood Rd, red trailer armchair — Port Gellhorn",
     "areaLead": "Port Gellhorn",
     "pickups": [
@@ -11914,7 +11915,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-021",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -11934,7 +11935,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "purple"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Rail line, cave campsite — Manifest Canyon",
     "areaLead": "Manifest Canyon",
     "pickups": [
@@ -11949,7 +11950,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-017",
     "conflict": "GTA Six Map lists another area: Bridge Ridge (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -11968,7 +11969,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "NW 3rd Ave, chair — Little Cuba",
     "areaLead": "Little Cuba",
     "pickups": [
@@ -11983,7 +11984,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-062",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -12002,7 +12003,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Leonida Industrial Services, lounge chair — Northern Mariana County",
     "areaLead": "Northern Mariana County",
     "pickups": [
@@ -12017,7 +12018,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-071",
     "conflict": "GTA Six Map lists another area: Goliath (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -12036,7 +12037,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Northwestern peninsula, yellow villa garage — Capri",
     "areaLead": "Capri",
     "pickups": [
@@ -12051,7 +12052,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-051",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -12071,7 +12072,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "deep red"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Forest Mill Rd, lounge chair  Joseph. — Millport",
     "areaLead": "Millport",
     "pickups": [
@@ -12086,7 +12087,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-011",
     "conflict": "GTA Six Map lists another area: St (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -12106,7 +12107,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "pink"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "NW 11th St, mattress — La Perle",
     "areaLead": "La Perle",
     "pickups": [
@@ -12121,7 +12122,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-041",
     "conflict": "GTA Six Map lists another area: Little Cuba (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -12141,7 +12142,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "purple"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Boxes in the storage area behind the main building of Steven Strachan Construction, Sunbelt Highway, Key Lento",
     "areaLead": "Key Lento",
     "pickups": [
@@ -12156,7 +12157,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-084",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -12175,7 +12176,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "SR-120, lounge chair — Balsero",
     "areaLead": "Balsero",
     "pickups": [
@@ -12190,7 +12191,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-037",
     "conflict": "GTA Six Map lists another area: Belville (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -12209,7 +12210,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Northwestern coast, villa TV stand — Vespucci Island",
     "areaLead": "Vespucci Island",
     "pickups": [
@@ -12224,7 +12225,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-039",
     "conflict": "GTA Six Map lists another area: Rialto Islands (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -12243,7 +12244,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Red circular table surrounded by short log stools on the beach, sandbar off the north coast, Permit Keys",
     "areaLead": "Permit Keys",
     "pickups": [
@@ -12258,7 +12259,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-083",
     "conflict": "GTA Six Map lists another area: Leonida Keys (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -12311,7 +12312,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Huevo St, roof — Ocean Beach",
     "areaLead": "Ocean Beach",
     "pickups": [
@@ -12326,7 +12327,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-053",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -12345,7 +12346,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "SW 5th Ave, roof — Peacock Bay",
     "areaLead": "Peacock Bay",
     "pickups": [
@@ -12360,7 +12361,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-073",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -12380,7 +12381,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "deep red"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Xero Draper Refinery Engineering Maintenance, desk — Draper Island",
     "areaLead": "Draper Island",
     "pickups": [
@@ -12395,7 +12396,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-015",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -12415,7 +12416,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "pink"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Chestnut Dr, barrel  Joseph. — Millport",
     "areaLead": "Millport",
     "pickups": [
@@ -12430,7 +12431,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-010",
     "conflict": "GTA Six Map lists another area: St (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -12450,7 +12451,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "purple"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Southern river, wrecked red railcar — Moreau",
     "areaLead": "Moreau",
     "pickups": [
@@ -12465,7 +12466,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-006",
     "conflict": "GTA Six Map lists another area: Redhill (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -12485,7 +12486,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "deep red"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Bayside Dr, sofa — Tequesta Retreat",
     "areaLead": "Tequesta Retreat",
     "pickups": [
@@ -12500,7 +12501,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-hidden-package-006",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -12520,7 +12521,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "pink"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Rialto Cswy, table — Rockridge",
     "areaLead": "Rockridge",
     "pickups": [
@@ -12535,7 +12536,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-046",
     "conflict": "GTA Six Map lists another area: Little Cuba (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -12555,7 +12556,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "purple"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "SW 4th Ave, stairs — Tequesta",
     "areaLead": "Tequesta",
     "pickups": [
@@ -12570,7 +12571,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-068",
     "conflict": "GTA Six Map lists another area: Little Cuba (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -12589,7 +12590,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Westbrook Dr, roof — Salton",
     "areaLead": "Salton",
     "pickups": [
@@ -12604,7 +12605,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-066",
     "conflict": "GTA Six Map lists another area: Little Cuba (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -12623,7 +12624,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "NW 15th Ave, tower — Balsero",
     "areaLead": "Balsero",
     "pickups": [
@@ -12638,7 +12639,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-055",
     "conflict": "GTA Six Map lists another area: Little Cuba (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -12657,7 +12658,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Southeast of Lake Leonida, rest area restroom — Belville",
     "areaLead": "Belville",
     "pickups": [
@@ -12672,7 +12673,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-019",
     "conflict": "GTA Six Map lists another area: Lake Leonida (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -12725,7 +12726,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "US-183, tower",
     "areaLead": "US-183",
     "pickups": [
@@ -12740,7 +12741,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-044",
     "conflict": "GTA Six Map lists another area: Buckskin (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -12759,7 +12760,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Southern seawall, garden gnome near mattress — Waning Sands",
     "areaLead": "Waning Sands",
     "pickups": [
@@ -12774,7 +12775,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-027",
     "conflict": "GTA Six Map lists another area: Osborn Reef (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -12793,7 +12794,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Forest Mill Rd, sofa — Mount Kalaga National Park",
     "areaLead": "Mount Kalaga National Park",
     "pickups": [
@@ -12808,7 +12809,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-009",
     "conflict": "GTA Six Map lists another area: Fairyland Forest (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -12827,7 +12828,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Palladia Ln, garage — Peacock Estates",
     "areaLead": "Peacock Estates",
     "pickups": [
@@ -12842,7 +12843,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-077",
     "conflict": "GTA Six Map lists another area: Peacock Bay (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -12861,7 +12862,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Beach southwest of Grayson, brown armchair",
     "areaLead": "Grayson",
     "pickups": [
@@ -12876,7 +12877,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-hidden-package-005",
     "conflict": "GTA Six Map lists another area: Redhill (third-party note, not used for placement).",
     "printedText": null,
     "artwork": {
@@ -12896,7 +12897,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Parking area on Del Rio Blvd, La Perle",
     "areaLead": "La Perle - Del Rio Blvd",
     "pickups": [
@@ -12911,7 +12912,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-legends-of-ratface-009",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -13001,7 +13002,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Bookshelf on Surfside Dr, Key Lento",
     "areaLead": "Key Lento - Surfside Dr",
     "pickups": [
@@ -13016,7 +13017,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-legends-of-ratface-024",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -13036,7 +13037,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "maroon"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "House on SW 9th Ave, Southside",
     "areaLead": "Southside - SW 9th Ave",
     "pickups": [
@@ -13051,7 +13052,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-legends-of-ratface-025",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -13106,7 +13107,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Locker beneath bleachers at the Bay, Gloriana Key",
     "areaLead": "Gloriana Key - Bay",
     "pickups": [
@@ -13121,7 +13122,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-legends-of-ratface-034",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -13141,7 +13142,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "maroon"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Tower on Terrapin Rd, Capri",
     "areaLead": "Capri - Terrapin Rd",
     "pickups": [
@@ -13156,7 +13157,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-legends-of-ratface-027",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -13176,7 +13177,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "purple"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Billboard on NE 2nd Ave, Crosstown",
     "areaLead": "Crosstown - NE 2nd Ave",
     "pickups": [
@@ -13191,7 +13192,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-legends-of-ratface-026",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -13281,7 +13282,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "purple"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Terrace on Terrapin Rd, Northern Mariana County",
     "areaLead": "Northern Mariana County - Terrapin Rd",
     "pickups": [
@@ -13296,7 +13297,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-legends-of-ratface-035",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -13316,7 +13317,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Dock at Tamarro Spritz, Downtown",
     "areaLead": "Downtown - Tamarro Spritz",
     "pickups": [
@@ -13331,7 +13332,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-legends-of-ratface-037",
     "conflict": "named host Tamarro exists only as GTADB L2894 Tamarro, Ocean Beach; guide says Downtown - area disagrees, not pinned",
     "printedText": null,
     "artwork": {
@@ -13386,7 +13387,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "purple"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Bookshelf on NW 21st Pl, Balsero",
     "areaLead": "Balsero - NW 21st Pl",
     "pickups": [
@@ -13401,7 +13402,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-legends-of-ratface-032",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -13456,7 +13457,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "maroon"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Roof on NE 5th Ave, Stockyard",
     "areaLead": "Stockyard - NE 5th Ave",
     "pickups": [
@@ -13471,7 +13472,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-legends-of-ratface-028",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -13596,7 +13597,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "purple"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "House on Tidewater Dr, Eastern Lummox County",
     "areaLead": "Eastern Lummox County - Tidewater Dr",
     "pickups": [
@@ -13611,7 +13612,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-legends-of-ratface-033",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -13631,7 +13632,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Microwave at LTD on Seaview Blvd, Ocean Beach",
     "areaLead": "Ocean Beach - LTD, Seaview Blvd",
     "pickups": [
@@ -13646,7 +13647,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-legends-of-ratface-038",
     "conflict": "named host LTD exists only as GTADB L260 LTD Gas Station, Hamlet; guide says Ocean Beach (Seaview Blvd) - area disagrees, not pinned",
     "printedText": null,
     "artwork": {
@@ -13701,7 +13702,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "purple"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "House on Buckeye Rd, Watson Bay",
     "areaLead": "Watson Bay - Buckeye Rd",
     "pickups": [
@@ -13716,7 +13717,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-legends-of-ratface-012",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -13736,7 +13737,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Terrace on SW 6th St, Salton",
     "areaLead": "Salton - SW 6th St",
     "pickups": [
@@ -13751,7 +13752,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-legends-of-ratface-029",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -13771,7 +13772,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "maroon"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Station at Vice City Airport Village, Salton",
     "areaLead": "Salton - Vice City Airport Village",
     "pickups": [
@@ -13786,7 +13787,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-legends-of-ratface-036",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -13841,7 +13842,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Microwave at LTD on Vela Rota Dr, Capri",
     "areaLead": "Capri - LTD, Vela Rota Dr",
     "pickups": [
@@ -13856,7 +13857,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-legends-of-ratface-006",
     "conflict": "named host LTD exists only as GTADB L260 LTD Gas Station, Hamlet; guide says Capri (Vela Rota Dr) - area disagrees, not pinned",
     "printedText": null,
     "artwork": {
@@ -13911,7 +13912,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "purple"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Rail at the top of the swamp lookout, Buckskin Swamp",
     "areaLead": "Buckskin Swamp - swamp lookout",
     "pickups": [
@@ -13926,7 +13927,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-legends-of-ratface-004",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -13962,7 +13963,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     ],
     "hostId": null,
     "catalogueId": null,
-    "conflict": null,
+    "conflict": "Held from the Open GTA 6 Map import: bucket C2, gtatown does not show it",
     "printedText": null,
     "artwork": {
       "front": null,
@@ -13981,7 +13982,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "maroon"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Table on Fairview Dr, Waning Sands",
     "areaLead": "Waning Sands - Fairview Dr",
     "pickups": [
@@ -13996,7 +13997,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-legends-of-ratface-030",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -14032,7 +14033,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     ],
     "hostId": null,
     "catalogueId": null,
-    "conflict": null,
+    "conflict": "Held from the Open GTA 6 Map import: bucket C2, gtatown does not show it",
     "printedText": null,
     "artwork": {
       "front": null,
@@ -14086,7 +14087,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "maroon"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Filing cabinet on Seabell Ave, Watson Bay",
     "areaLead": "Watson Bay - Seabell Ave",
     "pickups": [
@@ -14101,7 +14102,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-legends-of-ratface-039",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -14121,7 +14122,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "purple"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Shelf on Del Rio Blvd, La Perle",
     "areaLead": "La Perle - Del Rio Blvd",
     "pickups": [
@@ -14136,7 +14137,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-legends-of-ratface-019",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -14156,7 +14157,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Railing at the northern dock, Catalan Key",
     "areaLead": "Catalan Key - northern dock",
     "pickups": [
@@ -14171,7 +14172,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-right-wing-027",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -14277,7 +14278,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     ],
     "hostId": null,
     "catalogueId": null,
-    "conflict": null,
+    "conflict": "Held from the Open GTA 6 Map import: bucket D, gtatown does not show it",
     "printedText": null,
     "artwork": {
       "front": null,
@@ -14312,7 +14313,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     ],
     "hostId": null,
     "catalogueId": null,
-    "conflict": null,
+    "conflict": "Held from the Open GTA 6 Map import: bucket D, gtatown does not show it",
     "printedText": null,
     "artwork": {
       "front": null,
@@ -14347,7 +14348,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     ],
     "hostId": null,
     "catalogueId": null,
-    "conflict": null,
+    "conflict": "Held from the Open GTA 6 Map import: bucket D, gtatown does not show it",
     "printedText": null,
     "artwork": {
       "front": null,
@@ -14401,7 +14402,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "red"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Restrooms on SW 4th St, Washington Beach (Oldby Island)",
     "areaLead": "Washington Beach (Oldby Island) - SW 4th St",
     "pickups": [
@@ -14416,7 +14417,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-right-wing-029",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -14487,7 +14488,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     ],
     "hostId": null,
     "catalogueId": null,
-    "conflict": null,
+    "conflict": "Held from the Open GTA 6 Map import: bucket D, gtatown does not show it",
     "printedText": null,
     "artwork": {
       "front": null,
@@ -14522,7 +14523,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     ],
     "hostId": null,
     "catalogueId": null,
-    "conflict": null,
+    "conflict": "Held from the Open GTA 6 Map import: bucket D, gtatown does not show it",
     "printedText": null,
     "artwork": {
       "front": null,
@@ -14557,7 +14558,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     ],
     "hostId": null,
     "catalogueId": null,
-    "conflict": null,
+    "conflict": "Held from the Open GTA 6 Map import: bucket D, gtatown does not show it",
     "printedText": null,
     "artwork": {
       "front": null,
@@ -14576,7 +14577,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Water tower with US flag in north Ambrosia",
     "areaLead": "Ambrosia - north, water tower",
     "pickups": [
@@ -14591,7 +14592,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-right-wing-009",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -14611,7 +14612,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "red"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Restrooms at Abismo Key",
     "areaLead": "Abismo Key",
     "pickups": [
@@ -14626,7 +14627,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-right-wing-002",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -14646,7 +14647,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "white"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Refrigerator on NW 10th Ave, La Perle",
     "areaLead": "La Perle - NW 10th Ave",
     "pickups": [
@@ -14661,7 +14662,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-right-wing-017",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -14681,7 +14682,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Sofa in Port Gellhorn",
     "areaLead": "Port Gellhorn",
     "pickups": [
@@ -14696,7 +14697,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-right-wing-011",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -14716,7 +14717,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "red"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Billboard on I-404, Port Gellhorn",
     "areaLead": "Port Gellhorn - I-404",
     "pickups": [
@@ -14731,7 +14732,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-right-wing-023",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -14751,7 +14752,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "white"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Restaurant at Cor Blimey!, Capri",
     "areaLead": "Capri - Cor Blimey!",
     "pickups": [
@@ -14766,7 +14767,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-right-wing-030",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -14786,7 +14787,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Billboard on US-628, Eastern Lummox County",
     "areaLead": "Eastern Lummox County - US-628",
     "pickups": [
@@ -14801,7 +14802,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-right-wing-024",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -14821,7 +14822,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "red"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Roof on Vine St, Hamlet",
     "areaLead": "Hamlet - Vine St",
     "pickups": [
@@ -14836,7 +14837,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-right-wing-007",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -14856,7 +14857,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "white"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Computer in the southwestern hunter's warehouse, Mount Kalaga National Park",
     "areaLead": "Mount Kalaga National Park - southwestern hunter's warehouse",
     "pickups": [
@@ -14871,7 +14872,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-right-wing-015",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -14891,7 +14892,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Old tower west of Leonida State Prison, Gellhorn",
     "areaLead": "Gellhorn - west of Leonida State Prison",
     "pickups": [
@@ -14906,7 +14907,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-right-wing-001",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -14951,7 +14952,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     ],
     "hostId": "L475",
     "catalogueId": "card:right-wing-red",
-    "conflict": null,
+    "conflict": "Open GTA 6 Map import — Two Open GTA 6 Map records claim this slot (card-right-wing-004, card-right-wing-014) — held for arbitration; host position kept.",
     "printedText": null,
     "artwork": {
       "front": null,
@@ -14970,7 +14971,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "white"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Terrace on Forest Mill Rd, Mount Kalaga National Park",
     "areaLead": "Mount Kalaga National Park - Forest Mill Rd",
     "pickups": [
@@ -14985,7 +14986,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-right-wing-012",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -15005,7 +15006,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Barrel on the back terrace at Beachie's, Watson Bay",
     "areaLead": "Watson Bay - Beachie's",
     "pickups": [
@@ -15020,7 +15021,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-107",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -15040,7 +15041,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "red"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Bumper car at the abandoned amusement park, Port Gellhorn",
     "areaLead": "Port Gellhorn - abandoned amusement park",
     "pickups": [
@@ -15055,7 +15056,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-right-wing-006",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -15075,7 +15076,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "white"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Restroom at the northern construction site, Millport",
     "areaLead": "Millport - northern construction site",
     "pickups": [
@@ -15090,7 +15091,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-right-wing-018",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -15161,7 +15162,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     ],
     "hostId": "L512",
     "catalogueId": "card:right-wings-truck-red",
-    "conflict": null,
+    "conflict": "Open GTA 6 Map import — host-pinned; cited fbrito record card-right-wing-028 sits 236u from the host pin — host wins, disagreement recorded",
     "printedText": null,
     "artwork": {
       "front": null,
@@ -15180,7 +15181,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "white"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Terrace at Farmers Walk, Bluegrass",
     "areaLead": "Bluegrass - Farmers Walk",
     "pickups": [
@@ -15195,7 +15196,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-right-wing-031",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -15215,7 +15216,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Desk at Globe Oil, Crosstown",
     "areaLead": "Crosstown - Globe Oil",
     "pickups": [
@@ -15230,7 +15231,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-right-wing-025",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -15285,7 +15286,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "white"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Trailer steps on Scuttlebutt Dr, Key Lento",
     "areaLead": "Key Lento - Scuttlebutt Dr",
     "pickups": [
@@ -15300,7 +15301,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-right-wing-003",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -15320,7 +15321,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Refrigerator on NW 3rd St, Little Cuba",
     "areaLead": "Little Cuba - NW 3rd St",
     "pickups": [
@@ -15335,7 +15336,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-right-wing-032",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -15371,7 +15372,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     ],
     "hostId": "L1006",
     "catalogueId": "card:they-red",
-    "conflict": null,
+    "conflict": "Open GTA 6 Map import — host-pinned; cited fbrito record card-right-wing-034 sits 173u from the host pin — host wins, disagreement recorded",
     "printedText": null,
     "artwork": {
       "front": null,
@@ -15390,7 +15391,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "white"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Refrigerator on Aralia Court, Peacock Bay",
     "areaLead": "Peacock Bay - Aralia Court",
     "pickups": [
@@ -15405,7 +15406,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-right-wing-026",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -15425,7 +15426,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "light blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Chessboard on SW 4th Ave, Tequesta.",
     "areaLead": "Tequesta",
     "pickups": [
@@ -15440,7 +15441,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-ed-comics-016",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -15460,7 +15461,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "orange"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Parking lot barrier on the east beach, Belville.",
     "areaLead": "Belville",
     "pickups": [
@@ -15475,7 +15476,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-ed-comics-021",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -15495,7 +15496,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "pink"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Restrooms on Birch St, Ambrosia.",
     "areaLead": "Ambrosia",
     "pickups": [
@@ -15510,7 +15511,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-ed-comics-009",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -15600,7 +15601,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "pink"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Billboard off I-97, Bluegrass.",
     "areaLead": "Bluegrass",
     "pickups": [
@@ -15615,7 +15616,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-ed-comics-023",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -15705,7 +15706,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "pink"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Stockroom shelf in the Northern RON station, Bayside.",
     "areaLead": "Bayside",
     "pickups": [
@@ -15720,7 +15721,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-ed-comics-018",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -15739,7 +15740,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "First viewing platform on the road towards the blimp, beside the blue chair, off Aerostat Rd, Maroon Key.",
     "areaLead": "Maroon Key",
     "pickups": [
@@ -15754,7 +15755,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-collectible-card-100",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -15807,7 +15808,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Washing machine in a trailer on SW 19th St, VCIA. Area cross-checked.",
     "areaLead": "VCIA",
     "pickups": [
@@ -15822,7 +15823,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-ed-comics-031",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -15877,7 +15878,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "orange"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Bin at the side entrance of the Northern Xero station, Southern Kelly County.",
     "areaLead": "Southern Kelly County",
     "pickups": [
@@ -15892,7 +15893,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-comics-001",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -15947,7 +15948,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "light blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Kitchen on NW 24th Pl, Balsero.",
     "areaLead": "Balsero",
     "pickups": [
@@ -15962,7 +15963,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-ed-comics-026",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -16017,7 +16018,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "pink"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Restrooms at Globe Oil, Hamlet.",
     "areaLead": "Hamlet",
     "pickups": [
@@ -16032,7 +16033,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-ed-comics-022",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -16052,7 +16053,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "light blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Garage noticeboard at the 247 station, Western Vice-Dale County.",
     "areaLead": "Western Vice-Dale County",
     "pickups": [
@@ -16067,7 +16068,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-ed-comics-002",
     "conflict": "Only GTADB 247 record is L1670 247 Supermarket, Crosstown, Vice City; guide places the 247 station in Western Vice-Dale County - area disagrees, not pinned.",
     "printedText": null,
     "artwork": {
@@ -16157,7 +16158,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "light blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Barrel on Omega Pkwy, Buckskin Swamp.",
     "areaLead": "Buckskin Swamp",
     "pickups": [
@@ -16172,7 +16173,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-ed-comics-030",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -16192,7 +16193,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "orange"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Chair on NE 1st Ave, Downtown.",
     "areaLead": "Downtown",
     "pickups": [
@@ -16207,7 +16208,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-ed-comics-028",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -16227,7 +16228,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "pink"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Walkway on NE 6th Ave, Decor District.",
     "areaLead": "Decor District",
     "pickups": [
@@ -16242,7 +16243,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-ed-comics-008",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -16261,7 +16262,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "bronze"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Warehouse on NW 8th Ave, La Perle. Area cross-checked.",
     "areaLead": "La Perle",
     "pickups": [
@@ -16276,7 +16277,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-ed-comics-012",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -16295,7 +16296,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Roof on Harborside Ave, Ocean Beach.",
     "areaLead": "Ocean Beach",
     "pickups": [
@@ -16310,7 +16311,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-ed-comics-027",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -16329,7 +16330,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Roof on Cicada Ave, Hamlet.",
     "areaLead": "Hamlet",
     "pickups": [
@@ -16344,7 +16345,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-ed-comics-003",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -16397,7 +16398,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "gold"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Bench on El Joven Blvd, VCIA.",
     "areaLead": "VCIA",
     "pickups": [
@@ -16412,7 +16413,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-ed-comics-032",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -16431,7 +16432,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
     "rarity": {
       "tier": "silver"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Crate on SW 5th Ave, Peacock Bay.",
     "areaLead": "Peacock Bay",
     "pickups": [
@@ -16446,7 +16447,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-ed-comics-029",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -16466,7 +16467,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "light blue"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Bedroom on Crescent Ct, Port Gellhorn. Area cross-checked.",
     "areaLead": "Port Gellhorn",
     "pickups": [
@@ -16481,7 +16482,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-ed-comics-004",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -16536,7 +16537,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "pink"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Gas station at Finn's Diner, Eastern Lummox County.",
     "areaLead": "Eastern Lummox County",
     "pickups": [
@@ -16551,7 +16552,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-ed-comics-025",
     "conflict": null,
     "printedText": null,
     "artwork": {
@@ -16606,7 +16607,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       "tier": "standard",
       "colour": "orange"
     },
-    "placement": "area-known",
+    "placement": "pinned",
     "spotDescription": "Roof on South Cunningham Dr, Capri.",
     "areaLead": "Capri",
     "pickups": [
@@ -16621,7 +16622,7 @@ export const CARD_CHECKLIST_ITEMS: CardChecklistItem[] = [
       }
     ],
     "hostId": null,
-    "catalogueId": null,
+    "catalogueId": "card:fbrito-card-ed-comics-033",
     "conflict": null,
     "printedText": null,
     "artwork": {

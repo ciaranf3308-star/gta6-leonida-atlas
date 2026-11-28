@@ -5,19 +5,19 @@ import { catalogueFromSnapshot, markerToPlace } from '../../src/data/catalogue';
 const snapshot = JSON.parse(readFileSync(new URL('../../public/assets/street-leonida/maps/gtadb-landmarks-2e9e194.json', import.meta.url), 'utf8'));
 
 describe('Atlas searchable catalogue', () => {
-  it('retains all 4,380 community records, six regions, eight member gyms, three outdoor spots, five breakable-home examples, thirty-seven cards, 49 Loot Map places and thirty-seven gang operations, including 139 unpositioned records', () => {
+  it('retains all 4,380 community records, six regions, eight member gyms, three outdoor spots, five breakable-home examples, 383 cards, 49 Loot Map places and thirty-seven gang operations, including 139 unpositioned records', () => {
     const places = catalogueFromSnapshot(snapshot);
-    expect(places).toHaveLength(4525);
+    expect(places).toHaveLength(4871);
     expect(places.filter(p => p.position === null)).toHaveLength(139);
     expect(places.filter(p => p.layerId === 'regions')).toHaveLength(6);
     expect(places.filter(p => p.layerId === 'gyms')).toHaveLength(8);
     expect(places.filter(p => p.layerId === 'equipment')).toHaveLength(3);
     expect(places.filter(p => p.layerId === 'breakable' && p.id.startsWith('breakable:'))).toHaveLength(5);
-    expect(places.filter(p => p.layerId.startsWith('cards:'))).toHaveLength(37);
+    expect(places.filter(p => p.layerId.startsWith('cards:'))).toHaveLength(383);
     expect(places.filter(p => p.layerId === 'loot-heists')).toHaveLength(29);
     expect(places.filter(p => p.layerId === 'loot-collectibles')).toHaveLength(20);
     expect(places.filter(p => p.id.startsWith('loot:')).every(p => p.evidence === 'uncertain')).toBe(true);
-    expect(new Set(places.map(p => p.id)).size).toBe(4525);
+    expect(new Set(places.map(p => p.id)).size).toBe(4871);
   });
   it('uses only source game coordinates and keeps approximate and uncertain evidence explicit', () => {
     const places = catalogueFromSnapshot(snapshot);
