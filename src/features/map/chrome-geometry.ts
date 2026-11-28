@@ -59,6 +59,10 @@ export interface ChromeGeometry {
   promptHeight: number | null;
   /** Height of the bottom nav bar (0 when absent). */
   navHeight: number;
+  /** Set-drive bar (v0.33 Lane C): the drive header + pill row
+   * below the hero, when a set drive is active. Its bottom joins
+   * the top chrome band, so pins and the fit framing clear it. */
+  driveBar?: ChromeRect | null;
 }
 
 /** Breathing room between a pin box and the top chrome band. */
@@ -91,6 +95,7 @@ export const FALLBACK_GEOMETRY: ChromeGeometry = {
   attributionTop: 740,
   promptHeight: null,
   navHeight: 73,
+  driveBar: null,
 };
 
 function isVisible(el: Element | null): el is Element {
@@ -164,12 +169,17 @@ export function measureChromeGeometry(host: HTMLElement): ChromeGeometry {
   const bottomNavRect = isVisible(bottomNav)
     ? bottomNav.getBoundingClientRect()
     : null;
+  const driveBarEl = workspace?.querySelector('.set-drive-bar') ?? null;
+  const driveBarRect = isVisible(driveBarEl)
+    ? toCanvasRect(driveBarEl, canvasRect)
+    : null;
 
   const topChromeBottom = Math.max(
     0,
     heroRect?.bottom ?? 0,
     noteRect?.bottom ?? 0,
     titleRect?.bottom ?? 0,
+    driveBarRect?.bottom ?? 0,
   );
   return {
     width: canvasRect.width,
@@ -182,6 +192,7 @@ export function measureChromeGeometry(host: HTMLElement): ChromeGeometry {
     attributionTop: attributionRect?.top ?? null,
     promptHeight: promptRect?.height ?? null,
     navHeight: bottomNavRect?.height ?? 0,
+    driveBar: driveBarRect,
   };
 }
 
@@ -209,6 +220,7 @@ export function observeChromeGeometry(
     host,
     workspace?.querySelector('.map-hero') ?? null,
     workspace?.querySelector('.empty-map-prompt') ?? null,
+    workspace?.querySelector('.set-drive-bar') ?? null,
     view.querySelector('.atlas-edge-stack'),
     view.querySelector('.atlas-edge-zoom'),
     view.querySelector('.atlas-map-navigation'),
@@ -317,7 +329,11 @@ export function fitPaddingFor(
   geometry: ChromeGeometry,
   promptVisible: boolean,
 ): { top: number; bottom: number } {
-  const top = geometry.heroBottom + FIT_TOP_MARGIN;
+  // The drive bar sits below the hero when a set is being driven —
+  // the island fits below whichever of hero / drive bar reaches
+  // lowest, never under the bar.
+  const top =
+    Math.max(geometry.heroBottom, geometry.driveBar?.bottom ?? 0) + FIT_TOP_MARGIN;
   const bottom =
     promptVisible && geometry.promptHeight !== null
       ? geometry.promptHeight + FIT_BOTTOM_MARGIN_PROMPT

@@ -102,6 +102,13 @@ export interface MapViewProps {
   exploredIds?: ReadonlySet<string>;
   /** Ask Nylah highlights — rendered even when their layer is off. */
   highlightIds?: ReadonlySet<string>;
+  /** Set drive (v0.33 Lane C, D-3): a set is being driven — its
+   * member pins (every layer the set rides on) are exempt from the
+   * hero cell collapse, so all of them show at island zoom. The
+   * member set is App's, measured from the data; the layer-solo
+   * exemption below still covers a restored soloed view. */
+  setDriveActive?: boolean;
+  setDriveMemberIds?: ReadonlySet<string>;
   /** The empty-map prompt is up — the zoom pill lifts above it
    * (bottom 150px) instead of sitting half-hidden behind it. */
   promptVisible?: boolean;
@@ -464,6 +471,7 @@ export default function MapView(props: MapViewProps) {
           .sort()
           .join(','),
         [...(props.highlightIds ?? [])].sort().join(','),
+        [...(props.setDriveMemberIds ?? [])].sort().join(','),
         props.selectedId ?? '',
         props.preferences.clusterMarkers ? '1' : '0',
       ].join('|');
@@ -479,6 +487,12 @@ export default function MapView(props: MapViewProps) {
               visible,
               24,
               soloedSetLayerId ? new Set([soloedSetLayerId]) : undefined,
+              // v0.33 Lane C: the drive's members are exempt by PLACE
+              // id — Harley rides loot-collectibles, so a layer
+              // exemption would exempt that whole layer's 20 pins.
+              props.setDriveMemberIds?.size
+                ? props.setDriveMemberIds
+                : undefined,
             ).map((place) => ({
               id: place.id,
               position: place.position,
@@ -755,6 +769,8 @@ export default function MapView(props: MapViewProps) {
     props.foundIds,
     props.exploredIds,
     props.highlightIds,
+    props.setDriveActive,
+    props.setDriveMemberIds,
     props.aiCategories,
     props.preferences.clusterMarkers,
     props.preferences.showLabels,
@@ -1003,7 +1019,7 @@ export default function MapView(props: MapViewProps) {
 
   return (
     <div
-      className={`atlas-map-view ${props.editorMode !== 'none' ? 'is-editing' : ''} ${zoom <= -2.5 ? 'is-hero-zoom' : ''} ${props.promptVisible ? 'has-prompt' : ''} ${props.selectedId !== null ? 'has-details' : ''}`}
+      className={`atlas-map-view ${props.editorMode !== 'none' ? 'is-editing' : ''} ${zoom <= -2.5 ? 'is-hero-zoom' : ''} ${props.promptVisible ? 'has-prompt' : ''} ${props.selectedId !== null ? 'has-details' : ''} ${props.setDriveActive ? 'has-drive' : ''}`}
     >
       <p id={descriptionId} className="map-sr-only">
         Interactive map using the GTADB in-game map of Leonida, with approximate game

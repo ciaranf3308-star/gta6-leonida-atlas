@@ -12,6 +12,7 @@ import {
 import { DEFAULT_FILTERS } from '../../src/stores/atlas';
 import { filterPlaces } from '../../src/domain/filter';
 import { completedPlaceIds } from '../../src/features/completion/place-ids';
+import { selectHeroPlaces } from '../../src/features/map/spatial';
 import {
   itemForPlace,
   nextInSet,
@@ -205,6 +206,52 @@ describe('v0.33 Lane C — Next in set', () => {
     expect(setFoundLabel(db, 'delights-dancers')).toBe('18 / 18 found');
     expect(nextInSet(db, places, 'delights-dancers', VICKI)).toBeNull();
     expect(noNextInSetLabel(db, 'delights-dancers')).toBe('Set complete ✓');
+  });
+});
+
+describe('v0.33 Lane C — hero exemption by place id (set members, every layer)', () => {
+  it('all five Delights pins show at island zoom when the set is driven', () => {
+    const db = buildGameDatabase({ places });
+    const { placeIds } = setDriveMembers(db, places, 'delights-dancers');
+    const memberPlaces = placeIds.map((id) => places.find((p) => p.id === id)!);
+    const heroes = selectHeroPlaces(places, 24, undefined, new Set(placeIds));
+    const heroIds = new Set(heroes.map((p) => p.id));
+    for (const member of memberPlaces) {
+      expect(heroIds.has(member.id), `${member.id} is a hero pin`).toBe(true);
+    }
+    // The exemption is by place, not by layer: a loot-collectibles
+    // pin that is NOT in the set does not ride along.
+    expect(heroIds.has('loot:guide-marquise-card')).toBe(false);
+  });
+
+  it('without the exemption the Vicki/Jason/Harley cell collapses to at most one pin', () => {
+    const db = buildGameDatabase({ places });
+    const { placeIds } = setDriveMembers(db, places, 'delights-dancers');
+    const heroes = selectHeroPlaces(places, 24);
+    const heroIds = new Set(heroes.map((p) => p.id));
+    const trio = ['card:vicki', 'card:jason', 'loot:guide-harley-card'].filter((id) =>
+      heroIds.has(id),
+    );
+    // One-per-cell, and a region already holds their shared cell in
+    // the full catalogue — so the trio shows 0 or 1 pins, never 3.
+    // (Lane B's "3" control ran on the soloed set alone, with no
+    // regions in the input, so its cell was free.)
+    expect(trio.length).toBeLessThanOrEqual(1);
+    expect(placeIds.length).toBe(5);
+  });
+
+  it('the layer exemption still works for a soloed cards:* layer (Lane B)', () => {
+    const heroes = selectHeroPlaces(
+      places,
+      24,
+      new Set(['cards:delights-dancers']),
+    );
+    const heroIds = new Set(heroes.map((p) => p.id));
+    for (const id of ['card:vicki', 'card:jason', 'card:kandi', 'card:perla']) {
+      expect(heroIds.has(id), `${id} is a hero pin`).toBe(true);
+    }
+    // Harley is not on that layer — the layer exemption does not cover it.
+    expect(heroIds.has('loot:guide-harley-card')).toBe(false);
   });
 });
 

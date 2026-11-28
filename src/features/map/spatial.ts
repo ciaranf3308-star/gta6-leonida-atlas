@@ -36,11 +36,17 @@ export interface ClusterOptions {
  * still readable. Exempt pins still mark their cells used, so the
  * non-exempt fill never piles onto an exempt pin's cell. Outside a
  * set drive the hero rule stands.
- */
+ *
+ * v0.33 Lane C (D-3): `exemptPlaceIds` is the same exemption by
+ * PLACE id — a set drive's members ride every layer (Harley is a
+ * `loot-collectibles` pin, not a `cards:*` pin), so exempting the
+ * layer would exempt the whole layer's 20 pins. The drive passes
+ * its member place ids; only those pins bypass the collapse. */
 export function selectHeroPlaces(
   places: readonly Place[],
   maxHero = 24,
   exemptLayerIds: ReadonlySet<string> = new Set(),
+  exemptPlaceIds: ReadonlySet<string> = new Set(),
 ): PositionedPlace[] {
   const positioned = places.filter((place): place is PositionedPlace =>
     isValidPosition(place.position),
@@ -77,13 +83,19 @@ export function selectHeroPlaces(
       `${Math.floor(place.position.x / cell)}:${Math.floor(place.position.y / cell)}`,
     );
   }
-  // v0.33 D-6: the set-drive exemption — every exempt pin shows, no
-  // cell collapse, no maxHero cap. Their cells are marked used so the
-  // fill below never stacks a second hero pin onto an exempt pin.
-  if (exemptLayerIds.size > 0) {
+  // v0.33 D-6 / Lane C: the set-drive exemption — every exempt pin
+  // shows, no cell collapse, no maxHero cap. Their cells are marked
+  // used so the fill below never stacks a second hero pin onto an
+  // exempt pin. Exemption is by layer (a soloed cards:* layer) OR
+  // by place (a drive member from any layer — Harley rides
+  // loot-collectibles); a place id exempts ONLY that pin, never its
+  // layer-mates.
+  if (exemptLayerIds.size > 0 || exemptPlaceIds.size > 0) {
     for (const place of positioned) {
       if (pickedIds.has(place.id)) continue;
-      if (!exemptLayerIds.has(place.layerId) || !named(place)) continue;
+      const exempt =
+        exemptLayerIds.has(place.layerId) || exemptPlaceIds.has(place.id);
+      if (!exempt || !named(place)) continue;
       picked.push(place);
       pickedIds.add(place.id);
       usedCells.add(

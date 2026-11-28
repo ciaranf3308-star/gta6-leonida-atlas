@@ -62,6 +62,25 @@ export const useMapStore = create<{
   markerKindPreset: 'workout' | 'breakable' | 'vehicle-loot' | null;
   /** Ask Nylah highlights — ids the last answer pointed at. Never a layer. */
   highlightIds: string[];
+  /** Set drive (v0.33 Lane C, D-3): Collections → a set → "Show on
+   * map" solos that set's pins island-wide. The drive remembers the
+   * layer state it replaced (and the Hide found filter) so exiting
+   * returns to exactly what was showing before. Null = no drive.
+   * NOT persisted across reloads — the clean-launch rule still
+   * applies: a reload opens a clean map, and the saved view offers
+   * the soloed layers back as "Restore my last layers". */
+  setDrive: {
+    setId: string;
+    previousVisibleLayerIds: string[];
+    previousHideFound: boolean;
+  } | null;
+  setSetDrive: (
+    drive: {
+      setId: string;
+      previousVisibleLayerIds: string[];
+      previousHideFound: boolean;
+    } | null,
+  ) => void;
   /** The map centre, from the map's own viewport reports — the Find list
    * sorts nearest-first from here. Null until the map reports. */
   mapCenter: Position | null;
@@ -93,6 +112,8 @@ export const useMapStore = create<{
   draftPosition: null,
   markerKindPreset: null,
   highlightIds: [],
+  setDrive: null,
+  setSetDrive: (setDrive) => set({ setDrive }),
   mapCenter: null,
   setLayers: (layers) => set({ layers }),
   select: (place) => {
@@ -250,7 +271,7 @@ export function switchLocalWorkspace(workspaceId: string | null): Promise<void> 
     findOpen: false,
     filterSheetOpen: false,
   });
-  useMapStore.setState({ selectedId: null, focus: null, boundsFocus: null, isolation: null, editorMode: 'none', draftPosition: null, markerKindPreset: null, highlightIds: [] });
+  useMapStore.setState({ selectedId: null, focus: null, boundsFocus: null, isolation: null, editorMode: 'none', draftPosition: null, markerKindPreset: null, highlightIds: [], setDrive: null });
   const operation = writeQueue.then(async () => {
     const previous = atlasRepository;
     const repository = previous.name === name ? previous : new AtlasDatabase(name);
